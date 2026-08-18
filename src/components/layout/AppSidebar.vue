@@ -195,19 +195,20 @@
           </div>
         </div>
       </nav>
-      <SidebarWidget v-if="isExpanded || isHovered || isMobileOpen" />
+      
     </div>
   </aside>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import {
   GridIcon,
   CalenderIcon,
   UserCircleIcon,
+  UserGroupIcon,
   ChatIcon,
   MailIcon,
   DocsIcon,
@@ -218,6 +219,9 @@ import {
   TableIcon,
   ListIcon,
   PlugInIcon,
+  ReceiptIcon,
+  SettingsIcon,
+  WarehouseIcon,
 } from "../../icons";
 import SidebarWidget from "./SidebarWidget.vue";
 import BoxCubeIcon from "@/icons/BoxCubeIcon.vue";
@@ -225,7 +229,12 @@ import { useSidebar } from "@/composables/useSidebar";
 
 const route = useRoute();
 
-const { isExpanded, isMobileOpen, isHovered, openSubmenu } = useSidebar();
+const { isExpanded, isMobileOpen, isHovered, openSubmenu, closeMobileSidebar } = useSidebar();
+
+// Auto-close sidebar on route change for mobile
+watch(() => route.path, () => {
+  closeMobileSidebar()
+})
 
 const menuGroups = [
   {
@@ -237,75 +246,59 @@ const menuGroups = [
         path: "/",
       },
       {
-        icon: CalenderIcon,
-        name: "Calendar",
-        path: "/calendar",
+        name: "Products",
+        icon: BoxCubeIcon,
+        subItems: [
+          { name: "Daftar Produk", path: "/products", pro: false },
+          { name: "Daftar Kategori", path: "/categories", pro: false },
+        ],
+      },
+      {
+        name: "Stok Gudang",
+        icon: WarehouseIcon,
+        subItems: [
+          { name: "Kelola Stok", path: "/stock", pro: false },
+          { name: "Riwayat Mutasi", path: "/stock/movements", pro: false },
+        ],
+      },
+      {
+        name: "Transaksi",
+        icon: ReceiptIcon,
+        subItems: [
+          { name: "Daftar Transaksi", path: "/transactions", pro: false },
+          { name: "Transaksi Baru", path: "/transactions/add", pro: false },
+          { name: "Daftar Retur", path: "/returns", pro: false },
+        ],
+      },
+      {
+        name: "Laporan",
+        icon: PieChartIcon,
+        subItems: [
+          { name: "Laporan Penjualan", path: "/reports/sales", pro: false },
+        ],
+      },
+      {
+        name: "Customer",
+        icon: UserGroupIcon,
+        subItems: [
+          { name: "Daftar Customer", path: "/customers", pro: false },
+        ],
+      },
+      {
+        icon: ReceiptIcon,
+        name: "Invoice Pelanggan",
+        path: "/customer-invoices",
+      },
+      {
+        icon: SettingsIcon,
+        name: "Pengaturan",
+        path: "/settings",
       },
       {
         icon: UserCircleIcon,
-        name: "User Profile",
+        name: "Profil",
         path: "/profile",
       },
-
-      {
-        name: "Forms",
-        icon: ListIcon,
-        subItems: [
-          { name: "Form Elements", path: "/form-elements", pro: false },
-        ],
-      },
-      {
-        name: "Tables",
-        icon: TableIcon,
-        subItems: [
-          { name: "Basic Tables", path: "/basic-tables", pro: false },
-          { name: "Data Table", path: "/data-table", pro: false, new: true },
-          { name: "Data Table Advanced", path: "/data-table-advanced", pro: false, new: true },
-          { name: "Data Table Composable", path: "/data-table-composable", pro: false, new: true },
-        ],
-      },
-      {
-        name: "Pages",
-        icon: PageIcon,
-        subItems: [
-          { name: "Black Page", path: "/blank", pro: false },
-          { name: "404 Page", path: "/error-404", pro: false },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Others",
-    items: [
-      {
-        icon: PieChartIcon,
-        name: "Charts",
-        subItems: [
-          { name: "Line Chart", path: "/line-chart", pro: false },
-          { name: "Bar Chart", path: "/bar-chart", pro: false },
-        ],
-      },
-      {
-        icon: BoxCubeIcon,
-        name: "Ui Elements",
-        subItems: [
-          { name: "Alerts", path: "/alerts", pro: false },
-          { name: "Avatars", path: "/avatars", pro: false },
-          { name: "Badge", path: "/badge", pro: false },
-          { name: "Buttons", path: "/buttons", pro: false },
-          { name: "Images", path: "/images", pro: false },
-          { name: "Videos", path: "/videos", pro: false },
-        ],
-      },
-      {
-        icon: PlugInIcon,
-        name: "Authentication",
-        subItems: [
-          { name: "Signin", path: "/signin", pro: false },
-          { name: "Signup", path: "/signup", pro: false },
-        ],
-      },
-      // ... Add other menu items here
     ],
   },
 ];

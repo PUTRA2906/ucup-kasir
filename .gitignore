@@ -14,8 +14,10 @@ dist-ssr
 coverage
 *.local
 
-/cypress/videos/
-/cypress/screenshots/
+# Environment variables
+.env
+.env.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*
@@ -26,6 +28,4 @@ coverage
 *.njsproj
 *.sln
 *.sw?
-
-*.tsbuildinfo
-.vercel
+.claude/

@@ -127,6 +127,17 @@
       <DataTable :columns="formattedColumns" :data="orders" />
     </ComponentCard>
     </div>
+
+    <!-- Delete Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showDeleteDialog"
+      title="Hapus User?"
+      :message="`Apakah Anda yakin ingin menghapus user '${userToDelete?.name}'? Tindakan ini tidak dapat dibatalkan.`"
+      confirm-text="Ya, Hapus"
+      cancel-text="Batal"
+      variant="danger"
+      @confirm="confirmDelete"
+    />
   </AdminLayout>
 </template>
 
@@ -136,6 +147,12 @@ import DataTable from '@/components/tables/DataTable.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
+const showDeleteDialog = ref(false)
+const userToDelete = ref<any>(null)
 
 const basicColumns = [
   { key: 'name', label: 'Nama', sortable: true, width: 'w-3/12' },
@@ -347,19 +364,26 @@ const orders = ref([
 ])
 
 const editUser = (user: any) => {
-  alert(`Edit user: ${user.name}`)
+  toast.info('Edit User', `Fitur edit untuk ${user.name} akan segera hadir`)
 }
 
 const deleteUser = (user: any) => {
-  if (confirm(`Hapus user ${user.name}?`)) {
-    const index = users.value.findIndex((u) => u.email === user.email)
-    if (index !== -1) {
-      users.value.splice(index, 1)
-    }
+  userToDelete.value = user
+  showDeleteDialog.value = true
+}
+
+const confirmDelete = () => {
+  if (!userToDelete.value) return
+
+  const index = users.value.findIndex((u) => u.email === userToDelete.value.email)
+  if (index !== -1) {
+    users.value.splice(index, 1)
+    toast.success('Berhasil!', `User ${userToDelete.value.name} berhasil dihapus`)
   }
+  userToDelete.value = null
 }
 
 const addUser = () => {
-  alert('Tambah user baru')
+  toast.info('Tambah User', 'Fitur tambah user akan segera hadir')
 }
 </script>

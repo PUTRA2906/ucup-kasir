@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -28,6 +29,14 @@ const router = createRouter({
       component: () => import('../views/Others/UserProfile.vue'),
       meta: {
         title: 'Profile',
+      },
+    },
+    {
+      path: '/settings',
+      name: 'Store Settings',
+      component: () => import('../views/Settings/StoreSettings.vue'),
+      meta: {
+        title: 'Pengaturan Toko',
       },
     },
     {
@@ -68,6 +77,206 @@ const router = createRouter({
       component: () => import('../views/Tables/DataTableComposable.vue'),
       meta: {
         title: 'Data Table Composable',
+      },
+    },
+    {
+      path: '/products',
+      name: 'Product List',
+      component: () => import('../views/Products/ProductList.vue'),
+      meta: {
+        title: 'Daftar Produk',
+      },
+    },
+    {
+      path: '/products/add',
+      name: 'Add Product',
+      component: () => import('../views/Products/AddProduct.vue'),
+      meta: {
+        title: 'Tambah Produk',
+      },
+    },
+    {
+      path: '/products/:id',
+      name: 'Product Detail',
+      component: () => import('../views/Products/ProductDetail.vue'),
+      meta: {
+        title: 'Detail Produk',
+      },
+    },
+    {
+      path: '/products/edit/:id',
+      name: 'Edit Product',
+      component: () => import('../views/Products/EditProduct.vue'),
+      meta: {
+        title: 'Edit Produk',
+      },
+    },
+    {
+      path: '/categories',
+      name: 'Category List',
+      component: () => import('../views/Categories/CategoryList.vue'),
+      meta: {
+        title: 'Daftar Kategori',
+      },
+    },
+    {
+      path: '/categories/add',
+      name: 'Add Category',
+      component: () => import('../views/Categories/AddCategory.vue'),
+      meta: {
+        title: 'Tambah Kategori',
+      },
+    },
+    {
+      path: '/categories/:id',
+      name: 'Category Detail',
+      component: () => import('../views/Categories/CategoryDetail.vue'),
+      meta: {
+        title: 'Detail Kategori',
+      },
+    },
+    {
+      path: '/categories/edit/:id',
+      name: 'Edit Category',
+      component: () => import('../views/Categories/EditCategory.vue'),
+      meta: {
+        title: 'Edit Kategori',
+      },
+    },
+    {
+      path: '/customers',
+      name: 'Customer List',
+      component: () => import('../views/Customers/CustomerList.vue'),
+      meta: {
+        title: 'Daftar Customer',
+      },
+    },
+    {
+      path: '/customers/add',
+      name: 'Add Customer',
+      component: () => import('../views/Customers/AddCustomer.vue'),
+      meta: {
+        title: 'Tambah Customer',
+      },
+    },
+    {
+      path: '/customers/:id',
+      name: 'Customer Detail',
+      component: () => import('../views/Customers/CustomerDetail.vue'),
+      meta: {
+        title: 'Detail Customer',
+      },
+    },
+    {
+      path: '/customers/edit/:id',
+      name: 'Edit Customer',
+      component: () => import('../views/Customers/EditCustomer.vue'),
+      meta: {
+        title: 'Edit Customer',
+      },
+    },
+    {
+      path: '/transactions',
+      name: 'Transaction List',
+      component: () => import('../views/Transactions/TransactionList.vue'),
+      meta: {
+        title: 'Daftar Transaksi',
+      },
+    },
+    {
+      path: '/transactions/add',
+      name: 'Add Transaction',
+      component: () => import('../views/Transactions/AddTransaction.vue'),
+      meta: {
+        title: 'Transaksi Baru',
+      },
+    },
+    {
+      path: '/returns',
+      name: 'Return List',
+      component: () => import('../views/Returns/ReturnList.vue'),
+      meta: {
+        title: 'Daftar Retur',
+      },
+    },
+    {
+      path: '/transactions/:id',
+      name: 'Transaction Detail',
+      component: () => import('../views/Transactions/TransactionDetail.vue'),
+      meta: {
+        title: 'Detail Transaksi',
+      },
+    },
+    {
+      path: '/transactions/:id/invoice',
+      name: 'Transaction Invoice',
+      component: () => import('../views/Transactions/InvoicePage.vue'),
+      meta: {
+        title: 'Cetak Invoice',
+      },
+    },
+    {
+      path: '/reports/sales',
+      name: 'Sales Report',
+      component: () => import('../views/Reports/SalesReport.vue'),
+      meta: {
+        title: 'Laporan Penjualan',
+      },
+    },
+    {
+      path: '/stock',
+      name: 'Stock Management',
+      component: () => import('../views/Stock/StockManagement.vue'),
+      meta: {
+        title: 'Stok Gudang',
+      },
+    },
+    {
+      path: '/stock/movements',
+      name: 'Stock Movements',
+      component: () => import('../views/Stock/StockMovements.vue'),
+      meta: {
+        title: 'Riwayat Mutasi Stok',
+      },
+    },
+    {
+      path: '/customer-invoices',
+      name: 'Customer Invoices',
+      component: () => import('../views/Invoices/InvoiceKecamatanList.vue'),
+      meta: {
+        title: 'Invoice Pelanggan',
+      },
+    },
+    {
+      path: '/customer-invoices/:kecamatan',
+      name: 'Customer Invoices By Kecamatan',
+      component: () => import('../views/Invoices/InvoiceCustomerList.vue'),
+      meta: {
+        title: 'Pilih Customer',
+      },
+    },
+    {
+      path: '/customer-invoices/:kecamatan/:customerId',
+      name: 'Customer Invoice List',
+      component: () => import('../views/Invoices/CustomerInvoiceList.vue'),
+      meta: {
+        title: 'Daftar Invoice Pelanggan',
+      },
+    },
+    {
+      path: '/customer-invoices/:kecamatan/:customerId/:invoiceId',
+      name: 'Customer Invoice Detail',
+      component: () => import('../views/Invoices/InvoiceDetail.vue'),
+      meta: {
+        title: 'Detail Invoice',
+      },
+    },
+    {
+      path: '/customer-invoices/:kecamatan/:customerId/:invoiceId/cetak',
+      name: 'Customer Invoice Print',
+      component: () => import('../views/Invoices/InvoicePrint.vue'),
+      meta: {
+        title: 'Cetak Invoice',
       },
     },
     {
@@ -169,7 +378,30 @@ const router = createRouter({
 
 export default router
 
+const publicRoutes = ['/signin', '/signup']
+
 router.beforeEach((to, from, next) => {
   document.title = `${to.meta.title} | Ucup Kasir - Aplikasi Kasir`
   next()
+})
+
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore()
+
+  // Muat session sekali saja (dari localStorage) sebelum cek auth
+  if (!authStore.initialized) {
+    await authStore.initialize()
+  }
+
+  const isPublic = publicRoutes.includes(to.path)
+
+  if (!isPublic && !authStore.isAuthenticated) {
+    // Belum login -> arahkan ke halaman masuk, simpan tujuan awal
+    next({ path: '/signin', query: { redirect: to.fullPath } })
+  } else if (isPublic && authStore.isAuthenticated) {
+    // Sudah login -> jangan biarkan mengakses halaman signin/signup
+    next({ path: '/products' })
+  } else {
+    next()
+  }
 })

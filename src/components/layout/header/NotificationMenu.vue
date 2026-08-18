@@ -30,14 +30,16 @@
     </button>
 
     <!-- Dropdown Start - Desktop & Mobile Full Screen -->
-    <div
-      v-if="dropdownOpen"
-      :class="[
-        'md:absolute md:-right-[240px] md:mt-[17px] md:h-[480px] md:w-[350px] md:rounded-2xl md:shadow-theme-lg lg:right-0 lg:w-[361px]',
-        'fixed inset-0 z-[99999] md:relative md:inset-auto md:z-auto',
-        'flex flex-col border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-dark'
-      ]"
-    >
+    <Teleport to="body">
+      <div
+        v-if="dropdownOpen"
+        :class="[
+          'fixed z-[99999]',
+          'md:top-[70px] md:right-4 md:h-[480px] md:w-[350px] md:rounded-2xl md:shadow-theme-lg lg:w-[361px]',
+          'inset-0 md:inset-auto',
+          'flex flex-col border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-dark'
+        ]"
+      >
       <div
         class="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-gray-800"
       >
@@ -66,147 +68,132 @@
       </div>
 
       <ul class="flex flex-col h-auto overflow-y-auto custom-scrollbar flex-1">
-        <li v-for="notification in notifications" :key="notification.id" @click="handleItemClick">
-          <a
-            class="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
-            href="#"
+        <li v-if="notifications.length === 0" class="p-8 text-center">
+          <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ada notifikasi</p>
+        </li>
+        <li v-for="notification in notifications" :key="notification.id">
+          <button
+            @click="handleItemClick(notification)"
+            class="flex gap-3 w-full rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 text-left hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
+            :class="{ 'bg-brand-50/30 dark:bg-brand-500/5': !notification.is_read }"
           >
-            <span class="relative block w-full h-10 rounded-full z-1 max-w-10">
-              <img :src="notification.userImage" alt="User" class="overflow-hidden rounded-full" />
-              <span
-                :class="notification.status === 'online' ? 'bg-success-500' : 'bg-error-500'"
-                class="absolute bottom-0 right-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white dark:border-gray-900"
-              ></span>
+            <span class="flex h-10 w-10 items-center justify-center rounded-full text-xl flex-shrink-0" :class="getTypeColor(notification.type)">
+              {{ getNotificationIcon(notification.type) }}
             </span>
 
-            <span class="block">
-              <span class="mb-1.5 block text-theme-sm text-gray-500 dark:text-gray-400">
+            <span class="block flex-1 min-w-0">
+              <span class="mb-1.5 block text-theme-sm">
                 <span class="font-medium text-gray-800 dark:text-white/90">
-                  {{ notification.userName }}
-                </span>
-                {{ notification.action }}
-                <span class="font-medium text-gray-800 dark:text-white/90">
-                  {{ notification.project }}
+                  {{ notification.title }}
                 </span>
               </span>
+              <p class="text-theme-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+                {{ notification.message }}
+              </p>
 
-              <span class="flex items-center gap-2 text-gray-500 text-theme-xs dark:text-gray-400">
-                <span>{{ notification.type }}</span>
+              <span class="flex items-center gap-2 mt-1.5 text-gray-500 text-theme-xs dark:text-gray-400">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium" :class="getTypeColor(notification.type)">
+                  {{ getTypeLabel(notification.type) }}
+                </span>
                 <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
-                <span>{{ notification.time }}</span>
+                <span>{{ formatTimeAgo(notification.created_at) }}</span>
               </span>
             </span>
-          </a>
+
+            <span v-if="!notification.is_read" class="flex-shrink-0 mt-2">
+              <span class="block h-2 w-2 rounded-full bg-brand-500"></span>
+            </span>
+          </button>
         </li>
       </ul>
 
-      <router-link
-        to="#"
-        class="mt-3 flex justify-center rounded-lg border border-gray-300 bg-white p-3 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
-        @click="handleViewAllClick"
-      >
-        Lihat Semua Notifikasi
-      </router-link>
-    </div>
+      <div class="mt-3 flex gap-2">
+        <button
+          v-if="notificationsStore.unreadCount > 0"
+          @click="markAllAsRead"
+          class="flex-1 justify-center rounded-lg border border-gray-300 bg-white p-3 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+        >
+          Tandai Semua Dibaca
+        </button>
+        <router-link
+          v-else
+          to="#"
+          class="flex-1 flex justify-center rounded-lg border border-gray-300 bg-white p-3 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+          @click="handleViewAllClick"
+        >
+          Lihat Semua
+        </router-link>
+      </div>
+      </div>
+    </Teleport>
     <!-- Dropdown End -->
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
+import { useNotificationsStore } from '@/stores/notifications'
 
+const router = useRouter()
+const notificationsStore = useNotificationsStore()
 const dropdownOpen = ref(false)
-const notifying = ref(true)
 const dropdownRef = ref(null)
+const unsubscribe = ref(null)
 
-const notifications = ref([
-  {
-    id: 1,
-    userName: 'Terry Franci',
-    userImage: '/images/user/user-02.jpg',
-    action: 'requests permission to change',
-    project: 'Project - Nganter App',
-    type: 'Project',
-    time: '5 min ago',
-    status: 'online',
-  },
-  {
-    id: 2,
-    userName: 'Terry Franci',
-    userImage: '/images/user/user-03.jpg',
-    action: 'requests permission to change',
-    project: 'Project - Nganter App',
-    type: 'Project',
-    time: '5 min ago',
-    status: 'offline',
-  },
-  {
-    id: 3,
-    userName: 'Terry Franci',
-    userImage: '/images/user/user-04.jpg',
-    action: 'requests permission to change',
-    project: 'Project - Nganter App',
-    type: 'Project',
-    time: '5 min ago',
-    status: 'online',
-  },
-  {
-    id: 4,
-    userName: 'Terry Franci',
-    userImage: '/images/user/user-05.jpg',
-    action: 'requests permission to change',
-    project: 'Project - Nganter App',
-    type: 'Project',
-    time: '5 min ago',
-    status: 'online',
-  },
-  {
-    id: 5,
-    userName: 'Terry Franci',
-    userImage: '/images/user/user-06.jpg',
-    action: 'requests permission to change',
-    project: 'Project - Nganter App',
-    type: 'Project',
-    time: '5 min ago',
-    status: 'offline',
-  },
-  {
-    id: 6,
-    userName: 'Terry Franci',
-    userImage: '/images/user/user-07.jpg',
-    action: 'requests permission to change',
-    project: 'Project - Nganter App',
-    type: 'Project',
-    time: '5 min ago',
-    status: 'online',
-  },
-  {
-    id: 7,
-    userName: 'Terry Franci',
-    userImage: '/images/user/user-08.jpg',
-    action: 'requests permission to change',
-    project: 'Project - Nganter App',
-    type: 'Project',
-    time: '5 min ago',
-    status: 'online',
-  },
-  {
-    id: 7,
-    userName: 'Terry Franci',
-    userImage: '/images/user/user-09.jpg',
-    action: 'requests permission to change',
-    project: 'Project - Nganter App',
-    type: 'Project',
-    time: '5 min ago',
-    status: 'online',
-  },
-  // Add more notifications here...
-])
+const notifying = computed(() => notificationsStore.unreadCount > 0)
+const notifications = computed(() => notificationsStore.notifications.slice(0, 8))
 
-const toggleDropdown = () => {
+const getNotificationIcon = (type) => {
+  const icons = {
+    stock_alert: '📦',
+    transaction: '🛒',
+    return: '↩️',
+    payment: '💰',
+    system: 'ℹ️'
+  }
+  return icons[type] || 'ℹ️'
+}
+
+const getTypeLabel = (type) => {
+  const labels = {
+    stock_alert: 'Stok',
+    transaction: 'Transaksi',
+    return: 'Retur',
+    payment: 'Pembayaran',
+    system: 'Sistem'
+  }
+  return labels[type] || type
+}
+
+const getTypeColor = (type) => {
+  const colors = {
+    stock_alert: 'bg-warning-50 text-warning-700 dark:bg-warning-500/10 dark:text-warning-500',
+    transaction: 'bg-success-50 text-success-700 dark:bg-success-500/10 dark:text-success-500',
+    return: 'bg-error-50 text-error-700 dark:bg-error-500/10 dark:text-error-500',
+    payment: 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-500',
+    system: 'bg-gray-50 text-gray-700 dark:bg-gray-500/10 dark:text-gray-500'
+  }
+  return colors[type] || colors.system
+}
+
+const formatTimeAgo = (dateString) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+  if (seconds < 60) return 'Baru saja'
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} menit lalu`
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} jam lalu`
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)} hari lalu`
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+}
+
+const toggleDropdown = async () => {
   dropdownOpen.value = !dropdownOpen.value
-  notifying.value = false
+  if (dropdownOpen.value) {
+    await notificationsStore.fetchNotifications()
+  }
 }
 
 const closeDropdown = () => {
@@ -219,25 +206,42 @@ const handleClickOutside = (event) => {
   }
 }
 
-const handleItemClick = (event) => {
-  event.preventDefault()
-  // Handle the item click action here
-  console.log('Notification item clicked')
+const handleItemClick = async (notification) => {
+  await notificationsStore.markAsRead(notification.id)
+
+  // Navigate berdasarkan tipe notifikasi
+  if (notification.type === 'stock_alert' && notification.data?.product_id) {
+    router.push('/stock')
+  } else if (notification.type === 'transaction' && notification.data?.transaction_id) {
+    router.push(`/transactions/${notification.data.transaction_id}`)
+  } else if (notification.type === 'return' && notification.data?.return_id) {
+    router.push('/returns')
+  } else if (notification.type === 'payment' && notification.data?.transaction_id) {
+    router.push(`/transactions/${notification.data.transaction_id}`)
+  }
+
   closeDropdown()
 }
 
-const handleViewAllClick = (event) => {
-  event.preventDefault()
-  // Handle the "View All Notification" action here
-  console.log('View All Notifications clicked')
+const handleViewAllClick = () => {
+  // TODO: Buat halaman untuk menampilkan semua notifikasi
   closeDropdown()
 }
 
-onMounted(() => {
+const markAllAsRead = async () => {
+  await notificationsStore.markAllAsRead()
+}
+
+onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
+  await notificationsStore.fetchNotifications()
+  unsubscribe.value = notificationsStore.subscribeToNotifications()
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  if (unsubscribe.value) {
+    unsubscribe.value()
+  }
 })
 </script>

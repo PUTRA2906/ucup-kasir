@@ -113,6 +113,17 @@
       </div>
     </ComponentCard>
     </div>
+
+    <!-- Bulk Delete Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showBulkDeleteDialog"
+      title="Hapus Item Terpilih?"
+      :message="`Apakah Anda yakin ingin menghapus ${selectedItems.length} item terpilih? Tindakan ini tidak dapat dibatalkan.`"
+      confirm-text="Ya, Hapus Semua"
+      cancel-text="Batal"
+      variant="danger"
+      @confirm="confirmBulkDelete"
+    />
   </AdminLayout>
 </template>
 
@@ -122,6 +133,11 @@ import DataTable from '@/components/tables/DataTable.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
+const showBulkDeleteDialog = ref(false)
 
 const loading = ref(false)
 const selectedItems = ref<number[]>([])
@@ -186,15 +202,19 @@ const clearData = () => {
 }
 
 const bulkDelete = () => {
-  if (confirm(`Hapus ${selectedItems.value.length} item terpilih?`)) {
-    items.value = items.value.filter(item => !selectedItems.value.includes(item.id))
-    selectedItems.value = []
-  }
+  showBulkDeleteDialog.value = true
+}
+
+const confirmBulkDelete = () => {
+  const count = selectedItems.value.length
+  items.value = items.value.filter(item => !selectedItems.value.includes(item.id))
+  selectedItems.value = []
+  toast.success('Berhasil!', `${count} item berhasil dihapus`)
 }
 
 const bulkExport = () => {
   const selected = items.value.filter(item => selectedItems.value.includes(item.id))
   console.log('Export data:', selected)
-  alert(`Export ${selectedItems.value.length} item ke CSV`)
+  toast.info('Export', `${selectedItems.value.length} item berhasil diekspor ke CSV`)
 }
 </script>

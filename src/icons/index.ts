@@ -1,5 +1,6 @@
 import BoxCubeIcon from "./BoxCubeIcon.vue";
 import GridIcon from "./GridIcon.vue";
+import ReceiptIcon from "./ReceiptIcon.vue";
 import CalenderIcon from "./CalenderIcon.vue";
 import TaskIcon from "./TaskIcon.vue";
 import ChatIcon from "./ChatIcon.vue";
@@ -45,10 +46,12 @@ import LayoutDashboardIcon from "./LayoutDashboardIcon.vue";
 import UserGroupIcon from "./UserGroupIcon.vue";
 import BellIcon from "./BellIcon.vue";
 import BarChartIcon from "./BarChartIcon.vue";
+import WarehouseIcon from "./WarehouseIcon.vue";
 
 export {
   BellIcon,
   BarChartIcon,
+  ReceiptIcon,
   LayoutDashboardIcon,
   UserGroupIcon,
   FolderIcon,
@@ -94,4 +97,5 @@ export {
   MailBox,
   SendIcon,
   DraftIcon,
+  WarehouseIcon,
 };
