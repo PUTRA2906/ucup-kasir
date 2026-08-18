@@ -16,6 +16,7 @@ export interface Product {
   price_buy: number
   price_sell: number
   stock: number
+  minimum_stock?: number
   sku?: string
   barcode?: string
   image_url?: string

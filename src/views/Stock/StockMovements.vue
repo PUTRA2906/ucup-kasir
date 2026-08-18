@@ -266,7 +266,7 @@ const showDetailModal = ref(false)
 const selectedMovement = ref<any>(null)
 
 const columns = [
-  { key: 'created_at', label: 'TANGGAL', sortable: true, format: 'datetime' as const, width: 'w-2/12' },
+  { key: 'created_at', label: 'TANGGAL', sortable: true, format: 'date' as const, width: 'w-2/12' },
   { key: 'product_name', label: 'PRODUK', sortable: true, width: 'w-2/12' },
   { key: 'movement_type', label: 'TIPE', sortable: true, width: 'w-1/12' },
   { key: 'quantity', label: 'JUMLAH', sortable: true, width: 'w-1/12' },
