@@ -16,13 +16,13 @@
           <div class="flex justify-between items-center px-2 md:px-4 py-2 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
             <span class="text-xs md:text-sm text-gray-600 dark:text-gray-400">Penjualan Kotor</span>
             <span class="text-xs md:text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
-              {{ formatCurrency(summary.totalRevenue) }}
+              {{ formatCurrency(summary.gross_sales) }}
             </span>
           </div>
           <div class="flex justify-between items-center px-2 md:px-4 py-2 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
             <span class="text-xs md:text-sm text-gray-600 dark:text-gray-400">Ongkos Kirim</span>
             <span class="text-xs md:text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
-              {{ formatCurrency(summary.totalShipping) }}
+              {{ formatCurrency(summary.shipping_cost) }}
             </span>
           </div>
           <div class="flex justify-between items-center px-2 md:px-4 py-2 md:py-3 border-b-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/50">
@@ -45,25 +45,25 @@
           <div class="flex justify-between items-center px-2 md:px-4 py-2 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
             <span class="text-xs md:text-sm text-gray-600 dark:text-gray-400">Total Penjualan</span>
             <span class="text-xs md:text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
-              {{ formatCurrency(totalPendapatan) }}
+              {{ formatCurrency(summary.gross_sales) }}
             </span>
           </div>
           <div class="flex justify-between items-center px-2 md:px-4 py-2 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
             <span class="text-xs md:text-sm text-gray-600 dark:text-gray-400">Diskon</span>
             <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
-              ( {{ formatCurrency(summary.totalDiscount) }} )
+              ( {{ formatCurrency(summary.total_discount) }} )
             </span>
           </div>
           <div class="flex justify-between items-center px-2 md:px-4 py-2 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
             <span class="text-xs md:text-sm text-gray-600 dark:text-gray-400">Pengembalian</span>
             <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
-              ( {{ formatCurrency(0) }} )
+              ( {{ formatCurrency(summary.total_returns) }} )
             </span>
           </div>
           <div class="flex justify-between items-center px-2 md:px-4 py-2 md:py-3 border-b-2 border-gray-300 dark:border-gray-600 bg-blue-50 dark:bg-blue-500/10">
             <span class="text-xs md:text-sm font-bold text-brand-600 dark:text-brand-400">TOTAL PENJUALAN BERSIH</span>
             <span class="text-xs md:text-sm font-bold text-brand-600 dark:text-brand-400 whitespace-nowrap">
-              {{ formatCurrency(totalPenjualanBersih) }}
+              {{ formatCurrency(summary.net_sales) }}
             </span>
           </div>
         </div>
@@ -80,19 +80,48 @@
           <div class="flex justify-between items-center px-2 md:px-4 py-2 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
             <span class="text-xs md:text-sm text-gray-600 dark:text-gray-400">Penjualan Bersih</span>
             <span class="text-xs md:text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
-              {{ formatCurrency(totalPenjualanBersih) }}
+              {{ formatCurrency(summary.net_sales) }}
             </span>
           </div>
           <div class="flex justify-between items-center px-2 md:px-4 py-2 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
             <span class="text-xs md:text-sm text-gray-600 dark:text-gray-400">HPP (Modal)</span>
             <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
-              ( {{ formatCurrency(hpp) }} )
+              ( {{ formatCurrency(summary.net_cogs) }} )
             </span>
           </div>
           <div class="flex justify-between items-center px-2 md:px-4 py-2 md:py-3 border-b-2 border-gray-300 dark:border-gray-600 bg-green-50 dark:bg-green-500/10">
             <span class="text-xs md:text-sm font-bold text-success-600 dark:text-success-400">TOTAL LABA KOTOR</span>
             <span class="text-xs md:text-sm font-bold text-success-600 dark:text-success-400 whitespace-nowrap">
-              {{ formatCurrency(totalLabaKotor) }}
+              {{ formatCurrency(summary.gross_profit) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PENGELUARAN & LABA BERSIH Section -->
+      <div>
+        <div class="mb-2 px-2 md:px-4 py-2 bg-yellow-50 dark:bg-yellow-500/10">
+          <h4 class="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase">
+            LABA BERSIH
+          </h4>
+        </div>
+        <div class="space-y-0">
+          <div class="flex justify-between items-center px-2 md:px-4 py-2 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+            <span class="text-xs md:text-sm text-gray-600 dark:text-gray-400">Laba Kotor</span>
+            <span class="text-xs md:text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
+              {{ formatCurrency(summary.gross_profit) }}
+            </span>
+          </div>
+          <div class="flex justify-between items-center px-2 md:px-4 py-2 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+            <span class="text-xs md:text-sm text-gray-600 dark:text-gray-400">Biaya Operasional</span>
+            <span class="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
+              ( {{ formatCurrency(summary.total_operating_expenses) }} )
+            </span>
+          </div>
+          <div class="flex justify-between items-center px-2 md:px-4 py-2 md:py-3 border-b-2 border-gray-300 dark:border-gray-600 bg-yellow-50 dark:bg-yellow-500/10">
+            <span class="text-xs md:text-sm font-bold text-warning-600 dark:text-warning-400">TOTAL LABA BERSIH</span>
+            <span class="text-xs md:text-sm font-bold text-warning-600 dark:text-warning-400 whitespace-nowrap">
+              {{ formatCurrency(summary.net_profit) }}
             </span>
           </div>
         </div>
@@ -102,18 +131,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import type { SalesSummary } from '@/services/salesReport'
 
 const props = defineProps<{
   summary: SalesSummary
 }>()
-
-const isExpanded = ref(true)
-
-const toggleSection = () => {
-  isExpanded.value = !isExpanded.value
-}
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('id-ID', {
@@ -123,22 +146,6 @@ const formatCurrency = (value: number) =>
   }).format(value || 0)
 
 const totalPendapatan = computed(() => {
-  return props.summary.totalRevenue + props.summary.totalShipping
-})
-
-const penjualanBersih = computed(() => {
-  return totalPendapatan.value - props.summary.totalDiscount
-})
-
-const totalPenjualanBersih = computed(() => {
-  return penjualanBersih.value
-})
-
-const hpp = computed(() => {
-  return props.summary.totalRevenue - props.summary.profit
-})
-
-const totalLabaKotor = computed(() => {
-  return totalPenjualanBersih.value - hpp.value
+  return props.summary.gross_sales + props.summary.shipping_cost
 })
 </script>

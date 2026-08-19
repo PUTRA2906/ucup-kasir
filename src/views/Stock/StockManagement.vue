@@ -3,61 +3,61 @@
     <PageBreadcrumb pageTitle="Stok Gudang" class="hidden md:block" />
     <div class="space-y-6 px-4 md:px-0">
       <!-- Statistik Cards -->
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 dark:border-white/[0.08] dark:bg-white/[0.02]">
+      <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div class="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4 sm:p-6 dark:border-white/[0.08] dark:bg-white/[0.02]">
           <div class="absolute left-0 top-0 h-full w-1 bg-brand-500"></div>
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Produk</p>
-              <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ stats.totalProducts }}</p>
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex-1">
+              <p class="text-xs font-medium text-gray-600 sm:text-sm dark:text-gray-400">Total Produk</p>
+              <p class="mt-1 text-2xl font-bold text-gray-900 sm:mt-2 sm:text-3xl dark:text-white">{{ stats.totalProducts }}</p>
             </div>
-            <div class="rounded-full bg-brand-50 p-3 dark:bg-brand-500/10">
-              <svg class="h-8 w-8 text-brand-600 dark:text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="rounded-full bg-brand-50 p-2 sm:p-3 dark:bg-brand-500/10">
+              <svg class="h-6 w-6 text-brand-600 sm:h-8 sm:w-8 dark:text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
               </svg>
             </div>
           </div>
         </div>
 
-        <div class="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 dark:border-white/[0.08] dark:bg-white/[0.02]">
+        <div class="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4 sm:p-6 dark:border-white/[0.08] dark:bg-white/[0.02]">
           <div class="absolute left-0 top-0 h-full w-1 bg-success-500"></div>
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Stok</p>
-              <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ stats.totalStock }}</p>
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex-1">
+              <p class="text-xs font-medium text-gray-600 sm:text-sm dark:text-gray-400">Total Stok</p>
+              <p class="mt-1 text-2xl font-bold text-gray-900 sm:mt-2 sm:text-3xl dark:text-white">{{ stats.totalStock }}</p>
             </div>
-            <div class="rounded-full bg-success-50 p-3 dark:bg-success-500/10">
-              <svg class="h-8 w-8 text-success-600 dark:text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="rounded-full bg-success-50 p-2 sm:p-3 dark:bg-success-500/10">
+              <svg class="h-6 w-6 text-success-600 sm:h-8 sm:w-8 dark:text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
             </div>
           </div>
         </div>
 
-        <div class="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 dark:border-white/[0.08] dark:bg-white/[0.02]">
+        <div class="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4 sm:p-6 dark:border-white/[0.08] dark:bg-white/[0.02]">
           <div class="absolute left-0 top-0 h-full w-1 bg-warning-500"></div>
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Stok Menipis</p>
-              <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ stats.lowStock }}</p>
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex-1">
+              <p class="text-xs font-medium text-gray-600 sm:text-sm dark:text-gray-400">Stok Menipis</p>
+              <p class="mt-1 text-2xl font-bold text-gray-900 sm:mt-2 sm:text-3xl dark:text-white">{{ stats.lowStock }}</p>
             </div>
-            <div class="rounded-full bg-warning-50 p-3 dark:bg-warning-500/10">
-              <svg class="h-8 w-8 text-warning-600 dark:text-warning-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="rounded-full bg-warning-50 p-2 sm:p-3 dark:bg-warning-500/10">
+              <svg class="h-6 w-6 text-warning-600 sm:h-8 sm:w-8 dark:text-warning-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
               </svg>
             </div>
           </div>
         </div>
 
-        <div class="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 dark:border-white/[0.08] dark:bg-white/[0.02]">
+        <div class="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4 sm:p-6 dark:border-white/[0.08] dark:bg-white/[0.02]">
           <div class="absolute left-0 top-0 h-full w-1 bg-error-500"></div>
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Stok Habis</p>
-              <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{{ stats.outOfStock }}</p>
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex-1">
+              <p class="text-xs font-medium text-gray-600 sm:text-sm dark:text-gray-400">Stok Habis</p>
+              <p class="mt-1 text-2xl font-bold text-gray-900 sm:mt-2 sm:text-3xl dark:text-white">{{ stats.outOfStock }}</p>
             </div>
-            <div class="rounded-full bg-error-50 p-3 dark:bg-error-500/10">
-              <svg class="h-8 w-8 text-error-600 dark:text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="rounded-full bg-error-50 p-2 sm:p-3 dark:bg-error-500/10">
+              <svg class="h-6 w-6 text-error-600 sm:h-8 sm:w-8 dark:text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </div>
@@ -69,6 +69,7 @@
       <DataTable
         :columns="columns"
         :data="formattedProducts"
+        :paginated="true"
         :per-page="10"
         :searchable="true"
         :show-filter="true"
@@ -85,24 +86,28 @@
         @apply-filter="applyFilters"
       >
         <template #header-actions>
-          <button
-            @click="openOpnameModal"
-            class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-white/[0.05] dark:text-gray-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.08]"
-          >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-            </svg>
-            Stock Opname
-          </button>
-          <button
-            @click="viewMovements"
-            class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-white/[0.05] dark:text-gray-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.08]"
-          >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-            </svg>
-            Riwayat Mutasi
-          </button>
+          <div class="flex flex-col gap-2 sm:flex-row sm:gap-3">
+            <button
+              @click="openOpnameModal"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:px-4 dark:bg-white/[0.05] dark:text-gray-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.08]"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+              </svg>
+              <span class="hidden sm:inline">Stock Opname</span>
+              <span class="sm:hidden">Opname</span>
+            </button>
+            <button
+              @click="viewMovements"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:px-4 dark:bg-white/[0.05] dark:text-gray-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.08]"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+              <span class="hidden sm:inline">Riwayat Mutasi</span>
+              <span class="sm:hidden">Riwayat</span>
+            </button>
+          </div>
         </template>
 
         <template #cell-stock="{ value, row }">

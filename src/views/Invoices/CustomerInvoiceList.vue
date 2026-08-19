@@ -69,10 +69,10 @@
           <div class="mt-4 grid grid-cols-1 gap-3 border-t border-gray-100 pt-4 sm:grid-cols-3 dark:border-gray-800">
             <div class="flex items-center justify-between gap-2 sm:block">
               <p class="text-xs text-gray-500 dark:text-gray-400">Jumlah Invoice</p>
-              <p class="text-lg font-bold text-gray-900 sm:mt-0.5 dark:text-white">{{ customerInvoices.length }}</p>
+              <p class="text-lg font-bold text-gray-900 sm:mt-0.5 dark:text-white">{{ filteredInvoices.length }}</p>
             </div>
             <div class="flex items-center justify-between gap-2 sm:block">
-              <p class="text-xs text-gray-500 dark:text-gray-400">Total Tagihan</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Total Transaksi</p>
               <p class="text-lg font-bold text-gray-900 sm:mt-0.5 dark:text-white">{{ formatCurrency(totalBill) }}</p>
             </div>
             <div class="flex items-center justify-between gap-2 sm:block">
@@ -82,16 +82,72 @@
           </div>
         </div>
 
+        <!-- Desktop Filter -->
+        <div class="hidden md:block mb-4">
+          <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Urutan
+              </label>
+              <select
+                v-model="filters.sortOrder"
+                class="h-10 w-full appearance-none rounded-lg border border-gray-300 bg-white px-4 pr-10 text-sm text-gray-800 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+              >
+                <option value="newest">Terbaru</option>
+                <option value="oldest">Terlama</option>
+              </select>
+            </div>
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Status Pembayaran
+              </label>
+              <select
+                v-model="filters.paymentStatus"
+                class="h-10 w-full appearance-none rounded-lg border border-gray-300 bg-white px-4 pr-10 text-sm text-gray-800 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+              >
+                <option value="">Semua Status</option>
+                <option value="lunas">Lunas</option>
+                <option value="belum_lunas">Belum Lunas</option>
+              </select>
+            </div>
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Metode Pembayaran
+              </label>
+              <select
+                v-model="filters.paymentMethod"
+                class="h-10 w-full appearance-none rounded-lg border border-gray-300 bg-white px-4 pr-10 text-sm text-gray-800 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+              >
+                <option value="">Semua Metode</option>
+                <option value="cash">Cash</option>
+                <option value="transfer">Transfer</option>
+                <option value="qris">QRIS</option>
+                <option value="tempo">Tempo</option>
+              </select>
+            </div>
+            <div class="flex items-end">
+              <button
+                @click="resetFilters"
+                class="h-10 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+              >
+                Reset Filter
+              </button>
+            </div>
+          </div>
+        </div>
+
         <DataTable
           :columns="invoiceColumns"
-          :data="customerInvoices"
+          :data="filteredInvoices"
           :per-page="10"
           :searchable="true"
           :paginated="true"
+          :show-filter="true"
           title="Daftar Invoice"
-          :subtitle="'Urut berdasarkan tanggal terbaru'"
+          :subtitle="`${filteredInvoices.length} invoice`"
           :empty-text="'Customer ini belum memiliki invoice'"
           @menu-action="handleMenuAction"
+          @filter-click="showFilterModal = true"
         >
           <template #mobile-header>
             <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -187,6 +243,14 @@
         </DataTable>
       </div>
     </div>
+
+    <!-- Invoice Filter Modal -->
+    <InvoiceFilterModal
+      v-model="filters"
+      :is-open="showFilterModal"
+      @close="showFilterModal = false"
+      @apply="applyFilters"
+    />
   </AdminLayout>
 </template>
 
@@ -196,6 +260,7 @@ import { useRouter, useRoute } from 'vue-router'
 import DataTable from '@/components/tables/DataTable.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import InvoiceFilterModal from '@/components/common/InvoiceFilterModal.vue'
 import { useCustomersStore } from '@/stores/customers'
 import { useTransactionsStore } from '@/stores/transactions'
 import { useToast } from '@/composables/useToast'
@@ -209,6 +274,18 @@ const toast = useToast()
 const kecamatan = route.params.kecamatan as string
 const customerId = route.params.customerId as string
 const loading = ref(true)
+const showFilterModal = ref(false)
+
+// Filter state
+const filters = ref({
+  sortOrder: 'newest',
+  paymentStatus: '',
+  paymentMethod: '',
+  dateFrom: '',
+  dateTo: '',
+  minAmount: null as number | null,
+  maxAmount: null as number | null
+})
 
 const customer = computed(() =>
   customersStore.customers.find((c) => c.id === customerId)
@@ -218,9 +295,51 @@ const customerInvoices = computed(() => {
   if (!customer.value) return []
   return transactionsStore.transactions
     .filter((t) => t.customer_id === customerId)
-    .sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    )
+})
+
+const filteredInvoices = computed(() => {
+  let result = [...customerInvoices.value]
+
+  // Filter by payment status
+  if (filters.value.paymentStatus) {
+    result = result.filter(t => t.payment_status === filters.value.paymentStatus)
+  }
+
+  // Filter by payment method
+  if (filters.value.paymentMethod) {
+    result = result.filter(t => t.payment_method === filters.value.paymentMethod)
+  }
+
+  // Filter by date range
+  if (filters.value.dateFrom) {
+    const fromDate = new Date(filters.value.dateFrom)
+    fromDate.setHours(0, 0, 0, 0)
+    result = result.filter(t => new Date(t.created_at) >= fromDate)
+  }
+
+  if (filters.value.dateTo) {
+    const toDate = new Date(filters.value.dateTo)
+    toDate.setHours(23, 59, 59, 999)
+    result = result.filter(t => new Date(t.created_at) <= toDate)
+  }
+
+  // Filter by amount range
+  if (filters.value.minAmount !== null && filters.value.minAmount > 0) {
+    result = result.filter(t => t.total >= filters.value.minAmount!)
+  }
+
+  if (filters.value.maxAmount !== null && filters.value.maxAmount > 0) {
+    result = result.filter(t => t.total <= filters.value.maxAmount!)
+  }
+
+  // Sort by date
+  result.sort((a, b) => {
+    const dateA = new Date(a.created_at).getTime()
+    const dateB = new Date(b.created_at).getTime()
+    return filters.value.sortOrder === 'newest' ? dateB - dateA : dateA - dateB
+  })
+
+  return result
 })
 
 const customerInitial = computed(() => {
@@ -238,12 +357,28 @@ const customerSubtitle = computed(() => {
 })
 
 const totalBill = computed(() =>
-  customerInvoices.value.reduce((sum, t) => sum + (t.total || 0), 0)
+  filteredInvoices.value.reduce((sum, t) => sum + (t.total || 0), 0)
 )
 
 const totalRemaining = computed(() =>
-  customerInvoices.value.reduce((sum, t) => sum + (t.remaining_amount || 0), 0)
+  filteredInvoices.value.reduce((sum, t) => sum + (t.remaining_amount || 0), 0)
 )
+
+const applyFilters = () => {
+  showFilterModal.value = false
+}
+
+const resetFilters = () => {
+  filters.value = {
+    sortOrder: 'newest',
+    paymentStatus: '',
+    paymentMethod: '',
+    dateFrom: '',
+    dateTo: '',
+    minAmount: null,
+    maxAmount: null
+  }
+}
 
 const invoiceDetailUrl = (transactionId: string) =>
   `/customer-invoices/${encodeURIComponent(kecamatan)}/${customerId}/${transactionId}`

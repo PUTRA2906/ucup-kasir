@@ -186,6 +186,13 @@
       variant="danger"
       @confirm="confirmBulkDelete"
     />
+
+    <!-- Import CSV Modal -->
+    <ImportCsvModal
+      v-model="showImportModal"
+      @import="handleImportFile"
+      @download-template="downloadImportTemplate"
+    />
   </AdminLayout>
 </template>
 
@@ -198,10 +205,18 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import FilterModal from '@/components/common/FilterModal.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import ImportCsvModal from '@/components/common/ImportCsvModal.vue'
 import { useProductsStore } from '@/stores/products'
 import { useCategoriesStore } from '@/stores/categories'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useToast } from '@/composables/useToast'
+import {
+  downloadCsv,
+  parseCsv,
+  parseNumeric,
+  readFileAsText,
+} from '@/composables/useCsv'
+import type { ProductInsert, ProductWithCategory } from '@/types/database'
 
 const router = useRouter()
 const productsStore = useProductsStore()
@@ -215,6 +230,7 @@ const selectAllCheckbox = ref<HTMLInputElement | null>(null)
 const showFilterModal = ref(false)
 const showDeleteDialog = ref(false)
 const showBulkDeleteDialog = ref(false)
+const showImportModal = ref(false)
 const productToDelete = ref<any>(null)
 const filters = ref({ category: '', status: '', stock: '' })
 const statusFilter = ref('')
@@ -389,14 +405,331 @@ const handleMenuAction = ({ action, row }: { action: string; row: any }) => {
 
 
 const handleImport = () => {
-  alert('Fungsi impor data - akan dibuat nanti')
+  showImportModal.value = true
 }
 
 const handleExport = () => {
-  alert('Fungsi ekspor data - akan dibuat nanti')
+  exportCsv()
 }
 
 const handleCategoryChange = (category: string) => {
   filters.value.category = category
+}
+
+/* ============================================================
+ * EXPORT CSV
+ * ============================================================ */
+const EXPORT_HEADERS = [
+  'Nama Produk',
+  'SKU',
+  'Barcode',
+  'Kategori',
+  'Harga Beli',
+  'Harga Jual',
+  'Stok',
+  'Stok Minimum',
+  'Status',
+]
+
+const exportCsv = () => {
+  const rows = formattedProducts.value.map((p) => [
+    p.name,
+    p.sku || '',
+    p.barcode || '',
+    p.category || '',
+    p.price_buy,
+    p.price_sell,
+    p.stock,
+    p.minimum_stock ?? '',
+    p.is_active ? 'Aktif' : 'Nonaktif',
+  ])
+  downloadCsv(`produk-${new Date().toISOString().slice(0, 10)}.csv`, [
+    EXPORT_HEADERS,
+    ...rows,
+  ])
+  toast.success(
+    'Berhasil!',
+    `${rows.length} produk diekspor ke file CSV`,
+  )
+}
+
+/* ============================================================
+ * TEMPLATE IMPORT CSV
+ * ============================================================ */
+const downloadImportTemplate = () => {
+  downloadCsv('template-import-produk.csv', [
+    EXPORT_HEADERS,
+    [
+      'Contoh Produk',
+      'SKU001',
+      '8990000000001',
+      'Kategori A',
+      5000,
+      7500,
+      100,
+      10,
+      'Aktif',
+    ],
+  ])
+  toast.success('Berhasil!', 'Template CSV berhasil diunduh')
+}
+
+/* ============================================================
+ * IMPORT CSV
+ * ============================================================ */
+// Normalisasi nama kolom: hilangkan spasi, aksen opsional, lowercase.
+const normalizeHeader = (h: string) =>
+  h
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .replace(/\s+/g, '')
+
+const findValue = (record: Record<string, string>, aliases: string[]) => {
+  for (const alias of aliases) {
+    if (record[alias] !== undefined) return record[alias]
+  }
+  return undefined
+}
+
+const handleImportFile = async (file: File, updateExisting: boolean) => {
+  try {
+    const text = await readFileAsText(file)
+    const parsed = parseCsv(text)
+
+    if (!parsed.headers || parsed.headers.length === 0) {
+      throw new Error('File CSV kosong atau format tidak valid')
+    }
+
+    if (parsed.rows.length === 0) {
+      throw new Error('Tidak ada data untuk diimpor')
+    }
+
+    // Petakan header asli -> normalized, supaya lookup via findValue
+    // dengan kunci normalized bekerja pada record normalized.
+    const normalizedRecords = parsed.rows.map((row) => {
+      const out: Record<string, string> = {}
+      parsed.headers.forEach((header, index) => {
+        const key = normalizeHeader(header)
+        if (key) out[key] = row[header] ?? ''
+      })
+      return out
+    })
+
+    const nameKey = ['namaproduk', 'nama', 'productname', 'name']
+    const skuKey = ['sku', 'kode']
+    const barcodeKey = ['barcode', 'kodebarcode']
+    const categoryKey = ['kategori', 'category', 'kategorinama']
+    const buyKey = ['hargabeli', 'purchaseprice', 'pricebuy', 'beli']
+    const sellKey = ['hargajual', 'sellingprice', 'pricesell', 'jual']
+    const stockKey = ['stok', 'stock', 'qty', 'jumlah']
+    const minStockKey = ['stokminimum', 'minimumstock', 'minstock', 'min']
+    const activeKey = ['status', 'aktif', 'isactive']
+
+    // Map nama kategori -> id dari kategori yang sudah ada
+    const categoryMap = new Map<string, string>()
+    categoriesStore.categories.forEach((cat) => {
+      categoryMap.set(cat.name.toLowerCase(), cat.id)
+    })
+
+    let created = 0
+    let updated = 0
+    let skipped = 0
+    const errors: string[] = []
+
+    // Untuk update: map SKU yang sudah ada -> produk
+    const existingBySku = new Map<string, ProductWithCategory>()
+    productsStore.products.forEach((p) => {
+      if (p.sku) existingBySku.set(p.sku.toLowerCase(), p)
+    })
+
+    const importable: ProductInsert[] = []
+    const updates: { id: string; data: ProductInsert }[] = []
+
+    // Sinkronisasi stock_alerts: pasangan id produk -> minimum_stock.
+    // Untuk produk baru, id baru diketahui setelah insert batch.
+    const stockAlertsToSync: { product_id: string; minimum_stock: number }[] = []
+    // Kunci pencocokan (SKU atau nama) -> minimum_stock untuk produk baru yang
+    // akan diinsert, dipakai setelah insert untuk memetakan id hasil batch.
+    const pendingMinStock = new Map<
+      string,
+      number
+    >()
+
+    for (let idx = 0; idx < normalizedRecords.length; idx++) {
+      const row = normalizedRecords[idx]
+      const rowNumber = idx + 2 // +2 karena header = baris 1
+
+      const name = findValue(row, nameKey) ?? ''
+      const sku = findValue(row, skuKey) ?? ''
+      const barcode = findValue(row, barcodeKey) ?? ''
+      const categoryName = findValue(row, categoryKey) ?? ''
+      const buy = parseNumeric(findValue(row, buyKey) ?? '0')
+      const sell = parseNumeric(findValue(row, sellKey) ?? '0')
+      const stock = parseNumeric(findValue(row, stockKey) ?? '0')
+      // Kolom stok minimum bersifat opsional: hanya dipakai bila CSV benar-benar
+      // menyertakan nilai, agar tidak menimpa default 10 (atau stock_alerts yang
+      // sudah ada) dengan 0 ketika kolomnya kosong/tidak ada.
+      const minStockRaw = findValue(row, minStockKey)
+      const hasMinStockValue =
+        minStockRaw !== undefined && minStockRaw.trim() !== ''
+      const minStock = hasMinStockValue
+        ? parseNumeric(minStockRaw)
+        : undefined
+      const statusRaw = (findValue(row, activeKey) ?? 'aktif').toLowerCase()
+
+      if (!name && !sku) {
+        skipped++
+        errors.push(
+          `Baris ${rowNumber}: nama dan SKU kosong. Header file Anda mungkin tidak cocok dengan format yang diharapkan.`,
+        )
+        continue
+      }
+
+      // Status: aktif kecuali tertulis "nonaktif"/"tidak"/"0"/"false"
+      const isActive = !['nonaktif', 'tidak', 'inactive', '0', 'false'].includes(
+        statusRaw,
+      )
+
+      // Resolve kategori (buat jika belum ada)
+      let categoryId: string | undefined
+      if (categoryName) {
+        const existing = categoryMap.get(categoryName.toLowerCase())
+        if (existing) {
+          categoryId = existing
+        } else {
+          try {
+            const newCat = await categoriesStore.createCategory({
+              name: categoryName.trim(),
+            })
+            categoryId = newCat.id
+            categoryMap.set(categoryName.toLowerCase(), newCat.id)
+          } catch (e: any) {
+            errors.push(`Baris ${rowNumber}: gagal membuat kategori "${categoryName}" — ${e.message}`)
+            skipped++
+            continue
+          }
+        }
+      }
+
+      const payload: ProductInsert = {
+        name: name.trim(),
+        sku: sku || undefined,
+        barcode: barcode || undefined,
+        category_id: categoryId,
+        price_buy: buy,
+        price_sell: sell,
+        stock: stock,
+        // Hanya kirim bila CSV menyertakan nilai; jika undefined, DB memakai default 10.
+        minimum_stock: minStock,
+        is_active: isActive,
+      }
+
+      // Cek duplikat di file itu sendiri (by SKU atau nama)
+      const existing = sku
+        ? existingBySku.get(sku.toLowerCase())
+        : productsStore.products.find((p) => p.name.toLowerCase() === name.trim().toLowerCase())
+
+      if (existing && updateExisting) {
+        updates.push({ id: existing.id, data: payload })
+        // Sinkronkan stock_alerts hanya bila CSV menyertakan nilai minimum stok.
+        if (minStock !== undefined) {
+          stockAlertsToSync.push({ product_id: existing.id, minimum_stock: minStock })
+        }
+        existingBySku.set(sku.toLowerCase(), existing)
+      } else if (existing && !updateExisting) {
+        skipped++
+        errors.push(`Baris ${rowNumber}: SKU "${sku}" sudah ada, dilewati (update nonaktif)`)
+      } else {
+        importable.push(payload)
+        // Tandai SKU sebagai sudah diproses di file ini agar baris berikutnya
+        // dengan SKU sama dianggap duplikat (bukan dibuat dua kali).
+        if (sku) {
+          existingBySku.set(sku.toLowerCase(), {
+            id: '__pending__',
+            name: name.trim(),
+            sku,
+          } as unknown as ProductWithCategory)
+        }
+        // Catat min stock untuk sinkronisasi setelah id produk diketahui.
+        if (minStock !== undefined) {
+          const key = sku
+            ? `sku:${sku.toLowerCase()}`
+            : `name:${name.trim().toLowerCase()}`
+          pendingMinStock.set(key, minStock)
+        }
+      }
+    }
+
+    // Proses update
+    for (const { id, data } of updates) {
+      try {
+        await productsStore.updateProduct(id, data)
+        updated++
+      } catch (e: any) {
+        errors.push(`Gagal update produk ${data.name}: ${e.message}`)
+      }
+    }
+
+    // Proses insert
+    if (importable.length > 0) {
+      try {
+        const createdBatch = await productsStore.createProducts(importable)
+        created += createdBatch.length
+        // Petakan produk baru hasil batch ke nilai min stock dari CSV.
+        for (const prod of createdBatch) {
+          const key = prod.sku
+            ? `sku:${prod.sku.toLowerCase()}`
+            : `name:${prod.name.toLowerCase()}`
+          const minStockValue = pendingMinStock.get(key)
+          if (minStockValue !== undefined) {
+            stockAlertsToSync.push({
+              product_id: prod.id,
+              minimum_stock: minStockValue,
+            })
+          }
+        }
+      } catch (e: any) {
+        errors.push(`Gagal impor ${importable.length} produk baru: ${e.message}`)
+      }
+    }
+
+    // Sinkronkan stock_alerts agar notifikasi stok menipis mengikuti nilai CSV.
+    if (stockAlertsToSync.length > 0) {
+      try {
+        await productsStore.syncMinimumStocks(stockAlertsToSync)
+      } catch (e: any) {
+        errors.push(`Gagal menyinkronkan stok minimum: ${e.message}`)
+      }
+    }
+
+    // Refresh data
+    await Promise.all([
+      productsStore.fetchProducts(),
+      categoriesStore.fetchCategories(),
+    ])
+
+    const summaryParts = [
+      `${created} produk baru`,
+      `${updated} diperbarui`,
+      `${skipped} dilewati`,
+    ]
+
+    if (errors.length === 0) {
+      toast.success('Berhasil!', `Import selesai: ${summaryParts.join(', ')}`)
+    } else {
+      // Tampilkan hingga 3 error pertama agar user tahu penyebabnya
+      const errorPreview = errors.slice(0, 3).join(' | ')
+      const extra = errors.length > 3 ? ` (+${errors.length - 3} lainnya)` : ''
+      toast.warning(
+        'Selesai dengan catatan',
+        `${summaryParts.join(', ')}. ${errors.length} masalah: ${errorPreview}${extra}`,
+      )
+    }
+
+    showImportModal.value = false
+  } catch (error: any) {
+    toast.error('Gagal!', error.message || 'Gagal mengimpor file CSV')
+    showImportModal.value = false
+  }
 }
 </script>

@@ -124,7 +124,7 @@
       <div v-if="showFilter || showAddButton" class="flex items-center gap-2">
         <button
           v-if="showFilter"
-          @click="showFilterModal = true"
+          @click="emit('filter-click')"
           class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
         >
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +151,7 @@
     </div>
 
     <!-- Desktop Table View -->
-    <div class="hidden overflow-hidden rounded-xl border border-gray-200 bg-white md:block dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="hidden md:block overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
       <div class="max-w-full overflow-x-auto custom-scrollbar">
         <table class="min-w-full">
           <thead>
@@ -225,6 +225,62 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Desktop Pagination -->
+      <div
+        v-if="paginated && totalPages > 1"
+        class="flex items-center justify-between border-t border-gray-200 px-5 py-4 sm:px-6 dark:border-gray-700"
+      >
+        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <span>Tampilkan:</span>
+          <select
+            v-model="itemsPerPage"
+            @change="changeItemsPerPage(itemsPerPage)"
+            class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+          >
+            <option :value="10">10</option>
+            <option :value="25">25</option>
+            <option :value="50">50</option>
+          </select>
+          <span>
+            Menampilkan {{ startIndex + 1 }} - {{ Math.min(endIndex, filteredData.length) }} dari
+            {{ filteredData.length }} data
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            @click="currentPage = 1"
+            :disabled="currentPage === 1"
+            class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+          >
+            ««
+          </button>
+          <button
+            @click="currentPage--"
+            :disabled="currentPage === 1"
+            class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+          >
+            «
+          </button>
+          <span class="px-3 py-2 text-sm text-gray-700 dark:text-gray-400">
+            Halaman {{ currentPage }} dari {{ totalPages }}
+          </span>
+          <button
+            @click="currentPage++"
+            :disabled="currentPage === totalPages"
+            class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+          >
+            »
+          </button>
+          <button
+            @click="currentPage = totalPages"
+            :disabled="currentPage === totalPages"
+            class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+          >
+            »»
+          </button>
+        </div>
       </div>
     </div>
 

@@ -14,10 +14,11 @@
         add-button-text="Tambah Kategori"
         title="Kategori Produk"
         :subtitle="`${settingsStore.storeSubtitle} - ${categoriesStore.categories.length} Kategori`"
-        :show-import-button="false"
+        :show-import-button="true"
         :show-export-button="true"
         @add-click="addCategory"
         @menu-action="handleMenuAction"
+        @import-click="handleImport"
         @export-click="handleExport"
       >
         <template #header-checkbox>
@@ -164,6 +165,14 @@
       variant="danger"
       @confirm="confirmBulkDelete"
     />
+
+    <!-- Import CSV Modal -->
+    <ImportCsvModal
+      v-model="showImportModal"
+      :accepted-hint="'.csv — kolom: Nama Kategori, Deskripsi'"
+      @import="handleImportFile"
+      @download-template="downloadImportTemplate"
+    />
   </AdminLayout>
 </template>
 
@@ -174,10 +183,17 @@ import DataTable from '@/components/tables/DataTable.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import ImportCsvModal from '@/components/common/ImportCsvModal.vue'
 import { useCategoriesStore } from '@/stores/categories'
 import { useProductsStore } from '@/stores/products'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useToast } from '@/composables/useToast'
+import {
+  downloadCsv,
+  parseCsv,
+  readFileAsText,
+} from '@/composables/useCsv'
+import type { CategoryInsert } from '@/types/database'
 
 const router = useRouter()
 const categoriesStore = useCategoriesStore()
@@ -189,6 +205,7 @@ const selectedCategories = ref<string[]>([])
 const selectAllCheckbox = ref<HTMLInputElement | null>(null)
 const showDeleteDialog = ref(false)
 const showBulkDeleteDialog = ref(false)
+const showImportModal = ref(false)
 const categoryToDelete = ref<any>(null)
 
 const allSelected = computed(() => {
@@ -302,7 +319,142 @@ const handleMenuAction = ({ action, row }: { action: string; row: any }) => {
   }
 }
 
+const handleImport = () => {
+  showImportModal.value = true
+}
+
 const handleExport = () => {
-  alert('Fungsi ekspor data - akan dibuat nanti')
+  exportCsv()
+}
+
+/* ============================================================
+ * EXPORT CSV
+ * ============================================================ */
+const EXPORT_HEADERS = ['Nama Kategori', 'Deskripsi']
+
+const exportCsv = () => {
+  const rows = categoriesStore.categories.map((c) => [c.name, c.description || ''])
+  downloadCsv(`kategori-${new Date().toISOString().slice(0, 10)}.csv`, [
+    EXPORT_HEADERS,
+    ...rows,
+  ])
+  toast.success('Berhasil!', `${rows.length} kategori diekspor ke file CSV`)
+}
+
+/* ============================================================
+ * TEMPLATE IMPORT CSV
+ * ============================================================ */
+const downloadImportTemplate = () => {
+  downloadCsv('template-import-kategori.csv', [
+    EXPORT_HEADERS,
+    ['Contoh Kategori', 'Deskripsi contoh'],
+  ])
+  toast.success('Berhasil!', 'Template CSV berhasil diunduh')
+}
+
+/* ============================================================
+ * IMPORT CSV
+ * ============================================================ */
+const normalizeHeader = (h: string) =>
+  h
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .replace(/\s+/g, '')
+
+const handleImportFile = async (file: File, updateExisting: boolean) => {
+  try {
+    const text = await readFileAsText(file)
+    const parsed = parseCsv(text)
+
+    if (!parsed.headers || parsed.headers.length === 0) {
+      throw new Error('File CSV kosong atau format tidak valid')
+    }
+
+    if (parsed.rows.length === 0) {
+      throw new Error('Tidak ada data untuk diimpor')
+    }
+
+    // Normalisasi header baris pertama
+    const normalizedRecords = parsed.rows.map((row) => {
+      const out: Record<string, string> = {}
+      parsed.headers.forEach((header, index) => {
+        const key = normalizeHeader(header)
+        if (key) out[key] = row[header] ?? ''
+      })
+      return out
+    })
+
+    const nameKeys = ['namakategori', 'nama', 'categoryname', 'name', 'kategori']
+    const descKeys = ['deskripsi', 'description', 'desc', 'keterangan']
+
+    const findValue = (record: Record<string, string>, keys: string[]) => {
+      for (const key of keys) {
+        if (record[key] !== undefined) return record[key]
+      }
+      return undefined
+    }
+
+    const existingNames = new Set(
+      categoriesStore.categories.map((c) => c.name.toLowerCase()),
+    )
+
+    const importable: CategoryInsert[] = []
+    let created = 0
+    let skipped = 0
+    const errors: string[] = []
+
+    for (let idx = 0; idx < normalizedRecords.length; idx++) {
+      const row = normalizedRecords[idx]
+      const rowNumber = idx + 2
+
+      const name = (findValue(row, nameKeys) ?? '').trim()
+      const description = (findValue(row, descKeys) ?? '').trim()
+
+      if (!name) {
+        skipped++
+        errors.push(
+          `Baris ${rowNumber}: nama kategori kosong. Header file Anda mungkin tidak cocok dengan format yang diharapkan.`,
+        )
+        continue
+      }
+
+      const nameLower = name.toLowerCase()
+
+      if (existingNames.has(nameLower)) {
+        skipped++
+        errors.push(`Baris ${rowNumber}: kategori "${name}" sudah ada, dilewati`)
+        continue
+      }
+
+      importable.push({ name, description: description || undefined })
+      existingNames.add(nameLower)
+    }
+
+    for (const cat of importable) {
+      try {
+        await categoriesStore.createCategory(cat)
+        created++
+      } catch (e: any) {
+        errors.push(`Gagal membuat kategori "${cat.name}": ${e.message}`)
+      }
+    }
+
+    // Refresh kategori
+    await categoriesStore.fetchCategories()
+
+    if (errors.length === 0) {
+      toast.success('Berhasil!', `Import selesai: ${created} kategori baru, ${skipped} dilewati`)
+    } else {
+      toast.warning(
+        'Selesai dengan catatan',
+        `${created} kategori baru, ${skipped} dilewati. ${errors.length} masalah: ${errors[0]}`,
+      )
+    }
+
+    showImportModal.value = false
+  } catch (error: any) {
+    toast.error('Gagal!', error.message || 'Gagal mengimpor file CSV')
+    showImportModal.value = false
+  }
 }
 </script>

@@ -34,6 +34,18 @@ export const customersService = {
     return data
   },
 
+  /** Insert banyak customer sekaligus (untuk import CSV / bulk). */
+  async createMany(customers: CustomerInsert[]): Promise<Customer[]> {
+    if (customers.length === 0) return []
+    const { data, error } = await supabase
+      .from('customers')
+      .insert(customers)
+      .select()
+
+    if (error) throw error
+    return data || []
+  },
+
   async update(id: string, customer: CustomerUpdate): Promise<Customer> {
     const { data, error } = await supabase
       .from('customers')

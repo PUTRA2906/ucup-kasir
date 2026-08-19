@@ -80,6 +80,18 @@ export const productsService = {
     return data
   },
 
+  /** Insert banyak produk sekaligus (untuk import CSV / bulk). */
+  async createMany(products: ProductInsert[]): Promise<Product[]> {
+    if (products.length === 0) return []
+    const { data, error } = await supabase
+      .from('products')
+      .insert(products)
+      .select()
+
+    if (error) throw error
+    return data || []
+  },
+
   async update(id: string, product: ProductUpdate): Promise<Product> {
     const { data, error } = await supabase
       .from('products')

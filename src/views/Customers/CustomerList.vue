@@ -12,8 +12,12 @@
         add-button-text="Tambah Customer"
         title="Daftar Customer"
         :subtitle="`${settingsStore.storeSubtitle} - ${customersStore.customers.length} Customer`"
+        :show-import-button="true"
+        :show-export-button="true"
         @add-click="addCustomer"
         @menu-action="handleMenuAction"
+        @import-click="handleImport"
+        @export-click="handleExport"
       >
         <template #header-checkbox>
           <div class="flex items-center gap-2">
@@ -176,6 +180,14 @@
       variant="danger"
       @confirm="confirmBulkDelete"
     />
+
+    <!-- Import CSV Modal -->
+    <ImportCsvModal
+      v-model="showImportModal"
+      :accepted-hint="'.csv — kolom: Nama, Nama Toko, Telepon, Kecamatan, Alamat, Catatan'"
+      @import="handleImportFile"
+      @download-template="downloadImportTemplate"
+    />
   </AdminLayout>
 </template>
 
@@ -186,9 +198,16 @@ import DataTable from '@/components/tables/DataTable.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import ImportCsvModal from '@/components/common/ImportCsvModal.vue'
 import { useCustomersStore } from '@/stores/customers'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useToast } from '@/composables/useToast'
+import {
+  downloadCsv,
+  parseCsv,
+  readFileAsText,
+} from '@/composables/useCsv'
+import type { CustomerInsert, Customer } from '@/types/database'
 
 const router = useRouter()
 const customersStore = useCustomersStore()
@@ -199,6 +218,7 @@ const selectedCustomers = ref<string[]>([])
 const selectAllCheckbox = ref<HTMLInputElement | null>(null)
 const showDeleteDialog = ref(false)
 const showBulkDeleteDialog = ref(false)
+const showImportModal = ref(false)
 const customerToDelete = ref<any>(null)
 
 const allSelected = computed(() => {
@@ -301,6 +321,216 @@ const handleMenuAction = ({ action, row }: { action: string; row: any }) => {
     case 'delete':
       deleteCustomer(row)
       break
+  }
+}
+
+const handleImport = () => {
+  showImportModal.value = true
+}
+
+const handleExport = () => {
+  exportCsv()
+}
+
+/* ============================================================
+ * EXPORT CSV
+ * ============================================================ */
+const EXPORT_HEADERS = [
+  'Nama Customer',
+  'Nama Toko',
+  'Telepon',
+  'Kecamatan',
+  'Alamat',
+  'Catatan',
+]
+
+const exportCsv = () => {
+  const rows = customersStore.customers.map((c) => [
+    c.name,
+    c.store_name || '',
+    c.phone || '',
+    c.kecamatan || '',
+    c.address || '',
+    c.notes || '',
+  ])
+  downloadCsv(`customer-${new Date().toISOString().slice(0, 10)}.csv`, [
+    EXPORT_HEADERS,
+    ...rows,
+  ])
+  toast.success('Berhasil!', `${rows.length} customer diekspor ke file CSV`)
+}
+
+/* ============================================================
+ * TEMPLATE IMPORT CSV
+ * ============================================================ */
+const downloadImportTemplate = () => {
+  downloadCsv('template-import-customer.csv', [
+    EXPORT_HEADERS,
+    ['Contoh Customer', 'Toko Contoh', '08123456789', 'Pasar Minggu', 'Jl. Contoh No.1', ''],
+  ])
+  toast.success('Berhasil!', 'Template CSV berhasil diunduh')
+}
+
+/* ============================================================
+ * IMPORT CSV
+ * ============================================================ */
+const normalizeHeader = (h: string) =>
+  h
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .replace(/\s+/g, '')
+
+const findValue = (record: Record<string, string>, aliases: string[]) => {
+  for (const alias of aliases) {
+    if (record[alias] !== undefined) return record[alias]
+  }
+  return undefined
+}
+
+const handleImportFile = async (file: File, updateExisting: boolean) => {
+  try {
+    const text = await readFileAsText(file)
+    const parsed = parseCsv(text)
+
+    if (!parsed.headers || parsed.headers.length === 0) {
+      throw new Error('File CSV kosong atau format tidak valid')
+    }
+
+    if (parsed.rows.length === 0) {
+      throw new Error('Tidak ada data untuk diimpor')
+    }
+
+    const normalizedRecords = parsed.rows.map((row) => {
+      const out: Record<string, string> = {}
+      parsed.headers.forEach((header) => {
+        const key = normalizeHeader(header)
+        if (key) out[key] = row[header] ?? ''
+      })
+      return out
+    })
+
+    const nameKey = ['namacustomer', 'nama', 'name', 'customer']
+    const storeKey = ['namatoko', 'toko', 'storename', 'store']
+    const phoneKey = ['telepon', 'phone', 'nohp', 'no']
+    const kecamatanKey = ['kecamatan', 'kec', 'district']
+    const addressKey = ['alamat', 'address', 'addr']
+    const notesKey = ['catatan', 'notes', 'keterangan', 'note']
+
+    // Map untuk deteksi duplikat: phone & (name + store)
+    const existingByPhone = new Map<string, Customer>()
+    const existingByKey = new Map<string, Customer>()
+    customersStore.customers.forEach((c) => {
+      if (c.phone) existingByPhone.set(c.phone.toLowerCase(), c)
+      const key = `${c.name.toLowerCase()}|${(c.store_name || '').toLowerCase()}`
+      existingByKey.set(key, c)
+    })
+
+    const importable: CustomerInsert[] = []
+    const updates: { id: string; data: CustomerInsert }[] = []
+    let created = 0
+    let updated = 0
+    let skipped = 0
+    const errors: string[] = []
+
+    for (let idx = 0; idx < normalizedRecords.length; idx++) {
+      const row = normalizedRecords[idx]
+      const rowNumber = idx + 2
+
+      const name = (findValue(row, nameKey) ?? '').trim()
+      if (!name) {
+        skipped++
+        continue
+      }
+
+      const phone = (findValue(row, phoneKey) ?? '').trim()
+      const kecamatanValue = (findValue(row, kecamatanKey) ?? '').trim()
+
+      // Debug logging
+      if (idx === 0) {
+        console.log('🔍 Debug Import CSV - Baris pertama:')
+        console.log('Headers normalized:', Object.keys(row))
+        console.log('Kecamatan keys mencari:', kecamatanKey)
+        console.log('Nilai kecamatan ditemukan:', kecamatanValue)
+      }
+
+      const payload: CustomerInsert = {
+        name,
+        store_name: (findValue(row, storeKey) ?? '').trim() || undefined,
+        phone: phone || undefined,
+        kecamatan: kecamatanValue || undefined,
+        address: (findValue(row, addressKey) ?? '').trim() || undefined,
+        notes: (findValue(row, notesKey) ?? '').trim() || undefined,
+      }
+
+      // Deteksi duplikat: prioritas phone, lalu kombinasi name|store
+      const phoneLower = phone ? phone.toLowerCase() : null
+      const key = `${name.toLowerCase()}|${(payload.store_name || '').toLowerCase()}`
+
+      let existing: Customer | undefined
+      if (phoneLower && existingByPhone.has(phoneLower)) {
+        existing = existingByPhone.get(phoneLower)
+      } else if (existingByKey.has(key)) {
+        existing = existingByKey.get(key)
+      }
+
+      if (existing && updateExisting) {
+        updates.push({ id: existing.id, data: payload })
+        if (phoneLower) existingByPhone.set(phoneLower, existing)
+        existingByKey.set(key, existing)
+      } else if (existing && !updateExisting) {
+        skipped++
+        errors.push(`Baris ${rowNumber}: customer "${name}" sudah ada, dilewati (update nonaktif)`)
+      } else {
+        importable.push(payload)
+        if (phoneLower) {
+          existingByPhone.set(phoneLower, payload as unknown as Customer)
+        }
+        existingByKey.set(key, payload as unknown as Customer)
+      }
+    }
+
+    // Proses update
+    for (const { id, data } of updates) {
+      try {
+        await customersStore.updateCustomer(id, data)
+        updated++
+      } catch (e: any) {
+        errors.push(`Gagal update customer ${data.name}: ${e.message}`)
+      }
+    }
+
+    // Proses insert (batch)
+    if (importable.length > 0) {
+      try {
+        const createdBatch = await customersStore.createCustomers(importable)
+        created += createdBatch.length
+      } catch (e: any) {
+        errors.push(`Gagal impor ${importable.length} customer baru: ${e.message}`)
+      }
+    }
+
+    // Refresh data
+    await customersStore.fetchCustomers()
+
+    const summaryParts = [
+      `${created} customer baru`,
+      `${updated} diperbarui`,
+      `${skipped} dilewati`,
+    ]
+
+    if (errors.length === 0) {
+      toast.success('Berhasil!', `Import selesai: ${summaryParts.join(', ')}`)
+    } else {
+      toast.warning(
+        'Selesai dengan catatan',
+        `${summaryParts.join(', ')}. ${errors.length} masalah: ${errors[0]}`,
+      )
+    }
+
+    showImportModal.value = false
+  } catch (error: any) {
+    toast.error('Gagal!', error.message || 'Gagal mengimpor file CSV')
+    showImportModal.value = false
   }
 }
 </script>

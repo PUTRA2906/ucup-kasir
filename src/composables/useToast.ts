@@ -43,6 +43,7 @@ export function useToast() {
   }
 
   const error = (title: string, message: string, duration = 5000) => {
+    console.error(`[Toast Error] ${title}: ${message}`)
     return show({ title, message, variant: 'error', duration })
   }
 

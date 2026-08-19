@@ -2,13 +2,27 @@ import { supabase } from '@/lib/supabase'
 import type { Transaction } from '@/types/database'
 
 export interface SalesSummary {
-  totalRevenue: number
+  // Penjualan
+  gross_sales: number           // Penjualan Kotor (subtotal sebelum diskon)
+  shipping_cost: number          // Ongkos Kirim
+  total_discount: number         // Total Diskon
+  total_returns: number          // Total Nilai Retur (harga jual)
+  net_sales: number              // Penjualan Bersih = gross_sales - discount - returns
+
+  // Modal & Laba
+  raw_cogs: number               // HPP Kotor (modal semua barang terjual)
+  returned_cogs: number          // Modal barang yang diretur
+  net_cogs: number               // HPP Bersih = raw_cogs - returned_cogs
+  gross_profit: number           // Laba Kotor = net_sales - net_cogs
+
+  // Beban & Laba Bersih
+  total_operating_expenses: number  // Total Biaya Operasional
+  net_profit: number             // Laba Bersih = gross_profit - operating_expenses
+
+  // Statistik
   totalTransactions: number
   averageTransaction: number
   totalItems: number
-  totalDiscount: number
-  totalShipping: number
-  profit: number
 }
 
 export interface DailySales {
@@ -77,8 +91,19 @@ export const salesReportService = {
 
     const txns = (transactions || []) as Transaction[]
 
-    // Calculate summary
-    const summary = this.calculateSummary(txns)
+    // Fetch returns data untuk periode yang sama
+    const { data: returns, error: returnsError } = await supabase
+      .from('returns')
+      .select('*, items:return_items(*, product:products(id, name))')
+      .gte('created_at', startDate)
+      .lte('created_at', endDate + 'T23:59:59')
+
+    if (returnsError) throw returnsError
+
+    const returnData = (returns || []) as any[]
+
+    // Calculate summary dengan data retur
+    const summary = this.calculateSummary(txns, returnData)
 
     // Calculate daily sales
     const dailySales = this.calculateDailySales(txns, startDate, endDate)
@@ -102,43 +127,85 @@ export const salesReportService = {
     }
   },
 
-  calculateSummary(transactions: Transaction[]): SalesSummary {
-    let totalRevenue = 0
+  calculateSummary(transactions: Transaction[], returns: any[] = []): SalesSummary {
+    let gross_sales = 0          // Penjualan Kotor (subtotal ASLI dari items sebelum retur)
+    let shipping_cost = 0         // Ongkos Kirim
+    let total_discount = 0        // Total Diskon
+    let total_returns = 0         // Total Nilai Retur (dari tabel returns)
     let totalItems = 0
-    let totalDiscount = 0
-    let totalShipping = 0
 
+    // Hitung penjualan ASLI dari transaction_items (sebelum retur mengurangi transactions.subtotal)
     transactions.forEach((t) => {
-      totalRevenue += t.total || 0
-      totalDiscount += t.discount || 0
-      totalShipping += t.shipping_cost || 0
+      // Hitung gross_sales dari SUM(transaction_items.subtotal)
+      // BUKAN dari transactions.subtotal yang sudah dikurangi retur
+      let transactionGrossSales = 0
       t.items?.forEach((item) => {
+        transactionGrossSales += item.subtotal || 0
         totalItems += item.quantity || 0
       })
+      gross_sales += transactionGrossSales
+
+      shipping_cost += t.shipping_cost || 0
+      total_discount += t.discount || 0
     })
 
-    const totalTransactions = transactions.length
-    const averageTransaction = totalTransactions > 0 ? totalRevenue / totalTransactions : 0
+    // Hitung total retur dari tabel returns (field: total_refund)
+    returns.forEach((r: any) => {
+      total_returns += parseFloat(r.total_refund || 0)
+    })
 
-    // Calculate profit (revenue - harga beli)
-    let totalModal = 0
+    // Penjualan Bersih = Penjualan Kotor - Diskon - Retur
+    const net_sales = gross_sales - total_discount - total_returns
+
+    // Hitung modal (HPP)
+    let raw_cogs = 0              // Modal kotor semua barang terjual
+    let returned_cogs = 0         // Modal barang yang diretur
+
     transactions.forEach((t) => {
       t.items?.forEach((item: any) => {
         const hargaBeli = item.product?.price_buy || 0
-        totalModal += hargaBeli * (item.quantity || 0)
+        raw_cogs += hargaBeli * (item.quantity || 0)
       })
     })
 
-    const profit = totalRevenue - totalModal
+    // Hitung modal barang yang diretur dari tabel return_items
+    // Gunakan price_buy yang tersimpan di return_items (historis)
+    returns.forEach((r: any) => {
+      r.items?.forEach((item: any) => {
+        const hargaBeli = item.price_buy || 0
+        returned_cogs += hargaBeli * (item.quantity || 0)
+      })
+    })
+
+    const net_cogs = raw_cogs - returned_cogs
+
+    // Laba Kotor = Penjualan Bersih - HPP Bersih
+    const gross_profit = net_sales - net_cogs
+
+    // Beban Operasional (sementara default 0, nanti bisa diambil dari tabel expenses)
+    const total_operating_expenses = 0
+
+    // Laba Bersih = Laba Kotor - Beban Operasional
+    const net_profit = gross_profit - total_operating_expenses
+
+    const totalTransactions = transactions.length
+    const averageTransaction = totalTransactions > 0 ? net_sales / totalTransactions : 0
 
     return {
-      totalRevenue,
+      gross_sales,
+      shipping_cost,
+      total_discount,
+      total_returns,
+      net_sales,
+      raw_cogs,
+      returned_cogs,
+      net_cogs,
+      gross_profit,
+      total_operating_expenses,
+      net_profit,
       totalTransactions,
       averageTransaction,
       totalItems,
-      totalDiscount,
-      totalShipping,
-      profit,
     }
   },
 

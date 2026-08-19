@@ -49,6 +49,22 @@ export const useCustomersStore = defineStore('customers', () => {
     }
   }
 
+  /** Insert banyak customer sekaligus (import CSV / bulk). */
+  async function createCustomers(customersToInsert: CustomerInsert[]) {
+    loading.value = true
+    error.value = null
+    try {
+      const newCustomers = await customersService.createMany(customersToInsert)
+      await fetchCustomers()
+      return newCustomers
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function updateCustomer(id: string, customer: CustomerUpdate) {
     loading.value = true
     error.value = null
@@ -101,6 +117,7 @@ export const useCustomersStore = defineStore('customers', () => {
     fetchCustomers,
     getCustomer,
     createCustomer,
+    createCustomers,
     updateCustomer,
     deleteCustomer,
     searchCustomers

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { supabase } from '@/lib/supabase'
 import { productsService } from '@/services/products'
 import type { Product, ProductInsert, ProductUpdate, ProductWithCategory } from '@/types/database'
 
@@ -94,6 +95,44 @@ export const useProductsStore = defineStore('products', () => {
     } finally {
       loading.value = false
     }
+  }
+
+  /** Insert banyak produk sekaligus (import CSV / bulk). */
+  async function createProducts(productsToInsert: ProductInsert[]) {
+    loading.value = true
+    error.value = null
+    try {
+      const newProducts = await productsService.createMany(productsToInsert)
+      await fetchProducts()
+      return newProducts
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Sinkronkan nilai minimum_stock ke tabel stock_alerts untuk tiap produk.
+   * Dipakai saat import CSV agar notifikasi stok menipis (yang dibaca trigger
+   * dari stock_alerts) tetap mengikuti nilai yang diimpor.
+   */
+  async function syncMinimumStocks(
+    entries: { product_id: string; minimum_stock: number }[],
+  ) {
+    if (entries.length === 0) return
+    const { error: upsertError } = await supabase
+      .from('stock_alerts')
+      .upsert(
+        entries.map((entry) => ({
+          product_id: entry.product_id,
+          minimum_stock: entry.minimum_stock,
+          alert_enabled: true,
+        })),
+        { onConflict: 'user_id,product_id' },
+      )
+    if (upsertError) throw upsertError
   }
 
   async function updateProduct(id: string, product: ProductUpdate) {
@@ -205,6 +244,8 @@ export const useProductsStore = defineStore('products', () => {
     getProductBySku,
     getProductByBarcode,
     createProduct,
+    createProducts,
+    syncMinimumStocks,
     updateProduct,
     deleteProduct,
     updateStock,

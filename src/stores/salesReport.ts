@@ -22,13 +22,20 @@ export const useSalesReportStore = defineStore('salesReport', () => {
 
   // Report data
   const summary = ref<SalesSummary>({
-    totalRevenue: 0,
+    gross_sales: 0,
+    shipping_cost: 0,
+    total_discount: 0,
+    total_returns: 0,
+    net_sales: 0,
+    raw_cogs: 0,
+    returned_cogs: 0,
+    net_cogs: 0,
+    gross_profit: 0,
+    total_operating_expenses: 0,
+    net_profit: 0,
     totalTransactions: 0,
     averageTransaction: 0,
     totalItems: 0,
-    totalDiscount: 0,
-    totalShipping: 0,
-    profit: 0,
   })
   const dailySales = ref<DailySales[]>([])
   const topProducts = ref<ProductSales[]>([])
