@@ -736,7 +736,7 @@ const returnsStore = useReturnsStore()
 const customersStore = useCustomersStore()
 const settingsStore = useStoreSettingsStore()
 const toast = useToast()
-const { generatePdf, shareToWhatsApp, downloadPdf } = usePdfExport()
+const { generatePdfBlob, shareToWhatsApp, downloadPdf } = usePdfExport()
 
 const kecamatan = route.params.kecamatan as string
 const customerId = route.params.customerId as string
@@ -1032,20 +1032,37 @@ const handlePrintPdf = async () => {
 
   isGeneratingPdf.value = true
   try {
-    // Buat elemen invoice untuk PDF (gunakan template yang sama dengan InvoicePrint.vue)
-    const invoiceHtml = createInvoiceHtml()
-    const tempDiv = document.createElement('div')
-    tempDiv.innerHTML = invoiceHtml
-    tempDiv.style.position = 'absolute'
-    tempDiv.style.left = '-9999px'
-    document.body.appendChild(tempDiv)
-
     const filename = `Invoice-${transaction.value.transaction_number}.pdf`
-    const pdfBlob = await generatePdf(tempDiv, filename)
+    
+    // Siapkan data invoice
+    const invoiceData = {
+      transaction_number: transaction.value.transaction_number,
+      created_at: transaction.value.created_at,
+      customer_name: transaction.value.customer_name || 'Umum',
+      customer_store_name: transaction.value.customer_store_name,
+      customer_address: transaction.value.customer_address,
+      items: transaction.value.items || [],
+      return_items: allReturnItems.value,
+      subtotal: originalSubtotal.value,
+      discount: transaction.value.discount || 0,
+      shipping_cost: transaction.value.shipping_cost || 0,
+      return_amount: returnAmount.value,
+      total: transaction.value.total,
+      payments: transaction.value.payments || [],
+      payment_status: transaction.value.payment_status,
+      updated_at: transaction.value.updated_at,
+    }
 
+    const storeSettings = {
+      name: settingsStore.storeSubtitle,
+      address: settingsStore.storeAddress,
+      email: settingsStore.storeEmail,
+      phone: settingsStore.storePhone,
+    }
+
+    const pdfBlob = generatePdfBlob(invoiceData, storeSettings)
     await downloadPdf(pdfBlob, filename)
 
-    document.body.removeChild(tempDiv)
     toast.success('Berhasil!', 'PDF berhasil dibuat')
   } catch (error: any) {
     console.error('Error generating PDF:', error)
@@ -1060,17 +1077,6 @@ const handleShareWhatsApp = async () => {
 
   isGeneratingPdf.value = true
   try {
-    // Buat elemen invoice untuk PDF
-    const invoiceHtml = createInvoiceHtml()
-    const tempDiv = document.createElement('div')
-    tempDiv.innerHTML = invoiceHtml
-    tempDiv.style.position = 'absolute'
-    tempDiv.style.left = '-9999px'
-    document.body.appendChild(tempDiv)
-
-    const filename = `Invoice-${transaction.value.transaction_number}.pdf`
-    const pdfBlob = await generatePdf(tempDiv, filename)
-
     // Dapatkan nomor telepon customer dari customersStore
     let customerPhone = ''
     if (transaction.value.customer_id) {
@@ -1080,14 +1086,41 @@ const handleShareWhatsApp = async () => {
 
     if (!customerPhone) {
       toast.error('Gagal!', 'Nomor telepon pelanggan tidak ditemukan. Pastikan customer memiliki nomor telepon.')
-      document.body.removeChild(tempDiv)
       isGeneratingPdf.value = false
       return
     }
 
+    const filename = `Invoice-${transaction.value.transaction_number}.pdf`
+    
+    // Siapkan data invoice
+    const invoiceData = {
+      transaction_number: transaction.value.transaction_number,
+      created_at: transaction.value.created_at,
+      customer_name: transaction.value.customer_name || 'Umum',
+      customer_store_name: transaction.value.customer_store_name,
+      customer_address: transaction.value.customer_address,
+      items: transaction.value.items || [],
+      return_items: allReturnItems.value,
+      subtotal: originalSubtotal.value,
+      discount: transaction.value.discount || 0,
+      shipping_cost: transaction.value.shipping_cost || 0,
+      return_amount: returnAmount.value,
+      total: transaction.value.total,
+      payments: transaction.value.payments || [],
+      payment_status: transaction.value.payment_status,
+      updated_at: transaction.value.updated_at,
+    }
+
+    const storeSettings = {
+      name: settingsStore.storeSubtitle,
+      address: settingsStore.storeAddress,
+      email: settingsStore.storeEmail,
+      phone: settingsStore.storePhone,
+    }
+
+    const pdfBlob = generatePdfBlob(invoiceData, storeSettings)
     await shareToWhatsApp(customerPhone, pdfBlob, filename)
 
-    document.body.removeChild(tempDiv)
     toast.success('Berhasil!', 'PDF siap dibagikan via WhatsApp')
   } catch (error: any) {
     console.error('Error sharing to WhatsApp:', error)
@@ -1097,125 +1130,6 @@ const handleShareWhatsApp = async () => {
   }
 }
 
-const createInvoiceHtml = () => {
-  // Buat HTML invoice untuk PDF (simplified version dari InvoicePrint.vue)
-  return `
-    <div style="font-family: sans-serif; padding: 40px; color: #111827;">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
-        <div>
-          <p style="font-weight: bold; margin: 0;">INVOICE:</p>
-          <p style="font-weight: bold; margin: 0;">${transaction.value.transaction_number}</p>
-          <div style="margin-top: 24px;">
-            <p style="font-size: 22px; font-weight: bold; color: #0d86ff; margin: 0;">${settingsStore.storeSubtitle}</p>
-            <p style="font-size: 14px; margin-top: 8px;">${settingsStore.storeAddress}</p>
-            <p style="font-size: 14px;">Email: ${settingsStore.storeEmail}</p>
-            <p style="font-size: 14px;">Phone: ${settingsStore.storePhone}</p>
-          </div>
-        </div>
-        <div style="text-align: right; margin-top: 64px;">
-          <p style="font-size: 12px; font-weight: 600; text-transform: uppercase;">DI TERBITKAN ATAS NAMA :</p>
-          <div style="margin-top: 12px; text-align: left;">
-            <div style="display: flex; margin-bottom: 6px;">
-              <span style="width: 56px;">Tanggal</span>
-              <span style="margin-right: 4px;">:</span>
-              <span style="font-weight: 600;">${formatDateShort(transaction.value.created_at)}</span>
-            </div>
-            <div style="display: flex; margin-bottom: 6px;">
-              <span style="width: 56px;">Pembeli</span>
-              <span style="margin-right: 4px;">:</span>
-              <span style="font-weight: 600;">${transaction.value.customer_name || 'Umum'}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabel Produk Dibeli -->
-      <div style="margin-top: 32px;">
-        <p style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #6b7280; margin-bottom: 8px;">Produk Dibeli</p>
-        <table style="width: 100%; border-collapse: collapse;">
-          <thead>
-            <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000;">
-              <th style="padding: 8px; text-align: left; font-size: 12px; font-weight: bold;">PRODUCT</th>
-              <th style="padding: 8px; text-align: right; font-size: 12px; font-weight: bold;">HARGA</th>
-              <th style="padding: 8px; text-align: center; font-size: 12px; font-weight: bold;">JUMLAH</th>
-              <th style="padding: 8px; text-align: right; font-size: 12px; font-weight: bold;">TOTAL</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${transaction.value.items.map((item: any) => `
-              <tr style="border-bottom: 1px solid #9ca3af;">
-                <td style="padding: 10px 8px;">${item.product_name}</td>
-                <td style="padding: 10px 8px; text-align: right;">${formatCurrency(item.price)}</td>
-                <td style="padding: 10px 8px; text-align: center;">${item.quantity}</td>
-                <td style="padding: 10px 8px; text-align: right;">${formatCurrency(item.subtotal)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-
-      ${allReturnItems.value.length > 0 ? `
-      <!-- Tabel Produk Diretur -->
-      <div style="margin-top: 24px;">
-        <p style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #dc2626; margin-bottom: 8px;">Produk Diretur</p>
-        <table style="width: 100%; border-collapse: collapse;">
-          <thead>
-            <tr style="border-top: 2px solid #dc2626; border-bottom: 2px solid #dc2626;">
-              <th style="padding: 8px; text-align: left; font-size: 12px; font-weight: bold; color: #b91c1c;">PRODUCT</th>
-              <th style="padding: 8px; text-align: right; font-size: 12px; font-weight: bold; color: #b91c1c;">HARGA</th>
-              <th style="padding: 8px; text-align: center; font-size: 12px; font-weight: bold; color: #b91c1c;">JUMLAH</th>
-              <th style="padding: 8px; text-align: right; font-size: 12px; font-weight: bold; color: #b91c1c;">TOTAL</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${allReturnItems.value.map((item: any) => `
-              <tr style="border-bottom: 1px solid #fecaca;">
-                <td style="padding: 10px 8px; color: #b91c1c;">${item.product_name}</td>
-                <td style="padding: 10px 8px; text-align: right; color: #b91c1c;">${formatCurrency(item.price)}</td>
-                <td style="padding: 10px 8px; text-align: center; color: #b91c1c;">${item.quantity}</td>
-                <td style="padding: 10px 8px; text-align: right; font-weight: 600; color: #b91c1c;">- ${formatCurrency(item.subtotal)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-      ` : ''}
-
-      <!-- Ringkasan -->
-      <div style="margin-top: 32px; display: flex; justify-content: flex-end;">
-        <div style="width: 300px;">
-          <div style="display: flex; justify-content: space-between; border-top: 1px solid #9ca3af; padding: 8px 0;">
-            <span>TOTAL PEMBELIAN</span>
-            <span style="font-weight: 600;">${formatCurrency(originalSubtotal.value)}</span>
-          </div>
-          ${returnAmount.value > 0 ? `
-          <div style="display: flex; justify-content: space-between; border-top: 1px solid #9ca3af; padding: 8px 0;">
-            <span style="color: #dc2626;">TOTAL RETUR</span>
-            <span style="font-weight: 600; color: #dc2626;">- ${formatCurrency(returnAmount.value)}</span>
-          </div>
-          ` : ''}
-          <div style="display: flex; justify-content: space-between; border-top: 1px solid #9ca3af; padding: 8px 0;">
-            <span style="font-weight: bold;">TOTAL TAGIHAN</span>
-            <span style="font-weight: bold;">${formatCurrency(transaction.value.total)}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; border-top: 1px solid #9ca3af; padding: 8px 0;">
-            <span style="font-weight: bold;">Sisa Tagihan</span>
-            <span style="font-weight: bold;">${formatCurrency(Math.max(rawRemaining.value, 0))}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; border-top: 1px solid #9ca3af; padding: 8px 0;">
-            <span>Status</span>
-            <span style="font-weight: 600;">${isOverpaid.value || transaction.value.payment_status === 'lunas' ? 'LUNAS' : 'BELUM LUNAS'}</span>
-          </div>
-        </div>
-      </div>
-
-      <div style="margin-top: 40px; font-size: 12px; color: #6b7280;">
-        <p>Invoice ini sah dan diproses oleh komputer</p>
-        <p style="margin-top: 6px;">Terakhir di update ${formatDateTime(transaction.value.updated_at)}</p>
-      </div>
-    </div>
-  `
-}
 
 onMounted(async () => {
   try {
