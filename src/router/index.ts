@@ -264,6 +264,14 @@ const router = createRouter({
       },
     },
     {
+      path: '/customer-invoices/:kecamatan/:customerId/add-transaction',
+      name: 'Add Customer Transaction',
+      component: () => import('../views/Invoices/AddCustomerTransaction.vue'),
+      meta: {
+        title: 'Transaksi Baru',
+      },
+    },
+    {
       path: '/customer-invoices/:kecamatan/:customerId/:invoiceId',
       name: 'Customer Invoice Detail',
       component: () => import('../views/Invoices/InvoiceDetail.vue'),

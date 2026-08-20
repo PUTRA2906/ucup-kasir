@@ -28,14 +28,14 @@
       <div v-else class="space-y-6">
         <!-- Kartu Informasi Customer -->
         <div class="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div class="flex items-start gap-3 min-w-0">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3 min-w-0 flex-1">
               <div
                 class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 text-base font-bold text-brand-600 dark:bg-brand-500/15 dark:text-brand-400"
               >
                 {{ customerInitial }}
               </div>
-              <div class="min-w-0">
+              <div class="min-w-0 flex-1">
                 <h1 class="text-lg font-bold text-gray-900 break-words dark:text-white">
                   {{ customer.name }}
                 </h1>
@@ -47,19 +47,21 @@
                 </p>
               </div>
             </div>
-            <div class="inline-flex flex-shrink-0 self-start items-center gap-2">
-              <button
-                @click="goToAddTransaction"
-                class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
-              >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Tambah Transaksi
-              </button>
+            <!-- Tombol untuk mobile -->
+            <button
+              @click="router.push(`/customer-invoices/${encodeURIComponent(kecamatan)}`)"
+              class="md:hidden flex-shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+            >
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              Ganti
+            </button>
+            <!-- Tombol untuk desktop -->
+            <div class="hidden md:inline-flex flex-shrink-0 self-start items-center gap-2">
               <button
                 @click="router.push(`/customer-invoices/${encodeURIComponent(kecamatan)}`)"
-                class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+                class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
               >
                 ← Ganti Customer
               </button>
@@ -79,6 +81,19 @@
               <p class="text-xs text-gray-500 dark:text-gray-400">Belum Lunas</p>
               <p class="text-lg font-bold text-warning-600 sm:mt-0.5 dark:text-warning-400">{{ formatCurrency(totalRemaining) }}</p>
             </div>
+          </div>
+
+          <!-- Tombol Tambah Transaksi untuk Mobile -->
+          <div class="mt-4 md:hidden">
+            <button
+              @click="goToAddTransaction"
+              class="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-600"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Tambah Transaksi
+            </button>
           </div>
         </div>
 
@@ -149,6 +164,18 @@
           @menu-action="handleMenuAction"
           @filter-click="showFilterModal = true"
         >
+          <template #actions>
+            <button
+              @click="goToAddTransaction"
+              class="inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-600"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Tambah Transaksi
+            </button>
+          </template>
+
           <template #mobile-header>
             <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Tanggal Invoice
@@ -388,7 +415,7 @@ const viewInvoice = (transaction: any) => {
 }
 
 const goToAddTransaction = () => {
-  router.push(`/transactions/add?customer=${customerId}`)
+  router.push(`/customer-invoices/${encodeURIComponent(kecamatan)}/${customerId}/add-transaction`)
 }
 
 const handleMenuAction = ({ action, row }: { action: string; row: any }) => {

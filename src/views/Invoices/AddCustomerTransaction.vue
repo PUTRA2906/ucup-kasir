@@ -5,7 +5,7 @@
     <!-- Mobile Header with Close Button -->
     <div class="mb-6 flex items-center gap-3 pl-2 pr-4 md:hidden">
       <button
-        @click="router.push('/transactions')"
+        @click="router.push(`/customer-invoices/${route.params.kecamatan}/${route.params.customerId}`)"
         class="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
       >
         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -29,7 +29,7 @@
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Nama Customer
               </label>
-              <!-- Pilihan customer yang sudah dipilih -->
+              <!-- Customer yang sudah dipilih (tidak bisa diubah) -->
               <div v-if="selectedCustomer" class="flex items-center gap-3 rounded-lg border border-brand-500 bg-brand-50/50 p-3 dark:bg-brand-500/10">
                 <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
                   {{ selectedCustomer.name.charAt(0).toUpperCase() }}
@@ -41,33 +41,7 @@
                     {{ selectedCustomer.kecamatan || '-' }}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  @click="selectedCustomerId = ''"
-                  class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-error-600 dark:hover:bg-white/[0.03] dark:hover:text-error-500"
-                  title="Hapus pilihan"
-                >
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
               </div>
-
-              <button
-                type="button"
-                @click="showCustomerPicker = true"
-                class="h-11 w-full rounded-lg border border-dashed border-gray-300 bg-transparent px-4 py-2.5 text-left text-sm text-gray-500 hover:border-brand-400 hover:text-brand-600 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:text-gray-400 dark:hover:border-brand-500 dark:hover:text-brand-400"
-              >
-                <span v-if="!selectedCustomer">+ Pilih Customer dari Daftar</span>
-                <span v-else>Ganti Customer</span>
-              </button>
-
-              <p v-if="!selectedCustomerId" class="mt-1.5 text-xs text-error-500 dark:text-error-400">
-                Customer harus dipilih dari daftar yang tersedia
-              </p>
-              <p v-if="customersStore.customers.length === 0" class="mt-1.5 text-xs text-warning-600 dark:text-warning-400">
-                Belum ada customer. <button type="button" @click="showCustomerPicker = false; router.push('/customers/add')" class="underline hover:no-underline">Tambah customer baru</button>
-              </p>
             </div>
 
             <div>
@@ -282,7 +256,8 @@
                   <button
                     type="button"
                     @click="showPaymentModal = true"
-                    class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 focus:outline-hidden focus:ring-3 focus:ring-brand-500/30"
+                    :disabled="cartItems.length === 0"
+                    class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 focus:outline-hidden focus:ring-3 focus:ring-brand-500/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -410,7 +385,7 @@ const transactionsStore = useTransactionsStore()
 const returnsStore = useReturnsStore()
 const toast = useToast()
 
-const selectedCustomerId = ref((route.query.customer as string) || '')
+const selectedCustomerId = ref((route.params.customerId as string) || '')
 const discountInput = ref('')
 const notes = ref('')
 const isSubmitting = ref(false)
@@ -629,7 +604,7 @@ const handleSubmit = async () => {
     }
 
     toast.success('Berhasil!', 'Transaksi berhasil disimpan')
-    router.push(`/transactions/${transactionId}`)
+    router.push(`/customer-invoices/${route.params.kecamatan}/${route.params.customerId}`)
   } catch (error: any) {
     console.error('Error creating transaction:', error)
     toast.error('Gagal!', error.message || 'Gagal menyimpan transaksi')
