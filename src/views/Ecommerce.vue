@@ -37,6 +37,79 @@
           </router-link>
         </div>
 
+        <!-- Mobile Financial Summary (Penjualan & Laba) -->
+        <div class="grid grid-cols-2 gap-3 md:hidden">
+          <div
+            class="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+          >
+            <div class="flex items-center gap-1">
+              <span class="text-[11px] text-gray-500 dark:text-gray-400">Penjualan Bersih</span>
+              <button
+                type="button"
+                class="inline-flex cursor-pointer text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                @click.stop="toggleInfoTooltip('net_sales')"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </button>
+            </div>
+            <h3 class="mt-1 text-base font-bold text-gray-900 dark:text-white">
+              {{ formatCurrency(salesReportStore.summary.net_sales) }}
+            </h3>
+            <span class="text-[10px] font-medium text-success-500">Bulan Ini</span>
+
+            <transition name="tooltip-fade">
+              <div
+                v-if="activeInfoTooltip === 'net_sales'"
+                class="absolute inset-x-2 top-full z-20 mt-2 rounded-lg bg-gray-900 px-3 py-2 text-[10px] font-normal leading-relaxed text-gray-100 shadow-lg dark:bg-gray-700"
+              >
+                Total pendapatan dari transaksi setelah dikurangi diskon dan retur, belum dipotong biaya operasional.
+              </div>
+            </transition>
+          </div>
+
+          <div
+            class="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+          >
+            <div class="flex items-center gap-1">
+              <span class="text-[11px] text-gray-500 dark:text-gray-400">Laba Bersih</span>
+              <button
+                type="button"
+                class="inline-flex cursor-pointer text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                @click.stop="toggleInfoTooltip('net_profit')"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </button>
+            </div>
+            <h3 class="mt-1 text-base font-bold text-gray-900 dark:text-white">
+              {{ formatCurrency(salesReportStore.summary.net_profit) }}
+            </h3>
+            <span class="text-[10px] text-gray-400 dark:text-gray-500">Keuntungan Riil</span>
+
+            <transition name="tooltip-fade">
+              <div
+                v-if="activeInfoTooltip === 'net_profit'"
+                class="absolute inset-x-2 top-full z-20 mt-2 rounded-lg bg-gray-900 px-3 py-2 text-[10px] font-normal leading-relaxed text-gray-100 shadow-lg dark:bg-gray-700"
+              >
+                Penjualan bersih dikurangi HPP (modal) dan biaya operasional. Ini keuntungan riil Anda.
+              </div>
+            </transition>
+          </div>
+        </div>
+
         <!-- Mobile Quick Menu Grid (8 items) -->
         <div
           class="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:hidden dark:border-gray-800 dark:bg-white/[0.03]"
@@ -50,64 +123,6 @@
             <span class="text-[10px] font-medium text-brand-500">Akses Cepat</span>
           </div>
           <div class="grid grid-cols-4 gap-y-4 gap-x-2 text-center">
-            <router-link
-              to="/transactions/add"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
-              <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-brand-500/20 bg-brand-500/10 text-brand-500 transition-transform group-hover:scale-105"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-              </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >+ Faktur</span
-              >
-            </router-link>
-
-            <router-link
-              to="/customer-invoices"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
-              <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-500 transition-transform group-hover:scale-105"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
-              </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Kios Mitra</span
-              >
-            </router-link>
-
-            <router-link
-              to="/products"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
-              <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-500 transition-transform group-hover:scale-105"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                  />
-                </svg>
-              </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Produk</span
-              >
-            </router-link>
-
             <router-link
               to="/reports/sales"
               class="group flex flex-col items-center transition active:scale-95"
@@ -141,12 +156,12 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                   />
                 </svg>
               </div>
               <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Tagihan</span
+                >Customer</span
               >
             </router-link>
 
@@ -193,25 +208,136 @@
             </router-link>
 
             <router-link
-              to="/settings"
+              to="/categories"
               class="group flex flex-col items-center transition active:scale-95"
             >
               <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-gray-500/20 bg-gray-500/10 text-gray-500 transition-transform group-hover:scale-105"
+                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-teal-500/20 bg-teal-500/10 text-teal-500 transition-transform group-hover:scale-105"
               >
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
                   />
                 </svg>
               </div>
               <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Setting</span
+                >Kategori</span
               >
             </router-link>
+
+            <router-link
+              to="/transactions"
+              class="group flex flex-col items-center transition active:scale-95"
+            >
+              <div
+                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-500 transition-transform group-hover:scale-105"
+              >
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                  />
+                </svg>
+              </div>
+              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
+                >Transaksi</span
+              >
+            </router-link>
+
+            <router-link
+              to="/stock/movements"
+              class="group flex flex-col items-center transition active:scale-95"
+            >
+              <div
+                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-500/20 bg-orange-500/10 text-orange-500 transition-transform group-hover:scale-105"
+              >
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+                  />
+                </svg>
+              </div>
+              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
+                >Mutasi</span
+              >
+            </router-link>
+
+            <router-link
+              to="/profile"
+              class="group flex flex-col items-center transition active:scale-95"
+            >
+              <div
+                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-500/20 bg-slate-500/10 text-slate-500 transition-transform group-hover:scale-105"
+              >
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
+              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
+                >Profil</span
+              >
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Mobile Peringatan Stok Gudang -->
+        <div
+          class="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:hidden dark:border-gray-800 dark:bg-white/[0.03]"
+        >
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2 dark:border-gray-800">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+              Peringatan Stok Gudang
+            </span>
+            <router-link
+              to="/products"
+              class="text-[11px] font-semibold text-brand-500"
+            >
+              Ke Gudang
+            </router-link>
+          </div>
+
+          <div v-if="lowStockProducts.length === 0" class="py-3 text-center">
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Semua stok aman. Tidak ada produk yang menipis.
+            </p>
+          </div>
+
+          <div v-else class="space-y-2">
+            <div
+              v-for="product in lowStockProducts.slice(0, 4)"
+              :key="product.id"
+              class="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs dark:border-gray-700 dark:bg-white/[0.02]"
+            >
+              <div class="min-w-0">
+                <p class="truncate font-bold text-gray-900 dark:text-white">{{ product.name }}</p>
+                <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
+                  Batas minimum: {{ product.minimum_stock ?? 10 }}
+                </p>
+              </div>
+              <span
+                class="flex-shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-bold"
+                :class="
+                  product.stock === 0
+                    ? 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500'
+                    : 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500'
+                "
+              >
+                {{ product.stock === 0 ? 'Habis' : `Sisa ${product.stock}` }}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -321,7 +447,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import DashboardStats from '@/components/ecommerce/DashboardStats.vue'
@@ -332,12 +458,15 @@ import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import { useProductsStore } from '@/stores/products'
 import { useCategoriesStore } from '@/stores/categories'
 import { useAuthStore } from '@/stores/auth'
+import { useSalesReportStore } from '@/stores/salesReport'
 
 const productsStore = useProductsStore()
 const categoriesStore = useCategoriesStore()
 const authStore = useAuthStore()
+const salesReportStore = useSalesReportStore()
 
 const loading = ref(true)
+const activeInfoTooltip = ref<string | null>(null)
 
 const displayName = computed(() => {
   const user = authStore.user
@@ -365,11 +494,42 @@ const stockValue = computed(() =>
   productsStore.products.reduce((sum, p) => sum + (p.price_buy || 0) * (p.stock || 0), 0)
 )
 
+const lowStockProducts = computed(() =>
+  productsStore.products
+    .filter((p) => p.is_active && p.stock <= (p.minimum_stock ?? 10))
+    .sort((a, b) => a.stock - b.stock)
+)
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0,
+  }).format(value || 0)
+
+const toggleInfoTooltip = (id: string) => {
+  activeInfoTooltip.value = activeInfoTooltip.value === id ? null : id
+}
+
+const closeInfoTooltip = () => {
+  activeInfoTooltip.value = null
+}
+
+onMounted(() => {
+  document.addEventListener('click', closeInfoTooltip)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', closeInfoTooltip)
+})
+
 onMounted(async () => {
   try {
+    salesReportStore.applyPreset('thisMonth')
     await Promise.all([
       productsStore.fetchProducts(true),
       categoriesStore.fetchCategories(),
+      salesReportStore.fetchSalesReport(),
     ])
   } catch (error) {
     console.error('Error loading dashboard:', error)
@@ -378,3 +538,14 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.tooltip-fade-enter-active,
+.tooltip-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.tooltip-fade-enter-from,
+.tooltip-fade-leave-to {
+  opacity: 0;
+}
+</style>

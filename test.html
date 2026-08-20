@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ucup Kasir - Sistem B2B Distributor</title>
+  <title>Customer di Bangorejo - Ucup Kasir</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -22,525 +22,213 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-[#080e1e] text-slate-100 pb-24 min-h-screen select-none">
+<body class="bg-[#0b1222] text-slate-100 min-h-screen pb-28 select-none">
 
   <!-- ================= CONTAINER UTAMA ================= -->
-  <main class="p-4 max-w-md mx-auto space-y-4">
+  <main class="p-4 max-w-md mx-auto space-y-4 pt-5">
 
-    <!-- ======================================================== -->
-    <!-- 1. HALAMAN HOME / DASHBOARD -->
-    <!-- ======================================================== -->
-    <section id="page-home" class="space-y-4 pt-2">
-      <!-- Greeting Banner -->
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div onclick="navigate('profile')" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 p-[2px] shadow-lg shadow-blue-500/20 cursor-pointer active:scale-95 transition-transform">
-            <div class="w-full h-full bg-[#0d162d] rounded-[14px] flex items-center justify-center font-outfit font-extrabold text-blue-400 text-lg">
-              U
-            </div>
-          </div>
-          <div>
-            <p class="text-[11px] text-slate-400 tracking-wide">Selamat Datang,</p>
-            <h1 class="text-xl font-extrabold font-outfit text-white tracking-tight leading-tight">UCUP</h1>
-          </div>
-        </div>
-        <button onclick="navigate('settings')" class="p-2.5 rounded-xl bg-[#121c35] text-slate-300 hover:text-white border border-slate-800 active:scale-95 transition">
-          <i data-lucide="bell" class="w-4 h-4"></i>
+    <!-- 1. HEADER JUDUL & TOMBOL KEMBALI -->
+    <section class="space-y-1">
+      <div class="flex items-center gap-2.5">
+        <button onclick="history.back()" class="p-2 rounded-xl bg-[#141f36] text-slate-300 hover:text-white border border-slate-800 active:scale-95 transition">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
         </button>
+        <div>
+          <h1 class="text-xl font-extrabold font-outfit text-white tracking-tight leading-tight">
+            Customer di Bangorejo
+          </h1>
+          <p class="text-[11px] text-slate-400">Pilih mitra untuk melihat riwayat invoice & piutang</p>
+        </div>
       </div>
+    </section>
 
-      <!-- Search Bar -->
-      <div class="relative">
-        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-        <input 
-          type="text" 
-          placeholder="Cari kios mitra, produk pupuk, nomor nota..." 
-          class="w-full bg-[#101932] border border-slate-800/90 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 shadow-inner"
-        />
-      </div>
+    <!-- 2. SEARCH BAR -->
+    <div class="relative">
+      <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+      <input 
+        id="customerSearch"
+        type="text" 
+        onkeyup="filterCustomers()"
+        placeholder="Cari nama kios, pemilik, no. telepon..." 
+        class="w-full bg-[#141f36] border border-slate-800/90 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 shadow-inner"
+      />
+    </div>
 
-      <!-- Kartu Saldo & Laba Kilat -->
-      <div class="bg-gradient-to-br from-blue-900/40 via-[#101c38] to-[#12192e] rounded-2xl border border-blue-500/20 p-4 shadow-lg flex justify-between items-center relative overflow-hidden">
-        <div class="space-y-1">
-          <span class="text-[10px] uppercase font-bold tracking-wider text-blue-300">Penjualan Bersih (Bulan Ini)</span>
-          <h2 class="text-lg font-black font-outfit text-white tracking-tight">Rp 873.000</h2>
-          <div class="flex items-center gap-2 text-[11px]">
-            <span class="text-emerald-400 font-semibold">Laba: Rp 133.000</span>
-            <span class="text-slate-500">&bull;</span>
-            <span class="text-slate-400">8 Faktur</span>
+    <!-- 3. FILTER CHIP HORIZONTAL (PENGGANTI DROPDOWN TEBAL) -->
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs">
+      <button onclick="setFilter('all')" class="filter-btn px-3.5 py-1.5 rounded-xl bg-blue-600 text-white font-semibold whitespace-nowrap shadow-sm">
+        Semua (3)
+      </button>
+      <button onclick="setFilter('debt')" class="filter-btn px-3.5 py-1.5 rounded-xl bg-[#141f36] text-rose-400 border border-rose-500/20 whitespace-nowrap">
+        Ada Piutang (1)
+      </button>
+      <button onclick="setFilter('top')" class="filter-btn px-3.5 py-1.5 rounded-xl bg-[#141f36] text-slate-400 border border-slate-800 whitespace-nowrap">
+        Invoice Terbanyak
+      </button>
+    </div>
+
+    <!-- 4. LIST CARD CUSTOMER -->
+    <section id="customerList" class="space-y-3">
+
+      <!-- Customer 1: Agus Santoso (Ada Piutang & 10 Invoice) -->
+      <div class="customer-card bg-[#141f36] rounded-2xl border border-slate-800/80 p-3.5 space-y-3 shadow-md">
+        <div class="flex justify-between items-start">
+          <div class="space-y-0.5">
+            <h2 class="customer-name text-sm font-bold font-outfit text-white">Agus Santoso</h2>
+            <p class="customer-store text-xs text-slate-300 font-medium">Toko Bango</p>
+            <p class="customer-phone text-[11px] text-slate-400 font-mono">081234567801</p>
           </div>
-        </div>
-        <div class="flex gap-2">
-          <button onclick="navigate('sales-add')" class="flex flex-col items-center px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 active:scale-95 transition">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            <span class="text-[9px] font-bold mt-1">Buat Nota</span>
-          </button>
-          <button onclick="navigate('reports')" class="flex flex-col items-center px-3 py-2 rounded-xl bg-[#0b1329] text-emerald-400 border border-emerald-500/20 active:scale-95 transition">
-            <i data-lucide="pie-chart" class="w-4 h-4"></i>
-            <span class="text-[9px] font-medium mt-1">Laba</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 12 Launcher Menu Grid -->
-      <div class="bg-[#0f172e] rounded-2xl border border-slate-800/80 p-4 space-y-3 shadow-md">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-800">
-          <span class="text-xs font-bold font-outfit text-slate-300 uppercase tracking-wider">Layanan & Menu</span>
-          <span class="text-[10px] text-blue-400 font-medium">Akses Cepat</span>
-        </div>
-        <div class="grid grid-cols-4 gap-y-4 gap-x-2 text-center">
-          <button onclick="navigate('sales-add')" class="flex flex-col items-center group active:scale-95 transition">
-            <div class="w-12 h-12 rounded-2xl bg-blue-600/15 group-hover:scale-105 transition-transform text-blue-400 flex items-center justify-center border border-blue-500/20">
-              <i data-lucide="plus" class="w-5 h-5"></i>
-            </div>
-            <span class="text-[11px] text-slate-300 mt-1.5 font-medium leading-tight">+ Faktur</span>
-          </button>
-
-          <button onclick="navigate('kios')" class="flex flex-col items-center group active:scale-95 transition">
-            <div class="w-12 h-12 rounded-2xl bg-indigo-600/15 group-hover:scale-105 transition-transform text-indigo-400 flex items-center justify-center border border-indigo-500/20">
-              <i data-lucide="store" class="w-5 h-5"></i>
-            </div>
-            <span class="text-[11px] text-slate-300 mt-1.5 font-medium leading-tight">Kios Mitra</span>
-          </button>
-
-          <button onclick="navigate('stock')" class="flex flex-col items-center group active:scale-95 transition">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-600/15 group-hover:scale-105 transition-transform text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-              <i data-lucide="package" class="w-5 h-5"></i>
-            </div>
-            <span class="text-[11px] text-slate-300 mt-1.5 font-medium leading-tight">Produk</span>
-          </button>
-
-          <button onclick="navigate('reports')" class="flex flex-col items-center group active:scale-95 transition">
-            <div class="w-12 h-12 rounded-2xl bg-blue-600/15 group-hover:scale-105 transition-transform text-blue-400 flex items-center justify-center border border-blue-500/20">
-              <i data-lucide="pie-chart" class="w-5 h-5"></i>
-            </div>
-            <span class="text-[11px] text-slate-300 mt-1.5 font-medium leading-tight">Laporan</span>
-          </button>
-
-          <button onclick="navigate('kios')" class="flex flex-col items-center group active:scale-95 transition">
-            <div class="w-12 h-12 rounded-2xl bg-amber-600/15 group-hover:scale-105 transition-transform text-amber-400 flex items-center justify-center border border-amber-500/20">
-              <i data-lucide="file-text" class="w-5 h-5"></i>
-            </div>
-            <span class="text-[11px] text-slate-300 mt-1.5 font-medium leading-tight">Tagihan</span>
-          </button>
-
-          <button onclick="navigate('sales-add')" class="flex flex-col items-center group active:scale-95 transition">
-            <div class="w-12 h-12 rounded-2xl bg-rose-600/15 group-hover:scale-105 transition-transform text-rose-400 flex items-center justify-center border border-rose-500/20">
-              <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
-            </div>
-            <span class="text-[11px] text-slate-300 mt-1.5 font-medium leading-tight">Retur</span>
-          </button>
-
-          <button onclick="navigate('stock')" class="flex flex-col items-center group active:scale-95 transition">
-            <div class="w-12 h-12 rounded-2xl bg-purple-600/15 group-hover:scale-105 transition-transform text-purple-400 flex items-center justify-center border border-purple-500/20">
-              <i data-lucide="boxes" class="w-5 h-5"></i>
-            </div>
-            <span class="text-[11px] text-slate-300 mt-1.5 font-medium leading-tight">Gudang</span>
-          </button>
-
-          <button onclick="navigate('settings')" class="flex flex-col items-center group active:scale-95 transition">
-            <div class="w-12 h-12 rounded-2xl bg-slate-700/30 group-hover:scale-105 transition-transform text-slate-300 flex items-center justify-center border border-slate-600/30">
-              <i data-lucide="sliders" class="w-5 h-5"></i>
-            </div>
-            <span class="text-[11px] text-slate-300 mt-1.5 font-medium leading-tight">Setting</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- List Jatuh Tempo Piutang Kios -->
-      <div class="bg-[#0f172e] rounded-2xl border border-slate-800/80 p-3.5 space-y-2.5">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold font-outfit text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-            <i data-lucide="alert-circle" class="w-4 h-4 text-amber-400"></i> Tagihan Kios Jatuh Tempo
+          <!-- Badge Piutang -->
+          <span class="px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-400 border border-rose-500/30 text-[10px] font-bold font-outfit">
+            Sisa: Rp 133.334
           </span>
-          <button onclick="navigate('kios')" class="text-[11px] text-blue-400 font-medium">Lihat Semua</button>
         </div>
-        <div class="p-3 rounded-xl bg-[#080e1e] border border-slate-800/80 flex justify-between items-center text-xs">
-          <div>
-            <p class="font-bold text-white font-outfit">Toko Bango (Agus)</p>
-            <p class="text-[10px] text-slate-400">Bangorejo &bull; Tempo Lewat 2 Hari</p>
-          </div>
-          <div class="text-right">
-            <p class="font-bold text-rose-400 font-outfit">Rp 133.334</p>
-            <span class="text-[9px] bg-rose-500/15 text-rose-300 px-1.5 py-0.5 rounded border border-rose-500/20">Belum Lunas</span>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- ======================================================== -->
-    <!-- 2. HALAMAN KIOS MITRA (CUSTOMER & PIUTANG) -->
-    <!-- ======================================================== -->
-    <section id="page-kios" class="space-y-4 hidden pt-2">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-base font-extrabold font-outfit text-white leading-tight">Kios Mitra</h2>
-          <p class="text-[10px] text-slate-400">Wilayah Distribusi Banyuwangi</p>
-        </div>
-        <button onclick="alert('Form Tambah Kios Baru')" class="p-2 rounded-xl bg-blue-600 text-white text-xs font-bold font-outfit flex items-center gap-1">
-          <i data-lucide="plus" class="w-4 h-4"></i> Tambah Kios
-        </button>
-      </div>
-
-      <!-- List Kios Card -->
-      <div class="space-y-3">
-        <!-- Kios 1 -->
-        <div class="bg-[#0f172e] p-3.5 rounded-2xl border border-slate-800/80 space-y-2.5">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-bold text-sm font-outfit text-white">Toko Bango</h3>
-              <p class="text-[11px] text-slate-400">Agus Santoso &bull; Bangorejo</p>
-            </div>
-            <span class="px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-400 border border-rose-500/20 text-[10px] font-bold">Ada Piutang</span>
-          </div>
-          <div class="bg-[#080e1e] p-2.5 rounded-xl border border-slate-800/80 flex justify-between items-center text-xs">
-            <span class="text-slate-400">10 Invoice &bull; Total Rp 1.644.000</span>
-            <span class="text-rose-400 font-extrabold font-outfit">Sisa: Rp 133.334</span>
-          </div>
-          <div class="flex gap-2">
-            <a href="https://wa.me/6281234567801" target="_blank" class="flex-1 py-1.5 rounded-xl bg-emerald-600/15 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center justify-center gap-1.5">
-              <i data-lucide="phone" class="w-3.5 h-3.5"></i> WhatsApp
+        <!-- Footer Card: Counter Invoice + Quick Actions -->
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs">
+          <button onclick="goTo('/invoices/agus', 'Daftar Invoice Agus')" class="text-[11px] font-semibold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-lg border border-blue-500/20 hover:bg-blue-500/20 active:scale-95 transition">
+            10 Invoice
+          </button>
+          
+          <div class="flex items-center gap-2">
+            <a href="https://wa.me/6281234567801" target="_blank" class="p-2 rounded-xl bg-emerald-600/15 text-emerald-400 border border-emerald-500/30 active:scale-95 transition flex items-center justify-center">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
             </a>
-            <button onclick="navigate('sales-add')" class="flex-1 py-1.5 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/30 text-xs font-semibold flex items-center justify-center gap-1.5">
-              <i data-lucide="file-plus" class="w-3.5 h-3.5"></i> + Faktur
-            </button>
-          </div>
-        </div>
-
-        <!-- Kios 2 -->
-        <div class="bg-[#0f172e] p-3.5 rounded-2xl border border-slate-800/80 space-y-2.5">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-bold text-sm font-outfit text-white">Kios Tani Makmur</h3>
-              <p class="text-[11px] text-slate-400">Hadi Purnomo &bull; Rogojampi</p>
-            </div>
-            <span class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">Lunas</span>
-          </div>
-          <div class="bg-[#080e1e] p-2.5 rounded-xl border border-slate-800/80 flex justify-between items-center text-xs">
-            <span class="text-slate-400">5 Invoice &bull; Total Rp 3.200.000</span>
-            <span class="text-emerald-400 font-extrabold font-outfit">Sisa: Rp 0</span>
-          </div>
-          <div class="flex gap-2">
-            <a href="https://wa.me/6281234567802" target="_blank" class="flex-1 py-1.5 rounded-xl bg-emerald-600/15 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center justify-center gap-1.5">
-              <i data-lucide="phone" class="w-3.5 h-3.5"></i> WhatsApp
-            </a>
-            <button onclick="navigate('sales-add')" class="flex-1 py-1.5 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/30 text-xs font-semibold flex items-center justify-center gap-1.5">
-              <i data-lucide="file-plus" class="w-3.5 h-3.5"></i> + Faktur
+            <button onclick="goTo('/transactions/add?customer=agus', 'Faktur Baru')" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold font-outfit text-[11px] flex items-center gap-1 shadow-md shadow-blue-600/20 active:scale-95 transition">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Buat Nota</span>
             </button>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- ======================================================== -->
-    <!-- 3. HALAMAN TAMBAH TRANSAKSI / FAKTUR -->
-    <!-- ======================================================== -->
-    <section id="page-sales-add" class="space-y-4 hidden pt-2">
-      <div class="flex items-center justify-between">
-        <h2 class="text-base font-extrabold font-outfit text-white">Buat Faktur Pengiriman</h2>
-        <span class="text-[10px] text-blue-400 font-mono">INV-202608-009</span>
-      </div>
-
-      <div class="bg-[#0f172e] rounded-2xl border border-slate-800/80 p-4 space-y-3.5 shadow-md text-xs">
-        <div>
-          <label class="text-[11px] text-slate-400 block mb-1">Pilih Kios Mitra</label>
-          <select class="w-full bg-[#080e1e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-blue-500">
-            <option>Agus Santoso - Toko Bango (Bangorejo)</option>
-            <option>Hadi Purnomo - Kios Tani Makmur (Rogojampi)</option>
-            <option>Siti Aminah - UD Subur Abadi (Genteng)</option>
-          </select>
+      <!-- Customer 2: Fathur Rahman (Lunas & 0 Invoice) -->
+      <div class="customer-card bg-[#141f36] rounded-2xl border border-slate-800/80 p-3.5 space-y-3 shadow-md">
+        <div class="flex justify-between items-start">
+          <div class="space-y-0.5">
+            <h2 class="customer-name text-sm font-bold font-outfit text-white">Fathur Rahman</h2>
+            <p class="customer-store text-xs text-slate-300 font-medium">UD Tani Barokah 2</p>
+            <p class="customer-phone text-[11px] text-slate-400 font-mono">081356789027</p>
+          </div>
+          <!-- Badge Status Lunas -->
+          <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold font-outfit">
+            Lunas
+          </span>
         </div>
 
-        <div>
-          <label class="text-[11px] text-slate-400 block mb-1">Item Pupuk / Obat</label>
-          <div class="flex gap-2">
-            <select class="flex-1 bg-[#080e1e] border border-slate-700 rounded-xl px-3 py-2 text-white">
-              <option>NPK Mutiara 16-16-16 (50kg) - Rp 850.000</option>
-              <option>Pupuk Urea Petro (50kg) - Rp 290.000</option>
-              <option>EM4 Pertanian (1 Liter) - Rp 30.000</option>
-            </select>
-            <input type="number" value="2" class="w-14 bg-[#080e1e] border border-slate-700 rounded-xl px-2 text-center text-white font-bold font-outfit" />
-          </div>
-        </div>
-
-        <!-- Potongan Retur Lapangan -->
-        <div class="pt-2 border-t border-slate-800 space-y-1.5">
-          <label class="text-[11px] text-rose-400 font-semibold block">Klaim Retur Barang Kios (Jika Ada)</label>
-          <div class="flex gap-2">
-            <input type="text" placeholder="1 sak Urea kemasan robek" class="flex-1 bg-[#080e1e] border border-slate-700 rounded-xl px-3 py-2 text-white" />
-            <input type="number" placeholder="Nominal Rp" value="290000" class="w-28 bg-[#080e1e] border border-slate-700 rounded-xl px-2 py-2 text-white font-outfit" />
-          </div>
-        </div>
-
-        <!-- Rincian Nota Bersih -->
-        <div class="bg-[#080e1e] p-3 rounded-xl border border-slate-800/80 space-y-1.5">
-          <div class="flex justify-between text-slate-400">
-            <span>Subtotal Pembelian (2 Sak)</span>
-            <span>Rp 1.700.000</span>
-          </div>
-          <div class="flex justify-between text-rose-400">
-            <span>Potongan Retur Barang</span>
-            <span>( Rp 290.000 )</span>
-          </div>
-          <div class="flex justify-between font-extrabold font-outfit text-white pt-2 border-t border-slate-800 text-sm">
-            <span>Total Bersih Dibayar</span>
-            <span class="text-blue-400">Rp 1.410.000</span>
-          </div>
-        </div>
-
-        <!-- Opsi Pembayaran -->
-        <div>
-          <label class="text-[11px] text-slate-400 block mb-1">Metode Bayar</label>
-          <div class="grid grid-cols-3 gap-2">
-            <button type="button" class="py-2 rounded-xl bg-blue-600 text-white font-bold font-outfit text-[11px]">Tunai</button>
-            <button type="button" class="py-2 rounded-xl bg-[#080e1e] text-slate-400 border border-slate-700 text-[11px]">DP / Titip</button>
-            <button type="button" class="py-2 rounded-xl bg-[#080e1e] text-slate-400 border border-slate-700 text-[11px]">Tempo</button>
-          </div>
-        </div>
-
-        <button onclick="alert('Faktur berhasil diterbitkan dan stok gudang terpotong!'); navigate('home');" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold font-outfit text-white shadow-lg shadow-blue-600/30 active:scale-95 transition">
-          Terbitkan Faktur
-        </button>
-      </div>
-    </section>
-
-    <!-- ======================================================== -->
-    <!-- 4. HALAMAN PRODUK & STOK GUDANG (MOBILE CARD LIST) -->
-    <!-- ======================================================== -->
-    <section id="page-stock" class="space-y-4 hidden pt-2">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-base font-extrabold font-outfit text-white leading-tight">Katalog & Stok</h2>
-          <p class="text-[10px] text-slate-400">Total 48 Item Terdaftar</p>
-        </div>
-        <button onclick="alert('Form Tambah Produk')" class="p-2 rounded-xl bg-blue-600 text-white text-xs font-bold font-outfit flex items-center gap-1">
-          <i data-lucide="plus" class="w-4 h-4"></i> Tambah Item
-        </button>
-      </div>
-
-      <!-- Filter Kategori Chips -->
-      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-xs">
-        <button class="px-3.5 py-1.5 rounded-xl bg-blue-600 text-white font-semibold whitespace-nowrap">Semua</button>
-        <button class="px-3.5 py-1.5 rounded-xl bg-[#101932] text-slate-400 border border-slate-800 whitespace-nowrap">NPK / Majemuk</button>
-        <button class="px-3.5 py-1.5 rounded-xl bg-[#101932] text-slate-400 border border-slate-800 whitespace-nowrap">Urea / Tunggal</button>
-        <button class="px-3.5 py-1.5 rounded-xl bg-[#101932] text-slate-400 border border-slate-800 whitespace-nowrap">Pestisida & Obat</button>
-      </div>
-
-      <!-- List Kartu Produk -->
-      <div class="space-y-3">
-        <!-- Card 1 (Aman) -->
-        <div class="bg-[#0f172e] rounded-2xl border border-slate-800/80 p-3.5 space-y-3">
-          <div class="flex justify-between items-start">
-            <div>
-              <span class="text-[10px] text-blue-400 font-semibold uppercase">NPK / Majemuk</span>
-              <h3 class="text-sm font-bold font-outfit text-white">NPK Mutiara 16-16-16 (50kg)</h3>
-              <p class="text-[10px] text-slate-400 font-mono">SKU: NPK-MUT-50</p>
-            </div>
-            <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold font-outfit">
-              45 Sak
-            </span>
-          </div>
-          <div class="bg-[#080e1e] p-2.5 rounded-xl border border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <span class="text-[10px] text-slate-400 block">Harga Jual Kios</span>
-              <span class="font-extrabold font-outfit text-emerald-400 text-sm">Rp 850.000</span>
-            </div>
-            <div class="border-l border-slate-800 pl-3">
-              <span class="text-[10px] text-slate-400 block">Modal (HPP Beli)</span>
-              <span class="font-bold font-outfit text-slate-300 text-sm">Rp 780.000</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card 2 (Kritis/Peringatan) -->
-        <div class="bg-[#0f172e] rounded-2xl border border-amber-500/30 p-3.5 space-y-3 relative overflow-hidden">
-          <div class="absolute top-0 left-0 bottom-0 w-1 bg-amber-500"></div>
-          <div class="flex justify-between items-start pl-1">
-            <div>
-              <span class="text-[10px] text-amber-400 font-semibold uppercase">NPK Khusus Buah</span>
-              <h3 class="text-sm font-bold font-outfit text-white">NPK YaraMila Grower 50kg</h3>
-              <p class="text-[10px] text-slate-400 font-mono">SKU: NPK-YAR-50</p>
-            </div>
-            <span class="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-bold font-outfit">
-              3 Sak
-            </span>
-          </div>
-          <div class="bg-[#080e1e] p-2.5 rounded-xl border border-slate-800/80 grid grid-cols-2 gap-2 text-xs pl-2">
-            <div>
-              <span class="text-[10px] text-slate-400 block">Harga Jual Kios</span>
-              <span class="font-extrabold font-outfit text-emerald-400 text-sm">Rp 930.000</span>
-            </div>
-            <div class="border-l border-slate-800 pl-3">
-              <span class="text-[10px] text-slate-400 block">Modal (HPP Beli)</span>
-              <span class="font-bold font-outfit text-slate-300 text-sm">Rp 850.000</span>
-            </div>
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs">
+          <span class="text-[11px] font-medium text-slate-400 bg-slate-800/60 px-2.5 py-1 rounded-lg">
+            0 Invoice
+          </span>
+          
+          <div class="flex items-center gap-2">
+            <a href="https://wa.me/6281356789027" target="_blank" class="p-2 rounded-xl bg-emerald-600/15 text-emerald-400 border border-emerald-500/30 active:scale-95 transition flex items-center justify-center">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+            </a>
+            <button onclick="goTo('/transactions/add?customer=fathur', 'Faktur Baru')" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold font-outfit text-[11px] flex items-center gap-1 shadow-md shadow-blue-600/20 active:scale-95 transition">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Buat Nota</span>
+            </button>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- ======================================================== -->
-    <!-- 5. HALAMAN LAPORAN KEUANGAN LENGKAP -->
-    <!-- ======================================================== -->
-    <section id="page-reports" class="space-y-4 hidden pt-2">
-      <div>
-        <h2 class="text-base font-extrabold font-outfit text-white">Laporan Penjualan & Laba</h2>
-        <p class="text-[10px] text-slate-400">Sinkronisasi Retur & HPP Bersih</p>
-      </div>
-
-      <!-- 4 Kartu Ringkasan -->
-      <div class="grid grid-cols-2 gap-3">
-        <div class="bg-[#0f172e] p-3 rounded-xl border border-slate-800">
-          <p class="text-[10px] text-slate-400 font-medium">Total Penjualan</p>
-          <h3 class="text-sm font-bold font-outfit text-white mt-1">Rp 873.000</h3>
-        </div>
-        <div class="bg-[#0f172e] p-3 rounded-xl border border-slate-800">
-          <p class="text-[10px] text-slate-400 font-medium">HPP (Modal Bersih)</p>
-          <h3 class="text-sm font-bold font-outfit text-white mt-1">Rp 740.000</h3>
-        </div>
-      </div>
-
-      <!-- Tabel Rincian Keuangan Baku -->
-      <div class="bg-[#0f172e] rounded-2xl border border-slate-800/80 divide-y divide-slate-800 overflow-hidden shadow-sm text-xs">
-        <div class="p-3.5 space-y-1.5">
-          <span class="text-[10px] font-semibold text-emerald-400 block">PENDAPATAN</span>
-          <div class="flex justify-between text-slate-300">
-            <span>Penjualan Kotor</span>
-            <span>Rp 1.722.000</span>
+      <!-- Customer 3: Budi Santoso (Lunas & 0 Invoice) -->
+      <div class="customer-card bg-[#141f36] rounded-2xl border border-slate-800/80 p-3.5 space-y-3 shadow-md">
+        <div class="flex justify-between items-start">
+          <div class="space-y-0.5">
+            <h2 class="customer-name text-sm font-bold font-outfit text-white">Budi Santoso</h2>
+            <p class="customer-store text-xs text-slate-300 font-medium">Kios Tani Subur</p>
+            <p class="customer-phone text-[11px] text-slate-400 font-mono">081298765432</p>
           </div>
-          <div class="flex justify-between font-bold text-white pt-1 border-t border-slate-800">
-            <span>Total Pendapatan</span>
-            <span>Rp 1.722.000</span>
-          </div>
+          <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold font-outfit">
+            Lunas
+          </span>
         </div>
 
-        <div class="p-3.5 space-y-1.5">
-          <span class="text-[10px] font-semibold text-blue-400 block">PENJUALAN BERSIH</span>
-          <div class="flex justify-between text-rose-400">
-            <span>Diskon</span>
-            <span>( Rp 216.000 )</span>
-          </div>
-          <div class="flex justify-between text-rose-400">
-            <span>Pengembalian (Retur)</span>
-            <span>( Rp 633.000 )</span>
-          </div>
-          <div class="flex justify-between font-extrabold font-outfit text-blue-400 pt-1 border-t border-slate-800">
-            <span>Total Penjualan Bersih</span>
-            <span>Rp 873.000</span>
-          </div>
-        </div>
-
-        <div class="p-3.5 space-y-1.5 bg-slate-900/30">
-          <span class="text-[10px] font-semibold text-amber-400 block">LABA RUGI</span>
-          <div class="flex justify-between text-purple-300">
-            <span>HPP Bersih (Modal)</span>
-            <span>( Rp 740.000 )</span>
-          </div>
-          <div class="flex justify-between font-extrabold font-outfit text-amber-400 text-sm pt-2 border-t border-slate-700">
-            <span>TOTAL LABA BERSIH</span>
-            <span>Rp 133.000</span>
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs">
+          <span class="text-[11px] font-medium text-slate-400 bg-slate-800/60 px-2.5 py-1 rounded-lg">
+            0 Invoice
+          </span>
+          
+          <div class="flex items-center gap-2">
+            <a href="https://wa.me/6281298765432" target="_blank" class="p-2 rounded-xl bg-emerald-600/15 text-emerald-400 border border-emerald-500/30 active:scale-95 transition flex items-center justify-center">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+            </a>
+            <button onclick="goTo('/transactions/add?customer=budi', 'Faktur Baru')" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold font-outfit text-[11px] flex items-center gap-1 shadow-md shadow-blue-600/20 active:scale-95 transition">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Buat Nota</span>
+            </button>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- ======================================================== -->
-    <!-- 6. HALAMAN PENGATURAN & PROFIL -->
-    <!-- ======================================================== -->
-    <section id="page-settings" class="space-y-4 hidden pt-2">
-      <h2 class="text-base font-extrabold font-outfit text-white">Pengaturan Sistem</h2>
-      <div class="bg-[#0f172e] rounded-2xl border border-slate-800/80 divide-y divide-slate-800 text-xs">
-        <button onclick="navigate('profile')" class="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/40">
-          <span>Profil Pengguna & Usaha</span>
-          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
-        </button>
-        <button class="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/40">
-          <span>Pengaturan Pajak & Ongkir</span>
-          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
-        </button>
-        <button class="w-full p-3.5 flex justify-between items-center text-left hover:bg-slate-800/40">
-          <span>Pencadangan Database (Backup)</span>
-          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
-        </button>
-      </div>
-    </section>
-
-    <section id="page-profile" class="space-y-4 hidden pt-2">
-      <h2 class="text-base font-extrabold font-outfit text-white">Profil Pengguna</h2>
-      <div class="bg-[#0f172e] rounded-2xl border border-slate-800/80 p-4 text-center space-y-2 text-xs">
-        <div class="w-16 h-16 rounded-full bg-blue-600 text-white font-extrabold font-outfit text-xl flex items-center justify-center mx-auto">U</div>
-        <h3 class="font-bold text-sm text-white font-outfit">Ucup</h3>
-        <p class="text-slate-400">Distributor Resmi Pupuk & Pestisida Banyuwangi</p>
-      </div>
     </section>
 
   </main>
 
-  <!-- ======================================================== -->
-  <!-- BOTTOM NAVIGATION BAR -->
-  <!-- Urutan: Home, Kios, Tambah Transaksi, Stok, Pengaturan -->
-  <!-- ======================================================== -->
-  <nav class="fixed bottom-0 left-0 right-0 z-50 bg-[#0d162d]/95 backdrop-blur-md border-t border-slate-800/80 h-16 flex items-center justify-around px-2 max-w-md mx-auto">
+  <!-- ================= BOTTOM NAVIGATION BAR ================= -->
+  <nav class="fixed bottom-0 left-0 right-0 z-50 bg-[#0d1527]/95 backdrop-blur-md border-t border-slate-800/80 h-16 flex items-center justify-around px-2 max-w-md mx-auto">
     
     <!-- 1. Home -->
-    <button onclick="navigate('home')" id="nav-home" class="nav-btn flex flex-col items-center justify-center flex-1 py-1 text-blue-500 font-semibold">
+    <button onclick="goTo('/', 'Home')" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-white">
       <i data-lucide="home" class="w-5 h-5"></i>
       <span class="text-[10px] mt-1 font-outfit">Home</span>
     </button>
 
-    <!-- 2. Kios -->
-    <button onclick="navigate('kios')" id="nav-kios" class="nav-btn flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-white">
+    <!-- 2. Kios (Aktif) -->
+    <button class="flex flex-col items-center justify-center flex-1 py-1 text-blue-500 font-semibold">
       <i data-lucide="store" class="w-5 h-5"></i>
       <span class="text-[10px] mt-1 font-outfit">Kios</span>
     </button>
 
     <!-- 3. Tambah Transaksi (Floating Button di Tengah) -->
-    <button onclick="navigate('sales-add')" id="nav-sales-add" class="flex flex-col items-center justify-center flex-1 py-1 -mt-4 group">
-      <div class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-600/40 border-4 border-[#080e1e] group-hover:scale-105 transition-transform">
+    <button onclick="goTo('/transactions/add', 'Tambah Transaksi')" class="flex flex-col items-center justify-center flex-1 py-1 -mt-5 group">
+      <div class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-600/40 border-4 border-[#0b1222] group-hover:scale-105 transition-transform">
         <i data-lucide="plus" class="w-6 h-6"></i>
       </div>
       <span class="text-[10px] mt-0.5 font-outfit text-slate-300 font-medium">Transaksi</span>
     </button>
 
     <!-- 4. Stok -->
-    <button onclick="navigate('stock')" id="nav-stock" class="nav-btn flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-white">
+    <button onclick="goTo('/products', 'Stok')" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-white">
       <i data-lucide="boxes" class="w-5 h-5"></i>
       <span class="text-[10px] mt-1 font-outfit">Stok</span>
     </button>
 
     <!-- 5. Pengaturan -->
-    <button onclick="navigate('settings')" id="nav-settings" class="nav-btn flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-white">
+    <button onclick="goTo('/settings', 'Pengaturan')" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-white">
       <i data-lucide="settings" class="w-5 h-5"></i>
       <span class="text-[10px] mt-1 font-outfit">Pengaturan</span>
     </button>
 
   </nav>
 
-  <!-- ================= ROUTING JAVASCRIPT ================= -->
+  <!-- ================= LOGIKA JAVASCRIPT ================= -->
   <script>
-    const allPages = ['home', 'kios', 'sales-add', 'stock', 'reports', 'settings', 'profile'];
+    function filterCustomers() {
+      const query = document.getElementById('customerSearch').value.toLowerCase();
+      const cards = document.querySelectorAll('.customer-card');
 
-    function navigate(targetPage) {
-      allPages.forEach(p => {
-        const pageEl = document.getElementById(`page-${p}`);
-        const navEl = document.getElementById(`nav-${p}`);
-        if (pageEl) pageEl.classList.add('hidden');
-        if (navEl) {
-          navEl.classList.remove('text-blue-500', 'font-semibold');
-          navEl.classList.add('text-slate-400');
+      cards.forEach(card => {
+        const name = card.querySelector('.customer-name').innerText.toLowerCase();
+        const store = card.querySelector('.customer-store').innerText.toLowerCase();
+        const phone = card.querySelector('.customer-phone').innerText.toLowerCase();
+
+        if (name.includes(query) || store.includes(query) || phone.includes(query)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
         }
       });
+    }
 
-      const activePage = document.getElementById(`page-${targetPage}`);
-      const activeNav = document.getElementById(`nav-${targetPage}`);
-      
-      if (activePage) activePage.classList.remove('hidden');
-      if (activeNav) {
-        activeNav.classList.add('text-blue-500', 'font-semibold');
-        activeNav.classList.remove('text-slate-400');
-      }
+    function setFilter(type) {
+      alert(`Menerapkan filter: ${type}`);
+    }
 
-      window.scrollTo(0, 0);
+    function goTo(path, title) {
+      alert(`Navigasi ke: ${title} (${path})`);
     }
 
     document.addEventListener('DOMContentLoaded', () => {

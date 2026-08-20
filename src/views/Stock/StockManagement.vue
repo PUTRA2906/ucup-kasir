@@ -2,8 +2,82 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Stok Gudang" class="hidden md:block" />
     <div class="space-y-6 px-4 md:px-0">
-      <!-- Statistik Cards -->
-      <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <!-- ===== MOBILE: Header & Tombol Penyesuaian ===== -->
+      <div class="flex items-center justify-between md:hidden">
+        <div>
+          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
+            Stok Gudang
+          </h1>
+          <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+            {{ settingsStore.storeSubtitle }} • {{ stats.totalProducts }} Item Terdata
+          </p>
+        </div>
+        <button
+          @click="openAdjustmentModal"
+          class="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-3.5 py-2 text-xs font-bold text-white shadow-md transition active:scale-95"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Penyesuaian</span>
+        </button>
+      </div>
+
+      <!-- ===== MOBILE: Metrics Strip ===== -->
+      <div
+        class="flex items-center justify-between divide-x divide-gray-200 rounded-2xl border border-gray-200 bg-white p-3 text-center md:hidden dark:divide-gray-800 dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <div class="flex-1 px-1">
+          <span class="block text-[10px] font-medium text-gray-500 dark:text-gray-400">Total Jenis</span>
+          <span class="mt-0.5 block text-sm font-extrabold text-gray-900 dark:text-white">{{ stats.totalProducts }}</span>
+        </div>
+        <div class="flex-1 px-1">
+          <span class="block text-[10px] font-medium text-gray-500 dark:text-gray-400">Total Fisik</span>
+          <span class="mt-0.5 block text-sm font-extrabold text-success-500">{{ stats.totalStock }}</span>
+        </div>
+        <div class="flex-1 px-1">
+          <span class="block text-[10px] font-medium text-warning-500">Menipis</span>
+          <span class="mt-0.5 block text-sm font-extrabold text-warning-500">{{ stats.lowStock }}</span>
+        </div>
+        <div class="flex-1 px-1">
+          <span class="block text-[10px] font-medium text-gray-500 dark:text-gray-400">Habis</span>
+          <span class="mt-0.5 block text-sm font-extrabold text-gray-900 dark:text-white">{{ stats.outOfStock }}</span>
+        </div>
+      </div>
+
+      <!-- ===== MOBILE: Search & Filter Chips ===== -->
+      <div class="space-y-2.5 md:hidden">
+        <div class="relative">
+          <svg class="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input
+            v-model="mobileSearch"
+            type="text"
+            placeholder="Cari nama produk, SKU..."
+            class="w-full rounded-2xl border border-gray-200 bg-white pl-10 pr-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none dark:border-gray-800 dark:bg-white/[0.03] dark:text-white"
+          />
+        </div>
+
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs">
+          <button
+            v-for="chip in mobileFilterChips"
+            :key="chip.value"
+            @click="mobileFilter = chip.value"
+            class="whitespace-nowrap rounded-xl px-3.5 py-1.5 font-semibold transition"
+            :class="
+              mobileFilter === chip.value
+                ? 'bg-brand-600 text-white shadow-sm'
+                : 'border border-gray-200 bg-white text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400'
+            "
+          >
+            {{ chip.label }} ({{ chip.count }})
+          </button>
+        </div>
+      </div>
+
+      <!-- Statistik Cards (Desktop) -->
+      <div class="hidden grid-cols-1 gap-4 md:grid lg:grid-cols-4">
         <div class="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4 sm:p-6 dark:border-white/[0.08] dark:bg-white/[0.02]">
           <div class="absolute left-0 top-0 h-full w-1 bg-brand-500"></div>
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -65,7 +139,83 @@
         </div>
       </div>
 
-      <!-- DataTable -->
+      <!-- ===== MOBILE: List Produk ===== -->
+      <div class="space-y-2.5 md:hidden">
+        <div
+          v-if="mobileFilteredProducts.length === 0"
+          class="rounded-2xl border border-dashed border-gray-300 bg-white p-6 text-center dark:border-gray-700 dark:bg-white/[0.03]"
+        >
+          <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ada produk yang cocok.</p>
+        </div>
+
+        <router-link
+          v-for="product in mobileFilteredProducts.slice((mobilePage - 1) * 8, mobilePage * 8)"
+          :key="product.id"
+          :to="`/products/${product.id}`"
+          class="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-3.5 transition active:scale-[0.99] dark:border-gray-800 dark:bg-white/[0.03]"
+          :class="
+            product.stock === 0
+              ? 'border-error-500/30'
+              : product.stock <= (product.minimum_stock || 10)
+                ? 'border-warning-500/30'
+                : ''
+          "
+        >
+          <div class="max-w-[68%] space-y-0.5">
+            <h2 class="text-xs font-bold leading-snug text-gray-900 dark:text-white">
+              {{ product.name }}
+            </h2>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400">
+              {{ product.category?.name || '-' }} • SKU: {{ product.sku || '-' }}
+            </p>
+          </div>
+          <div class="text-right">
+            <span
+              class="block text-xs font-bold"
+              :class="stockTextClass(product)"
+            >
+              {{ product.stock }} Pcs
+            </span>
+            <span
+              class="mt-0.5 inline-block rounded border px-1.5 py-0.5 text-[9px] font-medium"
+              :class="stockBadgeClass(product)"
+            >
+              {{ stockBadgeLabel(product) }}
+            </span>
+          </div>
+        </router-link>
+      </div>
+
+      <!-- ===== MOBILE: Paginasi ===== -->
+      <div
+        v-if="mobileFilteredProducts.length > 8"
+        class="flex items-center justify-between pt-1 text-xs md:hidden"
+      >
+        <span class="text-[11px] text-gray-500 dark:text-gray-400">
+          Hal. <span class="font-bold text-gray-900 dark:text-white">{{ mobilePage }}</span> dari {{ mobileTotalPages }}
+        </span>
+        <div class="flex gap-1.5">
+          <button
+            :disabled="mobilePage <= 1"
+            :class="mobilePage <= 1 ? 'cursor-not-allowed opacity-40' : ''"
+            class="rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-gray-600 transition active:scale-95 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
+            @click="mobilePage--"
+          >
+            « Prev
+          </button>
+          <button
+            :disabled="mobilePage >= mobileTotalPages"
+            :class="mobilePage >= mobileTotalPages ? 'cursor-not-allowed opacity-40' : ''"
+            class="rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-gray-600 transition active:scale-95 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
+            @click="mobilePage++"
+          >
+            Next »
+          </button>
+        </div>
+      </div>
+
+      <!-- DataTable (Desktop) -->
+      <div class="hidden md:block">
       <DataTable
         :columns="columns"
         :data="formattedProducts"
@@ -169,6 +319,7 @@
           </div>
         </template>
       </DataTable>
+      </div>
     </div>
 
     <!-- Stock Adjustment Modal -->
@@ -255,6 +406,11 @@ const selectedProduct = ref<any>(null)
 const minimumStockValue = ref(10)
 const filters = ref({ category: '', status: '', stock: '' })
 
+// Mobile state
+const mobileSearch = ref('')
+const mobileFilter = ref('all')
+const mobilePage = ref(1)
+
 const categoryOptions = computed(() => [
   { value: '', label: 'Semua Kategori' },
   ...categoriesStore.categories.map(cat => ({
@@ -304,6 +460,78 @@ const columns = [
   { key: 'stock', label: 'STOK SAAT INI', sortable: true, width: 'w-2/12' },
   { key: 'minimum_stock', label: 'STOK MINIMUM', sortable: true, width: 'w-2/12' },
 ]
+
+const mobileFilterChips = computed(() => {
+  const products = productsStore.products
+  return [
+    { value: 'all', label: 'Semua', count: products.length },
+    { value: 'low', label: 'Menipis', count: products.filter(p => p.stock > 0 && p.stock <= (p.minimum_stock || 10)).length },
+    { value: 'out', label: 'Habis', count: products.filter(p => p.stock === 0).length },
+    ...categoriesStore.categories.map(cat => ({
+      value: `cat:${cat.id}`,
+      label: cat.name,
+      count: products.filter(p => p.category_id === cat.id).length
+    }))
+  ]
+})
+
+const mobileFilteredProducts = computed(() => {
+  let result = productsStore.products
+
+  if (mobileFilter.value === 'low') {
+    result = result.filter(p => p.stock > 0 && p.stock <= (p.minimum_stock || 10))
+  } else if (mobileFilter.value === 'out') {
+    result = result.filter(p => p.stock === 0)
+  } else if (mobileFilter.value.startsWith('cat:')) {
+    const catId = mobileFilter.value.split(':')[1]
+    result = result.filter(p => p.category_id === catId)
+  } else if (mobileFilter.value === 'all') {
+    result = result
+  } else {
+    result = result.filter(p => p.category_id === mobileFilter.value)
+  }
+
+  const q = mobileSearch.value.trim().toLowerCase()
+  if (q) {
+    result = result.filter(
+      p =>
+        p.name.toLowerCase().includes(q) ||
+        (p.sku || '').toLowerCase().includes(q) ||
+        (p.barcode || '').toLowerCase().includes(q)
+    )
+  }
+
+  return [...result].sort((a, b) => a.name.localeCompare(b.name))
+})
+
+const mobileTotalPages = computed(() =>
+  Math.max(1, Math.ceil(mobileFilteredProducts.value.length / 8))
+)
+
+const stockTextClass = (product: any) => {
+  const min = product.minimum_stock || 10
+  if (product.stock === 0) return 'text-error-500'
+  if (product.stock <= min) return 'text-warning-500'
+  return 'text-gray-900 dark:text-white'
+}
+
+const stockBadgeClass = (product: any) => {
+  const min = product.minimum_stock || 10
+  if (product.stock === 0) {
+    return 'bg-error-500/10 text-error-500 border-error-500/20'
+  }
+  if (product.stock <= min) {
+    return 'bg-warning-500/10 text-warning-500 border-warning-500/20'
+  }
+  return 'bg-success-500/10 text-success-500 border-success-500/20'
+}
+
+const stockBadgeLabel = (product: any) => {
+  const min = product.minimum_stock || 10
+  if (product.stock === 0) return 'Habis'
+  if (product.stock <= min) return 'Menipis'
+  return 'Stok Aman'
+}
 
 const getStockStatus = (stock: number, minimumStock: number = 10) => {
   if (stock === 0) {

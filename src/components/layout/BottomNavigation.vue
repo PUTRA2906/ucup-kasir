@@ -53,9 +53,9 @@
 
     <!-- Stok -->
     <router-link
-      to="/products"
+      to="/stock"
       class="nav-btn flex flex-1 flex-col items-center justify-center py-1 transition-colors"
-      :class="isActive('/products') ? 'font-semibold text-blue-500' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'"
+      :class="isActive('/stock') ? 'font-semibold text-blue-500' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'"
     >
       <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path

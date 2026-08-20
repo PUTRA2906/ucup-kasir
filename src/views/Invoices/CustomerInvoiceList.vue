@@ -1,7 +1,219 @@
 <template>
   <AdminLayout>
     <PageBreadcrumb pageTitle="Invoice Pelanggan" class="hidden md:block" />
-    <div class="space-y-6 px-4 md:px-0">
+
+    <!-- Mobile View -->
+    <div class="md:hidden space-y-4 px-4 pb-6">
+      <!-- Loading Skeleton -->
+      <div v-if="loading" class="space-y-4">
+        <LoadingSkeleton type="card" />
+        <div class="grid grid-cols-3 gap-3">
+          <LoadingSkeleton type="stats" />
+          <LoadingSkeleton type="stats" />
+          <LoadingSkeleton type="stats" />
+        </div>
+        <LoadingSkeleton type="card" />
+      </div>
+
+      <!-- Customer tidak ditemukan -->
+      <div
+        v-else-if="!customer"
+        class="rounded-2xl border border-gray-200 bg-white p-8 text-center dark:border-gray-800 dark:bg-white/[0.03]"
+      >
+        <p class="text-gray-600 dark:text-gray-400">Customer tidak ditemukan</p>
+        <button
+          @click="router.push(`/customer-invoices/${encodeURIComponent(kecamatan)}`)"
+          class="mt-4 rounded-xl bg-brand-500 px-4 py-2 text-sm font-bold text-white hover:bg-brand-600"
+        >
+          Kembali Pilih Customer
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div v-else class="space-y-4">
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <button
+              @click="router.push(`/customer-invoices/${encodeURIComponent(kecamatan)}`)"
+              class="p-2 rounded-xl bg-gray-100 text-gray-600 hover:text-gray-900 border border-gray-200 active:scale-95 transition dark:bg-white/[0.03] dark:border-gray-800 dark:text-gray-400 dark:hover:text-white"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div>
+              <h1 class="text-xl font-extrabold text-gray-900 tracking-tight leading-tight dark:text-white">
+                Daftar Invoice
+              </h1>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400">Riwayat transaksi & status pembayaran</p>
+            </div>
+          </div>
+          <button
+            @click="router.push(`/customer-invoices/${encodeURIComponent(kecamatan)}`)"
+            class="text-xs font-bold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-xl border border-gray-200 active:scale-95 transition dark:bg-white/[0.03] dark:border-gray-800 dark:text-gray-300"
+          >
+            Ganti
+          </button>
+        </div>
+
+        <!-- Kartu Profil Customer -->
+        <div class="bg-white rounded-3xl border border-gray-200 p-4 space-y-3.5 shadow-sm dark:bg-white/[0.03] dark:border-gray-800">
+          <!-- Identitas -->
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3 min-w-0 flex-1">
+              <div class="w-10 h-10 flex-shrink-0 rounded-2xl bg-brand-100 text-brand-600 border border-brand-200 flex items-center justify-center font-extrabold text-sm dark:bg-brand-500/20 dark:text-brand-400 dark:border-brand-500/30">
+                {{ customerInitial }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <h2 class="text-sm font-bold text-gray-900 leading-tight break-words dark:text-white">{{ customer.name }}</h2>
+                <p class="text-[11px] text-gray-500 leading-snug break-words dark:text-gray-400">{{ customerSubtitle }}</p>
+              </div>
+            </div>
+            <button
+              @click="goToAddTransaction"
+              class="flex-shrink-0 px-2.5 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-[11px] flex items-center gap-1 shadow-md shadow-brand-500/20 active:scale-95 transition whitespace-nowrap"
+            >
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Faktur</span>
+            </button>
+          </div>
+
+          <!-- Metrik 3 Kolom -->
+          <div class="bg-gray-50 rounded-2xl p-2.5 border border-gray-200 grid grid-cols-3 gap-1 text-center divide-x divide-gray-200 dark:bg-gray-900/50 dark:border-gray-800 dark:divide-gray-800">
+            <div>
+              <span class="text-[10px] text-gray-500 block font-medium dark:text-gray-400">Nota</span>
+              <span class="text-xs font-extrabold text-gray-900 dark:text-white">{{ filteredInvoices.length }} Inv</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-gray-500 block font-medium dark:text-gray-400">Total Order</span>
+              <span class="text-xs font-extrabold text-success-600 dark:text-success-400">{{ formatCurrencyShort(totalBill) }}</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-warning-600 block font-medium dark:text-warning-400">Sisa Piutang</span>
+              <span class="text-xs font-extrabold text-error-600 dark:text-error-400">{{ formatCurrencyShort(totalRemaining) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search & Quick Filter -->
+        <div class="space-y-2.5">
+          <div class="relative">
+            <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Cari nomor faktur / invoice..."
+              class="w-full bg-white border border-gray-200 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-500 shadow-sm dark:bg-white/[0.03] dark:border-gray-800 dark:text-white dark:placeholder-gray-500"
+            />
+          </div>
+
+          <!-- Quick Filter Status -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs pb-1">
+            <button
+              @click="filters.paymentStatus = ''"
+              :class="[
+                'px-3.5 py-1.5 rounded-xl font-semibold whitespace-nowrap shadow-sm transition',
+                filters.paymentStatus === ''
+                  ? 'bg-brand-500 text-white'
+                  : 'bg-white text-gray-700 border border-gray-200 dark:bg-white/[0.03] dark:border-gray-800 dark:text-gray-300'
+              ]"
+            >
+              Semua ({{ customerInvoices.length }})
+            </button>
+            <button
+              @click="filters.paymentStatus = 'belum_lunas'"
+              :class="[
+                'px-3.5 py-1.5 rounded-xl whitespace-nowrap transition',
+                filters.paymentStatus === 'belum_lunas'
+                  ? 'bg-error-500 text-white font-semibold shadow-sm'
+                  : 'bg-white text-error-600 border border-error-200 dark:bg-white/[0.03] dark:border-error-500/20 dark:text-error-400'
+              ]"
+            >
+              Belum Lunas ({{ unpaidCount }})
+            </button>
+            <button
+              @click="filters.paymentStatus = 'lunas'"
+              :class="[
+                'px-3.5 py-1.5 rounded-xl whitespace-nowrap transition',
+                filters.paymentStatus === 'lunas'
+                  ? 'bg-success-500 text-white font-semibold shadow-sm'
+                  : 'bg-white text-success-600 border border-success-200 dark:bg-white/[0.03] dark:border-success-500/20 dark:text-success-400'
+              ]"
+            >
+              Lunas ({{ paidCount }})
+            </button>
+          </div>
+        </div>
+
+        <!-- List Item Invoice -->
+        <div class="space-y-2.5">
+          <div
+            v-for="invoice in filteredInvoices"
+            :key="invoice.id"
+            @click="viewInvoice(invoice)"
+            :class="[
+              'bg-white rounded-2xl border p-3.5 flex items-center justify-between relative overflow-hidden active:scale-[0.99] transition cursor-pointer shadow-sm',
+              invoice.payment_status === 'belum_lunas'
+                ? 'border-error-300 dark:border-error-500/30'
+                : 'border-gray-200 dark:border-gray-800',
+              'dark:bg-white/[0.03]'
+            ]"
+          >
+            <div
+              v-if="invoice.payment_status === 'belum_lunas'"
+              class="absolute left-0 top-0 bottom-0 w-1 bg-error-500"
+            ></div>
+            <div :class="['space-y-1', invoice.payment_status === 'belum_lunas' ? 'pl-1' : '']">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-gray-900 dark:text-white">{{ formatDateShort(invoice.created_at) }}</span>
+                <span
+                  :class="[
+                    'text-[9px] px-1.5 py-0.5 rounded border font-semibold',
+                    invoice.payment_status === 'lunas'
+                      ? 'text-success-600 bg-success-50 border-success-200 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20'
+                      : 'text-error-600 bg-error-50 border-error-200 dark:bg-error-500/10 dark:text-error-400 dark:border-error-500/20'
+                  ]"
+                >
+                  {{ invoice.payment_status === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
+                </span>
+              </div>
+              <p class="text-[10px] text-gray-500 font-mono dark:text-gray-400">{{ invoice.transaction_number }}</p>
+            </div>
+            <div class="text-right">
+              <span
+                :class="[
+                  'text-xs font-black block',
+                  invoice.payment_status === 'belum_lunas'
+                    ? 'text-error-600 dark:text-error-400'
+                    : 'text-gray-900 dark:text-white'
+                ]"
+              >
+                {{ invoice.remaining_amount > 0 ? formatCurrency(invoice.remaining_amount) : formatCurrency(invoice.total) }}
+              </span>
+              <span class="text-[9px] text-gray-500 dark:text-gray-400">
+                {{ invoice.payment_method === 'tempo' ? `Tempo: ${formatTempo(invoice.created_at)}` : formatPaymentMethod(invoice.payment_method) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div
+            v-if="filteredInvoices.length === 0"
+            class="bg-white rounded-2xl border border-gray-200 p-8 text-center dark:bg-white/[0.03] dark:border-gray-800"
+          >
+            <p class="text-gray-500 text-sm dark:text-gray-400">Tidak ada invoice ditemukan</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop View -->
+    <div class="hidden md:block space-y-6 px-4 md:px-0">
       <!-- Loading Skeleton -->
       <div v-if="loading" class="space-y-6">
         <LoadingSkeleton type="card" />
@@ -56,18 +268,8 @@
                 </p>
               </div>
             </div>
-            <!-- Tombol untuk mobile -->
-            <button
-              @click="router.push(`/customer-invoices/${encodeURIComponent(kecamatan)}`)"
-              class="md:hidden flex-shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
-            >
-              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-              Ganti
-            </button>
             <!-- Tombol untuk desktop -->
-            <div class="hidden md:inline-flex flex-shrink-0 self-start items-center gap-2">
+            <div class="flex-shrink-0 self-start items-center gap-2">
               <button
                 @click="router.push(`/customer-invoices/${encodeURIComponent(kecamatan)}`)"
                 class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
@@ -91,23 +293,10 @@
               <p class="text-lg font-bold text-warning-600 sm:mt-0.5 dark:text-warning-400">{{ formatCurrency(totalRemaining) }}</p>
             </div>
           </div>
-
-          <!-- Tombol Tambah Transaksi untuk Mobile -->
-          <div class="mt-4 md:hidden">
-            <button
-              @click="goToAddTransaction"
-              class="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-600"
-            >
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Tambah Transaksi
-            </button>
-          </div>
         </div>
 
         <!-- Desktop Filter -->
-        <div class="hidden md:block mb-4">
+        <div class="mb-4">
           <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -312,6 +501,7 @@ const kecamatan = route.params.kecamatan as string
 const customerId = route.params.customerId as string
 const loading = ref(true)
 const showFilterModal = ref(false)
+const searchQuery = ref('')
 
 // Filter state
 const filters = ref({
@@ -336,6 +526,14 @@ const customerInvoices = computed(() => {
 
 const filteredInvoices = computed(() => {
   let result = [...customerInvoices.value]
+
+  // Filter by search query
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase()
+    result = result.filter(t =>
+      t.transaction_number.toLowerCase().includes(query)
+    )
+  }
 
   // Filter by payment status
   if (filters.value.paymentStatus) {
@@ -378,6 +576,14 @@ const filteredInvoices = computed(() => {
 
   return result
 })
+
+const unpaidCount = computed(() =>
+  customerInvoices.value.filter(t => t.payment_status === 'belum_lunas').length
+)
+
+const paidCount = computed(() =>
+  customerInvoices.value.filter(t => t.payment_status === 'lunas').length
+)
 
 const customerInitial = computed(() => {
   const name = customer.value?.name || '?'
@@ -448,6 +654,15 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value || 0)
 
+const formatCurrencyShort = (value: number) => {
+  if (value >= 1000000) {
+    return `Rp ${(value / 1000000).toFixed(1)}jt`
+  } else if (value >= 1000) {
+    return `Rp ${(value / 1000).toFixed(0)}k`
+  }
+  return formatCurrency(value)
+}
+
 const formatDate = (value: string) => {
   const date = new Date(value)
   return date.toLocaleDateString('id-ID', {
@@ -459,11 +674,33 @@ const formatDate = (value: string) => {
   })
 }
 
+const formatDateShort = (value: string) => {
+  const date = new Date(value)
+  return date.toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+const formatTempo = (createdAt: string) => {
+  const date = new Date(createdAt)
+  date.setDate(date.getDate() + 2) // Tempo 2 hari dari tanggal transaksi
+  return date.toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'short',
+  })
+}
+
 const formatPaymentMethod = (value: string) => {
   const methods: Record<string, string> = {
     tunai: 'Tunai',
+    cash: 'Tunai',
     transfer: 'Transfer',
     qris: 'QRIS',
+    tempo: 'Tempo',
   }
   return methods[value] || value
 }
@@ -482,3 +719,13 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>
