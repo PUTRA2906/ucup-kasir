@@ -2,12 +2,21 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Invoice Pelanggan" class="hidden md:block" />
     <div class="space-y-6 px-4 md:px-0">
-      <!-- Loading -->
-      <div
-        v-if="loading"
-        class="flex items-center justify-center rounded-xl border border-gray-200 bg-white py-16 dark:border-gray-800 dark:bg-white/[0.03]"
-      >
-        <p class="text-sm text-gray-500 dark:text-gray-400">Memuat data...</p>
+      <!-- Loading Skeleton -->
+      <div v-if="loading" class="space-y-6">
+        <LoadingSkeleton type="card" />
+        <div class="grid grid-cols-3 gap-3">
+          <LoadingSkeleton type="stats" />
+          <LoadingSkeleton type="stats" />
+          <LoadingSkeleton type="stats" />
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+          <table class="w-full">
+            <tbody>
+              <LoadingSkeleton v-for="i in 5" :key="i" type="table-row" :columns="6" />
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- Customer tidak ditemukan -->
@@ -288,6 +297,7 @@ import DataTable from '@/components/tables/DataTable.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import InvoiceFilterModal from '@/components/common/InvoiceFilterModal.vue'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import { useCustomersStore } from '@/stores/customers'
 import { useTransactionsStore } from '@/stores/transactions'
 import { useToast } from '@/composables/useToast'

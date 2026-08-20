@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Gradasi Background -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1b3e"/>
+      <stop offset="50%" stop-color="#080e1e"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+
+    <!-- Gradasi Aksen Biru ke Cyan -->
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+
+    <!-- Gradasi Daun / Agro Emerald -->
+    <linearGradient id="agroGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="50%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#34d399"/>
+    </linearGradient>
+
+    <!-- Shadow Glow -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#2563eb" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Base Squircle Container (Icon Shape) -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="4"/>
+
+  <!-- Subtle Outer Border Glow -->
+  <rect x="20" y="20" width="472" height="472" rx="108" fill="none" stroke="url(#primaryGrad)" stroke-width="2" stroke-opacity="0.2"/>
+
+  <!-- Logo Graphics Group -->
+  <g filter="url(#glow)">
+    <!-- 1. Simbol Huruf 'U' Dinamis / Aliran Distribusi -->
+    <path d="M156 160 V260 C156 320 200 360 256 360 C312 360 356 320 356 260 V160" 
+          fill="none" 
+          stroke="url(#primaryGrad)" 
+          stroke-width="36" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"/>
+
+    <!-- 2. Titik Node Transaksi / Digital Pin -->
+    <circle cx="156" cy="160" r="18" fill="#38bdf8"/>
+    
+    <!-- 3. Tunas Daun Pupuk / Pertanian (Simbol Agro di Pusat U) -->
+    <path d="M256 320 C256 320 210 270 210 220 C210 185 235 165 256 165 C277 165 302 185 302 220 C302 270 256 320 256 320 Z" 
+          fill="url(#agroGrad)"/>
+    
+    <!-- Tulang Daun Minimalis -->
+    <path d="M256 310 V185 M256 240 L275 220 M256 265 L235 245" 
+          stroke="#064e3b" 
+          stroke-width="5" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          stroke-opacity="0.6"/>
+  </g>
+
+  <!-- Tagline Mini: UK (Ucup Kasir) -->
+  <text x="256" y="425" 
+        font-family="system-ui, -apple-system, sans-serif" 
+        font-size="28" 
+        font-weight="800" 
+        letter-spacing="6" 
+        fill="#94a3b8" 
+        text-anchor="middle" 
+        opacity="0.85">UCUP KASIR</text>
+</svg>
