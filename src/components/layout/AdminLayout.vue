@@ -11,7 +11,7 @@
         <slot></slot>
       </div>
     </div>
-    <bottom-navigation />
+    <bottom-navigation v-if="!hideBottomNav" />
   </div>
 </template>
 
@@ -22,4 +22,11 @@ import BottomNavigation from './BottomNavigation.vue'
 import { useSidebar } from '@/composables/useSidebar'
 import Backdrop from './Backdrop.vue'
 const { isExpanded, isHovered } = useSidebar()
+
+defineProps({
+  hideBottomNav: {
+    type: Boolean,
+    default: false,
+  },
+})
 </script>

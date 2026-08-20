@@ -1,7 +1,172 @@
 <template>
   <AdminLayout>
     <PageBreadcrumb pageTitle="Daftar Transaksi" class="hidden md:block" />
-    <div class="space-y-6 px-4 md:px-0">
+
+    <!-- Mobile Header -->
+    <div class="mb-4 flex items-center justify-between md:hidden">
+      <div class="flex items-center gap-2.5">
+        <button
+          @click="router.push('/')"
+          class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-lg font-extrabold leading-tight text-gray-900 dark:text-white">Daftar Transaksi</h1>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ transactionsStore.transactions.length }} Transaksi</p>
+        </div>
+      </div>
+      <button
+        @click="addTransaction"
+        class="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white shadow-lg hover:bg-blue-500"
+      >
+        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Transaksi Baru
+      </button>
+    </div>
+
+    <!-- Mobile Cards -->
+    <div class="space-y-3 pb-4 md:hidden">
+      <div
+        v-for="transaction in paginatedTransactions"
+        :key="transaction.id"
+        class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+      >
+        <div class="flex items-start justify-between">
+          <div class="flex-1 min-w-0" @click="viewTransaction(transaction)">
+            <p class="text-xs font-bold text-blue-600 dark:text-blue-400">{{ transaction.transaction_number }}</p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatDate(transaction.created_at) }}</p>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <span
+              :class="[
+                'rounded-full px-2 py-0.5 text-[10px] font-medium',
+                transaction.status === 'selesai'
+                  ? 'bg-success-100 text-success-700 dark:bg-success-900 dark:text-success-400'
+                  : 'bg-error-100 text-error-700 dark:bg-error-900 dark:text-error-400'
+              ]"
+            >
+              {{ transaction.status === 'selesai' ? 'Selesai' : 'Batal' }}
+            </span>
+            <button
+              @click.stop="toggleExpand(transaction.id)"
+              class="rounded-lg p-1 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            >
+              <svg
+                class="h-4 w-4 transition-transform"
+                :class="{ 'rotate-180': expandedCards.includes(transaction.id) }"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Collapsed View -->
+        <div v-if="!expandedCards.includes(transaction.id)" @click="viewTransaction(transaction)" class="mt-2">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-medium text-gray-900 dark:text-white">{{ transaction.customer_name || 'Tanpa customer' }}</p>
+            <p class="text-sm font-bold text-gray-900 dark:text-white">{{ formatCurrency(transaction.total) }}</p>
+          </div>
+        </div>
+
+        <!-- Expanded View -->
+        <div v-else class="mt-2 space-y-2">
+          <div class="border-t border-gray-100 pt-2 dark:border-gray-800">
+            <p class="text-xs font-medium text-gray-900 dark:text-white">{{ transaction.customer_name || 'Tanpa customer' }}</p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatPaymentMethod(transaction.payment_method) }}</p>
+          </div>
+
+          <div class="flex items-center justify-between border-t border-gray-100 pt-2 dark:border-gray-800">
+            <div>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400">Total</p>
+              <p class="text-sm font-bold text-gray-900 dark:text-white">{{ formatCurrency(transaction.total) }}</p>
+            </div>
+            <div class="text-right">
+              <span
+                :class="[
+                  'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
+                  transaction.payment_status === 'lunas'
+                    ? 'bg-success-100 text-success-700 dark:bg-success-900 dark:text-success-400'
+                    : 'bg-warning-100 text-warning-700 dark:bg-warning-900 dark:text-warning-400'
+                ]"
+              >
+                {{ transaction.payment_status === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
+              </span>
+              <p v-if="transaction.remaining_amount > 0" class="mt-1 text-xs font-medium text-warning-600 dark:text-warning-400">
+                Sisa: {{ formatCurrency(transaction.remaining_amount) }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 border-t border-gray-100 pt-2 dark:border-gray-800">
+            <button
+              @click.stop="viewTransaction(transaction)"
+              class="flex flex-1 items-center justify-center gap-1 rounded-lg border border-gray-300 bg-white py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              Detail
+            </button>
+            <button
+              v-if="transaction.status === 'selesai'"
+              @click.stop="voidTransaction(transaction)"
+              class="flex flex-1 items-center justify-center gap-1 rounded-lg border border-error-500 bg-transparent py-1.5 text-xs font-medium text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-500/15"
+            >
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
+              Batalkan
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-if="transactionsStore.transactions.length === 0" class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-800">
+        <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Belum ada transaksi</p>
+        <p class="text-[10px] text-gray-400 dark:text-gray-500">Klik "Transaksi Baru" untuk membuat transaksi pertama</p>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900">
+        <button
+          @click="currentPage--"
+          :disabled="currentPage === 1"
+          class="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-300 dark:hover:bg-gray-800"
+        >
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Prev
+        </button>
+        <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
+          Hal {{ currentPage }} dari {{ totalPages }}
+        </span>
+        <button
+          @click="currentPage++"
+          :disabled="currentPage === totalPages"
+          class="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-300 dark:hover:bg-gray-800"
+        >
+          Next
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Desktop DataTable -->
+    <div class="hidden space-y-6 px-4 md:block md:px-0">
       <!-- DataTable -->
       <DataTable
         :columns="columns"
@@ -233,6 +398,28 @@ const showBulkVoidDialog = ref(false)
 const transactionToVoid = ref<any>(null)
 const selectedTransactions = ref<string[]>([])
 const selectAllCheckbox = ref<HTMLInputElement | null>(null)
+const expandedCards = ref<string[]>([])
+const currentPage = ref(1)
+const perPage = 10
+
+const paginatedTransactions = computed(() => {
+  const start = (currentPage.value - 1) * perPage
+  const end = start + perPage
+  return transactionsStore.transactions.slice(start, end)
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(transactionsStore.transactions.length / perPage)
+})
+
+const toggleExpand = (id: string) => {
+  const index = expandedCards.value.indexOf(id)
+  if (index > -1) {
+    expandedCards.value.splice(index, 1)
+  } else {
+    expandedCards.value.push(id)
+  }
+}
 
 const allSelected = computed(() => {
   return transactionsStore.transactions.length > 0 && selectedTransactions.value.length === transactionsStore.transactions.length

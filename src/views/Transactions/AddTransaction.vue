@@ -3,25 +3,353 @@
     <PageBreadcrumb pageTitle="Transaksi Baru" class="hidden md:block" />
 
     <!-- Mobile Header with Close Button -->
-    <div class="mb-6 flex items-center gap-3 pl-2 pr-4 md:hidden">
+    <div class="mb-4 flex items-center justify-between md:hidden">
+      <div class="flex items-center gap-2.5">
+        <button
+          @click="router.push('/transactions')"
+          class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-lg font-extrabold leading-tight text-gray-900 dark:text-white">Transaksi Baru</h1>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatDateShort(new Date()) }}</p>
+        </div>
+      </div>
       <button
-        @click="router.push('/transactions')"
-        class="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+        type="button"
+        @click="resetForm"
+        class="text-xs font-bold text-gray-500 hover:text-error-500 dark:text-gray-400 dark:hover:text-error-400"
       >
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
+        Reset
       </button>
-      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Transaksi Baru</h1>
     </div>
 
     <form @submit.prevent="handleSubmit">
-      <div class="space-y-6">
+      <!-- Mobile Layout -->
+      <div class="space-y-4 pb-32 md:hidden">
+        <!-- 1. Card Data Customer -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div class="mb-2.5 flex items-center justify-between">
+            <label class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+              <svg class="h-3.5 w-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Data Customer
+            </label>
+            <span v-if="customersStore.customers.length > 0" class="text-[10px] font-medium text-blue-500">
+              Pilih dari Daftar
+            </span>
+          </div>
+
+          <button
+            v-if="!selectedCustomer"
+            type="button"
+            @click="showCustomerPicker = true"
+            class="group flex w-full items-center justify-between rounded-xl border border-dashed border-gray-300 bg-gray-50 p-3 text-left transition hover:border-blue-500 hover:bg-blue-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500 dark:hover:bg-blue-500/10"
+          >
+            <div class="flex items-center gap-2.5">
+              <div class="flex h-8 w-8 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10 text-blue-500 transition group-hover:bg-blue-500 group-hover:text-white">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div>
+                <span class="block text-xs font-bold text-gray-700 group-hover:text-gray-900 dark:text-gray-300 dark:group-hover:text-white">
+                  + Pilih Customer dari Daftar
+                </span>
+                <span class="text-[10px] text-gray-500 dark:text-gray-400">Klik untuk mencari mitra</span>
+              </div>
+            </div>
+            <svg class="h-4 w-4 text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          <div v-else class="flex items-center gap-3 rounded-xl border border-blue-500 bg-blue-50/50 p-3 dark:border-blue-500 dark:bg-blue-500/10">
+            <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-500 text-xs font-bold text-white">
+              {{ selectedCustomer.name.charAt(0).toUpperCase() }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-bold text-gray-900 dark:text-white">
+                {{ selectedCustomer.name }}
+                <span v-if="selectedCustomer.store_name" class="font-normal text-gray-600 dark:text-gray-400">
+                  ({{ selectedCustomer.store_name }})
+                </span>
+              </p>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                {{ selectedCustomer.kecamatan || '-' }}
+                <span v-if="selectedCustomer.phone"> · {{ selectedCustomer.phone }}</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              @click="selectedCustomerId = ''"
+              class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-error-600 dark:hover:bg-white/[0.03] dark:hover:text-error-500"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <p v-if="!selectedCustomerId && customersStore.customers.length > 0" class="mt-2 text-xs text-error-500 dark:text-error-400">
+            Customer harus dipilih
+          </p>
+          <p v-if="customersStore.customers.length === 0" class="mt-2 text-xs text-warning-600 dark:text-warning-400">
+            Belum ada customer.
+            <button
+              type="button"
+              @click="router.push('/customers/add')"
+              class="underline hover:no-underline"
+            >
+              Tambah baru
+            </button>
+          </p>
+        </div>
+
+        <!-- 2. Card Rincian Item -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div class="mb-3 flex items-center justify-between border-b border-gray-200 pb-2 dark:border-gray-700">
+            <div class="flex items-center gap-1.5">
+              <svg class="h-3.5 w-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Rincian Item</span>
+              <span class="rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                {{ cartItems.length }} item
+              </span>
+            </div>
+            <button
+              type="button"
+              @click="showProductPicker = true"
+              class="flex items-center gap-1 rounded-lg border border-blue-500/20 bg-blue-500/10 px-2.5 py-1 text-xs font-bold text-blue-500 hover:bg-blue-500/20"
+            >
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Tambah Produk
+            </button>
+          </div>
+
+          <!-- Empty State -->
+          <div v-if="cartItems.length === 0" class="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Keranjang masih kosong</p>
+            <p class="text-[10px] text-gray-400 dark:text-gray-500">Klik "Tambah Produk" untuk memilih barang</p>
+          </div>
+
+          <!-- Cart Items -->
+          <div v-else class="space-y-2.5">
+            <div
+              v-for="(item, index) in cartItems"
+              :key="item.product_id"
+              class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
+            >
+              <div class="mb-2.5 flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                  <h4 class="text-xs font-bold leading-snug text-gray-900 dark:text-white">{{ item.name }}</h4>
+                  <span class="text-[10px] text-gray-500 dark:text-gray-400">Stok: {{ item.stock }}</span>
+                </div>
+                <button
+                  type="button"
+                  @click="removeFromCart(item.product_id)"
+                  class="flex-shrink-0 p-1 text-gray-400 hover:text-error-500"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 border-t border-gray-200 pt-2 dark:border-gray-700">
+                <div>
+                  <label class="mb-0.5 block text-[10px] text-gray-500 dark:text-gray-400">Harga Jual (Rp)</label>
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    :value="formatNumber(item.price)"
+                    @input="updatePrice(item, ($event.target as HTMLInputElement).value)"
+                    class="w-full rounded-lg border border-gray-300 bg-white px-2 py-1 text-xs text-gray-900 focus:border-blue-500 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label class="mb-0.5 block text-[10px] text-gray-500 dark:text-gray-400">Jumlah (Qty)</label>
+                  <div class="flex items-center justify-between rounded-lg border border-gray-300 bg-white p-0.5 dark:border-gray-700 dark:bg-gray-900">
+                    <button
+                      type="button"
+                      @click="item.quantity = Math.max(1, item.quantity - 1); item.subtotal = item.quantity * item.price"
+                      class="flex h-6 w-6 items-center justify-center rounded text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                      -
+                    </button>
+                    <span class="w-7 text-center text-xs font-bold text-gray-900 dark:text-white">{{ item.quantity }}</span>
+                    <button
+                      type="button"
+                      @click="item.quantity = Math.min(item.stock, item.quantity + 1); item.subtotal = item.quantity * item.price"
+                      class="flex h-6 w-6 items-center justify-center rounded text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-2 flex items-center justify-between border-t border-gray-200 pt-2 text-xs dark:border-gray-700">
+                <span class="text-[10px] text-gray-500 dark:text-gray-400">Subtotal Item</span>
+                <span class="font-extrabold text-gray-900 dark:text-white">{{ formatCurrency(item.subtotal) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Return Items -->
+          <div v-if="returnItems.length > 0" class="mt-3 space-y-2 rounded-lg border border-error-200 bg-error-50 p-3 dark:border-error-500/30 dark:bg-error-500/10">
+            <div class="flex items-center justify-between">
+              <h4 class="flex items-center gap-1.5 text-xs font-semibold text-error-700 dark:text-error-400">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                </svg>
+                Item Retur ({{ returnItems.length }})
+              </h4>
+              <button
+                type="button"
+                @click="returnItems = []"
+                class="text-xs font-medium text-error-600 hover:text-error-700 dark:text-error-400"
+              >
+                Hapus
+              </button>
+            </div>
+            <div
+              v-for="item in returnItems"
+              :key="`${item.transaction_id}_${item.product_id}`"
+              class="flex items-center justify-between text-xs"
+            >
+              <span class="text-error-700 dark:text-error-300">
+                {{ item.product_name }} × {{ item.quantity }}
+                <span class="text-[10px] text-error-500 dark:text-error-400">({{ item.transaction_number }})</span>
+              </span>
+              <span class="font-medium text-error-600 dark:text-error-400">- {{ formatCurrency(item.subtotal) }}</span>
+            </div>
+          </div>
+
+          <!-- Button Klaim Retur -->
+          <button
+            v-if="selectedCustomerId && returnItems.length === 0"
+            type="button"
+            @click="showReturnPicker = true"
+            class="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-error-500 bg-transparent py-2 text-xs font-medium text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-500/15"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+            </svg>
+            Klaim Retur
+          </button>
+        </div>
+
+        <!-- 3. Card Metode Bayar & Diskon -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div class="mb-3 flex items-center justify-between border-b border-gray-200 pb-2 dark:border-gray-700">
+            <span class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+              <svg class="h-3.5 w-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+              Ringkasan & Pembayaran
+            </span>
+          </div>
+
+          <div class="mb-3 grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              @click="payment = { amount: netTotal, payment_method: 'tunai' }"
+              :class="[
+                'rounded-xl border p-2 text-center text-xs font-bold transition',
+                payment?.payment_method === 'tunai'
+                  ? 'border-blue-500 bg-blue-500 text-white shadow-sm'
+                  : 'border-gray-300 bg-gray-50 text-gray-700 hover:border-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
+              ]"
+            >
+              Tunai (Lunas)
+            </button>
+            <button
+              type="button"
+              @click="payment = { amount: 0, payment_method: 'tempo' }"
+              :class="[
+                'rounded-xl border p-2 text-center text-xs font-semibold transition',
+                payment?.payment_method === 'tempo'
+                  ? 'border-amber-500 bg-amber-500 text-white shadow-sm'
+                  : 'border-gray-300 bg-gray-50 text-gray-700 hover:border-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
+              ]"
+            >
+              Hutang / Tempo
+            </button>
+            <button
+              type="button"
+              @click="showPaymentModal = true"
+              :class="[
+                'rounded-xl border p-2 text-center text-xs font-semibold transition',
+                payment && payment.payment_method !== 'tunai' && payment.payment_method !== 'tempo' && payment.amount > 0 && payment.amount < netTotal
+                  ? 'border-purple-500 bg-purple-500 text-white shadow-sm'
+                  : 'border-gray-300 bg-gray-50 text-gray-700 hover:border-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
+              ]"
+            >
+              DP / Cicilan
+            </button>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400">Potongan / Diskon</span>
+              <div class="relative w-36">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] text-gray-500">Rp</span>
+                <input
+                  v-model="discountInput"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="0"
+                  class="w-full rounded-xl border border-gray-300 bg-gray-50 py-1.5 pl-8 pr-2.5 text-right text-xs text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-hidden dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                />
+              </div>
+            </div>
+
+            <div v-if="payment && payment.amount > 0" class="flex items-center justify-between">
+              <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400">Uang Diterima (Bayar)</span>
+              <div class="relative w-36">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] text-gray-500">Rp</span>
+                <input
+                  :value="formatNumber(payment.amount)"
+                  type="text"
+                  inputmode="numeric"
+                  disabled
+                  class="w-full rounded-xl border border-emerald-500/40 bg-emerald-50 py-1.5 pl-8 pr-2.5 text-right text-xs font-bold text-emerald-600 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-400"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sticky Bottom Bar Mobile -->
+      <div class="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between gap-3 border-t border-gray-200 bg-white/95 p-3.5 backdrop-blur-md md:hidden dark:border-gray-800 dark:bg-gray-900/95">
+        <div>
+          <span class="block text-[10px] font-medium text-gray-500 dark:text-gray-400">Total Bersih</span>
+          <span class="text-xl font-black leading-none text-gray-900 dark:text-white">{{ formatCurrency(netTotal) }}</span>
+        </div>
+        <button
+          type="submit"
+          :disabled="isSubmitting || !selectedCustomerId || cartItems.length === 0"
+          class="flex max-w-[200px] flex-1 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-xs font-extrabold text-white shadow-xl shadow-blue-600/30 hover:bg-blue-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-500"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{{ isSubmitting ? 'Menyimpan...' : 'Simpan Transaksi' }}</span>
+        </button>
+      </div>
+
+      <!-- Desktop Layout -->
+      <div class="hidden space-y-6 md:block">
         <!-- 1. Data Customer (Kepala Dokumen) -->
         <ComponentCard title="Data Customer" desc="Pilih customer untuk transaksi ini">
           <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -92,29 +420,30 @@
             </p>
             <p v-else class="text-sm text-gray-500 dark:text-gray-400">
               Total item: {{ cartItems.length }}
-            </p>              <div class="flex items-center gap-2">
-                <button
-                  v-if="selectedCustomerId"
-                  type="button"
-                  @click="showReturnPicker = true"
-                  class="inline-flex items-center gap-2 rounded-lg border border-error-500 bg-transparent px-4 py-2.5 text-sm font-medium text-error-600 hover:bg-error-50 focus:outline-hidden focus:ring-3 focus:ring-error-500/30 dark:text-error-400 dark:hover:bg-error-500/15"
-                >
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                  </svg>
-                  Klaim Retur
-                </button>
-                <button
-                  type="button"
-                  @click="showProductPicker = true"
-                  class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 focus:outline-hidden focus:ring-3 focus:ring-brand-500/30"
-                >
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  Tambah Produk
-                </button>
-              </div>
+            </p>
+            <div class="flex items-center gap-2">
+              <button
+                v-if="selectedCustomerId"
+                type="button"
+                @click="showReturnPicker = true"
+                class="inline-flex items-center gap-2 rounded-lg border border-error-500 bg-transparent px-4 py-2.5 text-sm font-medium text-error-600 hover:bg-error-50 focus:outline-hidden focus:ring-3 focus:ring-error-500/30 dark:text-error-400 dark:hover:bg-error-500/15"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                </svg>
+                Klaim Retur
+              </button>
+              <button
+                type="button"
+                @click="showProductPicker = true"
+                class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 focus:outline-hidden focus:ring-3 focus:ring-brand-500/30"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Tambah Produk
+              </button>
+            </div>
           </div>
 
           <!-- Table - Desktop -->
@@ -498,6 +827,27 @@ const formatDate = (date: Date) =>
     hour: '2-digit',
     minute: '2-digit',
   })
+
+const formatDateShort = (date: Date) =>
+  date.toLocaleDateString('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+
+const resetForm = () => {
+  if (confirm('Reset data transaksi ini?')) {
+    selectedCustomerId.value = ''
+    cartItems.splice(0, cartItems.length)
+    discountInput.value = ''
+    notes.value = ''
+    payment.value = null
+    returnItems.value = []
+  }
+}
 
 const formatPaymentMethod = (value: string) => {
   const methods: Record<string, string> = {

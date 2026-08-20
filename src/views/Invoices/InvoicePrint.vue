@@ -281,24 +281,30 @@ const originalSubtotal = computed(() => {
 
 const allReturnItems = computed(() => {
   const items: { product_id: string; product_name: string; price: number; quantity: number; subtotal: number }[] = []
-  returnsStore.returns.forEach((ret) => {
-    (ret.items || []).forEach((item) => {
-      if (!item.product_id) return
-      const existing = items.find((i) => i.product_id === item.product_id)
-      if (existing) {
-        existing.quantity += item.quantity
-        existing.subtotal += item.subtotal
-      } else {
-        items.push({
-          product_id: item.product_id,
-          product_name: item.product_name,
-          price: item.price,
-          quantity: item.quantity,
-          subtotal: item.subtotal,
-        })
-      }
+
+  const processReturns = (retList: typeof returnsStore.returns) => {
+    retList.forEach((ret) => {
+      (ret.items || []).forEach((item) => {
+        if (!item.product_id) return
+        const existing = items.find((i) => i.product_id === item.product_id)
+        if (existing) {
+          existing.quantity += item.quantity
+          existing.subtotal += item.subtotal
+        } else {
+          items.push({
+            product_id: item.product_id,
+            product_name: item.product_name,
+            price: item.price,
+            quantity: item.quantity,
+            subtotal: item.subtotal,
+          })
+        }
+      })
     })
-  })
+  }
+
+  processReturns(returnsStore.returns)
+  processReturns(returnsStore.linkedReturns)
   return items
 })
 
@@ -389,8 +395,9 @@ const formatPrice = (value: number) => 'Rp ' + (value || 0).toLocaleString('id-I
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
   const day = date.getDate().toString().padStart(2, '0')
-  const month = date.toLocaleDateString('en-US', { month: 'short' })
-  return `${day} ${month}, ${date.getFullYear()}`
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const year = date.getFullYear()
+  return `${day}/${month}/${year}`
 }
 
 const formatDateTime = (dateString: string) => {
@@ -428,6 +435,8 @@ onMounted(async () => {
       customer_kecamatan: customer?.kecamatan || '',
     }
     await returnsStore.fetchReturns(invoiceId)
+    await returnsStore.fetchLinkedReturns(invoiceId)
+    await returnsStore.fetchReturnsForNewTransaction(invoiceId)
   } catch (error) {
     console.error('Error loading invoice:', error)
   } finally {

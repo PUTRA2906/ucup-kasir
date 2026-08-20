@@ -3,16 +3,21 @@
     <PageBreadcrumb pageTitle="Detail Transaksi" class="hidden md:block" />
 
     <!-- Mobile Header with Back Button -->
-    <div class="mb-6 flex items-center gap-3 pl-2 pr-4 md:hidden">
-      <button
-        @click="router.push('/transactions')"
-        class="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
-      >
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Detail Transaksi</h1>
+    <div class="mb-4 flex items-center justify-between md:hidden">
+      <div class="flex items-center gap-2.5">
+        <button
+          @click="router.push('/transactions')"
+          class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-lg font-extrabold leading-tight text-gray-900 dark:text-white">Detail Transaksi</h1>
+          <p v-if="transaction" class="text-[10px] text-gray-500 dark:text-gray-400">{{ transaction.transaction_number }}</p>
+        </div>
+      </div>
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-12">
@@ -26,8 +31,240 @@
     </div>
 
     <div v-else-if="transaction" class="mx-auto max-w-3xl">
-      <!-- Invoice Card -->
-      <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+      <!-- Mobile Layout -->
+      <div class="space-y-3 pb-4 md:hidden">
+        <!-- Header Card -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs font-bold text-blue-600 dark:text-blue-400">{{ transaction.transaction_number }}</p>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatDate(transaction.created_at) }}</p>
+            </div>
+            <div class="flex gap-2">
+              <span
+                :class="[
+                  'rounded-full px-2 py-0.5 text-[10px] font-medium',
+                  transaction.payment_status === 'lunas'
+                    ? 'bg-success-100 text-success-700 dark:bg-success-900 dark:text-success-400'
+                    : 'bg-warning-100 text-warning-700 dark:bg-warning-900 dark:text-warning-400'
+                ]"
+              >
+                {{ transaction.payment_status === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
+              </span>
+              <span
+                :class="[
+                  'rounded-full px-2 py-0.5 text-[10px] font-medium',
+                  transaction.status === 'selesai'
+                    ? 'bg-success-100 text-success-700 dark:bg-success-900 dark:text-success-400'
+                    : 'bg-error-100 text-error-700 dark:bg-error-900 dark:text-error-400'
+                ]"
+              >
+                {{ transaction.status === 'selesai' ? 'Selesai' : 'Batal' }}
+              </span>
+            </div>
+          </div>
+          <div class="mt-2 border-t border-gray-100 pt-2 dark:border-gray-800">
+            <p class="text-xs font-medium text-gray-900 dark:text-white">{{ transaction.customer_name || 'Umum (tanpa customer)' }}</p>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatPaymentMethod(transaction.payment_method) }}</p>
+          </div>
+        </div>
+
+        <!-- Items Card -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="mb-2 text-xs font-bold text-gray-900 dark:text-white">Rincian Item</h3>
+          <div class="space-y-2">
+            <div
+              v-for="(item, index) in transaction.items"
+              :key="item.id"
+              class="flex items-start justify-between gap-2 border-b border-gray-100 pb-2 last:border-0 dark:border-gray-800"
+            >
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-gray-900 dark:text-white">{{ index + 1 }}. {{ item.product_name }}</p>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatCurrency(item.price) }} × {{ item.quantity }}</p>
+                <p
+                  v-if="returnedQty(item.product_id) > 0"
+                  class="text-[10px] text-error-600 dark:text-error-400"
+                >
+                  {{ returnedQty(item.product_id) }} item diretur
+                </p>
+              </div>
+              <p class="text-xs font-bold text-gray-900 dark:text-white">{{ formatCurrency(item.subtotal) }}</p>
+            </div>
+          </div>
+
+          <!-- Return Items dari retur langsung di transaksi ini -->
+          <div v-if="allReturnItems.length > 0" class="mt-3 space-y-2 rounded-lg border border-error-200 bg-error-50 p-2 dark:border-error-500/30 dark:bg-error-500/10">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-semibold text-error-700 dark:text-error-400">Produk Diretur</p>
+              <p class="text-[10px] text-error-600 dark:text-error-400">{{ allReturnItems.length }} Item</p>
+            </div>
+            <div class="space-y-1.5">
+              <div
+                v-for="(item, index) in allReturnItems"
+                :key="item.product_id"
+                class="flex items-start justify-between gap-2 text-[10px]"
+              >
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-error-700 dark:text-error-300">{{ index + 1 }}. {{ item.product_name }}</p>
+                  <p class="text-error-600 dark:text-error-400">{{ formatCurrency(item.price) }} × {{ item.quantity }}</p>
+                </div>
+                <span class="font-bold text-error-600 dark:text-error-400">- {{ formatCurrency(item.subtotal) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Potongan retur dari transaksi sebelumnya (linked return) -->
+          <div
+            v-if="returnAmount > 0 && allReturnItems.length === 0"
+            class="mt-3 flex items-center gap-2 rounded-lg border border-error-200 bg-error-50 p-2.5 dark:border-error-500/30 dark:bg-error-500/10"
+          >
+            <svg class="h-3.5 w-3.5 flex-shrink-0 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+            </svg>
+            <div class="flex flex-1 items-center justify-between">
+              <span class="text-[10px] font-semibold text-error-700 dark:text-error-400">Potongan Retur Transaksi Sebelumnya</span>
+              <span class="text-[10px] font-bold text-error-600 dark:text-error-400">- {{ formatCurrency(returnAmount) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment & Total Card -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="mb-2 text-xs font-bold text-gray-900 dark:text-white">Ringkasan Pembayaran</h3>
+
+          <!-- Payment History -->
+          <div v-if="transaction.payments && transaction.payments.length > 0" class="mb-3 space-y-1.5 border-b border-gray-100 pb-3 dark:border-gray-800">
+            <p class="text-[10px] font-medium text-gray-500 dark:text-gray-400">Riwayat Pembayaran</p>
+            <div
+              v-for="payment in transaction.payments"
+              :key="payment.id"
+              class="flex items-center justify-between"
+            >
+              <span class="text-[10px] text-gray-600 dark:text-gray-400">{{ formatDate(payment.created_at) }}</span>
+              <span class="text-xs font-semibold text-success-600 dark:text-success-400">+ {{ formatCurrency(payment.amount) }}</span>
+            </div>
+          </div>
+
+          <!-- Totals -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-[11px]">
+              <span class="text-gray-600 dark:text-gray-400">Total Barang</span>
+              <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(originalSubtotal) }}</span>
+            </div>
+            <div v-if="returnAmount > 0" class="flex justify-between text-[11px]">
+              <span class="text-error-600 dark:text-error-400">Retur</span>
+              <span class="font-medium text-error-600 dark:text-error-400">- {{ formatCurrency(returnAmount) }}</span>
+            </div>
+            <div v-if="discountAmount > 0" class="flex justify-between text-[11px]">
+              <span class="text-gray-600 dark:text-gray-400">Diskon</span>
+              <span class="font-medium text-error-600 dark:text-error-400">- {{ formatCurrency(discountAmount) }}</span>
+            </div>
+            <div class="flex justify-between border-t border-gray-200 pt-1.5 dark:border-gray-700">
+              <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Total</span>
+              <span class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ formatCurrency(transaction.total) }}</span>
+            </div>
+            <div class="flex justify-between text-[11px]">
+              <span class="text-gray-600 dark:text-gray-400">Sudah Dibayar</span>
+              <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(transaction.paid_amount) }}</span>
+            </div>
+            <div v-if="transaction.change_amount > 0" class="flex justify-between text-[11px]">
+              <span class="text-gray-600 dark:text-gray-400">Kembalian</span>
+              <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(transaction.change_amount) }}</span>
+            </div>
+            <div
+              v-if="transaction.remaining_amount > 0"
+              class="flex justify-between rounded-lg bg-warning-50 px-2 py-1.5 dark:bg-warning-500/10"
+            >
+              <span class="text-xs font-medium text-warning-700 dark:text-warning-400">Sisa Cicilan</span>
+              <span class="text-xs font-bold text-warning-700 dark:text-warning-400">{{ formatCurrency(transaction.remaining_amount) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions Card -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div class="space-y-2">
+            <button
+              @click="router.push(`/transactions/${transaction.id}/invoice`)"
+              class="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-xs font-bold text-white hover:bg-blue-500"
+            >
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2z" />
+              </svg>
+              Cetak Invoice
+            </button>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                v-if="transaction.remaining_amount > 0"
+                @click="showPaymentModal = true"
+                class="flex items-center justify-center gap-1 rounded-lg border border-blue-500 bg-transparent py-2 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/15"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Tambah Bayar
+              </button>
+              <button
+                v-if="transaction.status === 'selesai'"
+                @click="showReturnModal = true"
+                class="flex items-center justify-center gap-1 rounded-lg border border-blue-500 bg-transparent py-2 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/15"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                </svg>
+                Retur
+              </button>
+              <button
+                v-if="transaction.status === 'selesai'"
+                @click="showVoidDialog = true"
+                class="flex items-center justify-center gap-1 rounded-lg border border-error-500 bg-transparent py-2 text-xs font-medium text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-500/15"
+                :class="{ 'col-span-2': !transaction.remaining_amount }"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+                Batalkan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Return History Card -->
+        <div v-if="returnsStore.returns.length > 0" class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div class="mb-2 flex items-center justify-between">
+            <h3 class="text-xs font-bold text-gray-900 dark:text-white">Riwayat Retur</h3>
+            <span class="text-[10px] text-gray-500 dark:text-gray-400">{{ returnsStore.returns.length }} retur</span>
+          </div>
+          <div class="space-y-2">
+            <div
+              v-for="ret in returnsStore.returns"
+              :key="ret.id"
+              class="rounded-lg border border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800"
+            >
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ ret.return_number }}</p>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatDate(ret.created_at) }}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-error-600 dark:text-error-400">- {{ formatCurrency(ret.total_refund) }}</span>
+                  <button
+                    @click="openDeleteReturn(ret)"
+                    class="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-error-600 dark:hover:bg-gray-700 dark:hover:text-error-500"
+                  >
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Invoice Card -->
+      <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 md:block">
         <!-- Invoice Header -->
         <div class="flex flex-col gap-4 border-b border-gray-200 p-6 dark:border-gray-700 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -124,7 +361,7 @@
           </div>
         </div>
 
-        <!-- Produk Diretur -->
+        <!-- Produk Diretur (retur langsung di transaksi ini) -->
         <div v-if="allReturnItems.length > 0" class="border-b border-gray-200 dark:border-gray-700">
           <div class="bg-error-50 px-6 py-3 dark:bg-error-500/10">
             <p class="text-sm font-semibold text-error-700 dark:text-error-400">
@@ -154,15 +391,26 @@
                   class="border-t border-error-100 dark:border-error-500/10"
                 >
                   <td class="px-6 py-3 text-sm text-error-500 dark:text-error-400">{{ index + 1 }}</td>
-                  <td class="px-6 py-3 text-sm font-medium text-error-700 dark:text-error-300">
-                    {{ item.product_name }}
-                  </td>
+                  <td class="px-6 py-3 text-sm font-medium text-error-700 dark:text-error-300">{{ item.product_name }}</td>
                   <td class="px-6 py-3 text-right text-sm text-error-600 dark:text-error-400">{{ formatCurrency(item.price) }}</td>
                   <td class="px-6 py-3 text-center text-sm text-error-600 dark:text-error-400">{{ item.quantity }}</td>
                   <td class="px-6 py-3 text-right text-sm font-semibold text-error-700 dark:text-error-300">- {{ formatCurrency(item.subtotal) }}</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Potongan retur dari transaksi sebelumnya (linked return) -->
+        <div v-if="returnAmount > 0 && allReturnItems.length === 0" class="border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between bg-error-50 px-6 py-4 dark:bg-error-500/10">
+            <span class="inline-flex items-center gap-2 text-sm font-semibold text-error-700 dark:text-error-400">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+              </svg>
+              Potongan Retur Transaksi Sebelumnya
+            </span>
+            <span class="text-sm font-bold text-error-600 dark:text-error-400">- {{ formatCurrency(returnAmount) }}</span>
           </div>
         </div>
 
@@ -427,27 +675,33 @@ const originalSubtotal = computed(() => {
   return (transaction.value?.subtotal || 0) + returnAmount.value
 })
 
-// Gabungkan semua item retur (digest per produk)
+// Gabungkan semua item retur (digest per produk) — dari retur langsung maupun linked
 const allReturnItems = computed(() => {
-  const items: { product_id: string; product_name: string; price: number; quantity: number; subtotal: number }[] = []
-  returnsStore.returns.forEach((ret) => {
-    (ret.items || []).forEach((item) => {
-      if (!item.product_id) return
-      const existing = items.find((i) => i.product_id === item.product_id)
-      if (existing) {
-        existing.quantity += item.quantity
-        existing.subtotal += item.subtotal
-      } else {
-        items.push({
-          product_id: item.product_id,
-          product_name: item.product_name,
-          price: item.price,
-          quantity: item.quantity,
-          subtotal: item.subtotal,
-        })
-      }
+  const items: { product_id: string; product_name: string; price: number; quantity: number; subtotal: number; transaction_number?: string }[] = []
+
+  const processReturns = (retList: typeof returnsStore.returns) => {
+    retList.forEach((ret) => {
+      ;(ret.items || []).forEach((item) => {
+        if (!item.product_id) return
+        const existing = items.find((i) => i.product_id === item.product_id)
+        if (existing) {
+          existing.quantity += item.quantity
+          existing.subtotal += item.subtotal
+        } else {
+          items.push({
+            product_id: item.product_id,
+            product_name: item.product_name,
+            price: item.price,
+            quantity: item.quantity,
+            subtotal: item.subtotal,
+          })
+        }
+      })
     })
-  })
+  }
+
+  processReturns(returnsStore.returns)
+  processReturns(returnsStore.linkedReturns)
   return items
 })
 
@@ -581,6 +835,8 @@ onMounted(async () => {
   try {
     transaction.value = await transactionsStore.getTransaction(transactionId)
     await returnsStore.fetchReturns(transactionId)
+    await returnsStore.fetchLinkedReturns(transactionId)
+    await returnsStore.fetchReturnsForNewTransaction(transactionId)
   } catch (error) {
     console.error('Error loading transaction:', error)
     toast.error('Gagal!', 'Gagal memuat data transaksi')

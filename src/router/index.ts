@@ -40,6 +40,14 @@ const router = createRouter({
       },
     },
     {
+      path: '/notifications',
+      name: 'Notifications',
+      component: () => import('../views/Notifications.vue'),
+      meta: {
+        title: 'Notifikasi',
+      },
+    },
+    {
       path: '/form-elements',
       name: 'Form Elements',
       component: () => import('../views/Forms/FormElements.vue'),

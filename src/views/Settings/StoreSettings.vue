@@ -225,25 +225,27 @@
         <div
           v-show="expandedSections.display"
           class="border-t border-gray-200 p-4 dark:border-gray-800"
-        > class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-3 text-xs dark:border-gray-800 dark:bg-gray-900">
-          <div>
-            <p class="font-bold text-gray-900 dark:text-white">Mode Gelap (Dark Mode)</p>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400">Kenyamanan mata saat di lapangan</p>
-          </div>
-          <button
-            @click="toggleTheme"
-            :class="[
-              'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
-              isDarkMode ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700',
-            ]"
-          >
-            <span
+        >
+          <div class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-3 text-xs dark:border-gray-800 dark:bg-gray-900">
+            <div>
+              <p class="font-bold text-gray-900 dark:text-white">Mode Gelap (Dark Mode)</p>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400">Kenyamanan mata saat di lapangan</p>
+            </div>
+            <button
+              @click="toggleTheme"
               :class="[
-                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                isDarkMode ? 'translate-x-5' : 'translate-x-0',
+                'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
+                isDarkMode ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700',
               ]"
-            />
-          </button>
+            >
+              <span
+                :class="[
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                  isDarkMode ? 'translate-x-5' : 'translate-x-0',
+                ]"
+              />
+            </button>
+          </div>
         </div>
       </section>
 

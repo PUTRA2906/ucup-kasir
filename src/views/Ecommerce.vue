@@ -23,8 +23,8 @@
             </h1>
           </div>
           <router-link
-            to="/settings"
-            class="rounded-xl border border-gray-300 bg-white p-2.5 text-gray-500 transition hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-white"
+            to="/notifications"
+            class="relative rounded-xl border border-gray-300 bg-white p-2.5 text-gray-500 transition hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-white"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -34,79 +34,136 @@
                 d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
               />
             </svg>
+            <span
+              v-if="notificationsStore.unreadCount > 0"
+              class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white"
+            >
+              {{ notificationsStore.unreadCount > 9 ? '9+' : notificationsStore.unreadCount }}
+            </span>
           </router-link>
         </div>
 
         <!-- Mobile Financial Summary (Penjualan & Laba) -->
-        <div class="grid grid-cols-2 gap-3 md:hidden">
-          <div
-            class="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
-          >
-            <div class="flex items-center gap-1">
-              <span class="text-[11px] text-gray-500 dark:text-gray-400">Penjualan Bersih</span>
-              <button
-                type="button"
-                class="inline-flex cursor-pointer text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-                @click.stop="toggleInfoTooltip('net_sales')"
+        <div class="md:hidden">
+          <!-- Header dengan tombol toggle -->
+          <div class="mb-2 flex items-center justify-between px-1">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              Ringkasan Keuangan
+            </span>
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 active:scale-95 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+              @click.stop="toggleFinancialVisibility"
+            >
+              <svg
+                v-if="financialHidden"
+                class="h-3.5 w-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </button>
-            </div>
-            <h3 class="mt-1 text-base font-bold text-gray-900 dark:text-white">
-              {{ formatCurrency(salesReportStore.summary.net_sales) }}
-            </h3>
-            <span class="text-[10px] font-medium text-success-500">Bulan Ini</span>
-
-            <transition name="tooltip-fade">
-              <div
-                v-if="activeInfoTooltip === 'net_sales'"
-                class="absolute inset-x-2 top-full z-20 mt-2 rounded-lg bg-gray-900 px-3 py-2 text-[10px] font-normal leading-relaxed text-gray-100 shadow-lg dark:bg-gray-700"
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+              <svg
+                v-else
+                class="h-3.5 w-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                Total pendapatan dari transaksi setelah dikurangi diskon dan retur, belum dipotong biaya operasional.
-              </div>
-            </transition>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                />
+              </svg>
+              {{ financialHidden ? 'Tampilkan' : 'Sembunyikan' }}
+            </button>
           </div>
 
-          <div
-            class="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
-          >
-            <div class="flex items-center gap-1">
-              <span class="text-[11px] text-gray-500 dark:text-gray-400">Laba Bersih</span>
-              <button
-                type="button"
-                class="inline-flex cursor-pointer text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-                @click.stop="toggleInfoTooltip('net_profit')"
-              >
-                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </button>
-            </div>
-            <h3 class="mt-1 text-base font-bold text-gray-900 dark:text-white">
-              {{ formatCurrency(salesReportStore.summary.net_profit) }}
-            </h3>
-            <span class="text-[10px] text-gray-400 dark:text-gray-500">Keuntungan Riil</span>
-
-            <transition name="tooltip-fade">
-              <div
-                v-if="activeInfoTooltip === 'net_profit'"
-                class="absolute inset-x-2 top-full z-20 mt-2 rounded-lg bg-gray-900 px-3 py-2 text-[10px] font-normal leading-relaxed text-gray-100 shadow-lg dark:bg-gray-700"
-              >
-                Penjualan bersih dikurangi HPP (modal) dan biaya operasional. Ini keuntungan riil Anda.
+          <!-- Kartu keuangan -->
+          <div class="grid grid-cols-2 gap-3">
+            <div
+              class="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+            >
+              <div class="flex items-center gap-1">
+                <span class="text-[11px] text-gray-500 dark:text-gray-400">Penjualan Bersih</span>
+                <button
+                  type="button"
+                  class="inline-flex cursor-pointer text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                  @click.stop="toggleInfoTooltip('net_sales')"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </button>
               </div>
-            </transition>
+              <h3 class="mt-1 text-base font-bold text-gray-900 dark:text-white">
+                {{ financialHidden ? 'Rp ××××××' : formatCurrency(salesReportStore.summary.net_sales) }}
+              </h3>
+              <span class="text-[10px] font-medium text-success-500">Bulan Ini</span>
+
+              <transition name="tooltip-fade">
+                <div
+                  v-if="activeInfoTooltip === 'net_sales'"
+                  class="absolute inset-x-2 top-full z-20 mt-2 rounded-lg bg-gray-900 px-3 py-2 text-[10px] font-normal leading-relaxed text-gray-100 shadow-lg dark:bg-gray-700"
+                >
+                  Total pendapatan dari transaksi setelah dikurangi diskon dan retur, belum dipotong biaya operasional.
+                </div>
+              </transition>
+            </div>
+
+            <div
+              class="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+            >
+              <div class="flex items-center gap-1">
+                <span class="text-[11px] text-gray-500 dark:text-gray-400">Laba Bersih</span>
+                <button
+                  type="button"
+                  class="inline-flex cursor-pointer text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                  @click.stop="toggleInfoTooltip('net_profit')"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <h3 class="mt-1 text-base font-bold text-gray-900 dark:text-white">
+                {{ financialHidden ? 'Rp ××××××' : formatCurrency(salesReportStore.summary.net_profit) }}
+              </h3>
+              <span class="text-[10px] text-gray-400 dark:text-gray-500">Keuntungan Riil</span>
+
+              <transition name="tooltip-fade">
+                <div
+                  v-if="activeInfoTooltip === 'net_profit'"
+                  class="absolute inset-x-2 top-full z-20 mt-2 rounded-lg bg-gray-900 px-3 py-2 text-[10px] font-normal leading-relaxed text-gray-100 shadow-lg dark:bg-gray-700"
+                >
+                  Penjualan bersih dikurangi HPP (modal) dan biaya operasional. Ini keuntungan riil Anda.
+                </div>
+              </transition>
+            </div>
           </div>
         </div>
 
@@ -459,14 +516,22 @@ import { useProductsStore } from '@/stores/products'
 import { useCategoriesStore } from '@/stores/categories'
 import { useAuthStore } from '@/stores/auth'
 import { useSalesReportStore } from '@/stores/salesReport'
+import { useNotificationsStore } from '@/stores/notifications'
 
 const productsStore = useProductsStore()
 const categoriesStore = useCategoriesStore()
 const authStore = useAuthStore()
 const salesReportStore = useSalesReportStore()
+const notificationsStore = useNotificationsStore()
 
 const loading = ref(true)
 const activeInfoTooltip = ref<string | null>(null)
+const financialHidden = ref(localStorage.getItem('dashboard_financial_hidden') === 'true')
+
+const toggleFinancialVisibility = () => {
+  financialHidden.value = !financialHidden.value
+  localStorage.setItem('dashboard_financial_hidden', String(financialHidden.value))
+}
 
 const displayName = computed(() => {
   const user = authStore.user
@@ -530,6 +595,7 @@ onMounted(async () => {
       productsStore.fetchProducts(true),
       categoriesStore.fetchCategories(),
       salesReportStore.fetchSalesReport(),
+      notificationsStore.fetchNotifications(),
     ])
   } catch (error) {
     console.error('Error loading dashboard:', error)

@@ -5,6 +5,7 @@ import type { TransactionReturn, ReturnItemInput } from '@/types/database'
 
 export const useReturnsStore = defineStore('returns', () => {
   const returns = ref<TransactionReturn[]>([])
+  const linkedReturns = ref<TransactionReturn[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -18,6 +19,25 @@ export const useReturnsStore = defineStore('returns', () => {
       throw e
     } finally {
       loading.value = false
+    }
+  }
+
+  async function fetchLinkedReturns(transactionId: string) {
+    try {
+      linkedReturns.value = await returnsService.getLinkedReturns(transactionId)
+    } catch (e: any) {
+      // non-critical, silently fail
+      linkedReturns.value = []
+    }
+  }
+
+  async function fetchReturnsForNewTransaction(transactionId: string) {
+    try {
+      const data = await returnsService.getReturnsForNewTransaction(transactionId)
+      // Gabungkan ke linkedReturns agar bisa diproses oleh allReturnItems
+      linkedReturns.value = [...linkedReturns.value, ...data]
+    } catch (e: any) {
+      // non-critical, silently fail
     }
   }
 
@@ -69,9 +89,12 @@ export const useReturnsStore = defineStore('returns', () => {
 
   return {
     returns,
+    linkedReturns,
     loading,
     error,
     fetchReturns,
+    fetchLinkedReturns,
+    fetchReturnsForNewTransaction,
     fetchAllReturns,
     createReturn,
     deleteReturn,

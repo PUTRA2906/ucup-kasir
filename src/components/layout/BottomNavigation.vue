@@ -1,5 +1,6 @@
 <template>
   <nav
+    v-if="hasActiveMenu"
     class="fixed bottom-0 left-0 right-0 z-50 h-16 flex items-center justify-around border-t bg-white px-2 backdrop-blur-md md:hidden dark:border-gray-800 dark:bg-[#0d162d]/95"
   >
     <!-- Home -->
@@ -105,4 +106,9 @@ const isActive = (path: string) => {
   }
   return route.path.startsWith(path)
 }
+
+const hasActiveMenu = computed(() => {
+  const menuPaths = ['/', '/customer-invoices', '/stock', '/settings']
+  return menuPaths.some(path => isActive(path))
+})
 </script>

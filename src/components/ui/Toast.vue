@@ -2,7 +2,7 @@
   <Transition name="toast">
     <div
       v-if="visible"
-      :class="['fixed right-3 top-20 z-[9999] w-[calc(50%-0.75rem)] rounded-lg border p-2.5 shadow-xl md:right-6 md:top-24 md:w-full md:max-w-xs md:p-3', variantClasses[variant].container]"
+      :class="['fixed left-3 right-3 top-20 z-[9999] mx-auto rounded-lg border p-2.5 shadow-xl md:left-auto md:right-6 md:top-24 md:w-full md:max-w-xs md:p-3', variantClasses[variant].container]"
     >
       <div class="flex items-start gap-2 md:gap-2.5">
         <div :class="['flex-shrink-0', variantClasses[variant].icon]">
@@ -107,12 +107,12 @@ onMounted(() => {
 }
 
 .toast-enter-from {
-  transform: translateY(-20px);
+  transform: translateY(-100%);
   opacity: 0;
 }
 
 .toast-leave-to {
-  transform: translateY(-20px);
+  transform: translateY(-100%);
   opacity: 0;
 }
 
