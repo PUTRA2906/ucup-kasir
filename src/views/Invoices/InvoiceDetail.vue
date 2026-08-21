@@ -1054,7 +1054,7 @@ const handlePrintPdf = async () => {
     }
 
     const storeSettings = {
-      name: settingsStore.storeSubtitle,
+      name: settingsStore.storeName, // Nama toko utama (bukan subtitle)
       address: settingsStore.storeAddress,
       email: settingsStore.storeEmail,
       phone: settingsStore.storePhone,
@@ -1112,7 +1112,7 @@ const handleShareWhatsApp = async () => {
     }
 
     const storeSettings = {
-      name: settingsStore.storeSubtitle,
+      name: settingsStore.storeName, // Nama toko utama (bukan subtitle)
       address: settingsStore.storeAddress,
       email: settingsStore.storeEmail,
       phone: settingsStore.storePhone,
@@ -1133,6 +1133,9 @@ const handleShareWhatsApp = async () => {
 
 onMounted(async () => {
   try {
+    // Fetch settings store data first
+    await settingsStore.fetchSettings()
+    
     transaction.value = await transactionsStore.getTransaction(invoiceId)
     await returnsStore.fetchReturns(invoiceId)
     await returnsStore.fetchLinkedReturns(invoiceId)
