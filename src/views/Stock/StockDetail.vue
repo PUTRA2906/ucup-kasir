@@ -88,9 +88,9 @@
               </span>
             </div>
             <div class="px-2">
-              <span class="block text-[10px] font-medium text-gray-500 dark:text-gray-400">Harga Pokok</span>
+              <span class="block text-[10px] font-medium text-gray-500 dark:text-gray-400">Harga Beli</span>
               <span class="mt-0.5 block text-xs font-extrabold text-gray-900 dark:text-white">
-                {{ formatCurrencyShort(product.cost_price || 0) }}
+                {{ formatCurrencyShort(product.price_buy || 0) }}
               </span>
             </div>
           </div>
