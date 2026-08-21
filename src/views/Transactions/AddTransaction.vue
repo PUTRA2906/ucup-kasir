@@ -895,14 +895,13 @@ const incrementQuantity = (item: CartItem) => {
   item.subtotal = item.quantity * item.price
 }
 
-const updateQuantity = (item: CartItem, event: Event) => {
-  const input = event.target as HTMLInputElement
-  let value = parseInt(input.value) || 1
+const updateQuantity = (item: CartItem, value: string) => {
+  let numValue = parseInt(value) || 1
   
   // Clamp value between 1 and stock
-  value = Math.max(1, Math.min(value, item.stock))
+  numValue = Math.max(1, Math.min(numValue, item.stock))
   
-  item.quantity = value
+  item.quantity = numValue
   item.subtotal = item.quantity * item.price
 }
 

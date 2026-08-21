@@ -95,13 +95,13 @@
               <div class="flex items-center justify-between text-xs">
                 <span class="text-gray-500 dark:text-gray-400">Transaksi</span>
                 <span class="font-medium text-gray-900 dark:text-white">
-                  {{ returnItem.transaction?.transaction_number || '-' }}
+                  {{ returnItem.return_number }}
                 </span>
               </div>
               <div class="flex items-center justify-between text-xs">
                 <span class="text-gray-500 dark:text-gray-400">Customer</span>
                 <span class="font-medium text-gray-900 dark:text-white">
-                  {{ returnItem.transaction?.customer_name || 'Umum' }}
+                  Umum
                 </span>
               </div>
               <div class="flex items-center justify-between text-xs">
