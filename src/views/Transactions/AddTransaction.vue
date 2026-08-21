@@ -188,7 +188,7 @@
                     <input
                       type="number"
                       v-model.number="item.quantity"
-                      @input="updateQuantity(item, $event)"
+                      @input="updateQuantity(item, ($event.target as HTMLInputElement).value)"
                       @blur="validateQuantity(item)"
                       min="1"
                       :max="item.stock"
@@ -485,7 +485,7 @@
                         inputmode="numeric"
                         :value="item.quantity"
                         @input="updateQuantity(item, ($event.target as HTMLInputElement).value)"
-                        @blur="validateQuantity(item)"
+                        @blur="() => validateQuantity(item)"
                         class="w-16 rounded-lg border border-gray-300 bg-transparent px-2 py-1.5 text-center text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                       />
                     </div>

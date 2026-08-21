@@ -141,6 +141,12 @@ export interface TransactionReturn {
   created_at: string
   updated_at: string
   items?: ReturnItem[]
+  transaction?: {
+    id: string
+    transaction_number: string
+    customer_name?: string
+    status: string
+  }
 }
 
 export interface ReturnItemInput {

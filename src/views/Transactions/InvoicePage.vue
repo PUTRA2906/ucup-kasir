@@ -327,7 +327,7 @@ onMounted(async () => {
     const customer = customersStore.customers.find((c) => c.id === data.customer_id)
     transaction.value = {
       ...data,
-      customer_address: customer?.address || '',
+      customer_address: customer?.kecamatan || '',
       customer_store_name: customer?.store_name || '',
       customer_kecamatan: customer?.kecamatan || '',
     }

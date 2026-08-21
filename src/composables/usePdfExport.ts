@@ -70,7 +70,7 @@ export function usePdfExport() {
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: 'a4',
+      format: 'a5',
     })
 
     // Margins
