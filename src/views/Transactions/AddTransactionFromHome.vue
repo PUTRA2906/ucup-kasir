@@ -6,7 +6,7 @@
     <div class="mb-4 flex items-center justify-between md:hidden">
       <div class="flex items-center gap-2.5">
         <button
-          @click="router.push('/transactions')"
+          @click="router.push('/')"
           class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.03]"
         >
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

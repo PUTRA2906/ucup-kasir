@@ -926,7 +926,7 @@ const handleSubmit = async () => {
     }
 
     toast.success('Berhasil!', 'Transaksi berhasil disimpan')
-    router.push(`/transactions/${transactionId}`)
+    router.push(`/customer-invoices/${route.params.kecamatan}/${route.params.customerId}/${transactionId}`)
   } catch (error: any) {
     console.error('Error creating transaction:', error)
     toast.error('Gagal!', error.message || 'Gagal menyimpan transaksi')

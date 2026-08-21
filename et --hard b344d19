@@ -1,0 +1,26 @@
+0ed7506 - 2026-08-21 14:47:02 : fix: Allow larger quantity input and temporary empty value
+bcdf9eb - 2026-08-21 14:44:12 : fix: Update SQLite schema to match Supabase structure
+97baa55 - 2026-08-21 14:32:29 : feat: Add initial data sync from Supabase to SQLite
+f7cf99e - 2026-08-21 14:18:02 : fix: Integrate offline mode toggle into existing StoreSettings
+2cd8d65 - 2026-08-21 14:15:03 : feat: Add manual offline/online mode toggle in settings
+42ca537 - 2026-08-21 13:32:51 : feat: Add SQLite Debug button to home screen
+963c907 - 2026-08-21 13:29:50 : fix: Add SQLite debug logging and diagnostic page
+c9633f2 - 2026-08-21 13:17:06 : feat: Add offline-first SQLite database with Supabase sync
+b344d19 - 2026-08-21 10:49:08 : m
+6d39b16 - 2026-08-21 10:25:00 : perbaikan base 64
+6cf199c - 2026-08-21 10:04:23 : update eror build
+7c597b6 - 2026-08-21 09:34:27 : Fix PDF export: load settings and use correct store name
+77afd47 - 2026-08-21 09:31:06 : Fix TypeScript errors in ReturnList and AddTransaction
+d66df97 - 2026-08-21 09:16:28 : update keystore dan perbaikan ui
+ec71040 - 2026-08-20 23:02:10 : update mobile wa
+7712638 - 2026-08-20 22:42:54 : update mobile wa
+6a80f36 - 2026-08-20 16:44:49 : update aplikasi mobile
+e213b4c - 2026-08-20 14:06:01 : menambah tampilan mobile jadi lebih mobile
+1933221 - 2026-08-20 12:44:18 : memperbaiki quantity collom dan route invoice
+f26f977 - 2026-08-19 15:46:10 : penambahan fitur adalah pokoknya
+a3b1c87 - 2026-08-19 01:49:57 : Fix: Tambah konfigurasi debug build dan support semua arsitektur CPU
+6aac000 - 2026-08-19 01:35:26 : Fix: Update Java version ke 21 di GitHub Actions workflow
+7ab114f - 2026-08-19 01:30:51 : Fix: Update Node.js version ke 22 di GitHub Actions workflow
+916617f - 2026-08-19 01:22:49 : Fix: Perbaiki error TypeScript untuk minimum_stock dan format datetime
+ef8d173 - 2026-08-19 01:00:33 : Feat: Tambah fitur Stok Gudang, Notifikasi Real-time, dan Setup Capacitor untuk build APK
+66cf1f3 - 2026-08-16 12:40:18 : project v1

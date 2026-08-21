@@ -1077,18 +1077,6 @@ const handleShareWhatsApp = async () => {
 
   isGeneratingPdf.value = true
   try {
-    // Dapatkan nomor telepon customer dari customersStore
-    let customerPhone = ''
-    if (transaction.value.customer_id) {
-      const customer = await customersStore.customers.find((c: any) => c.id === transaction.value.customer_id)
-      customerPhone = customer?.phone || ''
-    }
-
-    if (!customerPhone) {
-      toast.error('Gagal!', 'Nomor telepon pelanggan tidak ditemukan. Pastikan customer memiliki nomor telepon.')
-      isGeneratingPdf.value = false
-      return
-    }
 
     const filename = `Invoice-${transaction.value.transaction_number}.pdf`
     
@@ -1119,7 +1107,7 @@ const handleShareWhatsApp = async () => {
     }
 
     const pdfBlob = generatePdfBlob(invoiceData, storeSettings)
-    await shareToWhatsApp(customerPhone, pdfBlob, filename)
+    await shareToWhatsApp(pdfBlob, filename)
 
     toast.success('Berhasil!', 'PDF siap dibagikan via WhatsApp')
   } catch (error: any) {

@@ -313,7 +313,6 @@ export function usePdfExport() {
   }
 
   const shareToWhatsApp = async (
-    phoneNumber: string,
     pdfBlob: Blob,
     filename: string
   ) => {
@@ -342,16 +341,9 @@ export function usePdfExport() {
         directory: Directory.Cache,
       })
 
-      let formattedPhone = phoneNumber.replace(/\D/g, '')
-      if (formattedPhone.startsWith('0')) {
-        formattedPhone = '62' + formattedPhone.substring(1)
-      } else if (!formattedPhone.startsWith('62')) {
-        formattedPhone = '62' + formattedPhone
-      }
-
       await Share.share({
         title: 'Invoice',
-        text: `Invoice untuk: ${phoneNumber}`,
+        text: 'Invoice',
         url: savedFile.uri,
         dialogTitle: 'Kirim Invoice',
       })

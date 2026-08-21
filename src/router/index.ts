@@ -200,6 +200,14 @@ const router = createRouter({
       },
     },
     {
+      path: '/transactions/add-from-home',
+      name: 'Add Transaction From Home',
+      component: () => import('../views/Transactions/AddTransactionFromHome.vue'),
+      meta: {
+        title: 'Transaksi Baru',
+      },
+    },
+    {
       path: '/returns',
       name: 'Return List',
       component: () => import('../views/Returns/ReturnList.vue'),
@@ -237,6 +245,14 @@ const router = createRouter({
       component: () => import('../views/Stock/StockManagement.vue'),
       meta: {
         title: 'Stok Gudang',
+      },
+    },
+    {
+      path: '/stock/:id',
+      name: 'Stock Detail',
+      component: () => import('../views/Stock/StockDetail.vue'),
+      meta: {
+        title: 'Detail Stok',
       },
     },
     {

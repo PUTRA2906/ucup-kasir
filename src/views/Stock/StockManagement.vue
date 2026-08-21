@@ -151,7 +151,7 @@
         <router-link
           v-for="product in mobileFilteredProducts.slice((mobilePage - 1) * 8, mobilePage * 8)"
           :key="product.id"
-          :to="`/products/${product.id}`"
+          :to="`/stock/${product.id}`"
           class="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-3.5 transition active:scale-[0.99] dark:border-gray-800 dark:bg-white/[0.03]"
           :class="
             product.stock === 0

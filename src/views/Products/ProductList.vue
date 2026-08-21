@@ -1,168 +1,351 @@
 <template>
   <AdminLayout>
     <PageBreadcrumb pageTitle="Daftar Produk" class="hidden md:block" />
-    <div class="space-y-6 px-4 md:px-0">
-      <!-- DataTable -->
-      <DataTable
-        :columns="columns"
-        :data="formattedProducts"
-        :per-page="10"
-        :searchable="true"
-        :show-filter="true"
-        :show-add-button="true"
-        add-button-text="Tambah Produk"
-        title="Produk Barang"
-        :subtitle="`${settingsStore.storeSubtitle} - ${productsStore.products.length} Produk barang`"
-        :show-import-button="true"
-        :show-export-button="true"
-        :category-options="categoryOptions"
-        @add-click="addProduct"
-        @menu-action="handleMenuAction"
-        @import-click="handleImport"
-        @export-click="handleExport"
-        @category-change="handleCategoryChange"
-        @apply-filter="applyFilters"
-      >
-          <template #header-checkbox>
-            <div class="flex items-center gap-2">
-              <input
-                ref="selectAllCheckbox"
-                type="checkbox"
-                :checked="allSelected"
-                @change="toggleSelectAll"
-                class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
-              />
-            </div>
-          </template>
+    <div class="space-y-4 px-4 md:px-0">
 
-          <template #mobile-header>
-            <div class="flex items-center gap-3">
-              <input
-                type="checkbox"
-                :checked="allSelected"
-                @change="toggleSelectAll"
-                class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
-              />
-              <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                Nama Produk
-              </span>
-            </div>
-          </template>
+      <!-- ===== MOBILE VIEW ===== -->
+      <div class="md:hidden space-y-4 pb-28">
 
-          <template #mobile-summary="{ row }">
-            <div class="flex items-center gap-3 min-w-0 flex-1">
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <button
+              @click="router.push('/')"
+              class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div>
+              <h1 class="text-lg font-extrabold leading-tight text-gray-900 dark:text-white">Produk</h1>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ productsStore.products.length }} produk terdaftar</p>
+            </div>
+          </div>
+          <button
+            @click="addProduct"
+            class="flex items-center gap-1.5 rounded-xl bg-brand-600 px-3 py-2 text-xs font-bold text-white shadow-md transition active:scale-95"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Tambah
+          </button>
+        </div>
+
+        <!-- Search -->
+        <div class="relative">
+          <svg class="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            v-model="mobileSearch"
+            type="text"
+            placeholder="Cari nama produk, SKU..."
+            class="w-full rounded-2xl border border-gray-200 bg-white pl-10 pr-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none dark:border-gray-800 dark:bg-white/[0.03] dark:text-white dark:placeholder-gray-500"
+          />
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs pb-0.5">
+          <button
+            v-for="chip in mobileFilterChips"
+            :key="chip.value"
+            @click="mobileStockFilter = chip.value"
+            class="whitespace-nowrap rounded-xl px-3.5 py-1.5 font-semibold transition"
+            :class="mobileStockFilter === chip.value
+              ? 'bg-brand-600 text-white shadow-sm'
+              : 'border border-gray-200 bg-white text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400'"
+          >
+            {{ chip.label }} ({{ chip.count }})
+          </button>
+        </div>
+
+        <!-- Loading skeleton -->
+        <div v-if="mobileLoading" class="space-y-2.5 animate-pulse">
+          <div v-for="i in 6" :key="i" class="rounded-2xl border border-gray-200 bg-white p-3.5 dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="flex items-center justify-between">
+              <div class="space-y-1.5 flex-1">
+                <div class="h-3.5 w-3/5 rounded bg-gray-200 dark:bg-gray-800"></div>
+                <div class="h-2.5 w-2/5 rounded bg-gray-200 dark:bg-gray-800"></div>
+              </div>
+              <div class="h-6 w-14 rounded-lg bg-gray-200 dark:bg-gray-800"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div
+          v-else-if="mobileFilteredProducts.length === 0"
+          class="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center dark:border-gray-700 dark:bg-white/[0.03]"
+        >
+          <svg class="mx-auto h-8 w-8 text-gray-300 dark:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+          <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">Tidak ada produk ditemukan</p>
+        </div>
+
+        <!-- Product cards -->
+        <div v-else class="space-y-2.5">
+          <div
+            v-for="product in mobilePaginatedProducts"
+            :key="product.id"
+            class="rounded-2xl border border-gray-200 bg-white shadow-sm transition active:scale-[0.99] dark:border-gray-800 dark:bg-white/[0.03]"
+            :class="product.stock === 0 ? 'border-error-300 dark:border-error-500/30' : product.stock <= (product.minimum_stock || 10) ? 'border-warning-300 dark:border-warning-500/30' : ''"
+          >
+            <!-- Main row -->
+            <div class="flex items-center justify-between p-3.5" @click="viewProduct(product)">
+              <div class="min-w-0 flex-1">
+                <h2 class="truncate text-xs font-bold leading-snug text-gray-900 dark:text-white">{{ product.name }}</h2>
+                <p class="mt-0.5 text-[10px] text-gray-400 dark:text-gray-500">
+                  {{ product.category?.name || '-' }}
+                  <span v-if="product.sku"> · {{ product.sku }}</span>
+                </p>
+              </div>
+              <div class="ml-3 flex flex-shrink-0 items-center gap-2">
+                <div class="text-right">
+                  <span
+                    class="block text-xs font-extrabold"
+                    :class="stockTextClass(product)"
+                  >{{ product.stock }} pcs</span>
+                  <span
+                    class="mt-0.5 inline-block rounded border px-1.5 py-0.5 text-[9px] font-semibold"
+                    :class="stockBadgeClass(product)"
+                  >{{ stockBadgeLabel(product) }}</span>
+                </div>
+                <button
+                  @click.stop="toggleMobileExpand(product.id)"
+                  class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  <svg
+                    class="h-3.5 w-3.5 transition-transform"
+                    :class="{ 'rotate-180': mobileExpanded.includes(product.id) }"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Expanded detail -->
+            <div
+              v-if="mobileExpanded.includes(product.id)"
+              class="border-t border-gray-100 px-3.5 pb-3.5 pt-3 dark:border-gray-800"
+            >
+              <!-- Harga -->
+              <div class="mb-3 grid grid-cols-2 gap-2">
+                <div class="rounded-xl bg-gray-50 px-3 py-2 dark:bg-gray-900/50">
+                  <span class="block text-[10px] text-gray-400 dark:text-gray-500">Harga Beli</span>
+                  <span class="mt-0.5 block text-xs font-bold text-gray-900 dark:text-white">{{ formatCurrency(product.price_buy) }}</span>
+                </div>
+                <div class="rounded-xl bg-gray-50 px-3 py-2 dark:bg-gray-900/50">
+                  <span class="block text-[10px] text-gray-400 dark:text-gray-500">Harga Jual</span>
+                  <span class="mt-0.5 block text-xs font-bold text-brand-600 dark:text-brand-400">{{ formatCurrency(product.price_sell) }}</span>
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="flex items-center gap-2">
+                <button
+                  @click="viewProduct(product)"
+                  class="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white py-2 text-[11px] font-semibold text-gray-700 transition active:scale-95 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  Detail
+                </button>
+                <button
+                  @click="editProduct(product)"
+                  class="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-brand-200 bg-brand-50 py-2 text-[11px] font-semibold text-brand-700 transition active:scale-95 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-400"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit
+                </button>
+                <button
+                  @click="deleteProduct(product)"
+                  class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-error-200 bg-error-50 text-error-600 transition active:scale-95 dark:border-error-500/20 dark:bg-error-500/10 dark:text-error-400"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paginasi Mobile -->
+        <div
+          v-if="mobileFilteredProducts.length > mobilePerPage"
+          class="flex items-center justify-between pt-1 text-xs"
+        >
+          <span class="text-[11px] text-gray-500 dark:text-gray-400">
+            Hal. <span class="font-bold text-gray-900 dark:text-white">{{ mobilePage }}</span> dari {{ mobileTotalPages }}
+          </span>
+          <div class="flex gap-1.5">
+            <button
+              :disabled="mobilePage <= 1"
+              :class="mobilePage <= 1 ? 'cursor-not-allowed opacity-40' : ''"
+              class="rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-gray-600 transition active:scale-95 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
+              @click="mobilePage--"
+            >« Prev</button>
+            <button
+              :disabled="mobilePage >= mobileTotalPages"
+              :class="mobilePage >= mobileTotalPages ? 'cursor-not-allowed opacity-40' : ''"
+              class="rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-gray-600 transition active:scale-95 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
+              @click="mobilePage++"
+            >Next »</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== DESKTOP VIEW ===== -->
+      <div class="hidden md:block">
+        <DataTable
+          :columns="columns"
+          :data="formattedProducts"
+          :per-page="10"
+          :searchable="true"
+          :show-filter="true"
+          :show-add-button="true"
+          add-button-text="Tambah Produk"
+          title="Produk Barang"
+          :subtitle="`${settingsStore.storeSubtitle} - ${productsStore.products.length} Produk barang`"
+          :show-import-button="true"
+          :show-export-button="true"
+          :category-options="categoryOptions"
+          @add-click="addProduct"
+          @menu-action="handleMenuAction"
+          @import-click="handleImport"
+          @export-click="handleExport"
+          @category-change="handleCategoryChange"
+          @apply-filter="applyFilters"
+        >
+            <template #header-checkbox>
+              <div class="flex items-center gap-2">
+                <input
+                  ref="selectAllCheckbox"
+                  type="checkbox"
+                  :checked="allSelected"
+                  @change="toggleSelectAll"
+                  class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
+                />
+              </div>
+            </template>
+
+            <template #mobile-header>
+              <div class="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  :checked="allSelected"
+                  @change="toggleSelectAll"
+                  class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
+                />
+                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Nama Produk
+                </span>
+              </div>
+            </template>
+
+            <template #mobile-summary="{ row }">
+              <div class="flex items-center gap-3 min-w-0 flex-1">
+                <input
+                  type="checkbox"
+                  v-model="selectedProducts"
+                  :value="row.id"
+                  class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500 flex-shrink-0"
+                  @click.stop
+                />
+                <div class="min-w-0 flex-1">
+                  <p class="font-medium text-gray-900 truncate dark:text-white">{{ row.name }}</p>
+                </div>
+              </div>
+            </template>
+
+            <template #cell-checkbox="{ row }">
               <input
                 type="checkbox"
                 v-model="selectedProducts"
                 :value="row.id"
-                class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500 flex-shrink-0"
-                @click.stop
+                class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
               />
-              <div class="min-w-0 flex-1">
-                <p class="font-medium text-gray-900 truncate dark:text-white">{{ row.name }}</p>
-              </div>
-            </div>
-          </template>
+            </template>
 
-          <template #cell-checkbox="{ row }">
-            <input
-              type="checkbox"
-              v-model="selectedProducts"
-              :value="row.id"
-              class="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
-            />
-          </template>
+            <template #cell-image="{ row }">
+              <img
+                :src="row.image"
+                :alt="row.name"
+                class="h-12 w-12 rounded-lg object-cover"
+              />
+            </template>
 
-          <template #cell-image="{ row }">
-            <img
-              :src="row.image"
-              :alt="row.name"
-              class="h-12 w-12 rounded-lg object-cover"
-            />
-          </template>
-
-          <template #cell-stock="{ value }">
-            <span
-              :class="[
-                'font-medium',
-                value > 10
-                  ? 'text-success-600 dark:text-success-500'
-                  : value > 0
-                    ? 'text-warning-600 dark:text-warning-500'
-                    : 'text-error-600 dark:text-error-500',
-              ]"
-            >
-              {{ value }}
-            </span>
-          </template>
-
-          <template #actions>
-            <div v-if="selectedProducts.length > 0" class="flex items-center gap-2">
-              <span class="text-sm text-gray-600 dark:text-gray-400">
-                {{ selectedProducts.length }} dipilih
+            <template #cell-stock="{ value }">
+              <span
+                :class="[
+                  'font-medium',
+                  value > 10
+                    ? 'text-success-600 dark:text-success-500'
+                    : value > 0
+                      ? 'text-warning-600 dark:text-warning-500'
+                      : 'text-error-600 dark:text-error-500',
+                ]"
+              >
+                {{ value }}
               </span>
-              <button
-                @click="bulkDelete"
-                class="rounded-lg bg-error-500 px-4 py-2 text-sm font-medium text-white hover:bg-error-600"
-              >
-                Hapus
-              </button>
-            </div>
-          </template>
+            </template>
 
-          <template #rowActions="{ row }">
-            <div class="flex items-center gap-2">
-              <button
-                @click="viewProduct(row)"
-                class="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
-                title="Detail"
-              >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
-                </svg>
-              </button>
-              <button
-                @click="editProduct(row)"
-                class="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
-                title="Edit"
-              >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-              </button>
-              <button
-                @click="deleteProduct(row)"
-                class="rounded-lg p-2 text-error-600 hover:bg-error-50 dark:text-error-500 dark:hover:bg-error-500/15"
-                title="Hapus"
-              >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </button>
-            </div>
-          </template>
-        </DataTable>
+            <template #actions>
+              <div v-if="selectedProducts.length > 0" class="flex items-center gap-2">
+                <span class="text-sm text-gray-600 dark:text-gray-400">
+                  {{ selectedProducts.length }} dipilih
+                </span>
+                <button
+                  @click="bulkDelete"
+                  class="rounded-lg bg-error-500 px-4 py-2 text-sm font-medium text-white hover:bg-error-600"
+                >
+                  Hapus
+                </button>
+              </div>
+            </template>
+
+            <template #rowActions="{ row }">
+              <div class="flex items-center gap-2">
+                <button
+                  @click="viewProduct(row)"
+                  class="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+                  title="Detail"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+                <button
+                  @click="editProduct(row)"
+                  class="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+                  title="Edit"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button
+                  @click="deleteProduct(row)"
+                  class="rounded-lg p-2 text-error-600 hover:bg-error-50 dark:text-error-500 dark:hover:bg-error-500/15"
+                  title="Hapus"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </template>
+          </DataTable>
+      </div>
     </div>
 
     <!-- Delete Confirmation Dialog -->
@@ -234,6 +417,82 @@ const showImportModal = ref(false)
 const productToDelete = ref<any>(null)
 const filters = ref({ category: '', status: '', stock: '' })
 const statusFilter = ref('')
+
+// Mobile state
+const mobileSearch = ref('')
+const mobileStockFilter = ref('all')
+const mobilePage = ref(1)
+const mobileLoading = ref(true)
+const mobileExpanded = ref<string[]>([])
+const mobilePerPage = 10
+
+const mobileFilterChips = computed(() => {
+  const products = productsStore.products
+  return [
+    { value: 'all', label: 'Semua', count: products.length },
+    { value: 'low', label: 'Menipis', count: products.filter(p => p.stock > 0 && p.stock <= (p.minimum_stock || 10)).length },
+    { value: 'out', label: 'Habis', count: products.filter(p => p.stock === 0).length },
+  ]
+})
+
+const mobileFilteredProducts = computed(() => {
+  let result = productsStore.products
+
+  if (mobileStockFilter.value === 'low') {
+    result = result.filter(p => p.stock > 0 && p.stock <= (p.minimum_stock || 10))
+  } else if (mobileStockFilter.value === 'out') {
+    result = result.filter(p => p.stock === 0)
+  }
+
+  const q = mobileSearch.value.trim().toLowerCase()
+  if (q) {
+    result = result.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      (p.sku || '').toLowerCase().includes(q) ||
+      (p.barcode || '').toLowerCase().includes(q)
+    )
+  }
+
+  return [...result].sort((a, b) => a.name.localeCompare(b.name))
+})
+
+const mobileTotalPages = computed(() =>
+  Math.max(1, Math.ceil(mobileFilteredProducts.value.length / mobilePerPage))
+)
+
+const mobilePaginatedProducts = computed(() =>
+  mobileFilteredProducts.value.slice((mobilePage.value - 1) * mobilePerPage, mobilePage.value * mobilePerPage)
+)
+
+const toggleMobileExpand = (id: string) => {
+  const idx = mobileExpanded.value.indexOf(id)
+  if (idx === -1) mobileExpanded.value.push(id)
+  else mobileExpanded.value.splice(idx, 1)
+}
+
+const stockTextClass = (product: any) => {
+  const min = product.minimum_stock || 10
+  if (product.stock === 0) return 'text-error-500'
+  if (product.stock <= min) return 'text-warning-500'
+  return 'text-gray-900 dark:text-white'
+}
+
+const stockBadgeClass = (product: any) => {
+  const min = product.minimum_stock || 10
+  if (product.stock === 0) return 'bg-error-500/10 text-error-600 border-error-500/20 dark:text-error-400'
+  if (product.stock <= min) return 'bg-warning-500/10 text-warning-600 border-warning-500/20 dark:text-warning-400'
+  return 'bg-success-500/10 text-success-600 border-success-500/20 dark:text-success-400'
+}
+
+const stockBadgeLabel = (product: any) => {
+  const min = product.minimum_stock || 10
+  if (product.stock === 0) return 'Habis'
+  if (product.stock <= min) return 'Menipis'
+  return 'Aman'
+}
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0)
 
 // Category options for desktop dropdown
 const categoryOptions = computed(() => [
@@ -326,6 +585,8 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error loading data:', error)
     alert('Gagal memuat data. Silakan refresh halaman.')
+  } finally {
+    mobileLoading.value = false
   }
 })
 

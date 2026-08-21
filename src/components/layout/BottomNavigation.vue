@@ -39,7 +39,7 @@
 
     <!-- Transaksi (Floating Button) -->
     <router-link
-      to="/transactions/add"
+      to="/transactions/add-from-home"
       class="group flex flex-1 flex-col items-center justify-center py-1 -mt-4"
     >
       <div
@@ -108,7 +108,7 @@ const isActive = (path: string) => {
 }
 
 const hasActiveMenu = computed(() => {
-  const menuPaths = ['/', '/customer-invoices', '/stock', '/settings']
+  const menuPaths = ['/', '/customer-invoices', '/stock', '/settings', '/transactions/add-from-home']
   return menuPaths.some(path => isActive(path))
 })
 </script>

@@ -5,14 +5,71 @@
     <!-- Mobile View -->
     <div class="md:hidden space-y-4 px-4 pb-6">
       <!-- Loading Skeleton -->
-      <div v-if="loading" class="space-y-4">
-        <LoadingSkeleton type="card" />
-        <div class="grid grid-cols-3 gap-3">
-          <LoadingSkeleton type="stats" />
-          <LoadingSkeleton type="stats" />
-          <LoadingSkeleton type="stats" />
+      <div v-if="loading" class="space-y-4 animate-pulse">
+        <!-- Header Skeleton -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="h-9 w-9 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+            <div class="space-y-1.5">
+              <div class="h-4 w-28 rounded-lg bg-gray-200 dark:bg-gray-800"></div>
+              <div class="h-2.5 w-44 rounded bg-gray-200 dark:bg-gray-800"></div>
+            </div>
+          </div>
+          <div class="h-7 w-14 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
         </div>
-        <LoadingSkeleton type="card" />
+
+        <!-- Kartu Profil Customer Skeleton -->
+        <div class="rounded-3xl border border-gray-200 bg-white p-4 space-y-3.5 dark:border-gray-800 dark:bg-white/[0.03]">
+          <!-- Identitas -->
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3 flex-1 min-w-0">
+              <div class="h-10 w-10 flex-shrink-0 rounded-2xl bg-gray-200 dark:bg-gray-800"></div>
+              <div class="flex-1 space-y-2 pt-0.5">
+                <div class="h-3.5 w-36 rounded bg-gray-200 dark:bg-gray-800"></div>
+                <div class="h-2.5 w-52 rounded bg-gray-200 dark:bg-gray-800"></div>
+              </div>
+            </div>
+            <div class="h-7 w-16 flex-shrink-0 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+          </div>
+          <!-- Metrik 3 kolom -->
+          <div class="rounded-2xl border border-gray-200 p-2.5 grid grid-cols-3 gap-1 dark:border-gray-800">
+            <div v-for="i in 3" :key="i" class="flex flex-col items-center space-y-1.5 py-1">
+              <div class="h-2 w-12 rounded bg-gray-200 dark:bg-gray-800"></div>
+              <div class="h-3 w-14 rounded bg-gray-200 dark:bg-gray-800"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search & Filter Skeleton -->
+        <div class="space-y-2.5">
+          <div class="h-10 w-full rounded-2xl bg-gray-200 dark:bg-gray-800"></div>
+          <div class="flex items-center gap-1.5">
+            <div class="h-7 w-20 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+            <div class="h-7 w-28 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+            <div class="h-7 w-20 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+          </div>
+        </div>
+
+        <!-- List Invoice Skeleton -->
+        <div class="space-y-2.5">
+          <div
+            v-for="i in 5"
+            :key="i"
+            class="rounded-2xl border border-gray-200 bg-white p-3.5 flex items-center justify-between dark:border-gray-800 dark:bg-white/[0.03]"
+          >
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-2">
+                <div class="h-3 w-24 rounded bg-gray-200 dark:bg-gray-800"></div>
+                <div class="h-3.5 w-14 rounded bg-gray-200 dark:bg-gray-800"></div>
+              </div>
+              <div class="h-2.5 w-36 rounded bg-gray-200 dark:bg-gray-800"></div>
+            </div>
+            <div class="text-right space-y-1.5">
+              <div class="h-3.5 w-20 rounded bg-gray-200 dark:bg-gray-800 ml-auto"></div>
+              <div class="h-2.5 w-16 rounded bg-gray-200 dark:bg-gray-800 ml-auto"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Customer tidak ditemukan -->

@@ -23,13 +23,6 @@
           </h1>
           <p class="text-[11px] text-gray-500 dark:text-gray-400">Konfigurasi data usaha dan sistem</p>
         </div>
-        <button
-          @click="handleSave"
-          :disabled="saving"
-          class="rounded-xl border border-blue-500/20 bg-blue-500/10 px-3.5 py-1.5 font-outfit text-xs font-bold text-blue-500 transition active:scale-95 disabled:opacity-50 dark:text-blue-400"
-        >
-          {{ saving ? 'Menyimpan...' : 'Simpan' }}
-        </button>
       </div>
 
       <!-- Informasi Toko -->
@@ -116,6 +109,14 @@
               />
             </div>
           </div>
+
+          <button
+            @click="saveStoreSection"
+            :disabled="savingStore"
+            class="w-full rounded-xl bg-blue-600 py-2.5 font-outfit text-xs font-bold text-white shadow-md transition active:scale-95 disabled:opacity-50"
+          >
+            {{ savingStore ? 'Menyimpan...' : 'Simpan Informasi Toko' }}
+          </button>
         </div>
       </section>
 
@@ -189,6 +190,14 @@
               <span class="absolute right-3 top-1/2 -translate-y-1/2 transform text-xs font-bold text-gray-500 dark:text-gray-400">%</span>
             </div>
           </div>
+
+          <button
+            @click="saveTaxSection"
+            :disabled="savingTax"
+            class="w-full rounded-xl bg-emerald-600 py-2.5 font-outfit text-xs font-bold text-white shadow-md transition active:scale-95 disabled:opacity-50"
+          >
+            {{ savingTax ? 'Menyimpan...' : 'Simpan Pengaturan Pajak' }}
+          </button>
         </div>
       </section>
 
@@ -360,6 +369,14 @@
               placeholder="081234567890"
             />
           </div>
+
+          <button
+            @click="saveProfileSection"
+            :disabled="savingProfile"
+            class="w-full rounded-xl bg-indigo-600 py-2.5 font-outfit text-xs font-bold text-white shadow-md transition active:scale-95 disabled:opacity-50"
+          >
+            {{ savingProfile ? 'Menyimpan...' : 'Simpan Informasi Profil' }}
+          </button>
         </div>
       </section>
 
@@ -427,14 +444,6 @@
         </div>
       </section>
 
-      <!-- Tombol Simpan -->
-      <button
-        @click="handleSave"
-        :disabled="saving"
-        class="w-full rounded-2xl bg-blue-600 py-3.5 font-outfit text-sm font-extrabold text-white shadow-xl shadow-blue-600/30 transition hover:bg-blue-500 active:scale-95 disabled:opacity-50"
-      >
-        {{ saving ? 'Menyimpan...' : 'Simpan Perubahan' }}
-      </button>
     </div>
 
     <!-- Desktop Layout -->
@@ -514,6 +523,19 @@
               placeholder="Terima kasih atas kunjungan Anda"
             />
           </div>
+          <div class="flex justify-end pt-1">
+            <button
+              @click="saveStoreSection"
+              :disabled="savingStore"
+              class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+            >
+              <svg v-if="savingStore" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ savingStore ? 'Menyimpan...' : 'Simpan' }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -558,6 +580,19 @@
               placeholder="11"
             />
           </div>
+          <div class="flex justify-end pt-1">
+            <button
+              @click="saveTaxSection"
+              :disabled="savingTax"
+              class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+            >
+              <svg v-if="savingTax" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ savingTax ? 'Menyimpan...' : 'Simpan' }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -591,20 +626,6 @@
         </div>
       </div>
 
-      <!-- Tombol Simpan -->
-      <div class="flex justify-end">
-        <button
-          @click="handleSave"
-          :disabled="saving"
-          class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
-        >
-          <svg v-if="saving" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          {{ saving ? 'Menyimpan...' : 'Simpan Pengaturan' }}
-        </button>
-      </div>
     </div>
     </div>
   </AdminLayout>
@@ -630,6 +651,72 @@ const saving = ref(false)
 const uploading = ref(false)
 const changingPassword = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
+
+// Per-section saving state
+const savingStore = ref(false)
+const savingTax = ref(false)
+const savingProfile = ref(false)
+
+const saveStoreSection = async () => {
+  savingStore.value = true
+  try {
+    await settingsStore.updateSettings({
+      store_name: formData.store_name.trim() || 'Ucup Kasir',
+      store_subtitle: formData.store_subtitle.trim() || 'Toko',
+      store_address: formData.store_address.trim(),
+      store_phone: formData.store_phone.trim(),
+      store_email: formData.store_email.trim(),
+      receipt_footer: formData.receipt_footer.trim(),
+      tax_enabled: formData.tax_enabled,
+      tax_rate: formData.tax_rate,
+    })
+    toast.success('Berhasil!', 'Informasi toko berhasil disimpan')
+  } catch (error: any) {
+    toast.error('Gagal!', error.message || 'Gagal menyimpan informasi toko')
+  } finally {
+    savingStore.value = false
+  }
+}
+
+const saveTaxSection = async () => {
+  savingTax.value = true
+  try {
+    await settingsStore.updateSettings({
+      store_name: formData.store_name.trim() || 'Ucup Kasir',
+      store_subtitle: formData.store_subtitle.trim() || 'Toko',
+      store_address: formData.store_address.trim(),
+      store_phone: formData.store_phone.trim(),
+      store_email: formData.store_email.trim(),
+      receipt_footer: formData.receipt_footer.trim(),
+      tax_enabled: formData.tax_enabled,
+      tax_rate: formData.tax_rate,
+    })
+    toast.success('Berhasil!', 'Pengaturan pajak berhasil disimpan')
+  } catch (error: any) {
+    toast.error('Gagal!', error.message || 'Gagal menyimpan pengaturan pajak')
+  } finally {
+    savingTax.value = false
+  }
+}
+
+const saveProfileSection = async () => {
+  savingProfile.value = true
+  try {
+    const { error } = await supabase.auth.updateUser({
+      data: {
+        full_name: profileData.fullName.trim(),
+        phone: profileData.phone.trim() || undefined,
+        avatar_url: profileData.avatarUrl || undefined,
+      },
+    })
+    if (error) throw error
+    toast.success('Berhasil!', 'Informasi profil berhasil disimpan')
+  } catch (error: any) {
+    toast.error('Gagal!', error.message || 'Gagal menyimpan profil')
+  } finally {
+    savingProfile.value = false
+  }
+}
 
 const expandedSections = reactive({
   store: false,

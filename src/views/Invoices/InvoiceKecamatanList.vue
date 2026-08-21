@@ -23,6 +23,38 @@
         </p>
       </div>
 
+      <!-- Loading Skeleton Mobile -->
+      <div v-if="loading" class="md:hidden space-y-4 animate-pulse">
+        <!-- Search bar skeleton -->
+        <div class="h-10 w-full rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+        <!-- Grid skeleton -->
+        <div class="grid grid-cols-2 gap-3">
+          <div
+            v-for="i in 12"
+            :key="i"
+            class="flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]"
+          >
+            <div class="h-3.5 w-20 rounded bg-gray-200 dark:bg-gray-800"></div>
+            <div class="h-2.5 w-14 rounded bg-gray-200 dark:bg-gray-800"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Skeleton Desktop -->
+      <div v-if="loading" class="hidden md:block space-y-4 animate-pulse">
+        <div class="h-10 w-full rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+        <div class="grid grid-cols-3 gap-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div
+            v-for="i in 15"
+            :key="i"
+            class="flex flex-col items-start gap-1 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]"
+          >
+            <div class="h-3.5 w-24 rounded bg-gray-200 dark:bg-gray-800"></div>
+            <div class="h-2.5 w-16 rounded bg-gray-200 dark:bg-gray-800"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Kolom Pencarian -->
       <div v-if="!loading" class="relative">
         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -36,20 +68,6 @@
           placeholder="Cari kecamatan..."
           class="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500"
         />
-      </div>
-
-      <!-- Loading State -->
-      <div
-        v-if="loading"
-        class="flex items-center justify-center rounded-xl border border-gray-200 bg-white py-16 dark:border-gray-800 dark:bg-white/[0.03]"
-      >
-        <div class="text-center">
-          <svg class="mx-auto h-8 w-8 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Memuat data...</p>
-        </div>
       </div>
 
       <!-- Grid Kecamatan - Mobile -->
