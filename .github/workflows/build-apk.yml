@@ -53,7 +53,7 @@ jobs:
     - name: Decode and setup keystore
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       run: |
-        echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/ucup-kasir-release.keystore
+        printf '%s' "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/ucup-kasir-release.keystore
         echo "storeFile=ucup-kasir-release.keystore" > android/keystore.properties
         echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/keystore.properties
         echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/keystore.properties
