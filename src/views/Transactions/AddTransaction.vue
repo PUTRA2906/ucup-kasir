@@ -180,15 +180,23 @@
                   <div class="flex items-center justify-between rounded-lg border border-gray-300 bg-white p-0.5 dark:border-gray-700 dark:bg-gray-900">
                     <button
                       type="button"
-                      @click="item.quantity = Math.max(1, item.quantity - 1); item.subtotal = item.quantity * item.price"
+                      @click="decrementQuantity(item)"
                       class="flex h-6 w-6 items-center justify-center rounded text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                     >
                       -
                     </button>
-                    <span class="w-7 text-center text-xs font-bold text-gray-900 dark:text-white">{{ item.quantity }}</span>
+                    <input
+                      type="number"
+                      v-model.number="item.quantity"
+                      @input="updateQuantity(item, $event)"
+                      @blur="validateQuantity(item)"
+                      min="1"
+                      :max="item.stock"
+                      class="w-12 bg-transparent text-center text-xs font-bold text-gray-900 focus:outline-none dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
                     <button
                       type="button"
-                      @click="item.quantity = Math.min(item.stock, item.quantity + 1); item.subtotal = item.quantity * item.price"
+                      @click="incrementQuantity(item)"
                       class="flex h-6 w-6 items-center justify-center rounded text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                     >
                       +
@@ -876,6 +884,39 @@ const handleReturnConfirm = (items: ReturnSelection[]) => {
   }
 }
 
+// Quantity management functions
+const decrementQuantity = (item: CartItem) => {
+  item.quantity = Math.max(1, item.quantity - 1)
+  item.subtotal = item.quantity * item.price
+}
+
+const incrementQuantity = (item: CartItem) => {
+  item.quantity = Math.min(item.stock, item.quantity + 1)
+  item.subtotal = item.quantity * item.price
+}
+
+const updateQuantity = (item: CartItem, event: Event) => {
+  const input = event.target as HTMLInputElement
+  let value = parseInt(input.value) || 1
+  
+  // Clamp value between 1 and stock
+  value = Math.max(1, Math.min(value, item.stock))
+  
+  item.quantity = value
+  item.subtotal = item.quantity * item.price
+}
+
+const validateQuantity = (item: CartItem) => {
+  // Ensure quantity is valid after blur
+  if (!item.quantity || item.quantity < 1) {
+    item.quantity = 1
+  } else if (item.quantity > item.stock) {
+    item.quantity = item.stock
+    toast.warning('Perhatian', `Stok maksimal: ${item.stock}`)
+  }
+  item.subtotal = item.quantity * item.price
+}
+
 const handleAddProduct = ({ products, quantity }: { products: any[]; quantity: number }) => {
   let addedCount = 0
   products.forEach((product) => {
@@ -897,26 +938,6 @@ const handleAddProduct = ({ products, quantity }: { products: any[]; quantity: n
     addedCount += 1
   })
   toast.success('Ditambahkan', `${addedCount} produk masuk keranjang`)
-}
-
-const updateQuantity = (item: CartItem, rawValue: string) => {
-  const numValue = parseInt(rawValue.replace(/\D/g, '')) || 0
-  if (numValue > 0) {
-    item.quantity = numValue
-    item.subtotal = item.quantity * item.price
-  }
-}
-
-const validateQuantity = (item: CartItem) => {
-  if (item.quantity < 1) {
-    removeFromCart(item.product_id)
-    return
-  }
-  if (item.quantity > item.stock) {
-    item.quantity = item.stock
-    item.subtotal = item.quantity * item.price
-    toast.error('Stok Tidak Cukup', `Stok ${item.name} hanya tersedia ${item.stock} unit`)
-  }
 }
 
 const removeFromCart = (productId: string) => {

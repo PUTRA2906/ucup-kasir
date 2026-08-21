@@ -351,15 +351,12 @@ export function usePdfExport() {
 
       await Share.share({
         title: 'Invoice',
-        text: `Invoice ${filename}`,
+        text: `Invoice untuk: ${phoneNumber}`,
         url: savedFile.uri,
-        dialogTitle: 'Kirim Invoice via WhatsApp',
+        dialogTitle: 'Kirim Invoice',
       })
-
-      const whatsappUrl = `https://wa.me/${formattedPhone}`
-      window.open(whatsappUrl, '_system')
     } catch (error) {
-      console.error('Error sharing to WhatsApp:', error)
+      console.error('Error sharing invoice:', error)
       throw error
     }
   }

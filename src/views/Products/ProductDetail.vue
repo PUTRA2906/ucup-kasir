@@ -3,16 +3,23 @@
     <PageBreadcrumb pageTitle="Detail Produk" class="hidden md:block" />
 
     <!-- Mobile Header with Back Button -->
-    <div class="mb-6 flex items-center gap-3 pl-2 pr-4 md:hidden">
+    <div class="mb-6 flex items-center gap-3 px-4 md:hidden">
       <button
         @click="router.push('/products')"
-        class="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+        class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
       >
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
-      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Detail Produk</h1>
+      <div class="flex-1">
+        <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
+          DETAIL PRODUK
+        </h1>
+        <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+          Informasi lengkap produk
+        </p>
+      </div>
     </div>
 
     <div v-if="loading" class="space-y-6">
@@ -22,9 +29,9 @@
 
     <div v-else-if="product" class="space-y-4 md:space-y-6">
       <!-- Mobile Layout -->
-      <div class="space-y-4 md:hidden">
+      <div class="space-y-4 px-4 md:hidden">
         <!-- Nama & Status Card -->
-        <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
           <div class="flex items-start justify-between gap-3">
             <div class="flex-1 min-w-0">
               <h2 class="text-lg font-bold text-gray-900 break-words dark:text-white">{{ product.name }}</h2>
@@ -46,7 +53,7 @@
         <!-- Harga & Stok Card -->
         <div class="grid grid-cols-2 gap-3">
           <!-- Harga Beli -->
-          <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+          <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
             <p class="text-xs text-gray-500 dark:text-gray-400">Harga Beli</p>
             <p class="mt-1 text-base font-bold text-gray-900 dark:text-white">
               Rp {{ formatNumber(product.price_buy) }}
@@ -54,7 +61,7 @@
           </div>
 
           <!-- Harga Jual -->
-          <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+          <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
             <p class="text-xs text-gray-500 dark:text-gray-400">Harga Jual</p>
             <p class="mt-1 text-base font-bold text-success-600 dark:text-success-500">
               Rp {{ formatNumber(product.price_sell) }}
@@ -62,7 +69,7 @@
           </div>
 
           <!-- Stok -->
-          <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+          <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
             <p class="text-xs text-gray-500 dark:text-gray-400">Stok Tersedia</p>
             <p
               :class="[
@@ -79,36 +86,36 @@
           </div>
 
           <!-- Kategori -->
-          <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+          <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
             <p class="text-xs text-gray-500 dark:text-gray-400">Kategori</p>
             <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">{{ product.category?.name || '-' }}</p>
           </div>
         </div>
 
         <!-- Info Tambahan Card -->
-        <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-          <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Informasi Tambahan</h3>
+        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <h3 class="text-sm font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Informasi Tambahan</h3>
 
           <div class="mt-3 space-y-3">
             <div v-if="product.barcode">
-              <p class="text-xs text-gray-500 dark:text-gray-400">Barcode</p>
+              <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400">Barcode</p>
               <p class="mt-0.5 text-sm text-gray-900 dark:text-white">{{ product.barcode }}</p>
             </div>
 
             <div v-if="product.description">
-              <p class="text-xs text-gray-500 dark:text-gray-400">Deskripsi</p>
+              <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400">Deskripsi</p>
               <p class="mt-0.5 text-sm text-gray-900 dark:text-white">{{ product.description }}</p>
             </div>
 
-            <div class="pt-3 border-t border-gray-100 dark:border-gray-800">
+            <div class="pt-3 border-t border-gray-200 dark:border-gray-800">
               <div class="grid grid-cols-2 gap-3 text-xs">
                 <div>
-                  <p class="text-gray-500 dark:text-gray-400">Dibuat</p>
-                  <p class="mt-0.5 text-gray-900 dark:text-white">{{ formatDateShort(product.created_at) }}</p>
+                  <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400">Dibuat</p>
+                  <p class="mt-0.5 text-sm text-gray-900 dark:text-white">{{ formatDateShort(product.created_at) }}</p>
                 </div>
                 <div>
-                  <p class="text-gray-500 dark:text-gray-400">Diupdate</p>
-                  <p class="mt-0.5 text-gray-900 dark:text-white">{{ formatDateShort(product.updated_at) }}</p>
+                  <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400">Diupdate</p>
+                  <p class="mt-0.5 text-sm text-gray-900 dark:text-white">{{ formatDateShort(product.updated_at) }}</p>
                 </div>
               </div>
             </div>
@@ -119,13 +126,13 @@
         <div class="flex flex-col gap-3 pb-4">
           <button
             @click="router.push(`/products/edit/${productId}`)"
-            class="w-full rounded-lg bg-brand-500 py-3 text-sm font-medium text-white hover:bg-brand-600 focus:outline-hidden focus:ring-3 focus:ring-brand-500/30"
+            class="w-full rounded-xl bg-brand-500 py-3 text-sm font-medium text-white hover:bg-brand-600 transition active:scale-95 focus:outline-hidden focus:ring-3 focus:ring-brand-500/30"
           >
             Edit Produk
           </button>
           <button
             @click="showDeleteDialog = true"
-            class="w-full rounded-lg border border-error-500 bg-transparent py-3 text-sm font-medium text-error-600 hover:bg-error-50 focus:outline-hidden focus:ring-3 focus:ring-error-500/30 dark:text-error-500 dark:hover:bg-error-500/15"
+            class="w-full rounded-xl border border-error-500 bg-transparent py-3 text-sm font-medium text-error-600 hover:bg-error-50 transition active:scale-95 focus:outline-hidden focus:ring-3 focus:ring-error-500/30 dark:text-error-500 dark:hover:bg-error-500/15"
           >
             Hapus Produk
           </button>
@@ -277,6 +284,7 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import { useProductsStore } from '@/stores/products'
 import { useToast } from '@/composables/useToast'
 

@@ -195,7 +195,12 @@ watch(
     if (newValue) {
       searchQuery.value = ''
       selectedKecamatan.value = ''
-      nextTick(() => searchInput.value?.focus())
+      // Only autofocus on desktop (screen width >= 768px)
+      nextTick(() => {
+        if (window.innerWidth >= 768) {
+          searchInput.value?.focus()
+        }
+      })
     }
   }
 )

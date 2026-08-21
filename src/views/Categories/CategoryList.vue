@@ -2,8 +2,188 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Daftar Kategori" class="hidden md:block" />
     <div class="space-y-6 px-4 md:px-0">
-      <!-- DataTable -->
+      <!-- Mobile Header -->
+      <div class="flex items-center gap-3 md:hidden">
+        <button
+          @click="$router.push('/')"
+          class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+        >
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div class="flex-1">
+          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
+            DAFTAR KATEGORI
+          </h1>
+          <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+            {{ categoriesStore.categories.length }} Kategori
+          </p>
+        </div>
+        <button
+          @click="addCategory"
+          class="flex h-10 w-10 items-center justify-center rounded-xl border border-brand-500 bg-brand-500 text-white transition hover:bg-brand-600 active:scale-95"
+        >
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile View: Search & Cards -->
+      <div class="space-y-4 md:hidden">
+        <!-- Search Bar -->
+        <div class="relative">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Cari kategori..."
+            class="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+          />
+          <svg class="absolute left-3 top-3 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+
+        <!-- Category Cards -->
+        <div v-if="paginatedCategories.length === 0" class="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-900/50">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+          <p class="mt-4 text-sm font-medium text-gray-900 dark:text-white">
+            {{ searchQuery ? 'Kategori tidak ditemukan' : 'Belum ada kategori' }}
+          </p>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {{ searchQuery ? 'Coba kata kunci lain' : 'Tambahkan kategori pertama Anda' }}
+          </p>
+        </div>
+
+        <div v-else class="space-y-3">
+          <div
+            v-for="category in paginatedCategories"
+            :key="category.id"
+            @click="viewCategory(category)"
+            class="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition active:scale-[0.98] dark:border-gray-800 dark:bg-white/[0.03]"
+          >
+            <div class="flex items-start justify-between">
+              <div class="min-w-0 flex-1">
+                <h3 class="font-semibold text-gray-900 dark:text-white">
+                  {{ category.name }}
+                </h3>
+                
+                <div class="mt-2 space-y-1">
+                  <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                    <svg class="h-3.5 w-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span class="font-medium text-brand-600 dark:text-brand-400">{{ category.productCount }} produk</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                @click.stop="showCategoryMenu(category, $event)"
+                class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+              >
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="filteredCategories.length > 0" class="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-white/[0.03]">
+          <div class="text-xs text-gray-600 dark:text-gray-400">
+            {{ paginationInfo }}
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              @click="previousPage"
+              :disabled="currentPage === 1"
+              :class="[
+                'flex h-8 w-8 items-center justify-center rounded-lg border transition active:scale-95',
+                currentPage === 1
+                  ? 'border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-800 dark:bg-gray-800'
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              ]"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span class="text-sm font-medium text-gray-900 dark:text-white">
+              {{ currentPage }} / {{ totalPages }}
+            </span>
+            <button
+              @click="nextPage"
+              :disabled="currentPage === totalPages"
+              :class="[
+                'flex h-8 w-8 items-center justify-center rounded-lg border transition active:scale-95',
+                currentPage === totalPages
+                  ? 'border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-800 dark:bg-gray-800'
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              ]"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Popup Menu -->
+      <teleport to="body">
+        <div
+          v-if="activeCategoryMenu"
+          @click="closeCategoryMenu"
+          class="fixed inset-0 z-40 md:hidden"
+        ></div>
+        <div
+          v-if="activeCategoryMenu"
+          class="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl border-t border-gray-200 bg-white p-4 shadow-2xl dark:border-gray-800 dark:bg-gray-900 md:hidden"
+        >
+          <div class="mb-4 flex items-center justify-center">
+            <div class="h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+          </div>
+          <div class="space-y-2">
+            <button
+              @click="viewCategory(categoriesWithProductCount.find(c => c.id === activeCategoryMenu)); closeCategoryMenu()"
+              class="flex w-full items-center gap-3 rounded-xl p-3 text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <span class="font-medium">Detail</span>
+            </button>
+            <button
+              @click="editCategory(categoriesWithProductCount.find(c => c.id === activeCategoryMenu)); closeCategoryMenu()"
+              class="flex w-full items-center gap-3 rounded-xl p-3 text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <span class="font-medium">Edit</span>
+            </button>
+            <button
+              @click="deleteCategory(categoriesWithProductCount.find(c => c.id === activeCategoryMenu)); closeCategoryMenu()"
+              class="flex w-full items-center gap-3 rounded-xl p-3 text-left text-error-600 hover:bg-error-50 dark:text-error-500 dark:hover:bg-error-500/15"
+            >
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <span class="font-medium">Hapus</span>
+            </button>
+          </div>
+        </div>
+      </teleport>
+
+      <!-- Desktop DataTable -->
       <DataTable
+        class="hidden md:block"
         :columns="columns"
         :data="categoriesWithProductCount"
         :per-page="10"
@@ -58,6 +238,7 @@
             />
             <div class="min-w-0 flex-1">
               <p class="font-medium text-gray-900 truncate dark:text-white">{{ row.name }}</p>
+              <p class="text-xs text-gray-500 truncate dark:text-gray-400">{{ row.productCount }} produk</p>
             </div>
           </div>
         </template>
@@ -71,10 +252,13 @@
           />
         </template>
 
+        <template #cell-description="{ value }">
+          <span v-if="value" class="text-gray-800 dark:text-white/90">{{ value }}</span>
+          <span v-else class="text-gray-400 dark:text-gray-600">-</span>
+        </template>
+
         <template #cell-productCount="{ value }">
-          <span class="font-medium text-gray-700 dark:text-gray-300">
-            {{ value }} produk
-          </span>
+          <span class="text-gray-800 dark:text-white/90">{{ value }} produk</span>
         </template>
 
         <template #actions>
@@ -208,6 +392,12 @@ const showBulkDeleteDialog = ref(false)
 const showImportModal = ref(false)
 const categoryToDelete = ref<any>(null)
 
+// Mobile states
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+const activeCategoryMenu = ref<string | null>(null)
+
 const allSelected = computed(() => {
   return categoriesStore.categories.length > 0 && selectedCategories.value.length === categoriesStore.categories.length
 })
@@ -244,6 +434,31 @@ const categoriesWithProductCount = computed(() => {
   }))
 })
 
+// Mobile computed properties
+const filteredCategories = computed(() => {
+  if (!searchQuery.value) return categoriesWithProductCount.value
+  
+  const query = searchQuery.value.toLowerCase()
+  return categoriesWithProductCount.value.filter(category =>
+    category.name.toLowerCase().includes(query) ||
+    (category.description && category.description.toLowerCase().includes(query))
+  )
+})
+
+const totalPages = computed(() => Math.ceil(filteredCategories.value.length / itemsPerPage.value))
+
+const paginatedCategories = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredCategories.value.slice(start, end)
+})
+
+const paginationInfo = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value + 1
+  const end = Math.min(currentPage.value * itemsPerPage.value, filteredCategories.value.length)
+  return `${start}-${end} dari ${filteredCategories.value.length}`
+})
+
 onMounted(async () => {
   try {
     await Promise.all([
@@ -255,6 +470,28 @@ onMounted(async () => {
     alert('Gagal memuat data. Silakan refresh halaman.')
   }
 })
+
+// Mobile functions
+const showCategoryMenu = (category: any, event: Event) => {
+  event.stopPropagation()
+  activeCategoryMenu.value = activeCategoryMenu.value === category.id ? null : category.id
+}
+
+const closeCategoryMenu = () => {
+  activeCategoryMenu.value = null
+}
+
+const previousPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+  }
+}
 
 const addCategory = () => {
   router.push('/categories/add')

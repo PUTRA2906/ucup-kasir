@@ -2,8 +2,181 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Daftar Customer" class="hidden md:block" />
     <div class="space-y-6 px-4 md:px-0">
-      <!-- DataTable -->
-      <DataTable
+      <!-- Mobile Header -->
+      <div class="flex items-center gap-3 md:hidden">
+        <button
+          @click="$router.push('/')"
+          class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+        >
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div class="flex-1">
+          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
+            DAFTAR CUSTOMER
+          </h1>
+          <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+            {{ customersStore.customers.length }} Customer
+          </p>
+        </div>
+        <button
+          @click="addCustomer"
+          class="flex h-10 w-10 items-center justify-center rounded-xl border border-brand-500 bg-brand-500 text-white transition hover:bg-brand-600 active:scale-95"
+        >
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile View: Search & Cards -->
+      <div class="space-y-4 md:hidden">
+        <!-- Search Bar & Filter -->
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Cari customer..."
+              class="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+            />
+            <svg class="absolute left-3 top-3 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <button
+            @click="showFilterModal = true"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-brand-500 bg-white text-brand-500 transition hover:bg-brand-50 active:scale-95 dark:bg-gray-900 dark:hover:bg-brand-500/10"
+            :class="{ 'bg-brand-50 dark:bg-brand-500/10': hasActiveFilter }"
+          >
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Active Filter Indicator -->
+        <div v-if="hasActiveFilter" class="flex items-center justify-between rounded-xl bg-brand-50 px-4 py-2 dark:bg-brand-500/10">
+          <div class="flex items-center gap-2">
+            <svg class="h-4 w-4 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            <span class="text-xs font-medium text-brand-700 dark:text-brand-300">
+              Filter: {{ activeFilterLabel }}
+            </span>
+          </div>
+          <button
+            @click="clearFilter"
+            class="text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
+          >
+            Hapus
+          </button>
+        </div>
+
+        <!-- Customer Cards -->
+        <div v-if="paginatedCustomers.length === 0" class="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-900/50">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <p class="mt-4 text-sm font-medium text-gray-900 dark:text-white">
+            {{ searchQuery ? 'Customer tidak ditemukan' : 'Belum ada customer' }}
+          </p>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {{ searchQuery ? 'Coba kata kunci lain' : 'Tambahkan customer pertama Anda' }}
+          </p>
+        </div>
+
+        <div v-else class="space-y-3">
+          <div
+            v-for="customer in paginatedCustomers"
+            :key="customer.id"
+            @click="viewCustomer(customer)"
+            class="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition active:scale-[0.98] dark:border-gray-800 dark:bg-white/[0.03]"
+          >
+            <div class="flex items-start justify-between">
+              <div class="min-w-0 flex-1">
+                <h3 class="font-semibold text-gray-900 dark:text-white">
+                  {{ customer.name }}
+                </h3>
+                <p v-if="customer.store_name" class="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
+                  {{ customer.store_name }}
+                </p>
+                
+                <div class="mt-2 space-y-1">
+                  <div v-if="customer.phone" class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                    <svg class="h-3.5 w-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <span>{{ customer.phone }}</span>
+                  </div>
+                  
+                  <div v-if="customer.kecamatan" class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                    <svg class="h-3.5 w-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>{{ customer.kecamatan }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                @click.stop="showCustomerMenu(customer, $event)"
+                class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+              >
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="filteredCustomers.length > 0" class="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-white/[0.03]">
+          <div class="text-xs text-gray-600 dark:text-gray-400">
+            {{ paginationInfo }}
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              @click="previousPage"
+              :disabled="currentPage === 1"
+              :class="[
+                'flex h-8 w-8 items-center justify-center rounded-lg border transition active:scale-95',
+                currentPage === 1
+                  ? 'border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-800 dark:bg-gray-800'
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              ]"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span class="text-sm font-medium text-gray-900 dark:text-white">
+              {{ currentPage }} / {{ totalPages }}
+            </span>
+            <button
+              @click="nextPage"
+              :disabled="currentPage === totalPages"
+              :class="[
+                'flex h-8 w-8 items-center justify-center rounded-lg border transition active:scale-95',
+                currentPage === totalPages
+                  ? 'border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-800 dark:bg-gray-800'
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              ]"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop: DataTable -->
+      <div class="hidden md:block">
+        <DataTable
         :columns="columns"
         :data="customersStore.customers"
         :per-page="10"
@@ -157,6 +330,144 @@
           </div>
         </template>
       </DataTable>
+      </div>
+
+      <!-- Mobile Customer Menu Modal -->
+      <Teleport to="body">
+        <Transition name="modal">
+          <div
+            v-if="showMobileMenu"
+            class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 md:hidden"
+            @click.self="showMobileMenu = false"
+          >
+            <div class="w-full max-w-lg rounded-t-3xl bg-white p-6 dark:bg-gray-900">
+              <div class="mb-4 text-center">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                  {{ selectedMobileCustomer?.name }}
+                </h3>
+                <p v-if="selectedMobileCustomer?.store_name" class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ selectedMobileCustomer.store_name }}
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <button
+                  @click="viewCustomer(selectedMobileCustomer); showMobileMenu = false"
+                  class="w-full flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-sm font-medium text-gray-700 transition hover:bg-gray-50 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                  <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  Lihat Detail
+                </button>
+
+                <button
+                  @click="editCustomer(selectedMobileCustomer); showMobileMenu = false"
+                  class="w-full flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-sm font-medium text-gray-700 transition hover:bg-gray-50 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                  <svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit Customer
+                </button>
+
+                <button
+                  @click="deleteCustomer(selectedMobileCustomer); showMobileMenu = false"
+                  class="w-full flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-100 active:scale-95 dark:border-red-900/50 dark:bg-red-500/10 dark:text-red-500 dark:hover:bg-red-500/20"
+                >
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Hapus Customer
+                </button>
+
+                <button
+                  @click="showMobileMenu = false"
+                  class="w-full rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+
+      <!-- Filter Modal -->
+      <Teleport to="body">
+        <Transition name="modal">
+          <div
+            v-if="showFilterModal"
+            class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 md:hidden"
+            @click.self="showFilterModal = false"
+          >
+            <div class="w-full max-w-lg rounded-t-3xl bg-white p-6 dark:bg-gray-900">
+              <div class="mb-4 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Filter Customer</h3>
+                <button
+                  @click="showFilterModal = false"
+                  class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                >
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="space-y-4">
+                <!-- Filter by Kecamatan -->
+                <div>
+                  <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Kecamatan
+                  </label>
+                  <div class="space-y-2 max-h-60 overflow-y-auto">
+                    <button
+                      @click="selectedKecamatan = null; showFilterModal = false"
+                      :class="[
+                        'w-full rounded-xl border px-4 py-2.5 text-left text-sm font-medium transition active:scale-95',
+                        selectedKecamatan === null
+                          ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400'
+                          : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                      ]"
+                    >
+                      <div class="flex items-center justify-between">
+                        <span>Semua Kecamatan</span>
+                        <span v-if="selectedKecamatan === null" class="text-brand-600 dark:text-brand-400">✓</span>
+                      </div>
+                    </button>
+                    <button
+                      v-for="kec in availableKecamatans"
+                      :key="kec"
+                      @click="selectedKecamatan = kec; showFilterModal = false"
+                      :class="[
+                        'w-full rounded-xl border px-4 py-2.5 text-left text-sm font-medium transition active:scale-95',
+                        selectedKecamatan === kec
+                          ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400'
+                          : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                      ]"
+                    >
+                      <div class="flex items-center justify-between">
+                        <span>{{ kec }}</span>
+                        <span v-if="selectedKecamatan === kec" class="text-brand-600 dark:text-brand-400">✓</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Reset Button -->
+                <button
+                  v-if="hasActiveFilter"
+                  @click="clearFilter; showFilterModal = false"
+                  class="w-full rounded-xl border-2 border-dashed border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                  Reset Filter
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
     </div>
 
     <!-- Delete Confirmation Dialog -->
@@ -220,6 +531,99 @@ const showDeleteDialog = ref(false)
 const showBulkDeleteDialog = ref(false)
 const showImportModal = ref(false)
 const customerToDelete = ref<any>(null)
+const searchQuery = ref('')
+const showMobileMenu = ref(false)
+const selectedMobileCustomer = ref<any>(null)
+
+// Pagination & Filter
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+const showFilterModal = ref(false)
+const selectedKecamatan = ref<string | null>(null)
+
+// Available Kecamatans (unique list)
+const availableKecamatans = computed(() => {
+  const kecamatans = customersStore.customers
+    .map((c) => c.kecamatan)
+    .filter((k) => k && k.trim() !== '') as string[]
+  return Array.from(new Set(kecamatans)).sort()
+})
+
+// Filter logic
+const filteredCustomers = computed(() => {
+  let result = customersStore.customers
+
+  // Filter by kecamatan
+  if (selectedKecamatan.value) {
+    result = result.filter((c) => c.kecamatan === selectedKecamatan.value)
+  }
+
+  // Filter by search query
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    result = result.filter(
+      (c) =>
+        c.name.toLowerCase().includes(query) ||
+        (c.store_name && c.store_name.toLowerCase().includes(query)) ||
+        (c.phone && c.phone.includes(query)) ||
+        (c.kecamatan && c.kecamatan.toLowerCase().includes(query))
+    )
+  }
+
+  return result
+})
+
+// Pagination logic
+const totalPages = computed(() => Math.ceil(filteredCustomers.value.length / itemsPerPage.value))
+
+const paginatedCustomers = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredCustomers.value.slice(start, end)
+})
+
+const paginationInfo = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value + 1
+  const end = Math.min(currentPage.value * itemsPerPage.value, filteredCustomers.value.length)
+  return `${start}-${end} dari ${filteredCustomers.value.length}`
+})
+
+const hasActiveFilter = computed(() => selectedKecamatan.value !== null)
+
+const activeFilterLabel = computed(() => {
+  if (selectedKecamatan.value) return selectedKecamatan.value
+  return ''
+})
+
+// Watch for filter changes to reset page
+watchEffect(() => {
+  if (searchQuery.value || selectedKecamatan.value) {
+    currentPage.value = 1
+  }
+})
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+  }
+}
+
+const previousPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+const clearFilter = () => {
+  selectedKecamatan.value = null
+  currentPage.value = 1
+}
+
+const showCustomerMenu = (customer: any, event: Event) => {
+  event.stopPropagation()
+  selectedMobileCustomer.value = customer
+  showMobileMenu.value = true
+}
 
 const allSelected = computed(() => {
   return customersStore.customers.length > 0 && selectedCustomers.value.length === customersStore.customers.length
@@ -534,3 +938,30 @@ const handleImportFile = async (file: File, updateExisting: boolean) => {
   }
 }
 </script>
+
+<style scoped>
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-active > div,
+.modal-leave-active > div {
+  transition: transform 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from > div,
+.modal-leave-to > div {
+  transform: translateY(100%);
+}
+
+.modal-enter-to > div,
+.modal-leave-from > div {
+  transform: translateY(0);
+}
+</style>

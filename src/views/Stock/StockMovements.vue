@@ -1,9 +1,200 @@
 <template>
   <AdminLayout>
     <PageBreadcrumb pageTitle="Riwayat Mutasi Stok" class="hidden md:block" />
+    
+    <!-- Mobile Header -->
+    <div class="mb-6 flex items-center gap-3 px-4 md:hidden">
+      <button
+        @click="$router.push('/')"
+        class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <div class="flex-1">
+        <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
+          RIWAYAT MUTASI STOK
+        </h1>
+        <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+          {{ stockStore.movements.length }} Mutasi Stok
+        </p>
+      </div>
+    </div>
+
     <div class="space-y-6 px-4 md:px-0">
-      <!-- Filter Section -->
-      <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-white/[0.08] dark:bg-white/[0.02]">
+      <!-- Mobile View: Filter & Cards -->
+      <div class="space-y-4 md:hidden">
+        <!-- Quick Filters -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-2">
+          <button
+            @click="quickFilter('all')"
+            :class="[
+              'flex-shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition',
+              filters.movement_type === '' 
+                ? 'bg-brand-500 text-white' 
+                : 'bg-white border border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
+            ]"
+          >
+            Semua
+          </button>
+          <button
+            @click="quickFilter('in')"
+            :class="[
+              'flex-shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition',
+              filters.movement_type === 'in' 
+                ? 'bg-success-500 text-white' 
+                : 'bg-white border border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
+            ]"
+          >
+            Masuk
+          </button>
+          <button
+            @click="quickFilter('out')"
+            :class="[
+              'flex-shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition',
+              filters.movement_type === 'out' 
+                ? 'bg-error-500 text-white' 
+                : 'bg-white border border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
+            ]"
+          >
+            Keluar
+          </button>
+          <button
+            @click="quickFilter('adjustment')"
+            :class="[
+              'flex-shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition',
+              filters.movement_type === 'adjustment' 
+                ? 'bg-warning-500 text-white' 
+                : 'bg-white border border-gray-300 text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
+            ]"
+          >
+            Penyesuaian
+          </button>
+        </div>
+
+        <!-- Movement Cards -->
+        <div v-if="paginatedMovements.length === 0" class="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-900/50">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+          </svg>
+          <p class="mt-4 text-sm font-medium text-gray-900 dark:text-white">
+            Tidak ada mutasi stok
+          </p>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Belum ada riwayat mutasi stok
+          </p>
+        </div>
+
+        <div v-else class="space-y-2">
+          <div
+            v-for="movement in paginatedMovements"
+            :key="movement.id"
+            @click="viewDetail(movement)"
+            class="relative rounded-lg border border-gray-200 bg-white p-2.5 shadow-sm transition active:scale-[0.98] dark:border-gray-800 dark:bg-white/[0.03]"
+          >
+            <div class="flex items-start gap-2">
+              <!-- Icon -->
+              <div
+                :class="[
+                  'flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg',
+                  movement.movement_type === 'in' || movement.movement_type === 'return'
+                    ? 'bg-success-100 text-success-600 dark:bg-success-900/30 dark:text-success-400'
+                    : 'bg-error-100 text-error-600 dark:bg-error-900/30 dark:text-error-400'
+                ]"
+              >
+                <svg v-if="movement.movement_type === 'in' || movement.movement_type === 'return'" class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4" />
+                </svg>
+                <svg v-else class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <h3 class="text-[13px] font-semibold text-gray-900 truncate dark:text-white">
+                  {{ movement.product_name }}
+                </h3>
+                
+                <div class="mt-0.5 flex items-center gap-1.5">
+                  <span
+                    :class="[
+                      'inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium',
+                      getMovementTypeClass(movement.movement_type)
+                    ]"
+                  >
+                    {{ getMovementTypeLabel(movement.movement_type) }}
+                  </span>
+                  <span
+                    :class="[
+                      'text-[11px] font-bold',
+                      movement.movement_type === 'in' || movement.movement_type === 'return'
+                        ? 'text-success-600 dark:text-success-500'
+                        : 'text-error-600 dark:text-error-500'
+                    ]"
+                  >
+                    {{ movement.movement_type === 'in' || movement.movement_type === 'return' ? '+' : '-' }}{{ movement.quantity }}
+                  </span>
+                </div>
+
+                <div class="mt-1 flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400">
+                  <span>{{ movement.quantity_before }}</span>
+                  <svg class="h-2 w-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                  </svg>
+                  <span class="font-medium text-gray-900 dark:text-white">{{ movement.quantity_after }}</span>
+                  <span class="ml-auto text-[9px]">
+                    {{ formatDateTimeShort(movement.created_at) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="filteredMovements.length > 0" class="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-white/[0.03]">
+          <div class="text-xs text-gray-600 dark:text-gray-400">
+            {{ paginationInfo }}
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              @click="previousPage"
+              :disabled="currentPage === 1"
+              :class="[
+                'flex h-8 w-8 items-center justify-center rounded-lg border transition active:scale-95',
+                currentPage === 1
+                  ? 'border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-800 dark:bg-gray-800'
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              ]"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span class="text-sm font-medium text-gray-900 dark:text-white">
+              {{ currentPage }} / {{ totalPages }}
+            </span>
+            <button
+              @click="nextPage"
+              :disabled="currentPage === totalPages"
+              :class="[
+                'flex h-8 w-8 items-center justify-center rounded-lg border transition active:scale-95',
+                currentPage === totalPages
+                  ? 'border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-800 dark:bg-gray-800'
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              ]"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Filter Section -->
+      <div class="hidden rounded-xl border border-gray-200 bg-white p-6 md:block dark:border-white/[0.08] dark:bg-white/[0.02]">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -78,6 +269,7 @@
 
       <!-- DataTable -->
       <DataTable
+        class="hidden md:block"
         :columns="columns"
         :data="formattedMovements"
         :per-page="20"
@@ -262,6 +454,10 @@ const filters = ref({
   end_date: ''
 })
 
+// Mobile states
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+
 const showDetailModal = ref(false)
 const selectedMovement = ref<any>(null)
 
@@ -281,6 +477,43 @@ const formattedMovements = computed(() => {
     product_name: movement.product?.name || '-',
     notes: movement.notes || '-'
   }))
+})
+
+// Mobile computed properties
+const filteredMovements = computed(() => {
+  let result = formattedMovements.value
+
+  if (filters.value.movement_type) {
+    result = result.filter(m => m.movement_type === filters.value.movement_type)
+  }
+
+  if (filters.value.product_id) {
+    result = result.filter(m => m.product_id === filters.value.product_id)
+  }
+
+  if (filters.value.start_date) {
+    result = result.filter(m => new Date(m.created_at) >= new Date(filters.value.start_date))
+  }
+
+  if (filters.value.end_date) {
+    result = result.filter(m => new Date(m.created_at) <= new Date(filters.value.end_date))
+  }
+
+  return result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+})
+
+const totalPages = computed(() => Math.ceil(filteredMovements.value.length / itemsPerPage.value))
+
+const paginatedMovements = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredMovements.value.slice(start, end)
+})
+
+const paginationInfo = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value + 1
+  const end = Math.min(currentPage.value * itemsPerPage.value, filteredMovements.value.length)
+  return `${start}-${end} dari ${filteredMovements.value.length}`
 })
 
 const getMovementTypeLabel = (type: string) => {
@@ -346,6 +579,34 @@ const formatDateTime = (dateString: string) => {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+const formatDateTimeShort = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// Mobile functions
+const quickFilter = (type: string) => {
+  filters.value.movement_type = type === 'all' ? '' : type
+  currentPage.value = 1
+}
+
+const previousPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+  }
 }
 
 const applyFilters = async () => {

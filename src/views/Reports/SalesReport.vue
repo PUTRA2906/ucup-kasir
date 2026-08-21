@@ -3,31 +3,115 @@
     <PageBreadcrumb pageTitle="Laporan Penjualan" class="hidden md:block" />
 
     <div class="space-y-6 px-4 md:px-0">
-      <!-- Filter & Header -->
-      <div class="rounded-2xl border border-gray-200 bg-white p-4 md:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+      <!-- Mobile Header with Back Button -->
+      <div class="flex items-center gap-3 md:hidden">
+        <button
+          @click="$router.back()"
+          class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+        >
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div class="flex-1">
+          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
+            LAPORAN PENJUALAN
+          </h1>
+          <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+            {{ formatDateRange(reportStore.startDate, reportStore.endDate) }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Filter Modal (Mobile) -->
+      <Teleport to="body">
+        <Transition name="modal">
+          <div
+            v-if="showFilterModal"
+            class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 md:hidden"
+            @click.self="showFilterModal = false"
+          >
+            <div class="w-full max-w-lg rounded-t-3xl bg-white p-6 dark:bg-gray-900">
+              <div class="mb-4 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Filter Periode</h3>
+                <button
+                  @click="showFilterModal = false"
+                  class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                >
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="space-y-4">
+                <!-- Preset Dropdown -->
+                <div>
+                  <label class="mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Pilih Periode Cepat
+                  </label>
+                  <select
+                    v-model="activePreset"
+                    @change="reportStore.applyPreset(activePreset)"
+                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                  >
+                    <option value="">Custom...</option>
+                    <option v-for="preset in reportStore.datePresets" :key="preset.value" :value="preset.value">
+                      {{ preset.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Custom Date Range -->
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300">
+                      Dari Tanggal
+                    </label>
+                    <input
+                      v-model="reportStore.startDate"
+                      type="date"
+                      class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label class="mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300">
+                      Sampai Tanggal
+                    </label>
+                    <input
+                      v-model="reportStore.endDate"
+                      type="date"
+                      class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  @click="applyFilter()"
+                  class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-600 active:scale-95"
+                >
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Terapkan Filter
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+
+      <!-- Desktop Filter & Header -->
+      <div class="hidden md:block rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <div>
-          <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Laporan Penjualan</h1>
-          <p class="mt-1 text-xs md:text-sm text-gray-500 dark:text-gray-400">
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Laporan Penjualan</h1>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {{ formatDateRange(reportStore.startDate, reportStore.endDate) }}
           </p>
         </div>
 
-        <!-- Presets Dropdown for mobile -->
-        <div class="mt-4 md:hidden">
-          <select
-            v-model="activePreset"
-            @change="reportStore.applyPreset(activePreset); fetchReport()"
-            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-          >
-            <option value="">Pilih periode...</option>
-            <option v-for="preset in reportStore.datePresets" :key="preset.value" :value="preset.value">
-              {{ preset.label }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Presets Buttons for desktop -->
-        <div class="hidden md:block mt-4">
+        <!-- Presets Buttons -->
+        <div class="mt-4">
           <div class="flex flex-wrap gap-2">
             <button
               v-for="preset in reportStore.datePresets"
@@ -46,26 +130,26 @@
         </div>
 
         <!-- Date Range Inputs -->
-        <div class="mt-4 space-y-3 md:space-y-0 md:flex md:items-center md:gap-2">
+        <div class="mt-4 flex items-center gap-2">
           <input
             v-model="reportStore.startDate"
             type="date"
-            class="w-full md:w-auto rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs md:text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
           />
-          <span class="hidden md:inline text-gray-500">-</span>
+          <span class="text-gray-500">-</span>
           <input
             v-model="reportStore.endDate"
             type="date"
-            class="w-full md:w-auto rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs md:text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
           />
           <button
             @click="fetchReport()"
-            class="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 md:py-2 text-xs md:text-sm font-medium text-white hover:bg-brand-600"
+            class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            <span class="hidden sm:inline">Perbarui</span>
+            Perbarui
           </button>
         </div>
       </div>
@@ -84,6 +168,17 @@
       <template v-else>
         <!-- Summary Cards -->
         <SalesSummaryCards :summary="reportStore.summary" />
+
+        <!-- Filter Button (Mobile) -->
+        <button
+          @click="showFilterModal = true"
+          class="w-full inline-flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-brand-500 bg-brand-50 px-4 py-3 text-sm font-semibold text-brand-600 transition hover:bg-brand-100 active:scale-95 md:hidden dark:border-brand-400 dark:bg-brand-500/10 dark:text-brand-400"
+        >
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          Ubah Filter Periode
+        </button>
 
         <!-- Sales Summary Detail -->
         <SalesSummaryDetail :summary="reportStore.summary" />
@@ -104,6 +199,7 @@ import { useToast } from '@/composables/useToast'
 const reportStore = useSalesReportStore()
 const toast = useToast()
 const activePreset = ref('30days')
+const showFilterModal = ref(false)
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('id-ID', {
@@ -151,6 +247,11 @@ const calculatePercentage = (value: number, total: number) => {
   return Math.round((value / total) * 100)
 }
 
+const applyFilter = async () => {
+  showFilterModal.value = false
+  await fetchReport()
+}
+
 const fetchReport = async () => {
   try {
     await reportStore.fetchSalesReport()
@@ -165,3 +266,25 @@ onMounted(() => {
   fetchReport()
 })
 </script>
+
+<style scoped>
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-active > div,
+.modal-leave-active > div {
+  transition: transform 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from > div,
+.modal-leave-to > div {
+  transform: translateY(100%);
+}
+</style>

@@ -321,7 +321,9 @@ const waLink = (phone: string) => {
   if (digits.startsWith('0')) {
     digits = '62' + digits.slice(1)
   }
-  return `https://wa.me/${digits}`
+  // Use intent URL for Android to open regular WhatsApp (not Business)
+  // Falls back to web.whatsapp.com if not on Android
+  return `intent://send?phone=${digits}#Intent;scheme=whatsapp;package=com.whatsapp;end;`
 }
 
 const goToCustomer = (customerId: string) => {

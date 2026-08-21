@@ -50,6 +50,15 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x android/gradlew
 
+    - name: Decode and setup keystore
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      run: |
+        echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/ucup-kasir-release.keystore
+        echo "storeFile=ucup-kasir-release.keystore" > android/keystore.properties
+        echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/keystore.properties
+        echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/keystore.properties
+        echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/keystore.properties
+
     - name: Build APK (Debug)
       run: |
         cd android
@@ -60,10 +69,6 @@ jobs:
       run: |
         cd android
         ./gradlew assembleRelease --no-daemon --stacktrace
-      env:
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
@@ -77,7 +82,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ucup-kasir-release
-        path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+        path: android/app/build/outputs/apk/release/app-release.apk
         retention-days: 90
 
     - name: Create Release
@@ -88,7 +93,7 @@ jobs:
         name: Release v${{ github.run_number }}
         files: |
           android/app/build/outputs/apk/debug/app-debug.apk
-          android/app/build/outputs/apk/release/app-release-unsigned.apk
+          android/app/build/outputs/apk/release/app-release.apk
         draft: false
         prerelease: false
       env:

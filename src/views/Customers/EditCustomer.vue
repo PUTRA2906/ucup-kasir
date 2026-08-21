@@ -2,22 +2,24 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Edit Customer" class="hidden md:block" />
 
-    <!-- Mobile Header with Close Button -->
-    <div class="mb-6 flex items-center gap-3 pl-2 pr-4 md:hidden">
+    <!-- Mobile Header with Back Button -->
+    <div class="mb-6 flex items-center gap-3 px-4 md:hidden">
       <button
         @click="showConfirmDialog = true"
-        class="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+        class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
       >
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"
-          />
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
-      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Edit Customer</h1>
+      <div class="flex-1">
+        <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
+          EDIT CUSTOMER
+        </h1>
+        <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+          Perbarui data customer
+        </p>
+      </div>
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-12">
@@ -30,9 +32,124 @@
       </div>
     </div>
 
-    <div v-else-if="customer" class="space-y-6">
-      <!-- Form Card -->
-      <ComponentCard title="Edit Informasi Customer" desc="Perbarui detail customer">
+    <div v-else-if="customer" class="space-y-6 px-4 md:px-0">
+      <!-- Mobile Form -->
+      <form @submit.prevent="handleSubmit" class="space-y-4 md:hidden">
+        <!-- Basic Info Card -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <h3 class="mb-3 text-sm font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Informasi Dasar
+          </h3>
+          <div class="space-y-4">
+            <!-- Nama Customer -->
+            <div>
+              <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-400">
+                Nama Customer <span class="text-error-500">*</span>
+              </label>
+              <input
+                type="text"
+                v-model="formData.name"
+                placeholder="Masukkan nama customer"
+                required
+                class="h-11 w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-brand-500 focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500"
+              />
+            </div>
+
+            <!-- Nama Toko -->
+            <div>
+              <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-400">
+                Nama Toko
+              </label>
+              <input
+                type="text"
+                v-model="formData.storeName"
+                placeholder="Nama toko (opsional)"
+                class="h-11 w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-brand-500 focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Card -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <h3 class="mb-3 text-sm font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Kontak & Lokasi
+          </h3>
+          <div class="space-y-4">
+            <!-- Telepon -->
+            <div>
+              <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-400">
+                No. Telepon
+              </label>
+              <input
+                type="tel"
+                v-model="formData.phone"
+                placeholder="Contoh: 0812-3456-7890"
+                class="h-11 w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-brand-500 focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500"
+              />
+            </div>
+
+            <!-- Kecamatan -->
+            <div>
+              <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-400">
+                Kecamatan <span class="text-error-500">*</span>
+              </label>
+              <KecamatanInput v-model="formData.kecamatan" :error="kecamatanError" />
+              <p v-if="kecamatanError" class="mt-1.5 text-xs text-error-500">
+                Kecamatan wajib diisi
+              </p>
+            </div>
+
+            <!-- Alamat -->
+            <div>
+              <label class="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-400">
+                Alamat Lengkap
+              </label>
+              <textarea
+                v-model="formData.address"
+                rows="3"
+                placeholder="Alamat lengkap (opsional)"
+                class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-brand-500 focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes Card -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <h3 class="mb-3 text-sm font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Catatan
+          </h3>
+          <textarea
+            v-model="formData.notes"
+            rows="3"
+            placeholder="Catatan tambahan (opsional)"
+            class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-brand-500 focus:outline-hidden focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500"
+          ></textarea>
+        </div>
+
+        <!-- Action Buttons Mobile -->
+        <div class="sticky bottom-4 z-10 flex gap-2">
+          <button
+            type="button"
+            @click="showConfirmDialog = true"
+            class="flex-1 rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 active:scale-95 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
+            Batal
+          </button>
+          <button
+            type="submit"
+            :disabled="isSubmitting"
+            class="flex-1 rounded-xl border border-brand-500 bg-brand-500 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-brand-600 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {{ isSubmitting ? 'Menyimpan...' : 'Simpan' }}
+          </button>
+        </div>
+      </form>
+
+      <!-- Desktop Form Card -->
+      <div class="hidden md:block">
+        <ComponentCard title="Edit Informasi Customer" desc="Perbarui detail customer">
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
             <!-- Nama Customer -->
@@ -131,7 +248,8 @@
             </button>
           </div>
         </form>
-      </ComponentCard>
+        </ComponentCard>
+      </div>
     </div>
 
     <!-- Confirm Dialog -->

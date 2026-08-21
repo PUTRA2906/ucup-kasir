@@ -243,26 +243,7 @@
               >
             </router-link>
 
-            <router-link
-              to="/stock"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
-              <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-purple-500/20 bg-purple-500/10 text-purple-500 transition-transform group-hover:scale-105"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-                  />
-                </svg>
-              </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Gudang</span
-              >
-            </router-link>
+
 
             <router-link
               to="/categories"
@@ -327,26 +308,7 @@
               >
             </router-link>
 
-            <router-link
-              to="/profile"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
-              <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-500/20 bg-slate-500/10 text-slate-500 transition-transform group-hover:scale-105"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Profil</span
-              >
-            </router-link>
+
           </div>
         </div>
 
