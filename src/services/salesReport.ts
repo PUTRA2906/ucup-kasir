@@ -23,6 +23,15 @@ export interface SalesSummary {
   totalTransactions: number
   averageTransaction: number
   totalItems: number
+
+  // Field baru untuk laba terealisasi & arus kas
+  total_cash_received?: number   // Total kas masuk (lunas + DP)
+  total_receivables?: number     // Total piutang (tempo)
+  realized_profit?: number       // Laba yang sudah terealisasi
+  unrealized_profit?: number     // Laba tertahan di piutang
+  lunas_count?: number           // Jumlah transaksi lunas
+  tempo_count?: number           // Jumlah transaksi tempo
+  partial_count?: number         // Jumlah transaksi cicilan/DP
 }
 
 export interface DailySales {
@@ -67,7 +76,8 @@ export const salesReportService = {
   async getSalesReport(
     startDate: string,
     endDate: string,
-    categoryId?: string
+    categoryId?: string,
+    paymentStatusFilter?: 'lunas' | 'belum_lunas' | 'all'
   ): Promise<SalesReportData> {
     // Fetch transactions with items and products for the date range
     let query = supabase
@@ -84,6 +94,11 @@ export const salesReportService = {
       .gte('created_at', startDate)
       .lte('created_at', endDate + 'T23:59:59')
       .order('created_at', { ascending: false })
+
+    // Filter status pembayaran
+    if (paymentStatusFilter && paymentStatusFilter !== 'all') {
+      query = query.eq('payment_status', paymentStatusFilter)
+    }
 
     const { data: transactions, error } = await query
 
@@ -188,6 +203,70 @@ export const salesReportService = {
     // Laba Bersih = Laba Kotor - Beban Operasional
     const net_profit = gross_profit - total_operating_expenses
 
+    // === PERHITUNGAN LABA TEREALISASI (KAS) ===
+    // Kelompokkan retur per transaksi agar laba dihitung per transaksi dengan akurat
+    const returnsByTx = new Map<string, any[]>()
+    returns.forEach((r: any) => {
+      const list = returnsByTx.get(r.transaction_id) || []
+      list.push(r)
+      returnsByTx.set(r.transaction_id, list)
+    })
+
+    let total_cash_received = 0
+    let total_receivables = 0
+    let realized_profit = 0
+    let unrealized_profit = 0
+    let lunas_count = 0
+    let tempo_count = 0
+    let partial_count = 0
+
+    transactions.forEach((t) => {
+      const paidAmount = t.paid_amount || 0
+      const remainingAmount = t.remaining_amount || 0
+
+      // Nilai & modal retur untuk transaksi ini
+      const txReturns = returnsByTx.get(t.id) || []
+      let txReturnValue = 0
+      let txReturnCogs = 0
+      txReturns.forEach((r: any) => {
+        txReturnValue += parseFloat(r.total_refund || 0)
+        r.items?.forEach((item: any) => {
+          txReturnCogs += (item.price_buy || 0) * (item.quantity || 0)
+        })
+      })
+
+      // Penjualan bersih & laba kotor per transaksi (sudah dikurangi diskon & retur)
+      let txRevenue = 0
+      let txCogs = 0
+      t.items?.forEach((item: any) => {
+        txRevenue += item.subtotal || 0
+        txCogs += (item.product?.price_buy || 0) * (item.quantity || 0)
+      })
+      const txNetSales = txRevenue - (t.discount || 0) - txReturnValue
+      const txProfit = txNetSales - (txCogs - txReturnCogs)
+
+      // Kas efektif: dibatasi agar tidak melebihi nilai bersih transaksi
+      // (karena saat retur, paid_amount di DB tidak dikurangi padahal sebagian sudah direfund)
+      const effectiveCash = Math.max(0, Math.min(paidAmount, txNetSales))
+
+      total_cash_received += effectiveCash
+      total_receivables += remainingAmount
+
+      // Laba riil & tertahan per transaksi (rasio otomatis 0..1)
+      const txRatio = txNetSales > 0 ? effectiveCash / txNetSales : 0
+      realized_profit += txProfit * txRatio
+      unrealized_profit += txProfit * (1 - txRatio)
+
+      // Breakdown status pembayaran
+      if (t.payment_status === 'lunas') {
+        lunas_count++
+      } else if (paidAmount === 0) {
+        tempo_count++
+      } else {
+        partial_count++
+      }
+    })
+
     const totalTransactions = transactions.length
     const averageTransaction = totalTransactions > 0 ? net_sales / totalTransactions : 0
 
@@ -206,6 +285,13 @@ export const salesReportService = {
       totalTransactions,
       averageTransaction,
       totalItems,
+      total_cash_received,
+      total_receivables,
+      realized_profit,
+      unrealized_profit,
+      lunas_count,
+      tempo_count,
+      partial_count,
     }
   },
 

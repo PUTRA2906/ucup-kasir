@@ -86,6 +86,28 @@
                   </div>
                 </div>
 
+                <!-- Status Pembayaran -->
+                <div>
+                  <label class="mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300">
+                    Status Pembayaran
+                  </label>
+                  <div class="grid grid-cols-3 gap-2">
+                    <button
+                      v-for="opt in paymentStatusOptions"
+                      :key="opt.value"
+                      @click="tempPaymentStatus = opt.value"
+                      :class="[
+                        'rounded-lg border px-2 py-2 text-xs font-medium transition-colors',
+                        tempPaymentStatus === opt.value
+                          ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
+                          : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                      ]"
+                    >
+                      {{ opt.label }}
+                    </button>
+                  </div>
+                </div>
+
                 <button
                   @click="applyFilter()"
                   class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-600 active:scale-95"
@@ -152,6 +174,26 @@
             Perbarui
           </button>
         </div>
+
+        <!-- Status Pembayaran (Desktop) -->
+        <div class="mt-4 flex items-center gap-3">
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Status Pembayaran:</span>
+          <div class="flex gap-2">
+            <button
+              v-for="opt in paymentStatusOptions"
+              :key="opt.value"
+              @click="reportStore.setPaymentStatusFilter(opt.value); fetchReport()"
+              :class="[
+                'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
+                reportStore.paymentStatusFilter === opt.value
+                  ? 'bg-brand-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
+              ]"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Loading State -->
@@ -171,7 +213,7 @@
 
         <!-- Filter Button (Mobile) -->
         <button
-          @click="showFilterModal = true"
+          @click="openFilterModal()"
           class="w-full inline-flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-brand-500 bg-brand-50 px-4 py-3 text-sm font-semibold text-brand-600 transition hover:bg-brand-100 active:scale-95 md:hidden dark:border-brand-400 dark:bg-brand-500/10 dark:text-brand-400"
         >
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,8 +240,16 @@ import { useToast } from '@/composables/useToast'
 
 const reportStore = useSalesReportStore()
 const toast = useToast()
-const activePreset = ref('30days')
+const activePreset = ref('today')
 const showFilterModal = ref(false)
+
+// Status pembayaran (temp state untuk modal)
+const tempPaymentStatus = ref<'lunas' | 'belum_lunas' | 'all'>('all')
+const paymentStatusOptions = [
+  { value: 'all', label: 'Semua' },
+  { value: 'lunas', label: 'Lunas' },
+  { value: 'belum_lunas', label: 'Belum Lunas' },
+] as const
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('id-ID', {
@@ -247,7 +297,13 @@ const calculatePercentage = (value: number, total: number) => {
   return Math.round((value / total) * 100)
 }
 
+const openFilterModal = () => {
+  tempPaymentStatus.value = reportStore.paymentStatusFilter
+  showFilterModal.value = true
+}
+
 const applyFilter = async () => {
+  reportStore.setPaymentStatusFilter(tempPaymentStatus.value)
   showFilterModal.value = false
   await fetchReport()
 }
@@ -262,7 +318,7 @@ const fetchReport = async () => {
 }
 
 onMounted(() => {
-  reportStore.applyPreset('30days')
+  reportStore.applyPreset('today')
   fetchReport()
 })
 </script>

@@ -36,6 +36,7 @@ interface InvoiceData {
 
 interface StoreSettings {
   name: string
+  description?: string
   address: string
   email: string
   phone: string
@@ -76,10 +77,21 @@ export function usePdfExport() {
     // Margins
     const margin = 15
     const pageWidth = doc.internal.pageSize.getWidth()
+    const pageHeight = doc.internal.pageSize.getHeight()
     const contentWidth = pageWidth - 2 * margin
+    const maxY = pageHeight - margin // batas aman bawah
     let yPos = margin
 
+    // Pindah ke halaman baru jika ruang tersisa tidak cukup
+    const ensureSpace = (needed: number) => {
+      if (yPos + needed > maxY) {
+        doc.addPage()
+        yPos = margin
+      }
+    }
+
     // Header
+    ensureSpace(20)
     doc.setFontSize(10)
     doc.setFont('helvetica', 'bold')
     doc.text('INVOICE:', margin, yPos)
@@ -92,6 +104,15 @@ export function usePdfExport() {
     doc.setTextColor(13, 134, 255) // Brand blue
     doc.text(storeSettings.name, margin, yPos)
     yPos += 7
+
+    // Deskripsi toko di bawah nama toko
+    if (storeSettings.description) {
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(80, 80, 80)
+      doc.text(storeSettings.description, margin, yPos)
+      yPos += 5
+    }
 
     doc.setFontSize(9)
     doc.setFont('helvetica', 'normal')
@@ -122,6 +143,7 @@ export function usePdfExport() {
     yPos += 15
 
     // Products Table Header
+    ensureSpace(20)
     doc.setFontSize(8)
     doc.setFont('helvetica', 'bold')
     doc.text('PRODUK DIBELI', margin, yPos)
@@ -150,7 +172,7 @@ export function usePdfExport() {
     doc.setFontSize(9)
 
     invoice.items.forEach((item) => {
-      if (yPos > 270) { // New page if needed
+      if (yPos > maxY) { // New page if needed
         doc.addPage()
         yPos = margin
       }
@@ -170,6 +192,7 @@ export function usePdfExport() {
 
     // Return Items (if any)
     if (invoice.return_items && invoice.return_items.length > 0) {
+      ensureSpace(20)
       doc.setFontSize(8)
       doc.setFont('helvetica', 'bold')
       doc.setTextColor(220, 38, 38) // Red
@@ -191,7 +214,7 @@ export function usePdfExport() {
       doc.setFontSize(9)
 
       invoice.return_items.forEach((item) => {
-        if (yPos > 270) {
+        if (yPos > maxY) {
           doc.addPage()
           yPos = margin
         }
@@ -210,6 +233,7 @@ export function usePdfExport() {
     }
 
     // Summary
+    ensureSpace(40)
     doc.setTextColor(0, 0, 0)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(9)
@@ -253,6 +277,7 @@ export function usePdfExport() {
     yPos += 10
 
     // Payment History
+    ensureSpace(20)
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(8)
     doc.text('RIWAYAT PEMBAYARAN', labelX, yPos)
@@ -266,6 +291,7 @@ export function usePdfExport() {
       yPos += 7
     } else {
       invoice.payments.forEach((payment, idx) => {
+        ensureSpace(12)
         const label = `${formatPaymentMethod(payment.payment_method)}${idx === 0 ? ' (DP)' : ''}`
         doc.text(label, labelX, yPos)
         doc.text(`- ${formatPrice(payment.amount)}`, valueX, yPos, { align: 'right' })
@@ -286,8 +312,10 @@ export function usePdfExport() {
     doc.setFont('helvetica', 'bold')
     doc.line(summaryX, yPos, valueX, yPos)
     yPos += 5
+    doc.setTextColor(220, 38, 38) // Merah
     doc.text('SISA TAGIHAN', labelX, yPos)
     doc.text(formatPrice(Math.max(remaining, 0)), valueX, yPos, { align: 'right' })
+    doc.setTextColor(0, 0, 0)
     yPos += 7
 
     doc.text('STATUS', labelX, yPos)
@@ -296,6 +324,7 @@ export function usePdfExport() {
     yPos += 10
 
     // Footer
+    ensureSpace(15)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7)
     doc.setTextColor(100, 100, 100)

@@ -1,24 +1,6 @@
 <template>
-  <AdminLayout>
+  <AdminLayout hide-bottom-nav>
     <PageBreadcrumb pageTitle="Detail Transaksi" class="hidden md:block" />
-
-    <!-- Mobile Header with Back Button -->
-    <div class="mb-4 flex items-center justify-between md:hidden">
-      <div class="flex items-center gap-2.5">
-        <button
-          @click="router.push('/transactions')"
-          class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.03]"
-        >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <div>
-          <h1 class="text-lg font-extrabold leading-tight text-gray-900 dark:text-white">Detail Transaksi</h1>
-          <p v-if="transaction" class="text-[10px] text-gray-500 dark:text-gray-400">{{ transaction.transaction_number }}</p>
-        </div>
-      </div>
-    </div>
 
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div class="text-center">
@@ -30,241 +12,393 @@
       </div>
     </div>
 
-    <div v-else-if="transaction" class="mx-auto max-w-3xl">
-      <!-- Mobile Layout -->
-      <div class="space-y-3 pb-4 md:hidden">
-        <!-- Header Card -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <div class="flex items-start justify-between">
-            <div>
-              <p class="text-xs font-bold text-blue-600 dark:text-blue-400">{{ transaction.transaction_number }}</p>
-              <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatDate(transaction.created_at) }}</p>
-            </div>
-            <div class="flex gap-2">
-              <span
-                :class="[
-                  'rounded-full px-2 py-0.5 text-[10px] font-medium',
-                  transaction.payment_status === 'lunas'
-                    ? 'bg-success-100 text-success-700 dark:bg-success-900 dark:text-success-400'
-                    : 'bg-warning-100 text-warning-700 dark:bg-warning-900 dark:text-warning-400'
-                ]"
-              >
-                {{ transaction.payment_status === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
-              </span>
-              <span
-                :class="[
-                  'rounded-full px-2 py-0.5 text-[10px] font-medium',
-                  transaction.status === 'selesai'
-                    ? 'bg-success-100 text-success-700 dark:bg-success-900 dark:text-success-400'
-                    : 'bg-error-100 text-error-700 dark:bg-error-900 dark:text-error-400'
-                ]"
-              >
-                {{ transaction.status === 'selesai' ? 'Selesai' : 'Batal' }}
-              </span>
-            </div>
-          </div>
-          <div class="mt-2 border-t border-gray-100 pt-2 dark:border-gray-800">
-            <p class="text-xs font-medium text-gray-900 dark:text-white">{{ transaction.customer_name || 'Umum (tanpa customer)' }}</p>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatPaymentMethod(transaction.payment_method) }}</p>
+    <!-- Mobile + Desktop View -->
+    <template v-else-if="transaction">
+    <div class="md:hidden space-y-4 px-4 pb-32">
+      <!-- 1. BARIS JUDUL & STATUS -->
+      <section class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <button
+            @click="router.push('/transactions')"
+            class="p-2 rounded-xl bg-gray-100 text-gray-600 hover:text-gray-900 border border-gray-200 active:scale-95 transition dark:bg-white/[0.03] dark:border-gray-800 dark:text-gray-400 dark:hover:text-white"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div>
+            <span class="text-[10px] text-brand-500 font-mono block leading-none dark:text-brand-400">
+              {{ transaction.transaction_number }}
+            </span>
+            <h1 class="text-xl font-extrabold text-gray-900 tracking-tight leading-tight mt-0.5 dark:text-white">
+              Detail Transaksi
+            </h1>
           </div>
         </div>
+        <span
+          :class="[
+            'px-2.5 py-1 rounded-lg text-[10px] font-bold border',
+            isOverpaid || transaction.payment_status === 'lunas'
+              ? 'bg-success-500/10 text-success-600 border-success-500/20 dark:text-success-400'
+              : 'bg-warning-500/10 text-warning-600 border-warning-500/20 dark:text-warning-400'
+          ]"
+        >
+          {{ isOverpaid || transaction.payment_status === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
+        </span>
+      </section>
 
-        <!-- Items Card -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <h3 class="mb-2 text-xs font-bold text-gray-900 dark:text-white">Rincian Item</h3>
-          <div class="space-y-2">
-            <div
-              v-for="(item, index) in transaction.items"
-              :key="item.id"
-              class="flex items-start justify-between gap-2 border-b border-gray-100 pb-2 last:border-0 dark:border-gray-800"
-            >
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium text-gray-900 dark:text-white">{{ index + 1 }}. {{ item.product_name }}</p>
-                <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatCurrency(item.price) }} × {{ item.quantity }}</p>
-                <p
-                  v-if="returnedQty(item.product_id) > 0"
-                  class="text-[10px] text-error-600 dark:text-error-400"
-                >
-                  {{ returnedQty(item.product_id) }} item diretur
+      <!-- 2. KARTU PELANGGAN & WAKTU -->
+      <section class="bg-white rounded-3xl border border-gray-200 p-4 flex justify-between items-center shadow-sm dark:bg-white/[0.03] dark:border-gray-800">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-brand-100 text-brand-600 border border-brand-200 flex items-center justify-center font-extrabold text-sm dark:bg-brand-500/20 dark:text-brand-400 dark:border-brand-500/30">
+            {{ customerInitial }}
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-gray-900 leading-tight dark:text-white">
+              {{ transaction.customer_name || 'Umum' }}
+            </h2>
+            <p class="text-[11px] text-gray-500 leading-snug dark:text-gray-400">
+              {{ formatPaymentMethod(transaction.payment_method) }}
+            </p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-[10px] text-gray-500 block dark:text-gray-400">{{ formatDateShort(transaction.created_at) }}</span>
+          <span class="text-[10px] text-gray-500 block font-mono dark:text-gray-400">{{ formatTimeShort(transaction.created_at) }}</span>
+        </div>
+      </section>
+
+      <!-- 3. RINCIAN BARANG -->
+      <section class="bg-white rounded-3xl border border-gray-200 p-4 space-y-3.5 shadow-sm dark:bg-white/[0.03] dark:border-gray-800">
+        <div class="flex items-center justify-between pb-1.5 border-b border-gray-100 dark:border-gray-800/60">
+          <span class="text-[11px] font-bold text-gray-700 uppercase tracking-wider dark:text-gray-300">
+            Rincian Barang ({{ transaction.items?.length || 0 }} Macam)
+          </span>
+          <span class="text-[10px] text-gray-500 dark:text-gray-400">Subtotal</span>
+        </div>
+
+        <div class="space-y-3 divide-y divide-gray-100 text-xs dark:divide-gray-800/60">
+          <div
+            v-for="(item, index) in transaction.items"
+            :key="item.id"
+            class="pt-2 first:pt-0 space-y-1"
+          >
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="font-bold text-gray-900 dark:text-white">{{ item.product_name }}</h3>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400">
+                  {{ item.quantity }} × {{ formatCurrency(item.price) }}
                 </p>
               </div>
-              <p class="text-xs font-bold text-gray-900 dark:text-white">{{ formatCurrency(item.subtotal) }}</p>
-            </div>
-          </div>
-
-          <!-- Return Items dari retur langsung di transaksi ini -->
-          <div v-if="allReturnItems.length > 0" class="mt-3 space-y-2 rounded-lg border border-error-200 bg-error-50 p-2 dark:border-error-500/30 dark:bg-error-500/10">
-            <div class="flex items-center justify-between">
-              <p class="text-xs font-semibold text-error-700 dark:text-error-400">Produk Diretur</p>
-              <p class="text-[10px] text-error-600 dark:text-error-400">{{ allReturnItems.length }} Item</p>
-            </div>
-            <div class="space-y-1.5">
-              <div
-                v-for="(item, index) in allReturnItems"
-                :key="item.product_id"
-                class="flex items-start justify-between gap-2 text-[10px]"
-              >
-                <div class="flex-1 min-w-0">
-                  <p class="font-medium text-error-700 dark:text-error-300">{{ index + 1 }}. {{ item.product_name }}</p>
-                  <p class="text-error-600 dark:text-error-400">{{ formatCurrency(item.price) }} × {{ item.quantity }}</p>
-                </div>
-                <span class="font-bold text-error-600 dark:text-error-400">- {{ formatCurrency(item.subtotal) }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Potongan retur dari transaksi sebelumnya (linked return) -->
-          <div
-            v-if="returnAmount > 0 && allReturnItems.length === 0"
-            class="mt-3 flex items-center gap-2 rounded-lg border border-error-200 bg-error-50 p-2.5 dark:border-error-500/30 dark:bg-error-500/10"
-          >
-            <svg class="h-3.5 w-3.5 flex-shrink-0 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-            </svg>
-            <div class="flex flex-1 items-center justify-between">
-              <span class="text-[10px] font-semibold text-error-700 dark:text-error-400">Potongan Retur Transaksi Sebelumnya</span>
-              <span class="text-[10px] font-bold text-error-600 dark:text-error-400">- {{ formatCurrency(returnAmount) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Payment & Total Card -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <h3 class="mb-2 text-xs font-bold text-gray-900 dark:text-white">Ringkasan Pembayaran</h3>
-
-          <!-- Payment History -->
-          <div v-if="transaction.payments && transaction.payments.length > 0" class="mb-3 space-y-1.5 border-b border-gray-100 pb-3 dark:border-gray-800">
-            <p class="text-[10px] font-medium text-gray-500 dark:text-gray-400">Riwayat Pembayaran</p>
-            <div
-              v-for="payment in transaction.payments"
-              :key="payment.id"
-              class="flex items-center justify-between"
-            >
-              <span class="text-[10px] text-gray-600 dark:text-gray-400">{{ formatDate(payment.created_at) }}</span>
-              <span class="text-xs font-semibold text-success-600 dark:text-success-400">+ {{ formatCurrency(payment.amount) }}</span>
-            </div>
-          </div>
-
-          <!-- Totals -->
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-[11px]">
-              <span class="text-gray-600 dark:text-gray-400">Total Barang</span>
-              <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(originalSubtotal) }}</span>
-            </div>
-            <div v-if="returnAmount > 0" class="flex justify-between text-[11px]">
-              <span class="text-error-600 dark:text-error-400">Retur</span>
-              <span class="font-medium text-error-600 dark:text-error-400">- {{ formatCurrency(returnAmount) }}</span>
-            </div>
-            <div v-if="discountAmount > 0" class="flex justify-between text-[11px]">
-              <span class="text-gray-600 dark:text-gray-400">Diskon</span>
-              <span class="font-medium text-error-600 dark:text-error-400">- {{ formatCurrency(discountAmount) }}</span>
-            </div>
-            <div class="flex justify-between border-t border-gray-200 pt-1.5 dark:border-gray-700">
-              <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">Total</span>
-              <span class="text-lg font-bold text-blue-600 dark:text-blue-400">{{ formatCurrency(transaction.total) }}</span>
-            </div>
-            <div class="flex justify-between text-[11px]">
-              <span class="text-gray-600 dark:text-gray-400">Sudah Dibayar</span>
-              <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(transaction.paid_amount) }}</span>
-            </div>
-            <div v-if="transaction.change_amount > 0" class="flex justify-between text-[11px]">
-              <span class="text-gray-600 dark:text-gray-400">Kembalian</span>
-              <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(transaction.change_amount) }}</span>
+              <span class="font-extrabold text-gray-900 dark:text-white">
+                {{ formatCurrency(item.subtotal) }}
+              </span>
             </div>
             <div
-              v-if="transaction.remaining_amount > 0"
-              class="flex justify-between rounded-lg bg-warning-50 px-2 py-1.5 dark:bg-warning-500/10"
+              v-if="returnedQty(item.product_id) > 0"
+              class="flex justify-between items-center text-[10px] bg-error-500/10 px-2 py-1 rounded-lg border border-error-500/20 text-error-600 dark:text-error-400"
             >
-              <span class="text-xs font-medium text-warning-700 dark:text-warning-400">Sisa Cicilan</span>
-              <span class="text-xs font-bold text-warning-700 dark:text-warning-400">{{ formatCurrency(transaction.remaining_amount) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Actions Card -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <div class="space-y-2">
-            <button
-              @click="router.push(`/transactions/${transaction.id}/invoice`)"
-              class="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-xs font-bold text-white hover:bg-blue-500"
-            >
-              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2z" />
-              </svg>
-              Cetak Invoice
-            </button>
-            <div class="grid grid-cols-2 gap-2">
-              <button
-                v-if="transaction.remaining_amount > 0"
-                @click="showPaymentModal = true"
-                class="flex items-center justify-center gap-1 rounded-lg border border-blue-500 bg-transparent py-2 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/15"
-              >
-                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Tambah Bayar
-              </button>
-              <button
-                v-if="transaction.status === 'selesai'"
-                @click="showReturnModal = true"
-                class="flex items-center justify-center gap-1 rounded-lg border border-blue-500 bg-transparent py-2 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/15"
-              >
-                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span class="flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                 </svg>
-                Retur
-              </button>
-              <button
-                v-if="transaction.status === 'selesai'"
-                @click="showVoidDialog = true"
-                class="flex items-center justify-center gap-1 rounded-lg border border-error-500 bg-transparent py-2 text-xs font-medium text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-500/15"
-                :class="{ 'col-span-2': !transaction.remaining_amount }"
-              >
-                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                </svg>
-                Batalkan
-              </button>
+                Diretur: {{ returnedQty(item.product_id) }} Item
+              </span>
+              <span class="font-bold">- {{ formatCurrency(returnedQty(item.product_id) * item.price) }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Return History Card -->
-        <div v-if="returnsStore.returns.length > 0" class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <div class="mb-2 flex items-center justify-between">
-            <h3 class="text-xs font-bold text-gray-900 dark:text-white">Riwayat Retur</h3>
-            <span class="text-[10px] text-gray-500 dark:text-gray-400">{{ returnsStore.returns.length }} retur</span>
+        <!-- Detail Item Retur -->
+        <div v-if="allReturnItems.length > 0" class="mt-3 space-y-2 rounded-lg border border-error-200 bg-error-50 p-3 dark:border-error-500/30 dark:bg-error-500/10">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-semibold text-error-700 dark:text-error-400">Produk Diretur</p>
+            <p class="text-[10px] text-error-600 dark:text-error-400">{{ allReturnItems.length }} Item</p>
           </div>
           <div class="space-y-2">
             <div
-              v-for="ret in returnsStore.returns"
-              :key="ret.id"
-              class="rounded-lg border border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800"
+              v-for="(item, index) in allReturnItems"
+              :key="item.product_id"
+              class="flex items-start justify-between gap-2 text-[10px]"
             >
-              <div class="flex items-start justify-between">
-                <div>
-                  <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ ret.return_number }}</p>
-                  <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatDate(ret.created_at) }}</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold text-error-600 dark:text-error-400">- {{ formatCurrency(ret.total_refund) }}</span>
-                  <button
-                    @click="openDeleteReturn(ret)"
-                    class="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-error-600 dark:hover:bg-gray-700 dark:hover:text-error-500"
-                  >
-                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-medium text-error-700 dark:text-error-300">{{ index + 1 }}. {{ item.product_name }}</p>
+                <p class="text-error-600 dark:text-error-400">{{ formatCurrency(item.price) }} × {{ item.quantity }}</p>
               </div>
+              <span class="font-bold text-error-600 dark:text-error-400">- {{ formatCurrency(item.subtotal) }}</span>
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- 4. RIWAYAT PEMBAYARAN & KRONOLOGIS -->
+      <section class="bg-white rounded-3xl border border-gray-200 p-4 space-y-4 shadow-sm text-xs dark:bg-white/[0.03] dark:border-gray-800">
+        <div class="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-800/60">
+          <span class="text-[11px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5 dark:text-gray-300">
+            <svg class="w-4 h-4 text-brand-500 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Riwayat Pembayaran & Penyesuaian
+          </span>
+          <span class="text-[10px] text-gray-500 font-mono dark:text-gray-400">
+            {{ (transaction.payments?.length || 0) + (returnsStore.returns.length || 0) + (returnsStore.linkedReturns.length || 0) + 1 }} Aktivitas
+          </span>
+        </div>
+
+        <!-- TIMELINE AUDIT KRONOLOGIS -->
+        <div class="relative pl-6 space-y-3.5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100 dark:before:bg-gray-800/60">
+          <!-- Step 1: Faktur Terbit -->
+          <div class="relative">
+            <span class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-brand-500 border-2 border-white flex items-center justify-center dark:border-gray-900">
+              <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+            </span>
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-bold text-gray-900 leading-tight dark:text-white">Faktur Diterbitkan</p>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400">
+                  {{ formatDateShort(transaction.created_at) }}, {{ formatTimeShort(transaction.created_at) }} &bull; Total {{ transaction.items?.length || 0 }} Item
+                </p>
+              </div>
+              <span class="font-extrabold text-gray-900 dark:text-white">
+                {{ formatCurrency(originalSubtotal) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Pembayaran & Retur (digabung berdasarkan waktu) -->
+          <template v-for="activity in sortedActivities" :key="activity.id">
+            <!-- Pembayaran -->
+            <div v-if="activity.type === 'payment'" class="relative">
+              <span class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-success-500 border-2 border-white flex items-center justify-center dark:border-gray-900">
+                <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+              </span>
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-semibold text-gray-700 leading-tight dark:text-gray-200">Pembayaran {{ activity.sequence }}</p>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400">
+                    {{ formatDateShort(activity.created_at) }}, {{ formatTimeShort(activity.created_at) }} &bull; {{ formatPaymentMethod(activity.payment_method) }}
+                  </p>
+                </div>
+                <span class="font-extrabold font-outfit text-success-500 dark:text-success-400">
+                  - {{ formatCurrency(activity.amount) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Retur -->
+            <div v-if="activity.type === 'return'" class="relative">
+              <span class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-error-500 border-2 border-white flex items-center justify-center dark:border-gray-900">
+                <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+              </span>
+              <div class="flex justify-between items-start bg-error-500/10 p-2 rounded-xl border border-error-500/20 -ml-2 pl-2">
+                <div>
+                  <p class="font-bold text-error-600 leading-tight font-outfit dark:text-error-400">
+                    Retur Barang ({{ activity.return_number }})
+                  </p>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400">
+                    {{ formatDateShort(activity.created_at) }}, {{ formatTimeShort(activity.created_at) }} &bull; {{ activity.items?.length || 0 }} Item
+                  </p>
+                </div>
+                <span class="font-extrabold font-outfit text-error-600 dark:text-error-400">
+                  - {{ formatCurrency(activity.total_refund) }}
+                </span>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- REKAP FINAL AKUNTANSI -->
+        <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 space-y-2 pt-3 dark:bg-gray-900/50 dark:border-gray-800">
+          <div class="flex justify-between text-gray-600 dark:text-gray-400">
+            <span>Total Barang (Kotor)</span>
+            <span class="font-semibold text-gray-700 dark:text-gray-300">{{ formatCurrency(originalSubtotal) }}</span>
+          </div>
+
+          <div v-if="returnAmount > 0" class="flex justify-between text-error-600 dark:text-error-400">
+            <span class="flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+              </svg>
+              Potongan Retur
+            </span>
+            <span class="font-bold">- {{ formatCurrency(returnAmount) }}</span>
+          </div>
+
+          <div v-if="transaction.discount > 0" class="flex justify-between text-error-600 dark:text-error-400">
+            <span>Diskon</span>
+            <span class="font-bold">- {{ formatCurrency(transaction.discount) }}</span>
+          </div>
+
+          <div v-if="(transaction.shipping_cost || 0) > 0" class="flex justify-between text-gray-600 dark:text-gray-400">
+            <span>Ongkir</span>
+            <span class="font-semibold text-gray-700 dark:text-gray-300">+ {{ formatCurrency(transaction.shipping_cost) }}</span>
+          </div>
+
+          <div class="flex justify-between font-extrabold font-outfit text-gray-900 text-sm pt-2 border-t border-gray-200 dark:text-white dark:border-gray-800">
+            <span>Total Bersih Faktur</span>
+            <span class="text-brand-500 dark:text-brand-400">{{ formatCurrency(transaction.total) }}</span>
+          </div>
+
+          <div class="flex justify-between text-gray-600 pt-0.5 dark:text-gray-400">
+            <span>Total Uang Diterima</span>
+            <span class="text-success-600 font-bold dark:text-success-400">{{ formatCurrency(totalPaid) }}</span>
+          </div>
+
+          <div v-if="transaction.change_amount > 0" class="flex justify-between text-gray-600 dark:text-gray-400">
+            <span>Kembalian</span>
+            <span class="font-semibold text-gray-700 dark:text-gray-300">{{ formatCurrency(transaction.change_amount) }}</span>
+          </div>
+
+          <!-- Sisa Tagihan -->
+          <div
+            :class="[
+              'mt-2 p-2.5 rounded-xl border flex justify-between items-center text-xs',
+              isOverpaid || effectiveRemaining === 0
+                ? 'bg-success-500/10 border-success-500/20'
+                : 'bg-warning-500/10 border-warning-500/20'
+            ]"
+          >
+            <span
+              :class="[
+                'font-bold font-outfit',
+                isOverpaid || effectiveRemaining === 0 ? 'text-success-600 dark:text-success-400' : 'text-warning-600 dark:text-warning-400'
+              ]"
+            >
+              Sisa Tagihan
+            </span>
+            <span
+              :class="[
+                'text-sm font-black font-outfit',
+                isOverpaid || effectiveRemaining === 0 ? 'text-success-600 dark:text-success-400' : 'text-warning-600 dark:text-warning-400'
+              ]"
+            >
+              {{ isOverpaid || effectiveRemaining === 0 ? 'Rp 0 (LUNAS)' : formatCurrency(effectiveRemaining) }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. DOKUMEN BUKTI RETUR -->
+      <section
+        v-if="returnsStore.returns.length > 0 || returnsStore.linkedReturns.length > 0"
+        class="bg-white rounded-2xl border border-gray-200 p-3.5 space-y-2 text-xs dark:bg-white/[0.03] dark:border-gray-800"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold font-outfit text-gray-700 uppercase tracking-wider flex items-center gap-1.5 dark:text-gray-300">
+            <svg class="w-3.5 h-3.5 text-error-600 dark:text-error-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Berkas Bukti Retur
+          </span>
+          <span class="text-[10px] text-gray-500 font-mono dark:text-gray-400">{{ returnsStore.returns.length + returnsStore.linkedReturns.length }} Retur</span>
+        </div>
+        <div
+          v-for="ret in [...returnsStore.returns, ...returnsStore.linkedReturns]"
+          :key="ret.id"
+          class="bg-gray-50 p-2.5 rounded-xl border border-gray-200 space-y-1 text-[11px] text-gray-700 dark:bg-gray-900/50 dark:border-gray-800 dark:text-gray-300"
+        >
+          <div class="flex justify-between font-bold text-gray-900 dark:text-white">
+            <span>{{ ret.return_number }}</span>
+            <span class="font-mono">{{ formatCurrency(ret.total_refund) }}</span>
+          </div>
+          <div v-for="item in ret.items" :key="item.id" class="flex justify-between">
+            <span>&bull; {{ item.product_name }} &times; {{ item.quantity }}</span>
+            <span class="font-mono">{{ formatCurrency(item.subtotal) }}</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= STICKY ACTION BAR (MOBILE) ================= -->
+    <div
+      class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3 md:hidden dark:bg-gray-900/95 dark:border-gray-800"
+    >
+      <!-- Baris 1: Tombol utama -->
+      <div class="flex gap-2 mb-2">
+        <!-- Tombol Print PDF -->
+        <button
+          @click="handlePrintPdf"
+          :disabled="isGeneratingPdf"
+          class="flex-1 py-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold font-outfit flex items-center justify-center gap-1.5 active:scale-95 transition shadow-lg shadow-blue-500/30 disabled:opacity-50"
+        >
+          <svg v-if="!isGeneratingPdf" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>{{ isGeneratingPdf ? 'Generating...' : 'PDF' }}</span>
+        </button>
+
+        <!-- Tombol Kirim WhatsApp -->
+        <button
+          @click="handleShareWhatsApp"
+          :disabled="isGeneratingPdf"
+          class="flex-1 py-3 rounded-xl bg-green-500 hover:bg-green-600 text-white text-xs font-bold font-outfit flex items-center justify-center gap-1.5 active:scale-95 transition shadow-lg shadow-green-500/30 disabled:opacity-50"
+        >
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+          <span>WhatsApp</span>
+        </button>
       </div>
 
-      <!-- Desktop Invoice Card -->
-      <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 md:block">
+      <!-- Baris 2: Tombol sekunder -->
+      <div class="flex gap-2">
+        <!-- Tombol Retur Barang -->
+        <button
+          v-if="transaction.status === 'selesai'"
+          @click="showReturnModal = true"
+          class="flex-1 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 text-xs font-bold font-outfit flex items-center justify-center gap-1.5 active:scale-95 transition dark:bg-white/[0.03] dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/[0.06]"
+        >
+          <svg class="w-3.5 h-3.5 text-error-600 dark:text-error-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+          </svg>
+          <span>Retur</span>
+        </button>
+
+        <!-- Tombol Tambah Pembayaran -->
+        <button
+          v-if="!isOverpaid && transaction.remaining_amount > 0 && transaction.status === 'selesai'"
+          @click="showPaymentModal = true"
+          class="flex-1 py-2.5 rounded-xl bg-warning-500 hover:bg-warning-600 text-white text-xs font-bold font-outfit flex items-center justify-center gap-1.5 active:scale-95 transition"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Bayar</span>
+        </button>
+
+        <!-- Tombol Batalkan -->
+        <button
+          v-if="transaction.status === 'selesai'"
+          @click="showVoidDialog = true"
+          class="flex-1 py-2.5 rounded-xl bg-error-500/10 hover:bg-error-500/20 text-error-600 border border-error-500/30 text-xs font-bold font-outfit flex items-center justify-center gap-1.5 active:scale-95 transition dark:text-error-400"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+          </svg>
+          <span>Batal</span>
+        </button>
+
+        <!-- Tombol Cetak Nota -->
+        <button
+          @click="router.push(`/transactions/${transaction.id}/invoice`)"
+          class="flex-1 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold font-outfit flex items-center justify-center gap-1.5 active:scale-95 transition"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2z" />
+          </svg>
+          <span>Cetak</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Desktop View (Tetap menggunakan layout lama) -->
+    <div class="hidden md:block mx-auto max-w-3xl">
+      <!-- Invoice Card -->
+      <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
         <!-- Invoice Header -->
         <div class="flex flex-col gap-4 border-b border-gray-200 p-6 dark:border-gray-700 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -280,12 +414,12 @@
               <span
                 :class="[
                   'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                  transaction.payment_status === 'lunas'
+                  isOverpaid || transaction.payment_status === 'lunas'
                     ? 'bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400'
                     : 'bg-warning-50 text-warning-600 dark:bg-warning-500/10 dark:text-warning-400'
                 ]"
               >
-                {{ transaction.payment_status === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
+                {{ isOverpaid || transaction.payment_status === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
               </span>
               <span
                 :class="[
@@ -361,7 +495,7 @@
           </div>
         </div>
 
-        <!-- Produk Diretur (retur langsung di transaksi ini) -->
+        <!-- Produk Diretur -->
         <div v-if="allReturnItems.length > 0" class="border-b border-gray-200 dark:border-gray-700">
           <div class="bg-error-50 px-6 py-3 dark:bg-error-500/10">
             <p class="text-sm font-semibold text-error-700 dark:text-error-400">
@@ -418,8 +552,8 @@
         <div class="grid grid-cols-1 gap-6 border-b border-gray-200 p-6 dark:border-gray-700 sm:grid-cols-2">
           <!-- Payment History -->
           <div>
-            <p class="mb-3 text-xs font-medium text-gray-400 uppercase dark:text-gray-500">Riwayat Pembayaran</p>
-            <div v-if="transaction.payments && transaction.payments.length > 0" class="space-y-2">
+            <p class="mb-3 text-xs font-medium text-gray-400 uppercase dark:text-gray-500">Riwayat Pembayaran & Penyesuaian</p>
+            <div v-if="(transaction.payments && transaction.payments.length > 0) || isOverpaid" class="space-y-2">
               <div
                 v-for="payment in transaction.payments"
                 :key="payment.id"
@@ -434,7 +568,7 @@
                   </p>
                 </div>
                 <span class="text-sm font-semibold text-success-600 dark:text-success-400">
-                  + {{ formatCurrency(payment.amount) }}
+                  - {{ formatCurrency(payment.amount) }}
                 </span>
               </div>
             </div>
@@ -450,12 +584,12 @@
               <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(originalSubtotal) }}</span>
             </div>
             <div v-if="returnAmount > 0" class="flex justify-between text-sm">
-              <span class="text-error-600 dark:text-error-400">Retur</span>
+              <span class="text-gray-600 dark:text-gray-400">Retur</span>
               <span class="font-medium text-error-600 dark:text-error-400">- {{ formatCurrency(returnAmount) }}</span>
             </div>
-            <div v-if="discountAmount > 0" class="flex justify-between text-sm">
+            <div v-if="transaction.discount > 0" class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-400">Diskon</span>
-              <span class="font-medium text-error-600 dark:text-error-400">- {{ formatCurrency(discountAmount) }}</span>
+              <span class="font-medium text-error-600 dark:text-error-400">- {{ formatCurrency(transaction.discount) }}</span>
             </div>
             <div v-if="(transaction.shipping_cost || 0) > 0" class="flex justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-400">Ongkir</span>
@@ -473,13 +607,26 @@
               <span class="text-gray-600 dark:text-gray-400">Kembalian</span>
               <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(transaction.change_amount) }}</span>
             </div>
+            <div v-if="isOverpaid" class="flex justify-between text-sm">
+              <span class="text-success-600 dark:text-success-400">Pengembalian Lebih Bayar</span>
+              <span class="font-semibold text-success-600 dark:text-success-400">- {{ formatCurrency(overpayAmount) }}</span>
+            </div>
             <div
-              v-if="transaction.remaining_amount > 0"
+              v-if="isOverpaid"
+              class="flex justify-between rounded-lg bg-success-50 px-3 py-2 dark:bg-success-500/10"
+            >
+              <span class="text-sm font-medium text-success-700 dark:text-success-400">Sisa Tagihan</span>
+              <span class="text-sm font-bold text-success-700 dark:text-success-400">
+                {{ formatCurrency(0) }}
+              </span>
+            </div>
+            <div
+              v-else-if="effectiveRemaining > 0"
               class="flex justify-between rounded-lg bg-warning-50 px-3 py-2 dark:bg-warning-500/10"
             >
               <span class="text-sm font-medium text-warning-700 dark:text-warning-400">Sisa Cicilan</span>
               <span class="text-sm font-bold text-warning-700 dark:text-warning-400">
-                {{ formatCurrency(transaction.remaining_amount) }}
+                {{ formatCurrency(effectiveRemaining) }}
               </span>
             </div>
           </div>
@@ -489,18 +636,9 @@
         <div class="flex flex-col gap-3 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex flex-wrap gap-3">
             <button
-              @click="router.push(`/transactions/${transaction.id}/invoice`)"
-              class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 focus:outline-hidden focus:ring-3 focus:ring-brand-500/30"
-            >
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2z" />
-              </svg>
-              Cetak Invoice
-            </button>
-            <button
-              v-if="transaction.remaining_amount > 0"
+              v-if="!isOverpaid && transaction.remaining_amount > 0 && transaction.status === 'selesai'"
               @click="showPaymentModal = true"
-              class="inline-flex items-center gap-2 rounded-lg border border-brand-500 bg-transparent px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-50 focus:outline-hidden focus:ring-3 focus:ring-brand-500/30 dark:text-brand-400 dark:hover:bg-brand-500/15"
+              class="inline-flex items-center justify-center gap-2 rounded-lg border border-brand-500 bg-transparent px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-500/15"
             >
               <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -510,7 +648,7 @@
             <button
               v-if="transaction.status === 'selesai'"
               @click="showReturnModal = true"
-              class="inline-flex items-center gap-2 rounded-lg border border-brand-500 bg-transparent px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-50 focus:outline-hidden focus:ring-3 focus:ring-brand-500/30 dark:text-brand-400 dark:hover:bg-brand-500/15"
+              class="inline-flex items-center justify-center gap-2 rounded-lg border border-brand-500 bg-transparent px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-500/15"
             >
               <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
@@ -520,31 +658,43 @@
             <button
               v-if="transaction.status === 'selesai'"
               @click="showVoidDialog = true"
-              class="rounded-lg border border-error-500 bg-transparent px-4 py-2.5 text-sm font-medium text-error-600 hover:bg-error-50 focus:outline-hidden focus:ring-3 focus:ring-error-500/30 dark:text-error-500 dark:hover:bg-error-500/15"
+              class="inline-flex items-center justify-center gap-2 rounded-lg border border-error-500 bg-transparent px-4 py-2.5 text-sm font-medium text-error-600 hover:bg-error-50 dark:text-error-500 dark:hover:bg-error-500/15"
             >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
               Batalkan Transaksi
+            </button>
+            <button
+              @click="router.push(`/transactions/${transaction.id}/invoice`)"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2z" />
+              </svg>
+              Cetak Invoice
             </button>
           </div>
           <button
             @click="router.push('/transactions')"
-            class="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+            class="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.03]"
           >
             Kembali
           </button>
         </div>
       </div>
 
-      <!-- Riwayat Retur -->
+      <!-- Keterangan Retur -->
       <div class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
         <div class="flex items-center justify-between border-b border-gray-200 p-6 dark:border-gray-700">
-          <h3 class="text-base font-semibold text-gray-900 dark:text-white">Riwayat Retur</h3>
-          <span class="text-sm text-gray-500 dark:text-gray-400">{{ returnsStore.returns.length }} retur</span>
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">Keterangan Retur</h3>
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ returnsStore.returns.length + returnsStore.linkedReturns.length }} retur</span>
         </div>
-        <div v-if="returnsStore.returns.length === 0" class="p-6 text-center">
+        <div v-if="returnsStore.returns.length === 0 && returnsStore.linkedReturns.length === 0" class="p-6 text-center">
           <p class="text-sm text-gray-500 dark:text-gray-400">Belum ada retur untuk transaksi ini</p>
         </div>
         <div v-else class="divide-y divide-gray-100 dark:divide-gray-800">
-          <div v-for="ret in returnsStore.returns" :key="ret.id" class="p-6">
+          <div v-for="ret in [...returnsStore.returns, ...returnsStore.linkedReturns]" :key="ret.id" class="p-6">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
                 <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ ret.return_number }}</p>
@@ -578,6 +728,7 @@
         </div>
       </div>
     </div>
+    </template>
 
     <div v-else class="rounded-xl border border-gray-200 bg-white p-8 text-center dark:border-gray-800 dark:bg-gray-900">
       <p class="text-gray-600 dark:text-gray-400">Transaksi tidak ditemukan</p>
@@ -605,17 +756,6 @@
       @submit="handleReturnSubmit"
     />
 
-    <!-- Delete Return Confirmation Dialog -->
-    <ConfirmDialog
-      v-model="showDeleteReturnDialog"
-      title="Batalkan Retur?"
-      :message="`Apakah Anda yakin ingin membatalkan retur '${returnToDelete?.return_number}'? Stok produk akan dikurangi kembali.`"
-      confirm-text="Ya, Batalkan"
-      cancel-text="Tutup"
-      variant="danger"
-      @confirm="confirmDeleteReturn"
-    />
-
     <!-- Void Confirmation Dialog -->
     <ConfirmDialog
       v-model="showVoidDialog"
@@ -625,6 +765,16 @@
       cancel-text="Tutup"
       variant="danger"
       @confirm="confirmVoid"
+    />
+
+    <ConfirmDialog
+      v-model="showDeleteReturnDialog"
+      title="Batalkan Retur?"
+      :message="`Apakah Anda yakin ingin membatalkan retur '${returnToDelete?.return_number}'? Stok produk akan dikurangi kembali dan total transaksi dikembalikan seperti semula.`"
+      confirm-text="Ya, Batalkan"
+      cancel-text="Tutup"
+      variant="danger"
+      @confirm="confirmDeleteReturn"
     />
   </AdminLayout>
 </template>
@@ -639,15 +789,19 @@ import PaymentModal from '@/components/common/PaymentModal.vue'
 import ReturnModal from '@/components/common/ReturnModal.vue'
 import { useTransactionsStore } from '@/stores/transactions'
 import { useReturnsStore } from '@/stores/returns'
+import { useCustomersStore } from '@/stores/customers'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useToast } from '@/composables/useToast'
+import { usePdfExport } from '@/composables/usePdfExport'
 
 const router = useRouter()
 const route = useRoute()
 const transactionsStore = useTransactionsStore()
 const returnsStore = useReturnsStore()
+const customersStore = useCustomersStore()
 const settingsStore = useStoreSettingsStore()
 const toast = useToast()
+const { generatePdfBlob, shareToWhatsApp, downloadPdf } = usePdfExport()
 
 const transactionId = route.params.id as string
 const transaction = ref<any>(null)
@@ -657,14 +811,43 @@ const showPaymentModal = ref(false)
 const showReturnModal = ref(false)
 const showDeleteReturnDialog = ref(false)
 const returnToDelete = ref<any>(null)
+const isGeneratingPdf = ref(false)
 
 // Total nilai barang yang sudah diretur
 const totalRefund = computed(() =>
-  returnsStore.returns.reduce((sum, r) => sum + (r.total_refund || 0), 0)
+  returnsStore.returns.reduce((sum, r) => sum + (r.total_refund || 0), 0) +
+  returnsStore.linkedReturns.reduce((sum, r) => sum + (r.total_refund || 0), 0)
 )
 
-const returnAmount = computed(() => transaction.value?.return_amount || totalRefund.value)
+// Jumlah retur yang muncul (dari store atau dari transaction object)
+const returnAmount = computed(() => {
+  const storeTotal = totalRefund.value
+  const txReturnAmount = transaction.value?.return_amount || 0
+  return Math.max(storeTotal, txReturnAmount)
+})
+
 const discountAmount = computed(() => transaction.value?.discount || 0)
+
+// Total pembayaran
+const totalPaid = computed(() =>
+  (transaction.value?.payments || []).reduce(
+    (sum: number, p: any) => sum + (p.amount || 0),
+    0
+  )
+)
+
+// Total tagihan awal (sebelum retur & pembayaran)
+const originalTotal = computed(() => (transaction.value?.total || 0) + returnAmount.value)
+
+// Sisa tagihan actual (bisa negatif jika overpaid)
+const rawRemaining = computed(() => originalTotal.value - totalPaid.value - returnAmount.value)
+
+// Apakah ada kelebihan bayar?
+const isOverpaid = computed(() => rawRemaining.value < 0)
+const overpayAmount = computed(() => (isOverpaid.value ? Math.abs(rawRemaining.value) : 0))
+
+// Effective remaining (tidak negatif)
+const effectiveRemaining = computed(() => Math.max(rawRemaining.value, 0))
 
 // Nilai seluruh barang sebelum retur (jumlah dari rincian item asli)
 const originalSubtotal = computed(() => {
@@ -672,12 +855,15 @@ const originalSubtotal = computed(() => {
   if (items && items.length > 0) {
     return items.reduce((sum: number, item: any) => sum + (item.subtotal || 0), 0)
   }
-  return (transaction.value?.subtotal || 0) + returnAmount.value
+  return (
+    Math.max((transaction.value?.subtotal || 0) - (transaction.value?.discount || 0), 0) +
+    returnAmount.value
+  )
 })
 
 // Gabungkan semua item retur (digest per produk) — dari retur langsung maupun linked
 const allReturnItems = computed(() => {
-  const items: { product_id: string; product_name: string; price: number; quantity: number; subtotal: number; transaction_number?: string }[] = []
+  const items: { product_id: string; product_name: string; price: number; quantity: number; subtotal: number }[] = []
 
   const processReturns = (retList: typeof returnsStore.returns) => {
     retList.forEach((ret) => {
@@ -714,6 +900,14 @@ const returnedQty = (productId: string) =>
         .filter((ri) => ri.product_id && ri.product_id === productId)
         .reduce((s, ri) => s + ri.quantity, 0),
     0
+  ) +
+  returnsStore.linkedReturns.reduce(
+    (sum, ret) =>
+      sum +
+      (ret.items || [])
+        .filter((ri) => ri.product_id && ri.product_id === productId)
+        .reduce((s, ri) => s + ri.quantity, 0),
+    0
   )
 
 // Item yang bisa diretur: sisa = jumlah dibeli - jumlah yang sudah diretur
@@ -739,6 +933,33 @@ const returnableItems = computed(() => {
     })
 })
 
+// Initial customer untuk avatar
+const customerInitial = computed(() => {
+  const name = transaction.value?.customer_name || 'U'
+  return name.charAt(0).toUpperCase()
+})
+
+// Gabungkan pembayaran dan retur, lalu sort berdasarkan waktu
+const sortedActivities = computed(() => {
+  const payments = (transaction.value?.payments || []).map((p: any, idx: number) => ({
+    ...p,
+    type: 'payment',
+    sequence: `ke-${idx + 1}`
+  }))
+  const returns = returnsStore.returns.map((r: any) => ({
+    ...r,
+    type: 'return'
+  }))
+  const linkedReturns = returnsStore.linkedReturns.map((r: any) => ({
+    ...r,
+    type: 'return'
+  }))
+
+  return [...payments, ...returns, ...linkedReturns].sort((a, b) =>
+    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  )
+})
+
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -749,8 +970,10 @@ const formatCurrency = (value: number) =>
 const formatPaymentMethod = (value: string) => {
   const methods: Record<string, string> = {
     tunai: 'Tunai',
+    cash: 'Tunai',
     transfer: 'Transfer',
     qris: 'QRIS',
+    tempo: 'Tempo',
   }
   return methods[value] || value
 }
@@ -764,6 +987,39 @@ const formatDate = (dateString: string) => {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+const formatDateShort = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  })
+}
+
+const formatTimeShort = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }) + ' WIB'
+}
+
+const formatDateTime = (dateString: string) => {
+  const date = new Date(dateString)
+  const datePart = date.toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  })
+  const timePart = date.toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  })
+  return `${datePart} ${timePart} WIB`
 }
 
 const handleAddPayment = async (payload: {
@@ -791,8 +1047,9 @@ const confirmVoid = async () => {
   try {
     await transactionsStore.voidTransaction(transactionId)
     toast.success('Berhasil!', 'Transaksi berhasil dibatalkan')
-    router.push('/transactions')
-  } catch (error) {
+    transaction.value = await transactionsStore.getTransaction(transactionId)
+    showVoidDialog.value = false
+  } catch (error: any) {
     console.error('Error voiding transaction:', error)
     toast.error('Gagal!', 'Gagal membatalkan transaksi')
   }
@@ -806,6 +1063,7 @@ const handleReturnSubmit = async (payload: {
     await returnsStore.createReturn(transactionId, payload.items, payload.notes)
     toast.success('Berhasil!', 'Retur berhasil dicatat')
     transaction.value = await transactionsStore.getTransaction(transactionId)
+    await returnsStore.fetchReturns(transactionId)
     showReturnModal.value = false
   } catch (error: any) {
     console.error('Error creating return:', error)
@@ -831,8 +1089,109 @@ const confirmDeleteReturn = async () => {
   }
 }
 
+const handlePrintPdf = async () => {
+  if (isGeneratingPdf.value) return
+
+  isGeneratingPdf.value = true
+  try {
+    const filename = `Invoice-${transaction.value.transaction_number}.pdf`
+
+    const customer = customersStore.customers.find((c) => c.id === transaction.value.customer_id)
+
+    // Siapkan data invoice
+    const invoiceData = {
+      transaction_number: transaction.value.transaction_number,
+      created_at: transaction.value.created_at,
+      customer_name: transaction.value.customer_name || 'Umum',
+      customer_store_name: customer?.store_name,
+      customer_address: customer?.kecamatan || transaction.value.customer_address,
+      items: transaction.value.items || [],
+      return_items: allReturnItems.value,
+      subtotal: originalSubtotal.value,
+      discount: transaction.value.discount || 0,
+      shipping_cost: transaction.value.shipping_cost || 0,
+      return_amount: returnAmount.value,
+      total: transaction.value.total,
+      payments: transaction.value.payments || [],
+      payment_status: transaction.value.payment_status,
+      updated_at: transaction.value.updated_at,
+    }
+
+    const storeSettings = {
+      name: settingsStore.storeName, // Nama toko
+      description: settingsStore.storeSubtitle, // Deskripsi toko
+      address: settingsStore.storeAddress,
+      email: settingsStore.storeEmail,
+      phone: settingsStore.storePhone,
+    }
+
+    const pdfBlob = generatePdfBlob(invoiceData, storeSettings)
+    await downloadPdf(pdfBlob, filename)
+
+    toast.success('Berhasil!', 'PDF berhasil dibuat')
+  } catch (error: any) {
+    console.error('Error generating PDF:', error)
+    toast.error('Gagal!', error.message || 'Gagal membuat PDF')
+  } finally {
+    isGeneratingPdf.value = false
+  }
+}
+
+const handleShareWhatsApp = async () => {
+  if (isGeneratingPdf.value) return
+
+  isGeneratingPdf.value = true
+  try {
+    const filename = `Invoice-${transaction.value.transaction_number}.pdf`
+
+    const customer = customersStore.customers.find((c) => c.id === transaction.value.customer_id)
+
+    // Siapkan data invoice
+    const invoiceData = {
+      transaction_number: transaction.value.transaction_number,
+      created_at: transaction.value.created_at,
+      customer_name: transaction.value.customer_name || 'Umum',
+      customer_store_name: customer?.store_name,
+      customer_address: customer?.kecamatan || transaction.value.customer_address,
+      items: transaction.value.items || [],
+      return_items: allReturnItems.value,
+      subtotal: originalSubtotal.value,
+      discount: transaction.value.discount || 0,
+      shipping_cost: transaction.value.shipping_cost || 0,
+      return_amount: returnAmount.value,
+      total: transaction.value.total,
+      payments: transaction.value.payments || [],
+      payment_status: transaction.value.payment_status,
+      updated_at: transaction.value.updated_at,
+    }
+
+    const storeSettings = {
+      name: settingsStore.storeName,
+      description: settingsStore.storeSubtitle,
+      address: settingsStore.storeAddress,
+      email: settingsStore.storeEmail,
+      phone: settingsStore.storePhone,
+    }
+
+    const pdfBlob = generatePdfBlob(invoiceData, storeSettings)
+    await shareToWhatsApp(pdfBlob, filename)
+
+    toast.success('Berhasil!', 'PDF siap dibagikan via WhatsApp')
+  } catch (error: any) {
+    console.error('Error sharing to WhatsApp:', error)
+    toast.error('Gagal!', error.message || 'Gagal kirim ke WhatsApp')
+  } finally {
+    isGeneratingPdf.value = false
+  }
+}
+
 onMounted(async () => {
   try {
+    await Promise.all([
+      settingsStore.fetchSettings(),
+      customersStore.fetchCustomers(),
+    ])
+
     transaction.value = await transactionsStore.getTransaction(transactionId)
     await returnsStore.fetchReturns(transactionId)
     await returnsStore.fetchLinkedReturns(transactionId)

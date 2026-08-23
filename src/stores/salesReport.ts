@@ -19,6 +19,7 @@ export const useSalesReportStore = defineStore('salesReport', () => {
   const startDate = ref<string>(getTodayStart())
   const endDate = ref<string>(getTodayEnd())
   const selectedCategoryId = ref<string | undefined>(undefined)
+  const paymentStatusFilter = ref<'lunas' | 'belum_lunas' | 'all'>('all')
 
   // Report data
   const summary = ref<SalesSummary>({
@@ -36,6 +37,14 @@ export const useSalesReportStore = defineStore('salesReport', () => {
     totalTransactions: 0,
     averageTransaction: 0,
     totalItems: 0,
+    // Field baru untuk laba terealisasi
+    total_cash_received: 0,
+    total_receivables: 0,
+    realized_profit: 0,
+    unrealized_profit: 0,
+    lunas_count: 0,
+    tempo_count: 0,
+    partial_count: 0,
   })
   const dailySales = ref<DailySales[]>([])
   const topProducts = ref<ProductSales[]>([])
@@ -115,7 +124,8 @@ export const useSalesReportStore = defineStore('salesReport', () => {
       const data = await salesReportService.getSalesReport(
         startDate.value,
         endDate.value,
-        selectedCategoryId.value
+        selectedCategoryId.value,
+        paymentStatusFilter.value
       )
       summary.value = data.summary
       dailySales.value = data.dailySales
@@ -136,12 +146,17 @@ export const useSalesReportStore = defineStore('salesReport', () => {
     fetchSalesReport()
   }
 
+  function setPaymentStatusFilter(status: 'lunas' | 'belum_lunas' | 'all') {
+    paymentStatusFilter.value = status
+  }
+
   return {
     loading,
     error,
     startDate,
     endDate,
     selectedCategoryId,
+    paymentStatusFilter,
     summary,
     dailySales,
     topProducts,
@@ -152,5 +167,6 @@ export const useSalesReportStore = defineStore('salesReport', () => {
     fetchSalesReport,
     applyPreset,
     setCategoryFilter,
+    setPaymentStatusFilter,
   }
 })

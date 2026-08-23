@@ -116,6 +116,7 @@ export interface TransactionInput {
   shipping_cost?: number
   return_amount?: number
   notes?: string
+  transaction_date?: string
   items: TransactionItemInput[]
 }
 

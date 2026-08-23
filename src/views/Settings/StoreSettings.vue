@@ -60,7 +60,7 @@
           class="space-y-2.5 border-t border-gray-200 p-4 text-xs dark:border-gray-800"
         >
           <div>
-            <label class="mb-1 block text-[11px] font-medium text-gray-500 dark:text-gray-400">Nama Aplikasi</label>
+            <label class="mb-1 block text-[11px] font-medium text-gray-500 dark:text-gray-400">Nama Toko</label>
             <input
               v-model="formData.store_name"
               type="text"
@@ -70,12 +70,12 @@
           </div>
 
           <div>
-            <label class="mb-1 block text-[11px] font-medium text-gray-500 dark:text-gray-400">Nama Toko / Usaha</label>
+            <label class="mb-1 block text-[11px] font-medium text-gray-500 dark:text-gray-400">Deskripsi Toko</label>
             <input
               v-model="formData.store_subtitle"
               type="text"
               class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500"
-              placeholder="Toko Ucup Pertanian"
+              placeholder="Deskripsi singkat toko"
             />
           </div>
 
@@ -457,7 +457,7 @@
         <div class="space-y-4 p-6">
           <div>
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Nama Aplikasi
+              Nama Toko
             </label>
             <input
               v-model="formData.store_name"
@@ -468,13 +468,13 @@
           </div>
           <div>
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Nama Toko
+              Deskripsi Toko
             </label>
             <input
               v-model="formData.store_subtitle"
               type="text"
               class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-              placeholder="Toko Berkat Jaya Makmur"
+              placeholder="Deskripsi singkat toko"
             />
           </div>
           <div>

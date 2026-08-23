@@ -1054,7 +1054,8 @@ const handlePrintPdf = async () => {
     }
 
     const storeSettings = {
-      name: settingsStore.storeName, // Nama toko utama (bukan subtitle)
+      name: settingsStore.storeName, // Nama toko
+      description: settingsStore.storeSubtitle, // Deskripsi toko
       address: settingsStore.storeAddress,
       email: settingsStore.storeEmail,
       phone: settingsStore.storePhone,
@@ -1100,7 +1101,8 @@ const handleShareWhatsApp = async () => {
     }
 
     const storeSettings = {
-      name: settingsStore.storeName, // Nama toko utama (bukan subtitle)
+      name: settingsStore.storeName, // Nama toko
+      description: settingsStore.storeSubtitle, // Deskripsi toko
       address: settingsStore.storeAddress,
       email: settingsStore.storeEmail,
       phone: settingsStore.storePhone,

@@ -240,6 +240,30 @@ const router = createRouter({
       },
     },
     {
+      path: '/reports/profit-loss',
+      name: 'Profit Loss Report',
+      component: () => import('../views/Reports/ProfitLossReport.vue'),
+      meta: {
+        title: 'Laporan Laba Rugi',
+      },
+    },
+    {
+      path: '/reports/transaction-profit',
+      name: 'Transaction Profit Report',
+      component: () => import('../views/Reports/TransactionProfitReport.vue'),
+      meta: {
+        title: 'Laba Per Transaksi',
+      },
+    },
+    {
+      path: '/reports/transaction-profit/:id',
+      name: 'Transaction Profit Detail',
+      component: () => import('../views/Reports/TransactionProfitDetail.vue'),
+      meta: {
+        title: 'Detail Laba Transaksi',
+      },
+    },
+    {
       path: '/stock',
       name: 'Stock Management',
       component: () => import('../views/Stock/StockManagement.vue'),

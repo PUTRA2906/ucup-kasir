@@ -60,6 +60,9 @@
               <p class="text-[22px] font-bold leading-none" style="color: #0d86ff">
                 {{ storeName }}
               </p>
+              <p v-if="storeDescription" class="mt-1.5 text-sm text-gray-600 dark:text-gray-400">
+                {{ storeDescription }}
+              </p>
               <p class="mt-2 text-sm">{{ storeAddress }}</p>
               <p class="text-sm">Email: {{ storeEmail }}</p>
               <p class="text-sm">Phone: {{ storePhone }}</p>
@@ -257,7 +260,8 @@ const backUrl = computed(
   () => `/customer-invoices/${encodeURIComponent(kecamatan)}/${customerId}/${invoiceId}`
 )
 
-const storeName = computed(() => settingsStore.storeSubtitle)
+const storeName = computed(() => settingsStore.storeName)
+const storeDescription = computed(() => settingsStore.storeSubtitle)
 const storeAddress = computed(() => settingsStore.storeAddress)
 const storeEmail = computed(() => settingsStore.storeEmail)
 const storePhone = computed(() => settingsStore.storePhone)

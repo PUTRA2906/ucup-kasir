@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout>
+  <AdminLayout hide-bottom-nav>
     <PageBreadcrumb pageTitle="Transaksi Baru" class="hidden md:block" />
 
     <!-- Mobile Header with Close Button -->
@@ -30,6 +30,21 @@
     <form @submit.prevent="handleSubmit">
       <!-- Mobile Layout -->
       <div class="space-y-4 pb-32 md:hidden">
+        <!-- 0. Card Tanggal Transaksi -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <label class="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+            <svg class="h-3.5 w-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Tanggal Transaksi
+          </label>
+          <input
+            type="datetime-local"
+            v-model="transactionDate"
+            class="w-full rounded-xl border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-hidden dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+          />
+        </div>
+
         <!-- 1. Card Data Customer -->
         <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <div class="mb-2.5 flex items-center justify-between">
@@ -410,10 +425,9 @@
                 Tanggal Transaksi
               </label>
               <input
-                type="text"
-                :value="formatDate(new Date())"
-                disabled
-                class="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-400"
+                type="datetime-local"
+                v-model="transactionDate"
+                class="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               />
             </div>
           </div>
@@ -755,6 +769,14 @@ const showPaymentModal = ref(false)
 const showCustomerPicker = ref(false)
 const showReturnPicker = ref(false)
 
+// Format datetime-local value dari Date (YYYY-MM-DDTHH:mm)
+const formatDateTimeLocal = (date: Date) => {
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+const transactionDate = ref(formatDateTimeLocal(new Date()))
+
 const selectedCustomer = computed(() =>
   customersStore.customers.find((c) => c.id === selectedCustomerId.value) || null
 )
@@ -853,6 +875,7 @@ const resetForm = () => {
     notes.value = ''
     payment.value = null
     returnItems.value = []
+    transactionDate.value = formatDateTimeLocal(new Date())
   }
 }
 
@@ -974,6 +997,7 @@ const handleSubmit = async () => {
       discount: discount.value,
       return_amount: totalReturnAmount.value,
       notes: notes.value.trim() || undefined,
+      transaction_date: new Date(transactionDate.value).toISOString(),
       items: cartItems.map((item) => ({
         product_id: item.product_id,
         quantity: item.quantity,

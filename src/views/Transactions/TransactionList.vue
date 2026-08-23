@@ -29,6 +29,68 @@
       </button>
     </div>
 
+    <!-- Mobile Search & Filter -->
+    <div class="space-y-2 pb-1 md:hidden">
+      <!-- Search Bar -->
+      <div class="relative">
+        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+          <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Cari no. transaksi, customer, metode..."
+          class="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder-gray-400"
+        />
+        <button
+          v-if="searchQuery"
+          @click="searchQuery = ''"
+          class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Filter Buttons -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+        <!-- Status transaksi -->
+        <button
+          v-for="opt in statusOptions"
+          :key="'st-' + opt.value"
+          @click="statusFilter = opt.value"
+          :class="[
+            'flex-shrink-0 rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-colors',
+            statusFilter === opt.value
+              ? 'border-brand-500 bg-brand-500 text-white'
+              : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
+          ]"
+        >
+          {{ opt.label }}
+        </button>
+
+        <span class="h-4 w-px flex-shrink-0 bg-gray-200 dark:bg-gray-700"></span>
+
+        <!-- Status pembayaran -->
+        <button
+          v-for="opt in paymentOptions"
+          :key="'pm-' + opt.value"
+          @click="paymentFilter = opt.value"
+          :class="[
+            'flex-shrink-0 rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-colors',
+            paymentFilter === opt.value
+              ? 'border-brand-500 bg-brand-500 text-white'
+              : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
+          ]"
+        >
+          {{ opt.label }}
+        </button>
+      </div>
+    </div>
+
     <!-- Mobile Cards -->
     <div class="space-y-3 pb-4 md:hidden">
       <div
@@ -132,9 +194,20 @@
       </div>
 
       <!-- Empty State -->
-      <div v-if="transactionsStore.transactions.length === 0" class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-800">
-        <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Belum ada transaksi</p>
-        <p class="text-[10px] text-gray-400 dark:text-gray-500">Klik "Transaksi Baru" untuk membuat transaksi pertama</p>
+      <div v-if="filteredTransactions.length === 0" class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-800">
+        <template v-if="hasActiveFilter">
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Tidak ada transaksi yang cocok</p>
+          <button
+            @click="clearFilters"
+            class="mt-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-[11px] font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+          >
+            Reset Filter
+          </button>
+        </template>
+        <template v-else>
+          <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Belum ada transaksi</p>
+          <p class="text-[10px] text-gray-400 dark:text-gray-500">Klik "Transaksi Baru" untuk membuat transaksi pertama</p>
+        </template>
       </div>
 
       <!-- Pagination -->
@@ -167,16 +240,70 @@
 
     <!-- Desktop DataTable -->
     <div class="hidden space-y-6 px-4 md:block md:px-0">
+      <!-- Desktop Search & Filter -->
+      <div class="flex items-center gap-4">
+        <div class="relative w-72">
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Cari no. transaksi, customer..."
+            class="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+          />
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            v-for="opt in statusOptions"
+            :key="'st-' + opt.value"
+            @click="statusFilter = opt.value"
+            :class="[
+              'rounded-lg border px-4 py-2 text-sm font-medium transition-colors',
+              statusFilter === opt.value
+                ? 'border-brand-500 bg-brand-500 text-white'
+                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'
+            ]"
+          >
+            {{ opt.label }}
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            v-for="opt in paymentOptions"
+            :key="'pm-' + opt.value"
+            @click="paymentFilter = opt.value"
+            :class="[
+              'rounded-lg border px-4 py-2 text-sm font-medium transition-colors',
+              paymentFilter === opt.value
+                ? 'border-brand-500 bg-brand-500 text-white'
+                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'
+            ]"
+          >
+            {{ opt.label }}
+          </button>
+        </div>
+        <button
+          v-if="hasActiveFilter"
+          @click="clearFilters"
+          class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+        >
+          Reset
+        </button>
+      </div>
+
       <!-- DataTable -->
       <DataTable
         :columns="columns"
-        :data="transactionsStore.transactions"
+        :data="filteredTransactions"
         :per-page="10"
-        :searchable="true"
+        :searchable="false"
         :show-add-button="true"
         add-button-text="Transaksi Baru"
         title="Daftar Transaksi"
-        :subtitle="`${settingsStore.storeSubtitle} - ${transactionsStore.transactions.length} Transaksi`"
+        :subtitle="`${settingsStore.storeSubtitle} - ${filteredTransactions.length} Transaksi`"
         @add-click="addTransaction"
         @menu-action="handleMenuAction"
       >
@@ -378,7 +505,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watchEffect, onMounted } from 'vue'
+import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from '@/components/tables/DataTable.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -402,15 +529,87 @@ const expandedCards = ref<string[]>([])
 const currentPage = ref(1)
 const perPage = 10
 
+// Pencarian & filter
+const searchQuery = ref('')
+const statusFilter = ref<'semua' | 'selesai' | 'batal'>('semua')
+const paymentFilter = ref<'semua' | 'lunas' | 'belum_lunas'>('semua')
+
+const filteredTransactions = computed(() => {
+  let result = [...transactionsStore.transactions]
+
+  // Filter status transaksi (selesai / batal)
+  if (statusFilter.value !== 'semua') {
+    result = result.filter((t) => t.status === statusFilter.value)
+  }
+
+  // Filter status pembayaran (lunas / belum lunas)
+  if (paymentFilter.value !== 'semua') {
+    result = result.filter((t) =>
+      paymentFilter.value === 'lunas'
+        ? t.payment_status === 'lunas' || t.remaining_amount <= 0
+        : t.payment_status !== 'lunas' && t.remaining_amount > 0
+    )
+  }
+
+  // Pencarian
+  const query = searchQuery.value.trim().toLowerCase()
+  if (query) {
+    result = result.filter((t) => {
+      const q = query
+      return (
+        (t.transaction_number || '').toLowerCase().includes(q) ||
+        (t.customer_name || '').toLowerCase().includes(q) ||
+        (t.payment_method || '').toLowerCase().includes(q) ||
+        formatCurrency(t.total).toLowerCase().includes(q) ||
+        formatDate(t.created_at).toLowerCase().includes(q)
+      )
+    })
+  }
+
+  return result
+})
+
 const paginatedTransactions = computed(() => {
   const start = (currentPage.value - 1) * perPage
   const end = start + perPage
-  return transactionsStore.transactions.slice(start, end)
+  return filteredTransactions.value.slice(start, end)
 })
 
 const totalPages = computed(() => {
-  return Math.ceil(transactionsStore.transactions.length / perPage)
+  return Math.ceil(filteredTransactions.value.length / perPage)
 })
+
+// Reset ke halaman 1 ketika filter/pencarian berubah
+watch([searchQuery, statusFilter, paymentFilter], () => {
+  currentPage.value = 1
+})
+
+// Opsi filter
+const statusOptions = [
+  { value: 'semua', label: 'Semua' },
+  { value: 'selesai', label: 'Selesai' },
+  { value: 'batal', label: 'Batal' },
+] as const
+
+const paymentOptions = [
+  { value: 'semua', label: 'Semua Bayar' },
+  { value: 'lunas', label: 'Lunas' },
+  { value: 'belum_lunas', label: 'Belum Lunas' },
+] as const
+
+const hasActiveFilter = computed(() => {
+  return (
+    searchQuery.value.trim() !== '' ||
+    statusFilter.value !== 'semua' ||
+    paymentFilter.value !== 'semua'
+  )
+})
+
+const clearFilters = () => {
+  searchQuery.value = ''
+  statusFilter.value = 'semua'
+  paymentFilter.value = 'semua'
+}
 
 const toggleExpand = (id: string) => {
   const index = expandedCards.value.indexOf(id)
@@ -422,11 +621,11 @@ const toggleExpand = (id: string) => {
 }
 
 const allSelected = computed(() => {
-  return transactionsStore.transactions.length > 0 && selectedTransactions.value.length === transactionsStore.transactions.length
+  return filteredTransactions.value.length > 0 && selectedTransactions.value.length === filteredTransactions.value.length
 })
 
 const someSelected = computed(() => {
-  return selectedTransactions.value.length > 0 && selectedTransactions.value.length < transactionsStore.transactions.length
+  return selectedTransactions.value.length > 0 && selectedTransactions.value.length < filteredTransactions.value.length
 })
 
 watchEffect(() => {
@@ -439,7 +638,7 @@ const toggleSelectAll = () => {
   if (allSelected.value) {
     selectedTransactions.value = []
   } else {
-    selectedTransactions.value = transactionsStore.transactions.map(t => t.id)
+    selectedTransactions.value = filteredTransactions.value.map(t => t.id)
   }
 }
 

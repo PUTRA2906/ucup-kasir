@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Detail Faktur - Ucup Kasir</title>
+  <title>Laporan Keuangan & Penjualan - Ucup Kasir</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
+  <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,282 +22,433 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-[#080e1e] text-slate-100 min-h-screen pb-36 select-none">
+<body class="bg-[#080e1e] text-slate-100 min-h-screen pb-24 select-none">
 
-  <!-- ================= CONTAINER UTAMA (TANPA HEADER ATAS) ================= -->
-  <main class="p-4 max-w-md mx-auto space-y-3.5 pt-5">
+  <!-- ================= CONTAINER UTAMA ================= -->
+  <main class="p-4 max-w-md mx-auto space-y-4 pt-5">
 
-    <!-- 1. BARIS JUDUL & STATUS (PENGGANTI HEADER) -->
-    <section class="flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <button onclick="history.back()" class="p-2 rounded-xl bg-[#0f172e] text-slate-300 hover:text-white border border-slate-800 active:scale-95 transition">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        </button>
-        <div>
-          <span class="text-[10px] text-blue-400 font-mono block leading-none">TRX-20260818-EC5DC6</span>
-          <h1 class="text-lg font-extrabold font-outfit text-white tracking-tight leading-tight mt-0.5">
-            Detail Invoice
-          </h1>
-        </div>
-      </div>
-      <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
-        Lunas Selesai
-      </span>
-    </section>
-
-    <!-- 2. KARTU PELANGGAN & WAKTU -->
-    <section class="bg-[#0f172e] rounded-2xl border border-slate-800/80 p-3.5 flex justify-between items-center shadow-sm">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-blue-600/15 text-blue-400 border border-blue-500/20 flex items-center justify-center font-bold font-outfit text-sm">
-          A
-        </div>
-        <div>
-          <h2 class="text-xs font-bold font-outfit text-white">Agus Santoso</h2>
-          <p class="text-[11px] text-slate-400">Toko Bango &bull; Bangorejo</p>
-        </div>
-      </div>
-      <div class="text-right">
-        <span class="text-[10px] text-slate-400 block">18 Agu 2026</span>
-        <span class="text-[10px] text-slate-400 block font-mono">20:52 WIB</span>
-      </div>
-    </section>
-
-    <!-- 3. RINCIAN BARANG (CLEAN ITEM ROW) -->
-    <section class="bg-[#0f172e] rounded-2xl border border-slate-800/80 p-3.5 space-y-3 shadow-sm">
-      <div class="flex items-center justify-between pb-1.5 border-b border-slate-800">
-        <span class="text-[11px] font-bold font-outfit text-slate-300 uppercase tracking-wider">Rincian Barang (3 Macam)</span>
-        <span class="text-[10px] text-slate-400">Subtotal</span>
-      </div>
-
-      <div class="space-y-3 divide-y divide-slate-800/60 text-xs">
-        
-        <!-- Item 1 -->
-        <div class="pt-2 first:pt-0 space-y-1">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-bold text-white font-outfit">Obat Babros 500ml</h3>
-              <p class="text-[10px] text-slate-400">8 Btl &times; Rp 25.000</p>
-            </div>
-            <span class="font-extrabold font-outfit text-white">Rp 200.000</span>
-          </div>
-          <div class="flex justify-between items-center text-[10px] bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20 text-rose-400">
-            <span class="flex items-center gap-1">
-              <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Diretur: 2 Btl (Kemasan Rusak)
-            </span>
-            <span class="font-bold">- Rp 50.000</span>
-          </div>
-        </div>
-
-        <!-- Item 2 -->
-        <div class="pt-2 space-y-1">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-bold text-white font-outfit">Poska Petro 50kg</h3>
-              <p class="text-[10px] text-slate-400">7 Sak &times; Rp 60.000</p>
-            </div>
-            <span class="font-extrabold font-outfit text-white">Rp 420.000</span>
-          </div>
-          <div class="flex justify-between items-center text-[10px] bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20 text-rose-400">
-            <span class="flex items-center gap-1">
-              <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Diretur: 1 Sak (Sobek)
-            </span>
-            <span class="font-bold">- Rp 60.000</span>
-          </div>
-        </div>
-
-        <!-- Item 3 -->
-        <div class="pt-2 space-y-1">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-bold text-white font-outfit">Pupuk Josjis 50kg</h3>
-              <p class="text-[10px] text-slate-400">6 Sak &times; Rp 50.000</p>
-            </div>
-            <span class="font-extrabold font-outfit text-white">Rp 300.000</span>
-          </div>
-          <div class="flex justify-between items-center text-[10px] bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20 text-rose-400">
-            <span class="flex items-center gap-1">
-              <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Diretur: 1 Sak (Kemasan Rusak)
-            </span>
-            <span class="font-bold">- Rp 50.000</span>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- 4. RIWAYAT PEMBAYARAN, RETUR & ALUR KRONOLOGIS -->
-    <section class="bg-[#0f172e] rounded-2xl border border-slate-800/80 p-4 space-y-4 shadow-md text-xs">
-      
-      <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
-        <span class="text-[11px] font-bold font-outfit text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-          <i data-lucide="history" class="w-4 h-4 text-blue-400"></i>
-          Riwayat Pembayaran & Penyesuaian
-        </span>
-        <span class="text-[10px] text-slate-400 font-mono">
-          4 Angsuran
-        </span>
-      </div>
-
-      <!-- TIMELINE AUDIT KRONOLOGIS -->
-      <div class="relative pl-6 space-y-3.5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-800">
-
-        <!-- Step 1: Faktur Terbit -->
-        <div class="relative">
-          <span class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-blue-600 border-2 border-[#0f172e] flex items-center justify-center">
-            <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-          </span>
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="font-bold text-white leading-tight font-outfit">Faktur Diterbitkan</p>
-              <p class="text-[10px] text-slate-400">18 Agu 2026, 20:52 &bull; Total 21 Item</p>
-            </div>
-            <span class="font-extrabold font-outfit text-slate-200">Rp 920.000</span>
-          </div>
-        </div>
-
-        <!-- Step 2: Bayar 1 -->
-        <div class="relative">
-          <span class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-600 border-2 border-[#0f172e] flex items-center justify-center">
-            <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-          </span>
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="font-semibold text-slate-200 leading-tight">Pembayaran Bertahap 1</p>
-              <p class="text-[10px] text-slate-400">18 Agu 2026, 20:55 &bull; Tunai</p>
-            </div>
-            <span class="font-extrabold font-outfit text-emerald-400">- Rp 300.000</span>
-          </div>
-        </div>
-
-        <!-- Step 3: Bayar 2 -->
-        <div class="relative">
-          <span class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-600 border-2 border-[#0f172e] flex items-center justify-center">
-            <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-          </span>
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="font-semibold text-slate-200 leading-tight">Pembayaran Bertahap 2</p>
-              <p class="text-[10px] text-slate-400">18 Agu 2026, 21:00 &bull; Tunai</p>
-            </div>
-            <span class="font-extrabold font-outfit text-emerald-400">- Rp 300.000</span>
-          </div>
-        </div>
-
-        <!-- Step 4: Retur Masuk -->
-        <div class="relative">
-          <span class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-rose-600 border-2 border-[#0f172e] flex items-center justify-center">
-            <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-          </span>
-          <div class="flex justify-between items-start bg-rose-500/10 p-2 rounded-xl border border-rose-500/20 -ml-2 pl-2">
-            <div>
-              <p class="font-bold text-rose-400 leading-tight font-outfit">Retur Barang (RTR-DACAD2)</p>
-              <p class="text-[10px] text-slate-400">18 Agu 2026, 21:01 &bull; 4 Item Sak/Btl</p>
-            </div>
-            <span class="font-extrabold font-outfit text-rose-400">- Rp 160.000</span>
-          </div>
-        </div>
-
-        <!-- Step 5: Bayar 3 -->
-        <div class="relative">
-          <span class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-600 border-2 border-[#0f172e] flex items-center justify-center">
-            <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-          </span>
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="font-semibold text-slate-200 leading-tight">Pembayaran Bertahap 3</p>
-              <p class="text-[10px] text-slate-400">18 Agu 2026, 21:21 &bull; Tunai</p>
-            </div>
-            <span class="font-extrabold font-outfit text-emerald-400">- Rp 120.000</span>
-          </div>
-        </div>
-
-        <!-- Step 6: Pelunasan -->
-        <div class="relative">
-          <span class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-600 border-2 border-[#0f172e] flex items-center justify-center">
-            <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-          </span>
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="font-semibold text-slate-200 leading-tight">Pelunasan Akhir</p>
-              <p class="text-[10px] text-slate-400">18 Agu 2026, 21:21 &bull; Tunai</p>
-            </div>
-            <span class="font-extrabold font-outfit text-emerald-400">- Rp 40.000</span>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- REKAP FINAL AKUNTANSI -->
-      <div class="bg-[#080e1e] p-3.5 rounded-2xl border border-slate-800/80 space-y-2 pt-3">
-        
-        <div class="flex justify-between text-slate-400">
-          <span>Total Barang (Kotor)</span>
-          <span class="font-semibold text-slate-200">Rp 920.000</span>
-        </div>
-
-        <div class="flex justify-between text-rose-400">
-          <span class="flex items-center gap-1">
-            <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Potongan Retur
-          </span>
-          <span class="font-bold">- Rp 160.000</span>
-        </div>
-
-        <div class="flex justify-between font-extrabold font-outfit text-white text-sm pt-2 border-t border-slate-800">
-          <span>Total Bersih Faktur</span>
-          <span class="text-blue-400">Rp 760.000</span>
-        </div>
-
-        <div class="flex justify-between text-slate-400 pt-0.5">
-          <span>Total Uang Diterima</span>
-          <span class="text-emerald-400 font-bold">Rp 760.000</span>
-        </div>
-
-        <!-- Sisa Tagihan -->
-        <div class="mt-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex justify-between items-center text-xs">
-          <span class="font-bold text-emerald-400 font-outfit">Sisa Tagihan</span>
-          <span class="text-sm font-black font-outfit text-emerald-400">Rp 0 (LUNAS)</span>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- 5. DOKUMEN BUKTI RETUR -->
-    <section class="bg-[#0f172e] rounded-2xl border border-slate-800/80 p-3.5 space-y-2 text-xs">
+    <!-- 1. HEADER HALAMAN & FILTER RENTANG WAKTU -->
+    <section class="space-y-3">
       <div class="flex items-center justify-between">
-        <span class="text-[11px] font-bold font-outfit text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-          <i data-lucide="file-text" class="w-3.5 h-3.5 text-rose-400"></i> Berkas Bukti Retur
-        </span>
-        <span class="text-[10px] text-slate-400 font-mono">RTR-20260818-DACAD2</span>
+        <div class="flex items-center gap-2.5">
+          <button onclick="history.back()" class="p-2 rounded-xl bg-[#0f172e] text-slate-300 hover:text-white border border-slate-800 active:scale-95 transition">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          </button>
+          <div>
+            <h1 class="text-lg font-extrabold font-outfit text-white tracking-tight leading-tight">
+              Laporan & Analitik
+            </h1>
+            <p class="text-[10px] text-slate-400 font-mono">Periode: Agustus 2026</p>
+          </div>
+        </div>
+
+        <!-- Tombol Export / Cetak -->
+        <button onclick="alert('Mengekspor Laporan ke format Excel / PDF...')" class="p-2 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 active:scale-95 transition">
+          <i data-lucide="download" class="w-4 h-4"></i>
+        </button>
       </div>
-      <div class="bg-[#080e1e] p-2.5 rounded-xl border border-slate-800/80 space-y-1 text-[11px] text-slate-300">
-        <div class="flex justify-between"><span>&bull; Obat Babros &times; 2 Btl</span><span class="font-mono">Rp 50.000</span></div>
-        <div class="flex justify-between"><span>&bull; Poska Petro &times; 1 Sak</span><span class="font-mono">Rp 60.000</span></div>
-        <div class="flex justify-between"><span>&bull; Pupuk Josjis &times; 1 Sak</span><span class="font-mono">Rp 50.000</span></div>
+
+      <!-- Quick Filter Chips Periode -->
+      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+        <button onclick="changePeriod(this, 'today')" class="period-btn px-3 py-1.5 rounded-xl bg-[#0f172e] text-slate-400 text-xs font-semibold font-outfit border border-slate-800 hover:border-slate-700 whitespace-nowrap transition">
+          Hari Ini
+        </button>
+        <button onclick="changePeriod(this, '7days')" class="period-btn px-3 py-1.5 rounded-xl bg-[#0f172e] text-slate-400 text-xs font-semibold font-outfit border border-slate-800 hover:border-slate-700 whitespace-nowrap transition">
+          7 Hari
+        </button>
+        <button onclick="changePeriod(this, 'month')" class="period-btn px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold font-outfit border border-blue-500 shadow-sm whitespace-nowrap transition">
+          Bulan Ini
+        </button>
+        <button onclick="changePeriod(this, 'custom')" class="period-btn px-3 py-1.5 rounded-xl bg-[#0f172e] text-slate-400 text-xs font-semibold font-outfit border border-slate-800 hover:border-slate-700 whitespace-nowrap transition">
+          Kustom
+        </button>
       </div>
     </section>
+
+    <!-- 2. SEGMENTED TAB NAVIGATOR (4 TAB UTAMA) -->
+    <nav class="grid grid-cols-4 gap-1 p-1 bg-[#0f172e] rounded-2xl border border-slate-800/80 text-xs font-bold font-outfit">
+      <button onclick="switchTab('tab-ringkasan', this)" class="tab-btn py-2 rounded-xl bg-blue-600 text-white shadow-sm text-center transition">
+        Ringkasan
+      </button>
+      <button onclick="switchTab('tab-penjualan', this)" class="tab-btn py-2 rounded-xl text-slate-400 hover:text-white text-center transition">
+        Penjualan
+      </button>
+      <button onclick="switchTab('tab-piutang', this)" class="tab-btn py-2 rounded-xl text-slate-400 hover:text-white text-center transition">
+        Piutang
+      </button>
+      <button onclick="switchTab('tab-retur', this)" class="tab-btn py-2 rounded-xl text-slate-400 hover:text-white text-center transition">
+        Retur
+      </button>
+    </nav>
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: RINGKASAN (EXECUTIVE DASHBOARD)                         -->
+    <!-- ============================================================== -->
+    <div id="tab-ringkasan" class="tab-content space-y-3.5">
+      
+      <!-- Card Omzet Bersih -->
+      <div class="p-4 rounded-2xl bg-[#0f172e] border border-blue-500/30 space-y-2 shadow-sm relative overflow-hidden">
+        <div class="flex justify-between items-center">
+          <span class="text-[11px] font-bold font-outfit text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Penjualan Bersih (Omzet)
+          </span>
+          <span class="text-[10px] text-slate-400 font-mono">42 Nota</span>
+        </div>
+        <div class="text-2xl font-black font-outfit text-white tracking-tight">
+          Rp 48.500.000
+        </div>
+        <div class="flex items-center gap-2 pt-1 border-t border-slate-800/80 text-[10px] text-slate-400 font-mono">
+          <span>Kotor: Rp 50.250.000</span>
+          <span>&bull;</span>
+          <span class="text-rose-400">Retur: -Rp 1.750.000</span>
+        </div>
+      </div>
+
+      <!-- Grid Arus Kas & Piutang Berjalan -->
+      <div class="grid grid-cols-2 gap-3">
+        <!-- Kas Riil Diterima -->
+        <div class="p-3.5 rounded-2xl bg-[#0f172e] border border-emerald-500/30 space-y-1.5">
+          <span class="text-[10px] font-bold font-outfit text-emerald-400 uppercase tracking-wider block">
+            Kas Masuk (Real)
+          </span>
+          <p class="text-base font-extrabold font-outfit text-white leading-tight">
+            Rp 32.200.000
+          </p>
+          <p class="text-[9px] text-slate-400">Uang fisik / bank di kasir</p>
+        </div>
+
+        <!-- Piutang Tempo Tertahan -->
+        <div class="p-3.5 rounded-2xl bg-[#0f172e] border border-amber-500/30 space-y-1.5 cursor-pointer hover:border-amber-400/60 transition" onclick="switchTab('tab-piutang', document.querySelectorAll('.tab-btn')[2])">
+          <div class="flex justify-between items-center">
+            <span class="text-[10px] font-bold font-outfit text-amber-400 uppercase tracking-wider">
+              Piutang (Tempo)
+            </span>
+            <i data-lucide="chevron-right" class="w-3 h-3 text-amber-400"></i>
+          </div>
+          <p class="text-base font-extrabold font-outfit text-white leading-tight">
+            Rp 16.300.000
+          </p>
+          <p class="text-[9px] text-slate-400">Belum dibayar mitra</p>
+        </div>
+      </div>
+
+      <!-- Card Estimasi Laba Kotor (Proporsional) -->
+      <div class="p-4 rounded-2xl bg-[#0f172e] border border-purple-500/30 space-y-2.5">
+        <div class="flex justify-between items-center">
+          <span class="text-[11px] font-bold font-outfit text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="pie-chart" class="w-3.5 h-3.5"></i> Estimasi Laba Kotor
+          </span>
+          <span class="text-[10px] font-bold text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20 font-mono">
+            Margin: 26.8%
+          </span>
+        </div>
+        
+        <div class="text-xl font-black font-outfit text-white">
+          Rp 13.000.000
+        </div>
+
+        <!-- Breakdown Laba Terealisasi vs Tertahan -->
+        <div class="space-y-1.5 pt-1.5 border-t border-slate-800/80 text-xs">
+          <div class="flex justify-between items-center text-slate-300">
+            <span class="text-[11px] flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Laba Terealisasi (Dari Kas)
+            </span>
+            <span class="font-bold font-mono text-white">Rp 8.629.600</span>
+          </div>
+          <div class="flex justify-between items-center text-slate-300">
+            <span class="text-[11px] flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span> Laba Tertahan (Di Piutang)
+            </span>
+            <span class="font-bold font-mono text-slate-400">Rp 4.370.400</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Produk Terlaris -->
+      <div class="p-3.5 rounded-2xl bg-[#0f172e] border border-slate-800/80 space-y-2.5">
+        <span class="text-[11px] font-bold font-outfit text-slate-300 uppercase tracking-wider block">
+          3 Produk Paling Laku
+        </span>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between items-center p-2 rounded-xl bg-[#080e1e] border border-slate-800">
+            <div>
+              <p class="font-bold font-outfit text-white">NPK Phonska 50kg</p>
+              <p class="text-[10px] text-slate-400 font-mono">Terjual: 240 Sak</p>
+            </div>
+            <span class="font-extrabold font-outfit text-emerald-400">Rp 14.400.000</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded-xl bg-[#080e1e] border border-slate-800">
+            <div>
+              <p class="font-bold font-outfit text-white">Gramoxone 1 Liter</p>
+              <p class="text-[10px] text-slate-400 font-mono">Terjual: 95 Botol</p>
+            </div>
+            <span class="font-extrabold font-outfit text-emerald-400">Rp 8.740.000</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: PENJUALAN (DAFTAR SEMUA TRANSAKSI NOTA)                 -->
+    <!-- ============================================================== -->
+    <div id="tab-penjualan" class="tab-content space-y-3 hidden">
+      
+      <!-- Search Nota -->
+      <div class="relative">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input type="text" placeholder="Cari nomor nota atau mitra..." class="w-full bg-[#0f172e] border border-slate-800 rounded-xl pl-10 pr-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" />
+      </div>
+
+      <!-- Daftar List Nota -->
+      <div class="space-y-2.5">
+
+        <!-- Nota 1: Status DP / Cicilan -->
+        <div class="p-3.5 rounded-2xl bg-[#0f172e] border border-slate-800/80 space-y-2">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold font-outfit text-white">#TRX-20260820-001</span>
+                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">DP / CICIL</span>
+              </div>
+              <p class="text-[10px] text-slate-400">Agus Santoso (Toko Bango) &bull; 20 Agu 2026</p>
+            </div>
+            <span class="text-xs font-black font-outfit text-white">Rp 400.000</span>
+          </div>
+
+          <div class="flex justify-between items-center pt-2 border-t border-slate-800/60 text-[11px] font-mono">
+            <span class="text-emerald-400">Dibayar: Rp 150.000</span>
+            <span class="text-amber-400">Sisa: Rp 250.000</span>
+          </div>
+        </div>
+
+        <!-- Nota 2: Status Lunas -->
+        <div class="p-3.5 rounded-2xl bg-[#0f172e] border border-slate-800/80 space-y-2">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold font-outfit text-white">#TRX-20260820-002</span>
+                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">LUNAS</span>
+              </div>
+              <p class="text-[10px] text-slate-400">Ahmad Fauzi (Tani Jaya) &bull; 20 Agu 2026</p>
+            </div>
+            <span class="text-xs font-black font-outfit text-white">Rp 1.250.000</span>
+          </div>
+
+          <div class="flex justify-between items-center pt-2 border-t border-slate-800/60 text-[11px] font-mono">
+            <span class="text-emerald-400">Dibayar Tunai Penuh</span>
+            <span class="text-slate-400">Laba: +Rp 310.000</span>
+          </div>
+        </div>
+
+        <!-- Nota 3: Status Tempo Penuh -->
+        <div class="p-3.5 rounded-2xl bg-[#0f172e] border border-slate-800/80 space-y-2">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold font-outfit text-white">#TRX-20260819-009</span>
+                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">TEMPO</span>
+              </div>
+              <p class="text-[10px] text-slate-400">Arif Hidayatulloh (UD Sejati) &bull; 19 Agu 2026</p>
+            </div>
+            <span class="text-xs font-black font-outfit text-white">Rp 3.500.000</span>
+          </div>
+
+          <div class="flex justify-between items-center pt-2 border-t border-slate-800/60 text-[11px] font-mono">
+            <span class="text-rose-400">DP: Rp 0 (Hutang Penuh)</span>
+            <span class="text-amber-400">Jatuh Tempo: 19 Sep 2026</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: BUKU PIUTANG (HUTANG KIOS MITRA & PELUNASAN)           -->
+    <!-- ============================================================== -->
+    <div id="tab-piutang" class="tab-content space-y-3 hidden">
+      
+      <!-- Total Piutang Ringkas -->
+      <div class="p-3.5 rounded-2xl bg-[#0f172e] border border-amber-500/30 flex justify-between items-center">
+        <div>
+          <span class="text-[10px] font-bold font-outfit text-amber-400 uppercase">Total Piutang Belum Lunas</span>
+          <p class="text-lg font-extrabold font-outfit text-white">Rp 16.300.000</p>
+        </div>
+        <span class="text-xs font-bold bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-xl border border-amber-500/20">5 Kios</span>
+      </div>
+
+      <!-- List Piutang per Mitra -->
+      <div class="space-y-2.5">
+        
+        <!-- Mitra 1 -->
+        <div class="p-3.5 rounded-2xl bg-[#0f172e] border border-slate-800/80 space-y-2.5">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="text-xs font-bold font-outfit text-white">Agus Santoso (Toko Bango)</h4>
+              <p class="text-[10px] text-slate-400">Bangorejo &bull; 081234567801</p>
+            </div>
+            <span class="text-xs font-extrabold font-outfit text-amber-400 font-mono">Rp 4.250.000</span>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-slate-800/60">
+            <span class="text-[10px] text-rose-400 flex items-center gap-1 font-mono">
+              <i data-lucide="alert-circle" class="w-3 h-3"></i> Tempo: 25 Agu 2026
+            </span>
+            <button onclick="openPaymentModal('Agus Santoso (Toko Bango)', '4.250.000')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold font-outfit text-[11px] shadow-sm flex items-center gap-1 active:scale-95 transition">
+              <i data-lucide="plus-circle" class="w-3 h-3"></i> Catat Bayar
+            </button>
+          </div>
+        </div>
+
+        <!-- Mitra 2 -->
+        <div class="p-3.5 rounded-2xl bg-[#0f172e] border border-slate-800/80 space-y-2.5">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="text-xs font-bold font-outfit text-white">Arif Hidayatulloh (UD Sejati)</h4>
+              <p class="text-[10px] text-slate-400">Sempu &bull; 082290123421</p>
+            </div>
+            <span class="text-xs font-extrabold font-outfit text-amber-400 font-mono">Rp 8.500.000</span>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-slate-800/60">
+            <span class="text-[10px] text-slate-400 flex items-center gap-1 font-mono">
+              <i data-lucide="clock" class="w-3 h-3"></i> Tempo: 15 Sep 2026
+            </span>
+            <button onclick="openPaymentModal('Arif Hidayatulloh (UD Sejati)', '8.500.000')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold font-outfit text-[11px] shadow-sm flex items-center gap-1 active:scale-95 transition">
+              <i data-lucide="plus-circle" class="w-3 h-3"></i> Catat Bayar
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: RETUR MASUK (AUDIT PENGEMBALIAN BARANG)                 -->
+    <!-- ============================================================== -->
+    <div id="tab-retur" class="tab-content space-y-3 hidden">
+      
+      <!-- Total Retur Ringkas -->
+      <div class="p-3.5 rounded-2xl bg-[#0f172e] border border-rose-500/30 flex justify-between items-center">
+        <div>
+          <span class="text-[10px] font-bold font-outfit text-rose-400 uppercase">Total Nilai Potongan Retur</span>
+          <p class="text-lg font-extrabold font-outfit text-white">Rp 1.750.000</p>
+        </div>
+        <span class="text-xs font-bold bg-rose-500/10 text-rose-400 px-2.5 py-1 rounded-xl border border-rose-500/20">6 Item</span>
+      </div>
+
+      <!-- List Barang Diretur -->
+      <div class="space-y-2.5">
+        
+        <!-- Retur Item 1 -->
+        <div class="p-3.5 rounded-2xl bg-[#0f172e] border border-rose-500/20 space-y-2">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="text-xs font-bold font-outfit text-white">Obat Babros 500ml</h4>
+              <p class="text-[10px] text-slate-400">Dari: Toko Bango &bull; 20 Agu 2026</p>
+            </div>
+            <span class="text-xs font-extrabold font-outfit text-rose-400 font-mono">- Rp 50.000</span>
+          </div>
+
+          <div class="pt-1.5 border-t border-slate-800/60 flex justify-between items-center text-[10px]">
+            <span class="text-slate-300 font-mono">Jumlah: 2 Botol</span>
+            <span class="text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">Alasan: Kemasan Bocor</span>
+          </div>
+        </div>
+
+        <!-- Retur Item 2 -->
+        <div class="p-3.5 rounded-2xl bg-[#0f172e] border border-rose-500/20 space-y-2">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="text-xs font-bold font-outfit text-white">NPK Phonska Petro 50kg</h4>
+              <p class="text-[10px] text-slate-400">Dari: Kios Tani Jaya &bull; 18 Agu 2026</p>
+            </div>
+            <span class="text-xs font-extrabold font-outfit text-rose-400 font-mono">- Rp 600.000</span>
+          </div>
+
+          <div class="pt-1.5 border-t border-slate-800/60 flex justify-between items-center text-[10px]">
+            <span class="text-slate-300 font-mono">Jumlah: 10 Sak</span>
+            <span class="text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Alasan: Sisa Stok / Tidak Laku</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
 
   </main>
 
-  <!-- ================= STICKY THUMB ACTION BAR (FIXED BOTTOM) ================= -->
-  <div class="fixed bottom-0 left-0 right-0 z-40 bg-[#0d162d]/95 backdrop-blur-md border-t border-slate-800/80 p-3 max-w-md mx-auto">
-    <div class="flex gap-2">
-      <!-- Tombol Retur Barang -->
-      <button onclick="alert('Buka Form Retur Barang')" class="flex-1 py-3 rounded-xl bg-[#141f36] hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-bold font-outfit flex items-center justify-center gap-1.5 active:scale-95 transition">
-        <i data-lucide="rotate-ccw" class="w-4 h-4 text-rose-400"></i>
-        <span>Retur</span>
-      </button>
+  <!-- ================= MODAL CATAT CICILAN PIUTANG ================= -->
+  <div id="paymentModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="w-full max-w-md bg-[#0f172e] rounded-t-3xl sm:rounded-3xl border border-slate-800/90 shadow-2xl p-4 space-y-3.5">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+        <div>
+          <h3 class="text-sm font-extrabold font-outfit text-white">Catat Pembayaran Piutang</h3>
+          <p id="modalMitraName" class="text-[10px] text-blue-400"></p>
+        </div>
+        <button onclick="closePaymentModal()" class="p-1.5 rounded-xl bg-[#080e1e] text-slate-400 hover:text-white border border-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
 
-      <!-- Tombol Cetak Nota (Primary) -->
-      <button onclick="window.print()" class="flex-[2] py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold font-outfit shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 active:scale-95 transition">
-        <i data-lucide="printer" class="w-4 h-4"></i>
-        <span>Cetak Nota</span>
+      <div class="space-y-2 text-xs">
+        <div class="flex justify-between text-slate-400">
+          <span>Total Sisa Hutang:</span>
+          <span id="modalDebtAmount" class="font-mono font-bold text-amber-400">Rp 0</span>
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400 block mb-1">Nominal Uang Diterima (Rp)</label>
+          <input id="modalPayInput" type="text" placeholder="Masukkan jumlah bayar..." class="w-full bg-[#080e1e] border border-emerald-500/50 rounded-xl px-3 py-2 text-sm text-emerald-400 font-bold font-mono focus:outline-none focus:border-emerald-500" />
+        </div>
+      </div>
+
+      <button onclick="submitDebtPayment()" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold font-outfit text-xs shadow-xl shadow-emerald-600/30 active:scale-95 transition">
+        Simpan Pembayaran Kas Masuk
       </button>
     </div>
   </div>
 
-  <!-- Inisialisasi Lucide Icons -->
+  <!-- ================= LOGIKA JAVASCRIPT ================= -->
   <script>
+    // Tab Navigation Switcher
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.className = "tab-btn py-2 rounded-xl text-slate-400 hover:text-white text-center transition";
+      });
+
+      btn.className = "tab-btn py-2 rounded-xl bg-blue-600 text-white shadow-sm text-center transition";
+    }
+
+    // Filter Periode Waktu
+    function changePeriod(btn, type) {
+      document.querySelectorAll('.period-btn').forEach(b => {
+        b.className = "period-btn px-3 py-1.5 rounded-xl bg-[#0f172e] text-slate-400 text-xs font-semibold font-outfit border border-slate-800 hover:border-slate-700 whitespace-nowrap transition";
+      });
+
+      btn.className = "period-btn px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold font-outfit border border-blue-500 shadow-sm whitespace-nowrap transition";
+      // Contoh aksi: filter laporan sesuai tanggal
+    }
+
+    // Modal Catat Cicilan Piutang
+    function openPaymentModal(mitraName, debtAmount) {
+      document.getElementById('modalMitraName').innerText = mitraName;
+      document.getElementById('modalDebtAmount').innerText = `Rp ${debtAmount}`;
+      document.getElementById('modalPayInput').value = debtAmount;
+      document.getElementById('paymentModal').classList.remove('hidden');
+    }
+
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.add('hidden');
+    }
+
+    function submitDebtPayment() {
+      alert("Pembayaran piutang berhasil dicatat! Kas bertambah dan sisa piutang mitra berkurang.");
+      closePaymentModal();
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
     });

@@ -54,6 +54,7 @@ export const transactionsService = {
       p_notes: input.notes || null,
       p_items: input.items,
       p_return_amount: input.return_amount || 0,
+      p_transaction_date: input.transaction_date || new Date().toISOString(),
     })
 
     if (error) throw error
