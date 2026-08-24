@@ -52,21 +52,21 @@
       <span class="mt-0.5 text-[10px] font-medium text-gray-500 dark:text-gray-300">Transaksi</span>
     </router-link>
 
-    <!-- Stok -->
+    <!-- Laporan -->
     <router-link
-      to="/stock"
+      to="/reports/sales"
       class="nav-btn flex flex-1 flex-col items-center justify-center py-1 transition-colors"
-      :class="isActive('/stock') ? 'font-semibold text-blue-500' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'"
+      :class="isActive('/reports') ? 'font-semibold text-blue-500' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'"
     >
       <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
           stroke-width="2"
-          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
         />
       </svg>
-      <span class="mt-1 text-[10px]">Stok</span>
+      <span class="mt-1 text-[10px]">Laporan</span>
     </router-link>
 
     <!-- Pengaturan -->
@@ -108,7 +108,7 @@ const isActive = (path: string) => {
 }
 
 const hasActiveMenu = computed(() => {
-  const menuPaths = ['/', '/customer-invoices', '/stock', '/settings', '/transactions/add-from-home']
+  const menuPaths = ['/', '/customer-invoices', '/reports', '/settings', '/transactions/add-from-home']
   return menuPaths.some(path => isActive(path))
 })
 </script>

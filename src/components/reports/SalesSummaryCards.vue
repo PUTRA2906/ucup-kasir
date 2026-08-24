@@ -376,6 +376,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const financialHidden = ref(localStorage.getItem('report_financial_hidden') === 'true')
+const activeInfoTooltip = ref<string | null>(null)
 
 const toggleFinancialVisibility = () => {
   financialHidden.value = !financialHidden.value

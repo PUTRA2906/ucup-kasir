@@ -25,7 +25,7 @@
         </button>
       </div>
 
-      <template v-else-if="detail">
+      <template v-else-if="detail && tx">
         <!-- Header -->
         <div class="flex items-center gap-3">
           <button
@@ -49,7 +49,7 @@
               'rounded-full px-2.5 py-1 text-[10px] font-bold',
               tx.payment_status === 'lunas'
                 ? 'bg-success-100 text-success-700 dark:bg-success-900 dark:text-success-400'
-                : 'bg-warning-100 text-warning-700 dark:bg-warning-900 dark:text-warning-400'
+                : 'bg-warning-100 text-warning-700 dark:bg-warning-900 dark:bg-warning-400'
             ]"
           >
             {{ tx.payment_status === 'lunas' ? 'LUNAS' : 'TEMPO' }}
@@ -61,7 +61,7 @@
           <p class="text-[10px] font-medium text-gray-500 dark:text-gray-400">Total Laba Kotor Transaksi</p>
           <p class="mt-1 text-2xl font-black text-gray-900 dark:text-white">{{ formatCurrency(tx.transaction_profit) }}</p>
           <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
-            Penjualan {{ formatCurrency(tx.total) }} • HPP {{ formatCurrency(tx.transaction_cogs) }} • Margin {{ tx.profit_margin.toFixed(1) }}%
+            Penjualan {{ formatCurrency(tx.total || 0) }} • HPP {{ formatCurrency(tx.transaction_cogs) }} • Margin {{ tx.profit_margin.toFixed(1) }}%
           </p>
         </div>
 
@@ -181,9 +181,9 @@
               <span class="text-gray-500 dark:text-gray-400">Diskon</span>
               <span class="font-medium text-error-600 dark:text-error-400">-{{ formatCurrency(tx.discount) }}</span>
             </div>
-            <div v-if="tx.return_amount > 0" class="flex justify-between">
+            <div v-if="(tx.return_amount || 0) > 0" class="flex justify-between">
               <span class="text-gray-500 dark:text-gray-400">Retur</span>
-              <span class="font-medium text-error-600 dark:text-error-400">-{{ formatCurrency(tx.return_amount) }}</span>
+              <span class="font-medium text-error-600 dark:text-error-400">-{{ formatCurrency(tx.return_amount || 0) }}</span>
             </div>
             <div class="flex justify-between border-t border-gray-100 pt-1.5 dark:border-gray-800">
               <span class="text-gray-500 dark:text-gray-400">HPP (Modal)</span>

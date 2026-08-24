@@ -79,7 +79,7 @@
       </div>
 
       <!-- Daftar Transaksi -->
-      <div v-if="loading" class="flex items-center justify-center py-12">
+      <div v-if="store.loading" class="flex items-center justify-center py-12">
         <div class="text-center">
           <svg class="mx-auto h-10 w-10 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -89,8 +89,8 @@
         </div>
       </div>
 
-      <div v-else-if="error" class="rounded-2xl border border-error-200 bg-error-50 p-6 text-center dark:border-error-500/30 dark:bg-error-500/10">
-        <p class="text-xs font-medium text-error-700 dark:text-error-400">{{ error }}</p>
+      <div v-else-if="store.error" class="rounded-2xl border border-error-200 bg-error-50 p-6 text-center dark:border-error-500/30 dark:bg-error-500/10">
+        <p class="text-xs font-medium text-error-700 dark:text-error-400">{{ store.error }}</p>
         <button
           @click="store.fetchReport()"
           class="mt-3 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-[11px] font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
@@ -236,7 +236,7 @@
                   <button
                     v-for="opt in statusOptions"
                     :key="opt.value"
-                    @click="tempStatus = opt.value"
+                    @click="tempStatus = opt.value as 'lunas' | 'belum_lunas' | 'all'"
                     :class="[
                       'rounded-lg border px-2 py-2 text-xs font-medium transition',
                       tempStatus === opt.value
@@ -353,6 +353,16 @@ const applyFilter = () => {
 }
 
 onMounted(() => {
+  // Set default periode ke bulan ini
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+  const today = now.toISOString().split('T')[0]
+
+  store.setDateRange(startOfMonth, today)
+  tempStart.value = startOfMonth
+  tempEnd.value = today
+  activePreset.value = 'thisMonth'
+
   store.fetchReport()
 })
 </script>

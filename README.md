@@ -1,234 +1,181 @@
-# TailAdmin Vue - Free Vue.js Tailwind CSS Admin Dashboard Template
+# Ucup Kasir 🧾
 
-TailAdmin Vue is a free, open-source admin dashboard template **built on Vue.js**, popular and progressive JavaScript
-framework, and **Tailwind CSS**. This **powerful combination** provides developers with an extensive library of
-essential components, elements, and pages to launch a comprehensive and data-centric back-end, dashboard, or admin panel
-solution for any Vue.js based web projects.
+Aplikasi kasir (point of sale) berbasis web dan Android untuk mengelola penjualan, stok, pelanggan, dan pembayaran hutang (kredit) toko kelontong. Dibangun dengan **Vue 3**, **TypeScript**, **Tailwind CSS**, dan **Supabase** sebagai backend, serta dikemas sebagai aplikasi Android native melalui **Capacitor**.
 
-![TailAdmin Vue.js Dashboard Preview](./banner.png)
+Aplikasi ini dirancang untuk kebutuhan toko kelontong skala kecil-menengah — mendukung penjualan tunai & kredit, pelacakan piutang per pelanggan per kecamatan, retur, mutasi stok, dan pencetakan invoice PDF.
 
-With TailAdmin Vue, you can leverage **Vue.js 3** features such as declarative rendering, component-based architecture,
-Vue Router for routing, and Pinia for state management. It also utilizes the power of Tailwind CSS for rapid UI
-development with its low-level utility classes and responsive design capabilities.
+## ✨ Fitur Utama
 
-## Overview
+- **Dashboard** — ringkasan penjualan, grafik, dan statistik cepat.
+- **Manajemen Produk** — CRUD produk, kategori, SKU/barcode, harga beli & jual, gambar, stok minimum, dan status aktif.
+- **Manajemen Stok** — stok gudang, detail stok, riwayat mutasi stok, penyesuaian stok (adjustment), dan stock opname.
+- **Transaksi Penjualan** — penjualan tunai/kredit dengan validasi stok otomatis, potongan harga, biaya kirim, pembayaran DP/cicilan (utang pelanggan), dan riwayat pembayaran.
+- **Invoice & Piutang** — tagihan per pelanggan, dikelompokkan per **kecamatan** (khusus Kabupaten Banyuwangi), status lunas/belum lunas, dan cetak invoice.
+- **Retur** — pengembalian produk beserta perhitungan refund dan pengembalian stok.
+- **Pelanggan** — CRUD pelanggan dengan informasi toko, kontak, dan kecamatan.
+- **Laporan** — laporan penjualan, laba rugi, dan laba per transaksi.
+- **Laporan Laba Rugi** — rekap laba/rugi berdasarkan periode.
+- **Notifikasi** — peringatan stok menipis dan aktivitas transaksi.
+- **Pengaturan Toko** — nama toko, alamat, kontak, pajak, dan footer struk untuk invoice.
+- **Multi-user** — setiap user hanya melihat datanya sendiri (berbasis autentikasi Supabase).
 
-TailAdmin provides essential UI components and layouts for building feature-rich, data-driven admin dashboards and control panels. It's built on:
+## 🛠️ Teknologi
 
-- Vue 3.x (Vite)
-- Tailwind CSS 4.x
-- TypeScript
+| Teknologi | Fungsi |
+|-----------|--------|
+| [Vue 3](https://vuejs.org/) (Composition API) | Framework UI |
+| [TypeScript](https://www.typescriptlang.org/) | Bahasa pengembangan |
+| [Vite](https://vite.dev/) | Build tool & dev server |
+| [Tailwind CSS 4](https://tailwindcss.com/) | Styling |
+| [Pinia](https://pinia.vuejs.org/) | State management |
+| [Vue Router 4](https://router.vuejs.org/) | Routing & auth guard |
+| [Supabase](https://supabase.com/) | Backend: auth, database (PostgreSQL), RLS, realtime |
+| [Capacitor](https://capacitorjs.com/) | Pembungkus aplikasi Android native |
+| [ApexCharts](https://apexcharts.com/) | Visualisasi data / grafik |
+| [jsPDF](https://github.com/parallax/jsPDF) | Ekspor & cetak PDF |
+| [FullCalendar](https://fullcalendar.io/) | Kalender |
+| [Flatpickr](https://flatpickr.js.org/) | Picker tanggal |
+| [Swiper](https://swiperjs.com/) | Slider / carousel |
 
-### Quick Links
+## 📁 Struktur Project
 
-- [✨ Visit Website](https://tailadmin.com)
-- [📄 Documentation](https://tailadmin.com/docs)
-- [⬇️ Download](https://tailadmin.com/download)
-- [🖌️ Figma Design File (Community Edition)](https://www.figma.com/community/file/1463141366275764364)
-- [⚡ Get PRO Version](https://tailadmin.com/pricing)
-
-### Demos
-
-- [Free Version](https://free-vue-demo.tailadmin.com/)
-- [Pro Version](https://vue-demo.tailadmin.com)
-
-### Other Versions
-
-- [HTML Version](https://github.com/TailAdmin/tailadmin-free-tailwind-dashboard-template)
-- [Next.js Version](https://github.com/TailAdmin/free-nextjs-admin-dashboard)
-- [React Version](https://github.com/TailAdmin/free-react-tailwind-admin-dashboard)
-- [Angular Version](https://github.com/TailAdmin/free-angular-tailwind-dashboard)
-
-## Installation
-
-### Prerequisites
-
-To get started with TailAdmin, ensure you have the following prerequisites installed and set up:
-
-- Node.js 18.x or later (recommended to use Node.js 20.x or later)
-- Recommended IDE Setup: [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-#### Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-### Cloning the Repository
-
-Clone the repository using the following command:
-
-```bash
-git clone https://github.com/TailAdmin/vue-tailwind-admin-dashboard.git
+```
+ucup-kasir/
+├── android/                  # Project Android (Capacitor) — APK release
+├── public/                   # Aset statis (favicon, gambar, _redirects)
+├── src/
+│   ├── assets/               # CSS global & aset
+│   ├── components/           # Komponen UI (layout, charts, tables, dll)
+│   ├── composables/          # useCsv, useDataTable, usePdfExport, useSidebar, useToast
+│   ├── constants/            # Konstanta (mis. daftar kecamatan Banyuwangi)
+│   ├── icons/                # Ikon (lucide-vue-next)
+│   ├── lib/                  # Inisialisasi client Supabase
+│   ├── router/               # Definisi route + guard autentikasi
+│   ├── services/             # Lapisan akses data (products, transactions, dll)
+│   ├── stores/               # Pinia stores (auth, products, transactions, dll)
+│   ├── types/                # Tipe TypeScript (database.ts, dll)
+│   └── views/                # Halaman aplikasi
+│       ├── Auth/             # Signin & Signup
+│       ├── Categories/       # Kelola kategori produk
+│       ├── Customers/        # Kelola pelanggan
+│       ├── Invoices/         # Invoice per pelanggan & cetak
+│       ├── Products/         # Kelola produk
+│       ├── Reports/          # Laporan penjualan & laba rugi
+│       ├── Returns/          # Daftar retur
+│       ├── Settings/         # Pengaturan toko
+│       ├── Stock/            # Manajemen & mutasi stok
+│       └── Transactions/     # Transaksi & invoice
+├── supabase/
+│   └── migrations/           # Migrasi database (tabel, RLS, fungsi SQL)
+├── capacitor.config.ts       # Konfigurasi Capacitor
+├── generate-keystore.sh      # Script pembuatan keystore Android
+├── get-keystore-base64.sh    # Script untuk GitHub Secret
+└── vite.config.ts            # Konfigurasi Vite (alias @)
 ```
 
-> Windows Users: place the repository near the root of your drive if you face issues while cloning.
+## 🚀 Menjalankan di Lokal
 
-1. Install dependencies:
+### Prasyarat
+
+- Node.js 18+ (disarankan 20+)
+- Akun [Supabase](https://supabase.com/) (proyek database + auth)
+
+### Langkah
+
+1. **Install dependencies**
 
    ```bash
    npm install
-   # or
-   yarn install
    ```
 
-2. Start the development server:
+2. **Konfigurasi environment**
+
+   Salin `.env.example` menjadi `.env` lalu isi kredensial Supabase:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+3. **Jalankan migrasi database**
+
+   Terapkan migrasi di folder [`supabase/migrations`](./supabase/migrations) melalui Supabase Dashboard → SQL Editor (jalankan berurutan). Migrasi ini membuat tabel produk, kategori, pelanggan, transaksi, retur, pengaturan toko, notifikasi, serta fungsi SQL (`create_transaction`, `add_transaction_payment`, dll.) dengan Row Level Security per-user.
+
+4. **Jalankan development server**
 
    ```bash
    npm run dev
-   # or
-   yarn dev
    ```
 
-3. Production build:
-   ```bash
-   npm run build
-   # or
-   yarn build
-   ```
+   Buka `http://localhost:5173`.
 
-## Feature Comparison
+### Script NPM
 
-### Free Version
+| Perintah | Deskripsi |
+|----------|-----------|
+| `npm run dev` | Menjalankan dev server Vite |
+| `npm run build` | Type-check lalu build produksi |
+| `npm run build-only` | Build produksi (tanpa type-check) |
+| `npm run preview` | Preview hasil build |
+| `npm run type-check` | Cek tipe dengan vue-tsc |
+| `npm run lint` | Lint & auto-fix dengan ESLint |
+| `npm run format` | Format kode dengan Prettier |
 
-- 1 Unique Dashboard
-- 50+ Dashboard UI components
-- Basic Figma design files
-- Community support
+## 📱 Build Aplikasi Android
 
-### Pro Version
+Aplikasi dikemas sebagai Android native dengan Capacitor.
 
-- 7 Unique Dashboards: Analytics, Ecommerce, Marketing, CRM, Stocks (more coming soon)
-- 500+ dashboard components and UI elements
-- Complete Figma design file
-- Email support
+```bash
+# 1. Build web assets
+npm run build
 
-To learn more about pro version features and pricing, visit our [pricing page](https://tailadmin.com/pricing).
+# 2. Sinkronkan ke project Android
+npx cap sync
 
-## Components
+# 3. Build APK release
+cd android && ./gradlew assembleRelease
+```
 
-TailAdmin is a pre-designed starting point for building a web-based dashboard using Vue.js and Tailwind CSS. The template includes:
+### Keystore & Signing
 
-- Sophisticated and accessible sidebar
-- Data visualization components
-- Prebuilt profile management and 404 page
-- Tables and Charts(Line and Bar)
-- Authentication forms and input elements
-- Alerts, Dropdowns, Modals, Buttons and more
-- Can't forget Dark Mode 🕶️
+Sebelum build release, siapkan keystore untuk menandatangani APK:
 
-All components are built with Vue and styled using Tailwind CSS for easy customization.
+```bash
+# Generate keystore (pertama kali)
+bash generate-keystore.sh
 
-## Features
+# Ambil base64 keystore (untuk GitHub Actions Secret)
+bash get-keystore-base64.sh
+```
 
-**💎 High-quality, Premium Modern Design:**
-A thoughtfully designed dashboard template with a deep focus on UX/UI, already trusted and utilized by over 10K+ web apps worldwide.
+> ⚠️ **PENTING:** Simpan file keystore dan password dengan aman. Jika keystore hilang, aplikasi yang sudah terpasang **tidak bisa di-update**. Jangan commit keystore dan `keystore.properties` ke git.
 
-**✨ Vue 3:**
-Get enhanced performance with the latest Vue version.
+## 🔐 Keamanan & Multi-user
 
-**⚡ Vite Build System:**
-Enjoy quick development with Vite, ensuring fast code compilation.
+- Setiap user mendaftar/login melalui **Supabase Auth** (email & password).
+- Semua tabel menerapkan **Row Level Security (RLS)** sehingga user hanya bisa mengakses data miliknya sendiri (`auth.uid() = user_id`).
+- Operasi transaksi (buat transaksi, pembayaran cicilan, hapus transaksi, retur) dilakukan lewat **fungsi SQL** (`SECURITY DEFINER`) agar atomik dan aman.
+- Data sensitif (keystore, kredensial) tidak di-commit ke git — lihat `.gitignore`.
 
-**🔀 Vue Router:**
-Manage app navigation with ease using Vue Router for seamless transitions.
+## 📦 Deploy Web
 
-**💡 Reactive Utilities:**
-Enhance component reactivity with @vueuse/core utilities.
+Aplikasi web bisa di-deploy ke layanan static hosting (Vercel, Netlify, GitHub Pages, dll).
 
-**📊 Charting with ApexCharts:**
-Visualize data with ApexCharts for beautiful analytics.
+- Build: `npm run build` (output di folder `dist/`)
+- File `public/_redirects` sudah tersedia untuk Netlify (SPA fallback).
 
-**🗺️ Vector Maps with JSVectorMap:**
-Easily integrate interactive vector maps with JSVectorMap.
+## 🤝 Kontribusi
 
-**🖌️ UI with Tailwind CSS:**
-Frontend UI built on the powerful and versatile Tailwind CSS framework.
+1. Fork repository
+2. Buat branch fitur (`git checkout -b fitur-baru`)
+3. Commit perubahan (`git commit -m 'feat: tambah fitur baru'`)
+4. Push branch (`git push origin fitur-baru`)
+5. Buka Pull Request
 
-**💫 TypeScript Support:**
-Write safer, maintainable code with TailAdmin Vue's TypeScript Support.
+## 📄 Lisensi
 
-**✅ Linting and Formatting:**
-Maintain a clean codebase with built-in linting and formatting.
-
-**🗃️ State Management with Pinia:**
-Handle your app's state with Pinia for clean, organized code.
-
-## Update Logs
-
-### Version 2.3.0 - [April 28, 2026]
-- Added **AI Dashboard** with token usage and revenue tracking.
-- Added **Sales Dashboard** with retention and multi-channel analytics.
-- Added **Finance Dashboard** with cashflow and balance management.
-- Introduced **6 New Layout variations** for improved UI flexibility.
-- Integrated **Advanced Data Visualization** with 7+ new chart types.
-
-### Version 2.0.2 - [December 30, 2025]
-
-#### Enhancements
-
-- Added date range picker to Statistics Chart component.
-- Improved responsive design for chart header.
-
-### Version 2.0.1 - [February 27, 2025]
-
-#### Update Overview
-
-- Upgraded to Tailwind CSS v4 for better performance and efficiency.
-- Updated class usage to match the latest syntax and features.
-- Replaced deprecated class and optimized styles.
-
-#### Next Steps
-
-- Run npm install or yarn install to update dependencies.
-- Check for any style changes or compatibility issues.
-- Refer to the Tailwind CSS v4 [Migration Guide](https://tailwindcss.com/docs/upgrade-guide) on this release. if needed.
-- This update keeps the project up to date with the latest Tailwind improvements. 🚀
-
-### Version 2.0.0 - [February 2025]
-
-Major update with Vue 3 migration and comprehensive redesign.
-
-#### Major Improvements
-
-- Complete migration to Vue 3 Composition API
-- Updated to Vue Router 4
-- Enhanced user interface with new Vue 3 components
-- Improved performance with Vue 3's virtual DOM
-- Better accessibility and responsive design
-
-#### New Features
-
-- Redesigned dashboards (Ecommerce, Analytics, Marketing, CRM)
-- Collapsible sidebar with Vue 3 integration
-- Enhanced navigation with Vue Router 4
-- Real-time chat functionality
-- Full-featured calendar with drag-and-drop
-- Advanced table components
-- Updated data visualization with ApexCharts
-
-#### Breaking Changes
-
-- Requires Vue 3 and Vue Router 4
-- Chart components migrated to ApexCharts for Vue 3
-- Modified routing implementation
-- Updated component APIs for Vue 3 compatibility
-
-[Read more](https://tailadmin.com/docs/update-logs/vue) on this release.
-
-### Version 1.0.2 - [June 19, 2024]
-
-#### Issues
-
-- Fix Mobile Menu Hamburger Icon issue.
-
-### Version 1.0.1 - [Feb 08, 2024]
-
-#### Enhancements
-
-- Make it functional [Multiselect Dropdown/Form Elements].
-- Delete SelectGroup Components then create a SelectGroup folder and create two files under this
-  folder SelectGroupOne.vue SelectGroupTwo.vue [Select Group/Form Elements & Layout].
-- Update style.css file.
-
-### Version 1.0.0 - Initial Release - [Jan 22, 2024]
-
-- Initial release of TailAdmin Vue.
+Project ini dikembangkan khusus untuk **Ucup Kasir**. UI dasar bersumber dari template [TailAdmin Vue](https://github.com/TailAdmin/vue-tailwind-admin-dashboard).
