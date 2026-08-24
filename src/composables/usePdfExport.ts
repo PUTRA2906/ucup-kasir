@@ -277,7 +277,7 @@ export function usePdfExport() {
     yPos += 10
 
     // Payment History
-    ensureSpace(20)
+    ensureSpace(25)
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(8)
     doc.text('RIWAYAT PEMBAYARAN', labelX, yPos)
@@ -286,12 +286,15 @@ export function usePdfExport() {
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(9)
 
-    if (invoice.payments.length === 0) {
+    // Pastikan payments adalah array
+    const payments = Array.isArray(invoice.payments) ? invoice.payments : []
+
+    if (payments.length === 0) {
       doc.text('Belum ada pembayaran', labelX, yPos)
       yPos += 7
     } else {
-      invoice.payments.forEach((payment, idx) => {
-        ensureSpace(12)
+      payments.forEach((payment, idx) => {
+        ensureSpace(15)
         const label = `${formatPaymentMethod(payment.payment_method)}${idx === 0 ? ' (DP)' : ''}`
         doc.text(label, labelX, yPos)
         doc.text(`- ${formatPrice(payment.amount)}`, valueX, yPos, { align: 'right' })
@@ -299,7 +302,7 @@ export function usePdfExport() {
         doc.setFontSize(7)
         doc.setTextColor(100, 100, 100)
         doc.text(formatDate(payment.created_at), labelX, yPos)
-        yPos += 5
+        yPos += 6
         doc.setFontSize(9)
         doc.setTextColor(0, 0, 0)
       })

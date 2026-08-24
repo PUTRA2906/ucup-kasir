@@ -9,6 +9,34 @@ import type {
 } from '@/services/salesReportEnhanced'
 
 export const useSalesReportEnhancedStore = defineStore('salesReportEnhanced', () => {
+  // Load saved period from localStorage
+  const loadSavedPeriod = () => {
+    try {
+      const saved = localStorage.getItem('transaction_profit_period')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        const now = new Date()
+        const today = now.toISOString().split('T')[0]
+        // Default to bulan ini jika tidak ada saved period
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+
+        return {
+          start: parsed.start || firstDay,
+          end: parsed.end || today,
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load saved period:', e)
+    }
+    // Default: bulan ini
+    const now = new Date()
+    const today = now.toISOString().split('T')[0]
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+    return { start: firstDay, end: today }
+  }
+
+  const savedPeriod = loadSavedPeriod()
+
   const summary = ref<EnhancedSalesSummary>({
     gross_sales: 0,
     total_discount: 0,
@@ -42,11 +70,22 @@ export const useSalesReportEnhancedStore = defineStore('salesReportEnhanced', ()
 
   // Filter state
   const dateRange = ref({
-    start: new Date().toISOString().split('T')[0],
-    end: new Date().toISOString().split('T')[0],
+    start: savedPeriod.start,
+    end: savedPeriod.end,
   })
   const paymentStatusFilter = ref<'lunas' | 'belum_lunas' | 'all'>('all')
   const selectedCustomerIds = ref<string[]>([])
+
+  function savePeriod() {
+    try {
+      localStorage.setItem('transaction_profit_period', JSON.stringify({
+        start: dateRange.value.start,
+        end: dateRange.value.end,
+      }))
+    } catch (e) {
+      console.error('Failed to save period:', e)
+    }
+  }
 
   async function fetchReport() {
     loading.value = true
@@ -74,6 +113,7 @@ export const useSalesReportEnhancedStore = defineStore('salesReportEnhanced', ()
 
   function setDateRange(start: string, end: string) {
     dateRange.value = { start, end }
+    savePeriod()
   }
 
   function setPaymentStatusFilter(status: 'lunas' | 'belum_lunas' | 'all') {
@@ -85,10 +125,13 @@ export const useSalesReportEnhancedStore = defineStore('salesReportEnhanced', ()
   }
 
   function resetFilters() {
-    const today = new Date().toISOString().split('T')[0]
-    dateRange.value = { start: today, end: today }
+    const now = new Date()
+    const today = now.toISOString().split('T')[0]
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+    dateRange.value = { start: firstDay, end: today }
     paymentStatusFilter.value = 'all'
     selectedCustomerIds.value = []
+    savePeriod()
   }
 
   return {

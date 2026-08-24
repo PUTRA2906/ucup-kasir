@@ -318,7 +318,10 @@ const fetchReport = async () => {
 }
 
 onMounted(() => {
-  reportStore.applyPreset('today')
+  // Load saved preset if exists
+  if (reportStore.savedPeriod.preset) {
+    activePreset.value = reportStore.savedPeriod.preset
+  }
   fetchReport()
 })
 </script>

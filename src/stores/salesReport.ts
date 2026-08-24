@@ -15,9 +15,33 @@ export const useSalesReportStore = defineStore('salesReport', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
+  // Load saved period from localStorage
+  const loadSavedPeriod = () => {
+    try {
+      const saved = localStorage.getItem('sales_report_period')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        return {
+          startDate: parsed.startDate || getTodayStart(),
+          endDate: parsed.endDate || getTodayEnd(),
+          preset: parsed.preset || ''
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load saved period:', e)
+    }
+    return {
+      startDate: getTodayStart(),
+      endDate: getTodayEnd(),
+      preset: ''
+    }
+  }
+
+  const savedPeriod = loadSavedPeriod()
+
   // Date range
-  const startDate = ref<string>(getTodayStart())
-  const endDate = ref<string>(getTodayEnd())
+  const startDate = ref<string>(savedPeriod.startDate)
+  const endDate = ref<string>(savedPeriod.endDate)
   const selectedCategoryId = ref<string | undefined>(undefined)
   const paymentStatusFilter = ref<'lunas' | 'belum_lunas' | 'all'>('all')
 
@@ -115,6 +139,21 @@ export const useSalesReportStore = defineStore('salesReport', () => {
         break
       }
     }
+
+    // Save to localStorage
+    savePeriod(preset)
+  }
+
+  function savePeriod(preset: string = '') {
+    try {
+      localStorage.setItem('sales_report_period', JSON.stringify({
+        startDate: startDate.value,
+        endDate: endDate.value,
+        preset: preset
+      }))
+    } catch (e) {
+      console.error('Failed to save period:', e)
+    }
   }
 
   async function fetchSalesReport() {
@@ -150,6 +189,12 @@ export const useSalesReportStore = defineStore('salesReport', () => {
     paymentStatusFilter.value = status
   }
 
+  function setDateRange(start: string, end: string) {
+    startDate.value = start
+    endDate.value = end
+    savePeriod()
+  }
+
   return {
     loading,
     error,
@@ -168,5 +213,7 @@ export const useSalesReportStore = defineStore('salesReport', () => {
     applyPreset,
     setCategoryFilter,
     setPaymentStatusFilter,
+    setDateRange,
+    savedPeriod,
   }
 })
