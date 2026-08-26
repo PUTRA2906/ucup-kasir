@@ -77,7 +77,8 @@ export async function initSQLite(): Promise<void> {
 
       // Aktifkan foreign key constraint (dibutuhkan untuk ON DELETE CASCADE).
       // SQLite default-nya OFF — tanpa ini cascade tidak berjalan.
-      await conn.execute('PRAGMA foreign_keys = ON')
+      // transaction=false: PRAGMA foreign_keys tidak efektif dalam transaksi aktif.
+      await conn.execute('PRAGMA foreign_keys = ON', false)
 
       // SELALU jalankan initSchema() — semua statement memakai CREATE TABLE IF NOT EXISTS,
       // sehingga idempotent & aman untuk database yang sudah ada.
@@ -121,7 +122,10 @@ async function initSchema(): Promise<void> {
   //      transaksi — satu kegagalan = seluruh batch ROLLBACK = tidak ada tabel.
   for (const statement of statements) {
     try {
-      await db.execute(statement)
+      // parameter transaction=false: db.execute default membungkus statement
+      // dalam BEGIN...COMMIT sendiri. Menjalankan banyak statement berurutan
+      // dengan auto-transaction akan memicu "Already in transaction".
+      await db.execute(statement, false)
     } catch (e) {
       // Abaikan error per-statement (IF NOT EXISTS) agar tabel lain tetap dibuat.
       console.warn('SQLite init: skip statement:', (e as Error).message)
@@ -144,7 +148,8 @@ async function migrateSchema(): Promise<void> {
   } catch (e) {
     // Tabel sync_metadata belum ada (database lama) — buat dulu
     await db.execute(
-      'CREATE TABLE IF NOT EXISTS sync_metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)'
+      'CREATE TABLE IF NOT EXISTS sync_metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)',
+      false
     )
     await setMetadata('schema_version', SCHEMA_VERSION.toString())
   }
@@ -315,11 +320,13 @@ export function isWebPlatform(): boolean {
  */
 export async function disableForeignKeys(): Promise<void> {
   const conn = await getDb()
-  await conn.execute('PRAGMA foreign_keys = OFF')
+  // transaction=false: PRAGMA foreign_keys TIDAK efektif di dalam transaksi aktif,
+  // dan db.execute default membungkus statement dalam BEGIN...COMMIT.
+  await conn.execute('PRAGMA foreign_keys = OFF', false)
 }
 
 /** Nyalakan kembali foreign key constraints. */
 export async function enableForeignKeys(): Promise<void> {
   const conn = await getDb()
-  await conn.execute('PRAGMA foreign_keys = ON')
+  await conn.execute('PRAGMA foreign_keys = ON', false)
 }
