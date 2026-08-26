@@ -32,8 +32,21 @@ export interface QueryParams {
  */
 export async function initSQLite(): Promise<void> {
   if (initPromise) return initPromise
-  // Juga return cepat jika koneksi sudah terbuka (dipakai setelah reset promise)
-  if (db) return Promise.resolve()
+
+  // Koneksi sudah terbuka dari pemanggilan sebelumnya — jalankan ulang skema
+  // (CREATE TABLE IF NOT EXISTS → idempotent) agar tabel yang sempat gagal
+  // dibuat pada pemanggilan pertama tetap terbuat. Ini menyembuhkan kasus
+  // "no such table sync_queue" pada database lama / inisialisasi sebagian.
+  if (db) {
+    try {
+      await initSchema()
+      await migrateSchema()
+      return
+    } catch (e) {
+      console.error('Gagal menjalankan ulang skema SQLite:', e)
+      return
+    }
+  }
 
   initPromise = (async () => {
     try {
@@ -90,20 +103,30 @@ export async function initSQLite(): Promise<void> {
   return initPromise
 }
 
-/** Jalankan seluruh isi src/db/init.sql (hanya untuk database baru). */
+/** Jalankan seluruh isi src/db/init.sql (untuk database baru ATAU existing). */
 async function initSchema(): Promise<void> {
   if (!db) throw new Error('SQLite belum diinisialisasi')
 
   // Baca skema dari file init.sql
-  // Untuk Capacitor web, skema di-import sebagai raw string.
-  // Untuk native, kita embed via import dari file.
   const { initStatements } = await import('@/db/schema')
   const statements = splitStatements(initStatements)
 
-  await db.executeSet(
-    statements.map((statement) => ({ statement })),
-    true // transaction
-  )
+  // Eksekusi statement SATU PER SATU, TIDAK dibungkus satu transaksi besar.
+  // Alasan:
+  //   1. Semua statement memakai CREATE TABLE IF NOT EXISTS → idempotent,
+  //      statement yang sudah ada di database lama cukup di-skip.
+  //   2. Jika satu statement gagal (mis. CREATE INDEX kolom belum ada),
+  //      statement lain tetap jalan → tabel lain tetap terbuat.
+  //   3. executeSet + transaction:true membungkus SEMUA statement dalam satu
+  //      transaksi — satu kegagalan = seluruh batch ROLLBACK = tidak ada tabel.
+  for (const statement of statements) {
+    try {
+      await db.execute(statement)
+    } catch (e) {
+      // Abaikan error per-statement (IF NOT EXISTS) agar tabel lain tetap dibuat.
+      console.warn('SQLite init: skip statement:', (e as Error).message)
+    }
+  }
 }
 
 /** Cek versi schema di sync_metadata, jalankan migrasi jika perlu. */
@@ -132,7 +155,19 @@ function splitStatements(sql: string): string[] {
   return sql
     .split(';')
     .map((s) => s.trim())
-    .filter((s) => s.length > 0 && !s.startsWith('--'))
+    .filter((s) => {
+      // Buang statement kosong.
+      if (s.length === 0) return false
+      // Buang statement yang HANYA berisi komentar (-- ...).
+      // Jangan buang statement yang diawali komentar tapi masih berisi SQL
+      // (mis. "-- 2) Products\nCREATE TABLE ...") — komentar inline aman di SQLite.
+      const withoutComments = s
+        .split('\n')
+        .filter((line) => !line.trim().startsWith('--'))
+        .join('\n')
+        .trim()
+      return withoutComments.length > 0
+    })
 }
 
 /** Dapatkan koneksi database (pastikan sudah diinisialisasi). */
