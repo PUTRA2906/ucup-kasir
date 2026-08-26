@@ -32,6 +32,8 @@ export interface QueryParams {
  */
 export async function initSQLite(): Promise<void> {
   if (initPromise) return initPromise
+  // Juga return cepat jika koneksi sudah terbuka (dipakai setelah reset promise)
+  if (db) return Promise.resolve()
 
   initPromise = (async () => {
     try {
@@ -41,13 +43,21 @@ export async function initSQLite(): Promise<void> {
       // Cek apakah database sudah ada (untuk migrasi schema)
       const existing = await sqliteConn.isDatabase(DB_NAME)
 
-      const conn = await sqliteConn.createConnection(
-        DB_NAME,
-        false, // no encryption
-        'no-encryption',
-        SCHEMA_VERSION,
-        false // readonly
-      )
+      // Cek apakah koneksi sudah pernah dibuat — jika ya, ambil ulang,
+      // jangan create lagi (error "connection already exists").
+      const connResult = await sqliteConn.isConnection(DB_NAME, false)
+      let conn: SQLiteDBConnection
+      if (connResult.result) {
+        conn = await sqliteConn.retrieveConnection(DB_NAME, false)
+      } else {
+        conn = await sqliteConn.createConnection(
+          DB_NAME,
+          false, // no encryption
+          'no-encryption',
+          SCHEMA_VERSION,
+          false // readonly
+        )
+      }
       db = conn
 
       await conn.open()
