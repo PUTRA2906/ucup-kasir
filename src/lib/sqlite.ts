@@ -187,6 +187,7 @@ export async function getDb(): Promise<SQLiteDBConnection> {
 /** Jalankan query SELECT, return array rows. */
 export async function query<T = any>(sql: string, params: (string | number | boolean | null)[] = []): Promise<T[]> {
   const conn = await getDb()
+  // query() TIDAK membungkus transaksi — parameter ketiga adalah isSQL92, bukan transaction.
   const res = await conn.query(sql, params)
   return (res.values || []) as T[]
 }
@@ -200,7 +201,10 @@ export async function queryOne<T = any>(sql: string, params: (string | number | 
 /** Jalankan INSERT/UPDATE/DELETE, return last inserted id (jika ada). */
 export async function run(sql: string, params: (string | number | boolean | null)[] = []): Promise<{ changes: number; lastId?: number }> {
   const conn = await getDb()
-  const res = await conn.run(sql, params)
+  // transaction=false: plugin default-nya membungkus setiap run() dalam BEGIN...COMMIT
+  // sendiri. Memakai false membuat statement dieksekusi langsung tanpa transaksi —
+  // transaksi dikelola manual oleh helper transaction() di bawah.
+  const res = await conn.run(sql, params, false)
   return { changes: res.changes?.changes ?? 0, lastId: res.changes?.lastId }
 }
 
@@ -224,7 +228,10 @@ export async function transaction<T>(
         return (res.values || []) as T2[]
       },
       async run(sql: string, params: (string | number | boolean | null)[] = []) {
-        const res = await conn.run(sql, params)
+        // transaction=false PENTING: kita sudah di dalam transaksi manual
+        // (beginTransaction di atas). Plugin default membungkus setiap run()
+        // dalam BEGIN...COMMIT sendiri → "Already in transaction".
+        const res = await conn.run(sql, params, false)
         return { changes: res.changes?.changes ?? 0, lastId: res.changes?.lastId }
       },
     })
