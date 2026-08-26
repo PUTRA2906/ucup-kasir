@@ -70,7 +70,9 @@ jobs:
         print(f"Jumlah karakter base64 yang diterima: {len(raw)}")
         data = base64.b64decode(raw)
         print(f"Keystore berhasil didekripsi: {len(data)} bytes")
-        with open("android/ucup-kasir-release.keystore", "wb") as f:
+        # Ditulis ke android/app/ karena storeFile di keystore.properties
+        # di-resolve Gradle relatif terhadap direktori module :app
+        with open("android/app/ucup-kasir-release.keystore", "wb") as f:
             f.write(data)
         PY
         cat > android/keystore.properties <<EOF
