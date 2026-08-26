@@ -192,7 +192,11 @@ export const useStockStore = defineStore('stock', () => {
 
       // Update local state
       movements.value.unshift({
-        id, product_id: movement.product_id, ...movement, created_at: now, created_by: userId,
+        ...movement,
+        id,
+        product_id: movement.product_id,
+        created_at: now,
+        created_by: userId,
       })
     } catch (e: any) {
       console.error('Error recording stock movement:', e)

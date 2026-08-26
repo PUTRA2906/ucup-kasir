@@ -500,7 +500,7 @@ export const sqliteSalesReportService = {
   // Internal helpers
   // ============================================================
 
-  private mapTransaction(r: any): Transaction {
+  mapTransaction(r: any): Transaction {
     return {
       id: r.id,
       user_id: r.user_id,
@@ -524,7 +524,7 @@ export const sqliteSalesReportService = {
     }
   },
 
-  private mapPayment(r: any): TransactionPayment {
+  mapPayment(r: any): TransactionPayment {
     return {
       id: r.id,
       user_id: r.user_id,

@@ -145,7 +145,7 @@ export const sqliteNotificationsService = {
     })
   },
 
-  private mapRow(r: any): SqliteNotification {
+  mapRow(r: any): SqliteNotification {
     let data: any
     if (r.data) {
       try { data = JSON.parse(r.data) } catch { data = r.data }

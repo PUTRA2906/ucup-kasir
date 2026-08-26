@@ -480,7 +480,7 @@ export const sqliteStockService = {
   // Internal helpers
   // ============================================================
 
-  private mapMovement(r: any): StockMovement {
+  mapMovement(r: any): StockMovement {
     const product = r.product_id
       ? { id: r.product_id, name: r.product_name, sku: r.product_sku, price_sell: 0, stock: 0 }
       : undefined
@@ -501,7 +501,7 @@ export const sqliteStockService = {
     }
   },
 
-  private mapAdjustment(r: any): StockAdjustment {
+  mapAdjustment(r: any): StockAdjustment {
     const product = r.product_id
       ? { id: r.product_id, name: r.product_name, sku: r.product_sku, price_sell: 0, stock: 0 }
       : undefined
@@ -521,7 +521,7 @@ export const sqliteStockService = {
     }
   },
 
-  private mapOpname(r: any): StockOpname {
+  mapOpname(r: any): StockOpname {
     return {
       id: r.id,
       user_id: r.user_id,
@@ -535,7 +535,7 @@ export const sqliteStockService = {
     }
   },
 
-  private mapOpnameItem(r: any): StockOpnameItem {
+  mapOpnameItem(r: any): StockOpnameItem {
     const product = r.product_id
       ? { id: r.product_id, name: r.product_name, sku: r.product_sku, price_sell: 0, stock: 0 }
       : undefined
@@ -553,7 +553,7 @@ export const sqliteStockService = {
     }
   },
 
-  private mapAlert(r: any): StockAlert {
+  mapAlert(r: any): StockAlert {
     const product = r.product_id
       ? { id: r.product_id, name: r.product_name, sku: r.product_sku, price_sell: 0, stock: 0 }
       : undefined

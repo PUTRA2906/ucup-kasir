@@ -84,7 +84,10 @@ async function initSchema(): Promise<void> {
   const { initStatements } = await import('@/db/schema')
   const statements = splitStatements(initStatements)
 
-  await db.executeSet({ set: statements.map((statement) => ({ statement })) })
+  await db.executeSet(
+    statements.map((statement) => ({ statement })),
+    true // transaction
+  )
 }
 
 /** Cek versi schema di sync_metadata, jalankan migrasi jika perlu. */
@@ -97,7 +100,6 @@ async function migrateSchema(): Promise<void> {
 
     if (currentVersion < SCHEMA_VERSION) {
       // Jalankan migrasi bertahap sesuai kebutuhan
-      await db.setVersion(SCHEMA_VERSION.toString())
       await setMetadata('schema_version', SCHEMA_VERSION.toString())
     }
   } catch (e) {
@@ -105,7 +107,6 @@ async function migrateSchema(): Promise<void> {
     await db.execute(
       'CREATE TABLE IF NOT EXISTS sync_metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)'
     )
-    await db.setVersion(SCHEMA_VERSION.toString())
     await setMetadata('schema_version', SCHEMA_VERSION.toString())
   }
 }
@@ -144,7 +145,7 @@ export async function queryOne<T = any>(sql: string, params: (string | number | 
 export async function run(sql: string, params: (string | number | boolean | null)[] = []): Promise<{ changes: number; lastId?: number }> {
   const conn = await getDb()
   const res = await conn.run(sql, params)
-  return { changes: res.changes ?? 0, lastId: res.lastId }
+  return { changes: res.changes?.changes ?? 0, lastId: res.changes?.lastId }
 }
 
 /**
@@ -168,7 +169,7 @@ export async function transaction<T>(
       },
       async run(sql: string, params: (string | number | boolean | null)[] = []) {
         const res = await conn.run(sql, params)
-        return { changes: res.changes ?? 0, lastId: res.lastId }
+        return { changes: res.changes?.changes ?? 0, lastId: res.changes?.lastId }
       },
     })
 

@@ -208,7 +208,7 @@ export const sqliteCustomersService = {
     })
   },
 
-  private mapRow(r: any): Customer {
+  mapRow(r: any): Customer {
     return {
       id: r.id,
       user_id: r.user_id,

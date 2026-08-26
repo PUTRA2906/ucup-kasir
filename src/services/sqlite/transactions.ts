@@ -497,7 +497,7 @@ export const sqliteTransactionsService = {
   // ============================================================
 
   /** Replikasi trigger create_low_stock_notification. */
-  private async insertLowStockNotification(
+  async insertLowStockNotification(
     tx: any,
     productId: string,
     productName: string,
@@ -519,7 +519,7 @@ export const sqliteTransactionsService = {
     )
   },
 
-  private mapRow(r: any): Transaction {
+  mapRow(r: any): Transaction {
     return {
       id: r.id,
       user_id: r.user_id,

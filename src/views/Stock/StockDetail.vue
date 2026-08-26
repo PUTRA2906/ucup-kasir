@@ -222,7 +222,7 @@ import StockAdjustmentModal from './StockAdjustmentModal.vue'
 import { useProductsStore } from '@/stores/products'
 import { useStockStore } from '@/stores/stock'
 import { useToast } from '@/composables/useToast'
-import type { StockMovement } from '@/stores/stock'
+import type { StockMovement } from '@/services/sqlite/stock'
 
 const router = useRouter()
 const route = useRoute()

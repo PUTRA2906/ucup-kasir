@@ -156,7 +156,7 @@ export const sqliteCategoriesService = {
     })
   },
 
-  private mapRow(r: any): Category {
+  mapRow(r: any): Category {
     return {
       id: r.id,
       user_id: r.user_id,

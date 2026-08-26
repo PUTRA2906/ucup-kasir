@@ -235,7 +235,7 @@ export const sqliteProductsService = {
           updated.price_buy,
           updated.price_sell,
           updated.stock,
-          updated.minimum_stock,
+          updated.minimum_stock ?? null,
           updated.sku ?? null,
           updated.barcode ?? null,
           updated.is_active ? 1 : 0,
@@ -351,7 +351,7 @@ export const sqliteProductsService = {
     })
   },
 
-  private mapRow(r: any): ProductWithCategory {
+  mapRow(r: any): ProductWithCategory {
     const category = r.cat_id
       ? { id: r.cat_id, name: r.cat_name, description: r.cat_description ?? undefined, user_id: r.user_id, created_at: '', updated_at: '' }
       : undefined

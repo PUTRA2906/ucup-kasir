@@ -553,7 +553,7 @@ export const sqliteSalesReportEnhancedService = {
   // Internal helpers
   // ============================================================
 
-  private async fetchTransactionDetail(t: any): Promise<Transaction> {
+  async fetchTransactionDetail(t: any): Promise<Transaction> {
     const userId = t.user_id
 
     const txn: Transaction = {
@@ -626,7 +626,7 @@ export const sqliteSalesReportEnhancedService = {
     return txn
   },
 
-  private async fetchReturnsWithItems(returnRows: any[]): Promise<any[]> {
+  async fetchReturnsWithItems(returnRows: any[]): Promise<any[]> {
     const returns: any[] = []
     for (const r of returnRows) {
       const riRows = await query<any>(

@@ -430,7 +430,7 @@ export const sqliteReturnsService = {
   // Internal helpers
   // ============================================================
 
-  private async getTransactionInfo(transactionId: string): Promise<TransactionReturn['transaction']> {
+  async getTransactionInfo(transactionId: string): Promise<TransactionReturn['transaction']> {
     const row = await queryOne<any>(
       `SELECT id, transaction_number, customer_name, status FROM transactions WHERE id = ?`,
       [transactionId]
@@ -444,7 +444,7 @@ export const sqliteReturnsService = {
     }
   },
 
-  private mapRow(r: any): TransactionReturn {
+  mapRow(r: any): TransactionReturn {
     return {
       id: r.id,
       user_id: r.user_id,
