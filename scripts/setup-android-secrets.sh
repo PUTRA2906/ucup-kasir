@@ -31,6 +31,13 @@ STORE_PASSWORD=$(grep -E '^storePassword=' "$KEYSTORE_PROP" | cut -d= -f2-)
 KEY_ALIAS=$(grep -E '^keyAlias=' "$KEYSTORE_PROP" | cut -d= -f2-)
 KEY_PASSWORD=$(grep -E '^keyPassword=' "$KEYSTORE_PROP" | cut -d= -f2-)
 
+# Fallback: jika alias tidak terisi, cari alias asli dari keystore itu sendiri
+if [ -z "$KEY_ALIAS" ]; then
+  KEY_ALIAS=$(keytool -list -keystore "$KEYSTORE" -storepass "$STORE_PASSWORD" 2>/dev/null \
+    | awk '/PrivateKeyEntry/ {print $1}')
+  echo "Mengambil alias otomatis dari keystore: $KEY_ALIAS"
+fi
+
 if [ -z "$STORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
   echo "ERROR: keystore.properties tidak lengkap (butuh storePassword, keyAlias, keyPassword)." >&2
   exit 1
