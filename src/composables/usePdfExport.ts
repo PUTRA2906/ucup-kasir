@@ -348,40 +348,71 @@ export function usePdfExport() {
     pdfBlob: Blob,
     filename: string
   ) => {
-    if (!Capacitor.isNativePlatform()) {
-      throw new Error('Fitur ini hanya tersedia di aplikasi mobile')
-    }
+    // Jika di platform native (Android/iOS)
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const reader = new FileReader()
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onloadend = () => {
+            const base64 = (reader.result as string).split(',')[1]
+            resolve(base64)
+          }
+          reader.onerror = reject
+        })
+        reader.readAsDataURL(pdfBlob)
 
-    try {
-      const reader = new FileReader()
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        reader.onloadend = () => {
-          const base64 = (reader.result as string).split(',')[1]
-          resolve(base64)
+        const base64Data = await base64Promise
+
+        const { Filesystem, Directory } = await import('@capacitor/filesystem')
+
+        const savedFile = await Filesystem.writeFile({
+          path: filename,
+          data: base64Data,
+          directory: Directory.Cache,
+        })
+
+        await Share.share({
+          title: 'Invoice',
+          text: 'Invoice',
+          url: savedFile.uri,
+          dialogTitle: 'Kirim Invoice',
+        })
+      } catch (error) {
+        console.error('Error sharing invoice:', error)
+        throw error
+      }
+    } else {
+      // Jika di web browser (termasuk WhatsApp Web)
+      try {
+        // Cek apakah browser support Web Share API dengan file
+        if (navigator.share && navigator.canShare) {
+          const file = new File([pdfBlob], filename, { type: 'application/pdf' })
+
+          // Cek apakah bisa share file
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'Invoice',
+              text: 'Berikut invoice Anda'
+            })
+            return
+          }
         }
-        reader.onerror = reject
-      })
-      reader.readAsDataURL(pdfBlob)
 
-      const base64Data = await base64Promise
+        // Fallback: download PDF jika Web Share API tidak tersedia
+        const url = URL.createObjectURL(pdfBlob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = filename
+        link.click()
+        URL.revokeObjectURL(url)
 
-      const { Filesystem, Directory } = await import('@capacitor/filesystem')
-
-      const savedFile = await Filesystem.writeFile({
-        path: filename,
-        data: base64Data,
-        directory: Directory.Cache,
-      })
-
-      await Share.share({
-        title: 'Invoice',
-        text: 'Invoice',
-        url: savedFile.uri,
-        dialogTitle: 'Kirim Invoice',
-      })
-    } catch (error) {
-      console.error('Error sharing invoice:', error)
-      throw error
+        // Tampilkan pesan untuk manual share
+        alert('PDF berhasil diunduh. Silakan buka WhatsApp dan kirim file yang sudah diunduh.')
+      } catch (error) {
+        console.error('Error sharing invoice on web:', error)
+        throw error
+      }
     }
   }
 

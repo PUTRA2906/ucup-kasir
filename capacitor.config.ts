@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.ucupkasir.app',
-  appName: 'Ucup Kasir',
+  appName: 'Tagih Kios',
   webDir: 'dist',
   server: {
     androidScheme: 'https'

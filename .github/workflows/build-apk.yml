@@ -50,14 +50,30 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x android/gradlew
 
-    - name: Build APK (Debug)
+    - name: Setup Release Signing
+      # Dekripsi keystore dari GitHub Secrets & buat keystore.properties
+      # agar setiap build memakai signature yang sama (update tanpa uninstall)
+      run: |
+        if [ -z "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+          echo "::warning::ANDROID_KEYSTORE_BASE64 kosong — APK akan ditandatangani debug keystore (perlu uninstall saat update)."
+          exit 0
+        fi
+        echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/ucup-kasir-release.keystore
+        cat > android/keystore.properties <<EOF
+        storeFile=ucup-kasir-release.keystore
+        storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+        keyAlias=${{ secrets.KEY_ALIAS }}
+        keyPassword=${{ secrets.KEY_PASSWORD }}
+        EOF
+
+    - name: Build APK (Release)
       run: |
         cd android
-        ./gradlew assembleDebug --no-daemon --stacktrace
+        ./gradlew assembleRelease --no-daemon --stacktrace
 
-    - name: Upload Debug APK
+    - name: Upload Release APK
       uses: actions/upload-artifact@v4
       with:
-        name: ucup-kasir-debug
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+        name: ucup-kasir-release
+        path: android/app/build/outputs/apk/release/app-release.apk
         retention-days: 30
