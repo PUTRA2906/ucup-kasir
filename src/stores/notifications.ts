@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { supabase } from '@/lib/supabase'
+import {
+  sqliteNotificationsService,
+  type SqliteNotification,
+} from '@/services/sqlite/notifications'
 
 export interface Notification {
   id: string
@@ -20,18 +23,15 @@ export const useNotificationsStore = defineStore('notifications', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
+  const updateUnreadCount = () => {
+    unreadCount.value = notifications.value.filter(n => !n.is_read).length
+  }
+
   const fetchNotifications = async (limit: number = 50) => {
     loading.value = true
     error.value = null
     try {
-      const { data, error: fetchError } = await supabase
-        .from('notifications')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(limit)
-
-      if (fetchError) throw fetchError
-      notifications.value = data || []
+      notifications.value = await sqliteNotificationsService.fetchNotifications(limit)
       updateUnreadCount()
     } catch (e: any) {
       error.value = e.message
@@ -44,14 +44,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   const fetchUnreadNotifications = async () => {
     try {
-      const { data, error: fetchError } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('is_read', false)
-        .order('created_at', { ascending: false })
-
-      if (fetchError) throw fetchError
-      return data || []
+      return await sqliteNotificationsService.fetchUnreadNotifications()
     } catch (e: any) {
       console.error('Error fetching unread notifications:', e)
       return []
@@ -60,15 +53,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const { error: updateError } = await supabase
-        .from('notifications')
-        .update({
-          is_read: true,
-          read_at: new Date().toISOString()
-        })
-        .eq('id', notificationId)
-
-      if (updateError) throw updateError
+      await sqliteNotificationsService.markAsRead(notificationId)
 
       // Update local state
       const notification = notifications.value.find(n => n.id === notificationId)
@@ -85,15 +70,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   const markAllAsRead = async () => {
     try {
-      const { error: updateError } = await supabase
-        .from('notifications')
-        .update({
-          is_read: true,
-          read_at: new Date().toISOString()
-        })
-        .eq('is_read', false)
-
-      if (updateError) throw updateError
+      await sqliteNotificationsService.markAllAsRead()
 
       // Update local state
       notifications.value.forEach(n => {
@@ -109,12 +86,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   const deleteNotification = async (notificationId: string) => {
     try {
-      const { error: deleteError } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('id', notificationId)
-
-      if (deleteError) throw deleteError
+      await sqliteNotificationsService.deleteNotification(notificationId)
 
       // Remove from local state
       notifications.value = notifications.value.filter(n => n.id !== notificationId)
@@ -127,12 +99,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   const deleteAllRead = async () => {
     try {
-      const { error: deleteError } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('is_read', true)
-
-      if (deleteError) throw deleteError
+      await sqliteNotificationsService.deleteAllRead()
 
       // Remove from local state
       notifications.value = notifications.value.filter(n => !n.is_read)
@@ -150,13 +117,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     data?: any
   }) => {
     try {
-      const { data, error: insertError } = await supabase
-        .from('notifications')
-        .insert(notification)
-        .select()
-        .single()
-
-      if (insertError) throw insertError
+      const data = await sqliteNotificationsService.createNotification(notification)
 
       // Add to local state
       notifications.value.unshift(data)
@@ -168,31 +129,10 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
   }
 
-  const updateUnreadCount = () => {
-    unreadCount.value = notifications.value.filter(n => !n.is_read).length
-  }
-
   const subscribeToNotifications = () => {
-    const channel = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications'
-        },
-        (payload) => {
-          const newNotification = payload.new as Notification
-          notifications.value.unshift(newNotification)
-          updateUnreadCount()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    // Realtime Supabase tidak berlaku untuk SQLite lokal.
+    // Notifikasi di-refetch saat app aktif.
+    return () => {}
   }
 
   return {

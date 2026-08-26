@@ -429,12 +429,23 @@ const router = createRouter({
         title: 'Signup',
       },
     },
+    {
+      path: '/sync/download',
+      name: 'Sync Download',
+      component: () => import('../views/Sync/DownloadScreen.vue'),
+      meta: {
+        title: 'Mengunduh Data',
+      },
+    },
   ],
 })
 
 export default router
 
 const publicRoutes = ['/signin', '/signup']
+
+// Rute yang butuh auth tapi tidak redirect (download screen)
+const authenticatedRoutes = ['/sync/download']
 
 router.beforeEach((to, from, next) => {
   document.title = `${to.meta.title} | Ucup Kasir - Aplikasi Kasir`
@@ -450,6 +461,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   const isPublic = publicRoutes.includes(to.path)
+  const isAuthRoute = authenticatedRoutes.includes(to.path)
 
   if (!isPublic && !authStore.isAuthenticated) {
     // Belum login -> arahkan ke halaman masuk, simpan tujuan awal
@@ -457,6 +469,9 @@ router.beforeEach(async (to, from, next) => {
   } else if (isPublic && authStore.isAuthenticated) {
     // Sudah login -> jangan biarkan mengakses halaman signin/signup
     next({ path: '/products' })
+  } else if (isAuthRoute && !authStore.isAuthenticated) {
+    // Rute auth tanpa login -> signin
+    next({ path: '/signin', query: { redirect: to.fullPath } })
   } else {
     next()
   }

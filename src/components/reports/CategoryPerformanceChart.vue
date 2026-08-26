@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import type { CategorySales } from '@/services/salesReport'
+import type { CategorySales } from '@/services/sqlite/salesReport'
 
 interface Props {
   categories: CategorySales[]

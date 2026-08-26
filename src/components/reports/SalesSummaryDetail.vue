@@ -135,7 +135,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { SalesSummary } from '@/services/salesReport'
+import type { SalesSummary } from '@/services/sqlite/salesReport'
 
 const props = defineProps<{
   summary: SalesSummary

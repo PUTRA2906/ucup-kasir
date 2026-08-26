@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { salesReportService } from '@/services/salesReport'
+import { sqliteSalesReportService as salesReportService } from '@/services/sqlite/salesReport'
 import type {
   SalesReportData,
   SalesSummary,
@@ -8,7 +8,7 @@ import type {
   ProductSales,
   CategorySales,
   PaymentMethodSales,
-} from '@/services/salesReport'
+} from '@/services/sqlite/salesReport'
 import type { Transaction } from '@/types/database'
 
 export const useSalesReportStore = defineStore('salesReport', () => {

@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
-import type { DailySales } from '@/services/salesReport'
+import type { DailySales } from '@/services/sqlite/salesReport'
 
 interface Props {
   dailySales: DailySales[]

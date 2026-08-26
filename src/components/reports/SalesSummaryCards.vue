@@ -367,7 +367,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { SalesSummary } from '@/services/salesReport'
+import type { SalesSummary } from '@/services/sqlite/salesReport'
 
 interface Props {
   summary: SalesSummary

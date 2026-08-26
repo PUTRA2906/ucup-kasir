@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { returnsService } from '@/services/returns'
+import { sqliteReturnsService } from '@/services/sqlite/returns'
 import type { TransactionReturn, ReturnItemInput } from '@/types/database'
 
 export const useReturnsStore = defineStore('returns', () => {
@@ -13,7 +13,7 @@ export const useReturnsStore = defineStore('returns', () => {
     loading.value = true
     error.value = null
     try {
-      returns.value = await returnsService.getByTransaction(transactionId)
+      returns.value = await sqliteReturnsService.getByTransaction(transactionId)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -24,7 +24,7 @@ export const useReturnsStore = defineStore('returns', () => {
 
   async function fetchLinkedReturns(transactionId: string) {
     try {
-      linkedReturns.value = await returnsService.getLinkedReturns(transactionId)
+      linkedReturns.value = await sqliteReturnsService.getLinkedReturns(transactionId)
     } catch (e: any) {
       // non-critical, silently fail
       linkedReturns.value = []
@@ -33,7 +33,7 @@ export const useReturnsStore = defineStore('returns', () => {
 
   async function fetchReturnsForNewTransaction(transactionId: string) {
     try {
-      const data = await returnsService.getReturnsForNewTransaction(transactionId)
+      const data = await sqliteReturnsService.getReturnsForNewTransaction(transactionId)
       // Gabungkan ke linkedReturns agar bisa diproses oleh allReturnItems
       linkedReturns.value = [...linkedReturns.value, ...data]
     } catch (e: any) {
@@ -49,7 +49,7 @@ export const useReturnsStore = defineStore('returns', () => {
     loading.value = true
     error.value = null
     try {
-      const id = await returnsService.createReturn(transactionId, items, notes)
+      const id = await sqliteReturnsService.createReturn(transactionId, items, notes)
       await fetchReturns(transactionId)
       return id
     } catch (e: any) {
@@ -64,7 +64,7 @@ export const useReturnsStore = defineStore('returns', () => {
     loading.value = true
     error.value = null
     try {
-      await returnsService.deleteReturn(id)
+      await sqliteReturnsService.deleteReturn(id)
       await fetchReturns(transactionId)
     } catch (e: any) {
       error.value = e.message
@@ -78,7 +78,7 @@ export const useReturnsStore = defineStore('returns', () => {
     loading.value = true
     error.value = null
     try {
-      returns.value = await returnsService.getAll()
+      returns.value = await sqliteReturnsService.getAll()
     } catch (e: any) {
       error.value = e.message
       throw e

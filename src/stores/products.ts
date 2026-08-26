@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { supabase } from '@/lib/supabase'
-import { productsService } from '@/services/products'
+import { sqliteProductsService } from '@/services/sqlite/products'
 import type { Product, ProductInsert, ProductUpdate, ProductWithCategory } from '@/types/database'
 
 export const useProductsStore = defineStore('products', () => {
@@ -21,7 +20,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      products.value = await productsService.getAll(includeInactive)
+      products.value = await sqliteProductsService.getAll(includeInactive)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -34,7 +33,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      return await productsService.getById(id)
+      return await sqliteProductsService.getById(id)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -47,7 +46,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      return await productsService.getByCategory(categoryId)
+      return await sqliteProductsService.getByCategory(categoryId)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -60,7 +59,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      return await productsService.getBySku(sku)
+      return await sqliteProductsService.getBySku(sku)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -73,7 +72,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      return await productsService.getByBarcode(barcode)
+      return await sqliteProductsService.getByBarcode(barcode)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -86,8 +85,9 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      const newProduct = await productsService.create(product)
-      await fetchProducts()
+      const newProduct = await sqliteProductsService.create(product)
+      // Optimistic: append ke local array, bukan refetch semua
+      products.value.unshift(newProduct)
       return newProduct
     } catch (e: any) {
       error.value = e.message
@@ -97,13 +97,12 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
-  /** Insert banyak produk sekaligus (import CSV / bulk). */
   async function createProducts(productsToInsert: ProductInsert[]) {
     loading.value = true
     error.value = null
     try {
-      const newProducts = await productsService.createMany(productsToInsert)
-      await fetchProducts()
+      const newProducts = await sqliteProductsService.createMany(productsToInsert)
+      products.value.unshift(...newProducts)
       return newProducts
     } catch (e: any) {
       error.value = e.message
@@ -113,42 +112,44 @@ export const useProductsStore = defineStore('products', () => {
     }
   }
 
-  /**
-   * Sinkronkan nilai minimum_stock ke tabel stock_alerts untuk tiap produk.
-   * Dipakai saat import CSV agar notifikasi stok menipis (yang dibaca trigger
-   * dari stock_alerts) tetap mengikuti nilai yang diimpor.
-   */
   async function syncMinimumStocks(
     entries: { product_id: string; minimum_stock: number }[],
   ) {
-    if (entries.length === 0) return
-    const { error: upsertError } = await supabase
-      .from('stock_alerts')
-      .upsert(
-        entries.map((entry) => ({
-          product_id: entry.product_id,
-          minimum_stock: entry.minimum_stock,
-          alert_enabled: true,
-        })),
-        { onConflict: 'user_id,product_id' },
-      )
-    if (upsertError) throw upsertError
+    // Tidak perlu sync ke Supabase langsung — di SQLite semua lokal.
+    // Update langsung minimum_stock di products
+    for (const entry of entries) {
+      const idx = products.value.findIndex(p => p.id === entry.product_id)
+      if (idx !== -1) {
+        products.value[idx].minimum_stock = entry.minimum_stock
+      }
+      // Juga update di database
+      try {
+        await sqliteProductsService.update(entry.product_id, { minimum_stock: entry.minimum_stock })
+      } catch (e) {
+        // non-critical
+      }
+    }
   }
 
   async function updateProduct(id: string, product: ProductUpdate) {
     loading.value = true
     error.value = null
+
+    // Simpan state lama untuk rollback
+    const index = products.value.findIndex((p) => p.id === id)
+    const oldProduct = index !== -1 ? { ...products.value[index] } : null
+
     try {
-      const updatedProduct = await productsService.update(id, product)
-      const index = products.value.findIndex((p) => p.id === id)
-      if (index !== -1) {
-        const fullProduct = await productsService.getById(id)
-        if (fullProduct) {
-          products.value[index] = fullProduct
-        }
+      const updatedProduct = await sqliteProductsService.update(id, product)
+      if (index !== -1 && updatedProduct) {
+        products.value[index] = updatedProduct
       }
       return updatedProduct
     } catch (e: any) {
+      // Rollback: restore old value
+      if (oldProduct && index !== -1) {
+        products.value[index] = oldProduct as ProductWithCategory
+      }
       error.value = e.message
       throw e
     } finally {
@@ -159,10 +160,18 @@ export const useProductsStore = defineStore('products', () => {
   async function deleteProduct(id: string) {
     loading.value = true
     error.value = null
+
+    const index = products.value.findIndex((p) => p.id === id)
+    const oldProduct = index !== -1 ? { ...products.value[index] } : null
+
     try {
-      await productsService.delete(id)
+      await sqliteProductsService.delete(id)
       products.value = products.value.filter((p) => p.id !== id)
     } catch (e: any) {
+      // Rollback: restore product
+      if (oldProduct && index !== -1) {
+        products.value.splice(index, 0, oldProduct as ProductWithCategory)
+      }
       error.value = e.message
       throw e
     } finally {
@@ -173,14 +182,20 @@ export const useProductsStore = defineStore('products', () => {
   async function updateStock(id: string, quantity: number) {
     loading.value = true
     error.value = null
+
+    const index = products.value.findIndex((p) => p.id === id)
+    const oldStock = index !== -1 ? products.value[index].stock : null
+
     try {
-      const updatedProduct = await productsService.updateStock(id, quantity)
-      const index = products.value.findIndex((p) => p.id === id)
+      const updatedProduct = await sqliteProductsService.updateStock(id, quantity)
       if (index !== -1) {
         products.value[index].stock = updatedProduct.stock
       }
       return updatedProduct
     } catch (e: any) {
+      if (oldStock !== null && index !== -1) {
+        products.value[index].stock = oldStock
+      }
       error.value = e.message
       throw e
     } finally {
@@ -189,16 +204,19 @@ export const useProductsStore = defineStore('products', () => {
   }
 
   async function adjustStock(id: string, adjustment: number) {
-    loading.value = true
-    error.value = null
+    const index = products.value.findIndex((p) => p.id === id)
+    const oldStock = index !== -1 ? products.value[index].stock : null
+
     try {
-      const updatedProduct = await productsService.adjustStock(id, adjustment)
-      const index = products.value.findIndex((p) => p.id === id)
+      const updatedProduct = await sqliteProductsService.adjustStock(id, adjustment)
       if (index !== -1) {
         products.value[index].stock = updatedProduct.stock
       }
       return updatedProduct
     } catch (e: any) {
+      if (oldStock !== null && index !== -1) {
+        products.value[index].stock = oldStock
+      }
       error.value = e.message
       throw e
     } finally {
@@ -210,7 +228,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      return await productsService.search(query)
+      return await sqliteProductsService.search(query)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -223,7 +241,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      return await productsService.getLowStock(threshold)
+      return await sqliteProductsService.getLowStock(threshold)
     } catch (e: any) {
       error.value = e.message
       throw e

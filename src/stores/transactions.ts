@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { transactionsService } from '@/services/transactions'
+import { sqliteTransactionsService } from '@/services/sqlite/transactions'
 import type { Transaction, TransactionInput } from '@/types/database'
 
 export const useTransactionsStore = defineStore('transactions', () => {
@@ -12,7 +12,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
     loading.value = true
     error.value = null
     try {
-      transactions.value = await transactionsService.getAll()
+      transactions.value = await sqliteTransactionsService.getAll()
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -25,7 +25,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
     loading.value = true
     error.value = null
     try {
-      return await transactionsService.getById(id)
+      return await sqliteTransactionsService.getById(id)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -38,8 +38,12 @@ export const useTransactionsStore = defineStore('transactions', () => {
     loading.value = true
     error.value = null
     try {
-      const id = await transactionsService.create(input)
-      await fetchTransactions()
+      const id = await sqliteTransactionsService.create(input)
+      // Optimistic: ambil transaksi baru & prepend ke local array (tanpa refetch semua)
+      const newTxn = await sqliteTransactionsService.getById(id)
+      if (newTxn) {
+        transactions.value.unshift(newTxn)
+      }
       return id
     } catch (e: any) {
       error.value = e.message
@@ -58,12 +62,18 @@ export const useTransactionsStore = defineStore('transactions', () => {
     loading.value = true
     error.value = null
     try {
-      const paymentId = await transactionsService.addPayment(
+      const paymentId = await sqliteTransactionsService.addPayment(
         transactionId,
         amount,
         paymentMethod,
         notes
       )
+      // Update local state: refresh transaksi terkait
+      const index = transactions.value.findIndex((t) => t.id === transactionId)
+      if (index !== -1) {
+        const updated = await sqliteTransactionsService.getById(transactionId)
+        if (updated) transactions.value[index] = updated
+      }
       return paymentId
     } catch (e: any) {
       error.value = e.message
@@ -77,7 +87,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
     loading.value = true
     error.value = null
     try {
-      await transactionsService.delete(id)
+      await sqliteTransactionsService.delete(id)
       transactions.value = transactions.value.filter((t) => t.id !== id)
     } catch (e: any) {
       error.value = e.message
@@ -91,7 +101,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
     loading.value = true
     error.value = null
     try {
-      await transactionsService.voidTransaction(id)
+      await sqliteTransactionsService.voidTransaction(id)
       transactions.value = transactions.value.map((t) =>
         t.id === id ? { ...t, status: 'batal' } : t
       )
@@ -107,7 +117,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
     loading.value = true
     error.value = null
     try {
-      return await transactionsService.search(query)
+      return await sqliteTransactionsService.search(query)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -120,7 +130,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
     loading.value = true
     error.value = null
     try {
-      return await transactionsService.getByCustomer(customerId)
+      return await sqliteTransactionsService.getByCustomer(customerId)
     } catch (e: any) {
       error.value = e.message
       throw e

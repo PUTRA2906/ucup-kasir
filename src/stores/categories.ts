@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { categoriesService } from '@/services/categories'
+import { sqliteCategoriesService } from '@/services/sqlite/categories'
 import type { Category, CategoryInsert, CategoryUpdate } from '@/types/database'
 
 export const useCategoriesStore = defineStore('categories', () => {
@@ -12,7 +12,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     loading.value = true
     error.value = null
     try {
-      categories.value = await categoriesService.getAll()
+      categories.value = await sqliteCategoriesService.getAll()
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -25,7 +25,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     loading.value = true
     error.value = null
     try {
-      return await categoriesService.getById(id)
+      return await sqliteCategoriesService.getById(id)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -38,7 +38,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     loading.value = true
     error.value = null
     try {
-      const newCategory = await categoriesService.create(category)
+      const newCategory = await sqliteCategoriesService.create(category)
       categories.value.push(newCategory)
       return newCategory
     } catch (e: any) {
@@ -52,14 +52,20 @@ export const useCategoriesStore = defineStore('categories', () => {
   async function updateCategory(id: string, category: CategoryUpdate) {
     loading.value = true
     error.value = null
+
+    const index = categories.value.findIndex((c) => c.id === id)
+    const oldCategory = index !== -1 ? { ...categories.value[index] } : null
+
     try {
-      const updatedCategory = await categoriesService.update(id, category)
-      const index = categories.value.findIndex((c) => c.id === id)
+      const updatedCategory = await sqliteCategoriesService.update(id, category)
       if (index !== -1) {
         categories.value[index] = updatedCategory
       }
       return updatedCategory
     } catch (e: any) {
+      if (oldCategory && index !== -1) {
+        categories.value[index] = oldCategory
+      }
       error.value = e.message
       throw e
     } finally {
@@ -70,10 +76,17 @@ export const useCategoriesStore = defineStore('categories', () => {
   async function deleteCategory(id: string) {
     loading.value = true
     error.value = null
+
+    const index = categories.value.findIndex((c) => c.id === id)
+    const oldCategory = index !== -1 ? { ...categories.value[index] } : null
+
     try {
-      await categoriesService.delete(id)
+      await sqliteCategoriesService.delete(id)
       categories.value = categories.value.filter((c) => c.id !== id)
     } catch (e: any) {
+      if (oldCategory && index !== -1) {
+        categories.value.splice(index, 0, oldCategory)
+      }
       error.value = e.message
       throw e
     } finally {
@@ -85,7 +98,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     loading.value = true
     error.value = null
     try {
-      return await categoriesService.search(query)
+      return await sqliteCategoriesService.search(query)
     } catch (e: any) {
       error.value = e.message
       throw e

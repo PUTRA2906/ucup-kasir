@@ -220,7 +220,10 @@ const handleSubmit = async () => {
     return
   }
 
-  const redirect = (route.query.redirect as string) || '/products'
-  router.push(redirect)
+  // Redirect ke download screen untuk sinkronisasi data dari Supabase
+  const redirect = route.query.redirect
+    ? encodeURIComponent(route.query.redirect as string)
+    : ''
+  router.push(`/sync/download${redirect ? `?redirect=${redirect}` : ''}`)
 }
 </script>
