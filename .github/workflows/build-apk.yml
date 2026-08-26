@@ -53,17 +53,31 @@ jobs:
     - name: Setup Release Signing
       # Dekripsi keystore dari GitHub Secrets & buat keystore.properties
       # agar setiap build memakai signature yang sama (update tanpa uninstall)
+      env:
+        ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       run: |
-        if [ -z "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+        if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
           echo "::warning::ANDROID_KEYSTORE_BASE64 kosong — APK akan ditandatangani debug keystore (perlu uninstall saat update)."
           exit 0
         fi
-        echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/ucup-kasir-release.keystore
+        # Pakai Python agar tahan banting terhadap newline/spasi di secret
+        python3 - "$ANDROID_KEYSTORE_BASE64" <<'PY'
+        import sys, base64
+        raw = sys.argv[1].strip()
+        print(f"Jumlah karakter base64 yang diterima: {len(raw)}")
+        data = base64.b64decode(raw)
+        print(f"Keystore berhasil didekripsi: {len(data)} bytes")
+        with open("android/ucup-kasir-release.keystore", "wb") as f:
+            f.write(data)
+        PY
         cat > android/keystore.properties <<EOF
         storeFile=ucup-kasir-release.keystore
-        storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-        keyAlias=${{ secrets.KEY_ALIAS }}
-        keyPassword=${{ secrets.KEY_PASSWORD }}
+        storePassword=$KEYSTORE_PASSWORD
+        keyAlias=$KEY_ALIAS
+        keyPassword=$KEY_PASSWORD
         EOF
 
     - name: Build APK (Release)
