@@ -56,9 +56,15 @@ export async function initSQLite(): Promise<void> {
       // SQLite default-nya OFF — tanpa ini cascade tidak berjalan.
       await conn.execute('PRAGMA foreign_keys = ON')
 
+      // SELALU jalankan initSchema() — semua statement memakai CREATE TABLE IF NOT EXISTS,
+      // sehingga idempotent & aman untuk database yang sudah ada.
+      // Ini penting karena database lama (sebelum migrasi SQLite) tidak punya tabel skema
+      // yang dibutuhkan (categories, products, transactions, sync_queue, dll).
+      await initSchema()
+
       if (!existing) {
-        // Database baru — jalankan skema
-        await initSchema()
+        // Database baru — versi schema sudah ter-set saat init
+        await setMetadata('schema_version', SCHEMA_VERSION.toString())
       } else {
         // Database sudah ada — cek/migrasi versi schema
         await migrateSchema()

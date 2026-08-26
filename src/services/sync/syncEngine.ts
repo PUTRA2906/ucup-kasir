@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import {
+  initSQLite,
   run,
   query,
   setMetadata,
@@ -65,6 +66,10 @@ export interface SyncResult {
 
 /** Ambil semua data user dari Supabase dan isi ke SQLite (truncate dulu). */
 export async function downloadAllFromSupabase(): Promise<SyncResult> {
+  // Pastikan SQLite siap (buat tabel skema jika belum ada) sebelum operasi apa pun.
+  // Tidak bergantung pada timing initSQLite di main.ts.
+  await initSQLite()
+
   if (!isOnlineNow()) {
     throw new Error('Tidak ada koneksi internet')
   }
@@ -205,6 +210,9 @@ async function clearSyncQueue(): Promise<void> {
  * Sukses → hapus dari queue. Gagal → retry_count++ + last_error.
  */
 export async function uploadChangesToSupabase(): Promise<SyncResult> {
+  // Pastikan SQLite siap (buat tabel skema jika belum ada).
+  await initSQLite()
+
   if (!isOnlineNow()) {
     return { success: false, message: 'Tidak ada koneksi internet' }
   }
@@ -353,6 +361,9 @@ function sanitizeForSupabase(data: Record<string, any>): Record<string, any> {
  * Memakai INSERT ... ON CONFLICT (id) DO UPDATE agar idempotent.
  */
 export async function uploadAllToSupabase(): Promise<SyncResult> {
+  // Pastikan SQLite siap (buat tabel skema jika belum ada).
+  await initSQLite()
+
   if (!isOnlineNow()) {
     return { success: false, message: 'Tidak ada koneksi internet' }
   }
