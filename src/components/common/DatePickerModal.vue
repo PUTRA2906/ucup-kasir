@@ -293,7 +293,6 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import vClickOutside from './v-click-outside.vue'
 
 interface Props {
   modelValue: boolean
