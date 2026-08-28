@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { sqliteProductsService } from '@/services/sqlite/products'
+import { productsServiceAdapter } from '@/services'
 import type { Product, ProductInsert, ProductUpdate, ProductWithCategory } from '@/types/database'
 
 export const useProductsStore = defineStore('products', () => {
@@ -20,7 +20,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      products.value = await sqliteProductsService.getAll(includeInactive)
+      products.value = await productsServiceAdapter.getAll(includeInactive)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -33,7 +33,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      return await sqliteProductsService.getById(id)
+      return await productsServiceAdapter.getById(id)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -46,7 +46,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      return await sqliteProductsService.getByCategory(categoryId)
+      return await productsServiceAdapter.getByCategory(categoryId)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -59,7 +59,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      return await sqliteProductsService.getBySku(sku)
+      return await productsServiceAdapter.getBySku(sku)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -72,7 +72,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      return await sqliteProductsService.getByBarcode(barcode)
+      return await productsServiceAdapter.getByBarcode(barcode)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -85,7 +85,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      const newProduct = await sqliteProductsService.create(product)
+      const newProduct = await productsServiceAdapter.create(product)
       // Optimistic: append ke local array, bukan refetch semua
       products.value.unshift(newProduct)
       return newProduct
@@ -101,7 +101,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      const newProducts = await sqliteProductsService.createMany(productsToInsert)
+      const newProducts = await productsServiceAdapter.createMany(productsToInsert)
       products.value.unshift(...newProducts)
       return newProducts
     } catch (e: any) {
@@ -124,7 +124,7 @@ export const useProductsStore = defineStore('products', () => {
       }
       // Juga update di database
       try {
-        await sqliteProductsService.update(entry.product_id, { minimum_stock: entry.minimum_stock })
+        await productsServiceAdapter.update(entry.product_id, { minimum_stock: entry.minimum_stock })
       } catch (e) {
         // non-critical
       }
@@ -140,7 +140,7 @@ export const useProductsStore = defineStore('products', () => {
     const oldProduct = index !== -1 ? { ...products.value[index] } : null
 
     try {
-      const updatedProduct = await sqliteProductsService.update(id, product)
+      const updatedProduct = await productsServiceAdapter.update(id, product)
       if (index !== -1 && updatedProduct) {
         products.value[index] = updatedProduct
       }
@@ -165,7 +165,7 @@ export const useProductsStore = defineStore('products', () => {
     const oldProduct = index !== -1 ? { ...products.value[index] } : null
 
     try {
-      await sqliteProductsService.delete(id)
+      await productsServiceAdapter.delete(id)
       products.value = products.value.filter((p) => p.id !== id)
     } catch (e: any) {
       // Rollback: restore product
@@ -187,7 +187,7 @@ export const useProductsStore = defineStore('products', () => {
     const oldStock = index !== -1 ? products.value[index].stock : null
 
     try {
-      const updatedProduct = await sqliteProductsService.updateStock(id, quantity)
+      const updatedProduct = await productsServiceAdapter.updateStock(id, quantity)
       if (index !== -1) {
         products.value[index].stock = updatedProduct.stock
       }
@@ -208,7 +208,7 @@ export const useProductsStore = defineStore('products', () => {
     const oldStock = index !== -1 ? products.value[index].stock : null
 
     try {
-      const updatedProduct = await sqliteProductsService.adjustStock(id, adjustment)
+      const updatedProduct = await productsServiceAdapter.adjustStock(id, adjustment)
       if (index !== -1) {
         products.value[index].stock = updatedProduct.stock
       }
@@ -228,7 +228,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      return await sqliteProductsService.search(query)
+      return await productsServiceAdapter.search(query)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -241,7 +241,7 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      return await sqliteProductsService.getLowStock(threshold)
+      return await productsServiceAdapter.getLowStock(threshold)
     } catch (e: any) {
       error.value = e.message
       throw e

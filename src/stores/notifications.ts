@@ -1,9 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import {
-  sqliteNotificationsService,
-  type SqliteNotification,
-} from '@/services/sqlite/notifications'
+import { notificationsServiceAdapter } from '@/services'
+import type { SqliteNotification } from '@/services/sqlite/notifications'
 
 export interface Notification {
   id: string
@@ -31,7 +29,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     loading.value = true
     error.value = null
     try {
-      notifications.value = await sqliteNotificationsService.fetchNotifications(limit)
+      notifications.value = await notificationsServiceAdapter.fetchNotifications(limit)
       updateUnreadCount()
     } catch (e: any) {
       error.value = e.message
@@ -44,7 +42,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   const fetchUnreadNotifications = async () => {
     try {
-      return await sqliteNotificationsService.fetchUnreadNotifications()
+      return await notificationsServiceAdapter.fetchUnreadNotifications()
     } catch (e: any) {
       console.error('Error fetching unread notifications:', e)
       return []
@@ -53,7 +51,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await sqliteNotificationsService.markAsRead(notificationId)
+      await notificationsServiceAdapter.markAsRead(notificationId)
 
       // Update local state
       const notification = notifications.value.find(n => n.id === notificationId)
@@ -70,7 +68,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   const markAllAsRead = async () => {
     try {
-      await sqliteNotificationsService.markAllAsRead()
+      await notificationsServiceAdapter.markAllAsRead()
 
       // Update local state
       notifications.value.forEach(n => {
@@ -86,7 +84,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   const deleteNotification = async (notificationId: string) => {
     try {
-      await sqliteNotificationsService.deleteNotification(notificationId)
+      await notificationsServiceAdapter.deleteNotification(notificationId)
 
       // Remove from local state
       notifications.value = notifications.value.filter(n => n.id !== notificationId)
@@ -99,7 +97,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
   const deleteAllRead = async () => {
     try {
-      await sqliteNotificationsService.deleteAllRead()
+      await notificationsServiceAdapter.deleteAllRead()
 
       // Remove from local state
       notifications.value = notifications.value.filter(n => !n.is_read)
@@ -117,7 +115,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     data?: any
   }) => {
     try {
-      const data = await sqliteNotificationsService.createNotification(notification)
+      const data = await notificationsServiceAdapter.createNotification(notification)
 
       // Add to local state
       notifications.value.unshift(data)

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { sqliteStoreSettingsService } from '@/services/sqlite/storeSettings'
+import { storeSettingsServiceAdapter } from '@/services'
 import type { StoreSettings, StoreSettingsUpdate } from '@/types/database'
 
 // Default values agar aplikasi tetap berjalan meski database belum siap
@@ -39,7 +39,7 @@ export const useStoreSettingsStore = defineStore('storeSettings', () => {
     loading.value = true
     error.value = null
     try {
-      settings.value = await sqliteStoreSettingsService.getSettings()
+      settings.value = await storeSettingsServiceAdapter.getSettings()
       loaded.value = true
     } catch (e: any) {
       error.value = e.message
@@ -55,7 +55,7 @@ export const useStoreSettingsStore = defineStore('storeSettings', () => {
     loading.value = true
     error.value = null
     try {
-      settings.value = await sqliteStoreSettingsService.updateSettings(updates)
+      settings.value = await storeSettingsServiceAdapter.updateSettings(updates)
     } catch (e: any) {
       error.value = e.message
       throw e

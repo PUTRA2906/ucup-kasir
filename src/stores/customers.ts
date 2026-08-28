@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { sqliteCustomersService } from '@/services/sqlite/customers'
+import { customersServiceAdapter } from '@/services'
 import type { Customer, CustomerInsert, CustomerUpdate } from '@/types/database'
 
 export const useCustomersStore = defineStore('customers', () => {
@@ -12,7 +12,7 @@ export const useCustomersStore = defineStore('customers', () => {
     loading.value = true
     error.value = null
     try {
-      customers.value = await sqliteCustomersService.getAll()
+      customers.value = await customersServiceAdapter.getAll()
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -25,7 +25,7 @@ export const useCustomersStore = defineStore('customers', () => {
     loading.value = true
     error.value = null
     try {
-      return await sqliteCustomersService.getById(id)
+      return await customersServiceAdapter.getById(id)
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -38,7 +38,7 @@ export const useCustomersStore = defineStore('customers', () => {
     loading.value = true
     error.value = null
     try {
-      const newCustomer = await sqliteCustomersService.create(customer)
+      const newCustomer = await customersServiceAdapter.create(customer)
       customers.value.push(newCustomer)
       return newCustomer
     } catch (e: any) {
@@ -54,7 +54,7 @@ export const useCustomersStore = defineStore('customers', () => {
     loading.value = true
     error.value = null
     try {
-      const newCustomers = await sqliteCustomersService.createMany(customersToInsert)
+      const newCustomers = await customersServiceAdapter.createMany(customersToInsert)
       // Optimistic: append semua, tanpa refetch
       customers.value.push(...newCustomers)
       return newCustomers
@@ -74,7 +74,7 @@ export const useCustomersStore = defineStore('customers', () => {
     const oldCustomer = index !== -1 ? { ...customers.value[index] } : null
 
     try {
-      const updatedCustomer = await sqliteCustomersService.update(id, customer)
+      const updatedCustomer = await customersServiceAdapter.update(id, customer)
       if (index !== -1) {
         customers.value[index] = updatedCustomer
       }
@@ -98,7 +98,7 @@ export const useCustomersStore = defineStore('customers', () => {
     const oldCustomer = index !== -1 ? { ...customers.value[index] } : null
 
     try {
-      await sqliteCustomersService.delete(id)
+      await customersServiceAdapter.delete(id)
       customers.value = customers.value.filter((c) => c.id !== id)
     } catch (e: any) {
       if (oldCustomer && index !== -1) {
@@ -115,7 +115,7 @@ export const useCustomersStore = defineStore('customers', () => {
     loading.value = true
     error.value = null
     try {
-      return await sqliteCustomersService.search(query)
+      return await customersServiceAdapter.search(query)
     } catch (e: any) {
       error.value = e.message
       throw e

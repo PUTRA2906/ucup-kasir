@@ -13,6 +13,7 @@ import router from './router'
 import VueApexCharts from 'vue3-apexcharts'
 import { App as CapacitorApp } from '@capacitor/app'
 import { initSQLite } from '@/lib/sqlite'
+import { isNativeApp } from '@/lib/platform'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -24,9 +25,17 @@ app.use(VueApexCharts)
 app.mount('#app')
 
 // ============================================================
-// Startup: init SQLite + upload perubahan ke Supabase
+// Startup
+// - Android (native): init SQLite + upload perubahan ke Supabase.
+// - Web: langsung pakai Supabase — SQLite tidak dipakai.
 // ============================================================
 async function startup() {
+  if (!isNativeApp()) {
+    // Web (mobile browser & desktop): tidak perlu inisialisasi SQLite,
+    // semua data dibaca langsung dari Supabase.
+    return
+  }
+
   try {
     // 1. Inisialisasi database SQLite lokal
     await initSQLite()

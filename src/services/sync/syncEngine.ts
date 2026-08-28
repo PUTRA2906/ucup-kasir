@@ -13,6 +13,7 @@ import {
 } from '@/lib/sqlite'
 import { getCurrentUserId } from '@/services/sqlite/db'
 import { isOnlineNow } from '@/lib/network'
+import { isNativeApp } from '@/lib/platform'
 import { sqliteCategoriesService } from '@/services/sqlite/categories'
 import { sqliteProductsService } from '@/services/sqlite/products'
 import { sqliteCustomersService } from '@/services/sqlite/customers'
@@ -66,6 +67,11 @@ export interface SyncResult {
 
 /** Ambil semua data user dari Supabase dan isi ke SQLite (truncate dulu). */
 export async function downloadAllFromSupabase(): Promise<SyncResult> {
+  // Di web tidak ada SQLite — data dibaca langsung dari Supabase.
+  if (!isNativeApp()) {
+    throw new Error('Mode web tidak memerlukan sinkronisasi offline')
+  }
+
   // Pastikan SQLite siap (buat tabel skema jika belum ada) sebelum operasi apa pun.
   // Tidak bergantung pada timing initSQLite di main.ts.
   await initSQLite()

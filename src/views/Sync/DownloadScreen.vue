@@ -76,6 +76,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import FullScreenLayout from '@/components/layout/FullScreenLayout.vue'
 import { useSyncStore } from '@/stores/sync'
+import { isNativeApp } from '@/lib/platform'
 
 const props = defineProps<{
   onComplete?: () => void
@@ -90,6 +91,12 @@ const error = ref<string | null>(null)
 const syncing = ref(false)
 
 async function startDownload() {
+  // Web: tidak ada sinkronisasi offline — langsung lanjut ke app.
+  if (!isNativeApp()) {
+    finish()
+    return
+  }
+
   syncing.value = true
   error.value = null
   progress.value = 15

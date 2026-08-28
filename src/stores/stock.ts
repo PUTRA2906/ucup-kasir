@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import {
-  sqliteStockService,
+  stockServiceAdapter,
   type StockMovement,
   type StockAdjustment,
   type StockOpname,
   type StockAlert,
-} from '@/services/sqlite/stock'
+} from '@/services'
+import { isNativeApp } from '@/lib/platform'
 import { run } from '@/lib/sqlite'
 import { getCurrentUserId, uuid, nowIso, addToSyncQueue } from '@/services/sqlite/db'
 
@@ -27,7 +28,7 @@ export const useStockStore = defineStore('stock', () => {
     loading.value = true
     error.value = null
     try {
-      movements.value = await sqliteStockService.fetchMovements(filters)
+      movements.value = await stockServiceAdapter.fetchMovements(filters)
     } catch (e: any) {
       error.value = e.message
       console.error('Error fetching stock movements:', e)
@@ -41,7 +42,7 @@ export const useStockStore = defineStore('stock', () => {
     loading.value = true
     error.value = null
     try {
-      adjustments.value = await sqliteStockService.fetchAdjustments(productId)
+      adjustments.value = await stockServiceAdapter.fetchAdjustments(productId)
     } catch (e: any) {
       error.value = e.message
       console.error('Error fetching stock adjustments:', e)
@@ -55,7 +56,7 @@ export const useStockStore = defineStore('stock', () => {
     loading.value = true
     error.value = null
     try {
-      opnames.value = await sqliteStockService.fetchOpnames()
+      opnames.value = await stockServiceAdapter.fetchOpnames()
     } catch (e: any) {
       error.value = e.message
       console.error('Error fetching stock opnames:', e)
@@ -69,7 +70,7 @@ export const useStockStore = defineStore('stock', () => {
     loading.value = true
     error.value = null
     try {
-      alerts.value = await sqliteStockService.fetchStockAlerts()
+      alerts.value = await stockServiceAdapter.fetchStockAlerts()
     } catch (e: any) {
       error.value = e.message
       console.error('Error fetching stock alerts:', e)
@@ -91,7 +92,7 @@ export const useStockStore = defineStore('stock', () => {
     loading.value = true
     error.value = null
     try {
-      const data = await sqliteStockService.createAdjustment(adjustment)
+      const data = await stockServiceAdapter.createAdjustment(adjustment)
       adjustments.value.unshift(data)
       return data
     } catch (e: any) {
@@ -118,7 +119,7 @@ export const useStockStore = defineStore('stock', () => {
     loading.value = true
     error.value = null
     try {
-      const data = await sqliteStockService.createOpname(opname)
+      const data = await stockServiceAdapter.createOpname(opname)
       opnames.value.unshift(data)
       return data
     } catch (e: any) {
@@ -134,7 +135,7 @@ export const useStockStore = defineStore('stock', () => {
     loading.value = true
     error.value = null
     try {
-      const data = await sqliteStockService.setMinimumStock(productId, minimumStock)
+      const data = await stockServiceAdapter.setMinimumStock(productId, minimumStock)
       // Refresh/update alerts list
       const idx = alerts.value.findIndex(a => a.product_id === productId)
       if (idx !== -1) {
@@ -163,7 +164,14 @@ export const useStockStore = defineStore('stock', () => {
     notes?: string
   }) => {
     try {
-      // Insert langsung ke SQLite dengan generate id & queue sync
+      // Di web (Supabase): movement stok otomatis dicatat oleh trigger
+      // trigger_record_stock_movement saat kolom stock berubah,
+      // jadi tidak perlu insert manual di sini.
+      if (!isNativeApp()) {
+        return
+      }
+
+      // Android: insert langsung ke SQLite dengan generate id & queue sync
       const userId = getCurrentUserId()
       const id = uuid()
       const now = nowIso()

@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { sqliteSalesReportEnhancedService as salesReportEnhancedService } from '@/services/sqlite/salesReportEnhanced'
+import { salesReportEnhancedServiceAdapter as salesReportEnhancedService } from '@/services'
 import type {
   EnhancedSalesSummary,
   TransactionDetail,
   ProductPerformance,
   EnhancedReportData,
-} from '@/services/sqlite/salesReportEnhanced'
+} from '@/services/salesReportEnhanced'
 
 export const useSalesReportEnhancedStore = defineStore('salesReportEnhanced', () => {
   // Load saved period from localStorage

@@ -69,7 +69,7 @@ export const productsService = {
     return data
   },
 
-  async create(product: ProductInsert): Promise<Product> {
+  async create(product: ProductInsert): Promise<ProductWithCategory> {
     const { data, error } = await supabase
       .from('products')
       .insert(product)
@@ -77,11 +77,11 @@ export const productsService = {
       .single()
 
     if (error) throw error
-    return data
+    return this.withCategory(data)
   },
 
   /** Insert banyak produk sekaligus (untuk import CSV / bulk). */
-  async createMany(products: ProductInsert[]): Promise<Product[]> {
+  async createMany(products: ProductInsert[]): Promise<ProductWithCategory[]> {
     if (products.length === 0) return []
     const { data, error } = await supabase
       .from('products')
@@ -89,10 +89,10 @@ export const productsService = {
       .select()
 
     if (error) throw error
-    return data || []
+    return (data || []).map((r: any) => this.withCategory(r))
   },
 
-  async update(id: string, product: ProductUpdate): Promise<Product> {
+  async update(id: string, product: ProductUpdate): Promise<ProductWithCategory> {
     const { data, error } = await supabase
       .from('products')
       .update(product)
@@ -101,7 +101,7 @@ export const productsService = {
       .single()
 
     if (error) throw error
-    return data
+    return this.withCategory(data)
   },
 
   async delete(id: string): Promise<void> {
@@ -113,7 +113,7 @@ export const productsService = {
     if (error) throw error
   },
 
-  async updateStock(id: string, quantity: number): Promise<Product> {
+  async updateStock(id: string, quantity: number): Promise<ProductWithCategory> {
     const { data, error } = await supabase
       .from('products')
       .update({ stock: quantity })
@@ -122,10 +122,10 @@ export const productsService = {
       .single()
 
     if (error) throw error
-    return data
+    return this.withCategory(data)
   },
 
-  async adjustStock(id: string, adjustment: number): Promise<Product> {
+  async adjustStock(id: string, adjustment: number): Promise<ProductWithCategory> {
     const product = await this.getById(id)
     if (!product) throw new Error('Product not found')
 
@@ -161,5 +161,12 @@ export const productsService = {
 
     if (error) throw error
     return data || []
+  },
+
+  /** Normalisasi hasil query tunggal ke ProductWithCategory. */
+  withCategory(r: any): ProductWithCategory {
+    if (!r) throw new Error('Data produk tidak ditemukan')
+    const { category, ...rest } = r
+    return { ...rest, category: category ?? undefined } as ProductWithCategory
   }
 }

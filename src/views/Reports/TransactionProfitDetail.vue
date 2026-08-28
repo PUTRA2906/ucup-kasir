@@ -205,8 +205,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
-import { sqliteSalesReportEnhancedService as salesReportEnhancedService } from '@/services/sqlite/salesReportEnhanced'
-import type { TransactionProfitDetail } from '@/services/sqlite/salesReportEnhanced'
+import { salesReportEnhancedServiceAdapter as salesReportEnhancedService } from '@/services'
+import type { TransactionProfitDetail } from '@/services/salesReportEnhanced'
 
 const route = useRoute()
 const router = useRouter()
