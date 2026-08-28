@@ -295,7 +295,7 @@ export function usePdfExport() {
     } else {
       payments.forEach((payment, idx) => {
         ensureSpace(15)
-        const label = `${formatPaymentMethod(payment.payment_method)}${idx === 0 ? ' (DP)' : ''}`
+        const label = `Pembayaran ${idx + 1}`
         doc.text(label, labelX, yPos)
         doc.text(`- ${formatPrice(payment.amount)}`, valueX, yPos, { align: 'right' })
         yPos += 5

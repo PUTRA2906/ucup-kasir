@@ -70,30 +70,30 @@
           </div>
 
           <!-- Kanan: Diterbitkan Atas Nama -->
-          <div class="mt-16 text-right sm:mt-16">
-            <p class="text-xs font-semibold uppercase tracking-wide">
+          <div class="mt-16 sm:mt-16">
+            <p class="text-right text-xs font-semibold uppercase tracking-wide">
               DI TERBITKAN ATAS NAMA :
             </p>
-            <div class="mt-3 space-y-1.5 text-left text-sm">
-              <div class="flex items-start">
-                <span class="w-14">Tanggal</span>
-                <span class="mr-1">:</span>
-                <span class="font-semibold">{{ formatDate(transaction.created_at) }}</span>
+            <div class="mt-3 space-y-1.5 text-sm">
+              <div class="flex items-baseline gap-2">
+                <span class="whitespace-nowrap font-semibold">Tanggal</span>
+                <span class="flex-1 text-center">:</span>
+                <span class="text-right font-semibold">{{ formatDate(transaction.created_at) }}</span>
               </div>
-              <div class="flex items-start">
-                <span class="w-14">Toko</span>
-                <span class="mr-1">:</span>
-                <span class="font-semibold">{{ transaction.customer_store_name || '-' }}</span>
+              <div class="flex items-baseline gap-2">
+                <span class="whitespace-nowrap">Toko</span>
+                <span class="flex-1 text-center">:</span>
+                <span class="text-right font-semibold">{{ transaction.customer_store_name || '-' }}</span>
               </div>
-              <div class="flex items-start">
-                <span class="w-14">Pembeli</span>
-                <span class="mr-1">:</span>
-                <span class="font-semibold">{{ transaction.customer_name || 'Umum' }}</span>
+              <div class="flex items-baseline gap-2">
+                <span class="whitespace-nowrap">Pembeli</span>
+                <span class="flex-1 text-center">:</span>
+                <span class="text-right font-semibold">{{ transaction.customer_name || 'Umum' }}</span>
               </div>
-              <div class="flex items-start">
-                <span class="w-14">Alamat</span>
-                <span class="mr-1">:</span>
-                <span class="font-semibold">{{ transaction.customer_address || '-' }}</span>
+              <div class="flex items-baseline gap-2">
+                <span class="whitespace-nowrap">Alamat</span>
+                <span class="flex-1 text-center">:</span>
+                <span class="text-right font-semibold">{{ transaction.customer_address || '-' }}</span>
               </div>
             </div>
           </div>
@@ -365,7 +365,7 @@ const statementLines = computed(() => {
     lines.push({
       sortKey: +new Date(p.created_at),
       date: formatShortDate(p.created_at),
-      label: `Pembayaran ${formatPaymentMethod(p.payment_method)}${i === 0 ? ' (DP)' : ''}`,
+      label: `Pembayaran ${i + 1}`,
       amount: p.amount,
       type: 'payment',
     })

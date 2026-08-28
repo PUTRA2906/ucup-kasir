@@ -2,25 +2,42 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Stok Gudang" class="hidden md:block" />
     <div class="space-y-6 px-4 md:px-0">
-      <!-- ===== MOBILE: Header & Tombol Penyesuaian ===== -->
+      <!-- ===== MOBILE: Header & Tombol Aksi ===== -->
       <div class="flex items-center justify-between md:hidden">
-        <div>
+        <div class="flex items-center gap-2">
+          <button
+            @click="router.push('/')"
+            class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400"
+            aria-label="Kembali"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
           <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
             Stok Gudang
           </h1>
-          <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
-            {{ settingsStore.storeSubtitle }} • {{ stats.totalProducts }} Item Terdata
-          </p>
         </div>
-        <button
-          @click="openAdjustmentModal"
-          class="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-3.5 py-2 text-xs font-bold text-white shadow-md transition active:scale-95"
-        >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Penyesuaian</span>
-        </button>
+        <div class="flex items-center gap-1.5">
+          <button
+            @click="openOpnameModal"
+            class="flex h-9 w-9 items-center justify-center rounded-xl border border-brand-600 bg-white text-brand-600 shadow-sm transition active:scale-95 dark:bg-gray-900"
+            aria-label="Stock Opname"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+          </button>
+          <button
+            @click="openAdjustmentModal"
+            class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white shadow-md transition active:scale-95"
+            aria-label="Penyesuaian Stok"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <!-- ===== MOBILE: Metrics Strip ===== -->
@@ -148,11 +165,11 @@
           <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ada produk yang cocok.</p>
         </div>
 
-        <router-link
+        <div
           v-for="product in mobileFilteredProducts.slice((mobilePage - 1) * 8, mobilePage * 8)"
           :key="product.id"
-          :to="`/stock/${product.id}`"
-          class="flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-3.5 transition active:scale-[0.99] dark:border-gray-800 dark:bg-white/[0.03]"
+          @click="router.push(`/stock/${product.id}`)"
+          class="relative flex cursor-pointer items-center justify-between rounded-2xl border border-gray-200 bg-white p-3.5 transition active:scale-[0.99] dark:border-gray-800 dark:bg-white/[0.03]"
           :class="
             product.stock === 0
               ? 'border-error-500/30'
@@ -161,7 +178,7 @@
                 : ''
           "
         >
-          <div class="max-w-[68%] space-y-0.5">
+          <div class="max-w-[62%] space-y-0.5">
             <h2 class="text-xs font-bold leading-snug text-gray-900 dark:text-white">
               {{ product.name }}
             </h2>
@@ -169,21 +186,33 @@
               {{ product.category?.name || '-' }} • SKU: {{ product.sku || '-' }}
             </p>
           </div>
-          <div class="text-right">
-            <span
-              class="block text-xs font-bold"
-              :class="stockTextClass(product)"
+          <div class="flex items-center gap-1.5">
+            <div class="text-right">
+              <span
+                class="block text-xs font-bold"
+                :class="stockTextClass(product)"
+              >
+                {{ product.stock }} Pcs
+              </span>
+              <span
+                class="mt-0.5 inline-block rounded border px-1.5 py-0.5 text-[9px] font-medium"
+                :class="stockBadgeClass(product)"
+              >
+                {{ stockBadgeLabel(product) }}
+              </span>
+            </div>
+            <button
+              type="button"
+              @click.stop="openProductMenu(product)"
+              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-gray-400 transition active:bg-gray-100 dark:text-gray-500 dark:active:bg-white/[0.06]"
+              aria-label="Aksi stok"
             >
-              {{ product.stock }} Pcs
-            </span>
-            <span
-              class="mt-0.5 inline-block rounded border px-1.5 py-0.5 text-[9px] font-medium"
-              :class="stockBadgeClass(product)"
-            >
-              {{ stockBadgeLabel(product) }}
-            </span>
+              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M5.999 10.245a1.755 1.755 0 110 3.51 1.755 1.755 0 010-3.51zm12 0a1.755 1.755 0 110 3.51 1.755 1.755 0 010-3.51zm-6 0a1.755 1.755 0 110 3.51 1.755 1.755 0 010-3.51z" />
+              </svg>
+            </button>
           </div>
-        </router-link>
+        </div>
       </div>
 
       <!-- ===== MOBILE: Paginasi ===== -->
@@ -375,6 +404,96 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- ===== MOBILE: Bottom Sheet Aksi Stok ===== -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition-opacity duration-200 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition-opacity duration-150 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="showProductMenu"
+          class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
+          @click.self="showProductMenu = false"
+        >
+          <Transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="translate-y-full opacity-0 sm:translate-y-0 sm:scale-95"
+            enter-to-class="translate-y-0 opacity-100 sm:scale-100"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="translate-y-0 opacity-100 sm:scale-100"
+            leave-to-class="translate-y-full opacity-0 sm:translate-y-0 sm:scale-95"
+          >
+            <div
+              v-if="showProductMenu"
+              class="w-full rounded-t-2xl border border-gray-200 bg-white p-5 shadow-xl sm:max-w-sm sm:rounded-2xl dark:border-gray-800 dark:bg-gray-900"
+            >
+              <!-- Header -->
+              <div class="mb-3 flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <h3 class="text-sm font-bold text-gray-900 dark:text-white">Aksi Stok</h3>
+                  <p class="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
+                    {{ menuProduct?.name }}
+                  </p>
+                </div>
+                <button
+                  @click="showProductMenu = false"
+                  class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/[0.03] dark:hover:text-gray-300"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Actions -->
+              <div class="space-y-1.5">
+                <button
+                  @click="adjustStock(menuProduct); showProductMenu = false"
+                  class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-800 transition hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-white/[0.04]"
+                >
+                  <svg class="h-5 w-5 text-brand-600 dark:text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Sesuaikan Stok
+                </button>
+                <button
+                  @click="viewHistory(menuProduct); showProductMenu = false"
+                  class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-800 transition hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-white/[0.04]"
+                >
+                  <svg class="h-5 w-5 text-brand-600 dark:text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Lihat Riwayat
+                </button>
+                <button
+                  @click="setMinimumStock(menuProduct); showProductMenu = false"
+                  class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-800 transition hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-white/[0.04]"
+                >
+                  <svg class="h-5 w-5 text-brand-600 dark:text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Atur Stok Minimum
+                </button>
+              </div>
+
+              <!-- Footer -->
+              <button
+                @click="showProductMenu = false"
+                class="mt-3 w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-white/[0.03]"
+              >
+                Batal
+              </button>
+            </div>
+          </Transition>
+        </div>
+      </Transition>
+    </Teleport>
   </AdminLayout>
 </template>
 
@@ -405,6 +524,14 @@ const showMinimumStockModal = ref(false)
 const selectedProduct = ref<any>(null)
 const minimumStockValue = ref(10)
 const filters = ref({ category: '', status: '', stock: '' })
+
+// Mobile: bottom sheet aksi per produk
+const showProductMenu = ref(false)
+const menuProduct = ref<any>(null)
+const openProductMenu = (product: any) => {
+  menuProduct.value = product
+  showProductMenu.value = true
+}
 
 // Mobile state
 const mobileSearch = ref('')

@@ -38,11 +38,21 @@
             </svg>
             Tanggal Transaksi
           </label>
-          <input
-            type="datetime-local"
-            v-model="transactionDate"
-            class="w-full rounded-xl border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-hidden dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-          />
+          <button
+            type="button"
+            @click="showDatePicker = true"
+            class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-hidden dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+          >
+            <span class="flex items-center gap-2">
+              <svg class="h-4 w-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {{ formatDateDisplay(transactionDate) }}
+            </span>
+            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
 
         <!-- 1. Card Data Customer -->
@@ -364,11 +374,21 @@
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Tanggal Transaksi
               </label>
-              <input
-                type="datetime-local"
-                v-model="transactionDate"
-                class="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-              />
+              <button
+                type="button"
+                @click="showDatePicker = true"
+                class="flex h-11 w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+              >
+                <span class="flex items-center gap-2">
+                  <svg class="h-4 w-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  {{ formatDateDisplay(transactionDate) }}
+                </span>
+                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
         </ComponentCard>
@@ -674,6 +694,13 @@
       :customer-id="selectedCustomerId"
       @confirm="handleReturnConfirm"
     />
+
+    <!-- Date Picker Modal -->
+    <DatePickerModal
+      v-model="showDatePicker"
+      :value="transactionDate"
+      @update:value="transactionDate = $event"
+    />
   </AdminLayout>
 </template>
 
@@ -687,6 +714,7 @@ import ProductPickerModal from '@/components/common/ProductPickerModal.vue'
 import PaymentModal from '@/components/common/PaymentModal.vue'
 import CustomerPickerModal from '@/components/common/CustomerPickerModal.vue'
 import ReturnPickerModal from '@/components/common/ReturnPickerModal.vue'
+import DatePickerModal from '@/components/common/DatePickerModal.vue'
 import { useProductsStore } from '@/stores/products'
 import { useCustomersStore } from '@/stores/customers'
 import { useTransactionsStore } from '@/stores/transactions'
@@ -709,11 +737,26 @@ const showProductPicker = ref(false)
 const showPaymentModal = ref(false)
 const showCustomerPicker = ref(false)
 const showReturnPicker = ref(false)
+const showDatePicker = ref(false)
 
 // Format datetime-local value dari Date (YYYY-MM-DDTHH:mm)
 const formatDateTimeLocal = (date: Date) => {
   const pad = (n: number) => n.toString().padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+// Tampilan tanggal custom (id-ID) dari nilai datetime-local
+const formatDateDisplay = (value: string) => {
+  const d = new Date(value)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 const transactionDate = ref(formatDateTimeLocal(new Date()))

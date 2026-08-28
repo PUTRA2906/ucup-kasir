@@ -61,29 +61,51 @@
                 />
               </div>
 
-              <!-- Kecamatan Filter -->
-              <div class="relative z-20">
-                <select
-                  v-model="selectedKecamatan"
-                  class="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800"
+              <!-- Kecamatan Filter (input + autocomplete) -->
+              <div class="relative z-20" v-click-outside="closeKecamatanOptions">
+                <input
+                  ref="kecamatanInputRef"
+                  v-model="kecamatanQuery"
+                  type="text"
+                  placeholder="Semua Kecamatan"
+                  class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                  @focus="showKecamatanOptions = true"
+                  @input="showKecamatanOptions = true"
+                  @keydown.enter.prevent="selectKecamatanSuggestion(0)"
+                  @keydown.down.prevent="highlightKecamatanSuggestion(1)"
+                  @keydown.up.prevent="highlightKecamatanSuggestion(-1)"
+                />
+                <span
+                  v-if="selectedKecamatan"
+                  class="absolute right-3 top-1/2 z-30 -translate-y-1/2 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                  @click="clearKecamatan"
                 >
-                  <option value="" class="bg-white text-gray-800 dark:bg-gray-900 dark:text-white/90">
-                    Semua Kecamatan
-                  </option>
-                  <option
-                    v-for="k in availableKecamatan"
-                    :key="k"
-                    :value="k"
-                    class="bg-white text-gray-800 dark:bg-gray-900 dark:text-white/90"
-                  >
-                    {{ k }}
-                  </option>
-                </select>
-                <span class="absolute right-4 top-1/2 z-30 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400">
-                  <svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M4.79175 7.396L10.0001 12.6043L15.2084 7.396" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </span>
+
+                <!-- Saran kecamatan -->
+                <div
+                  v-if="showKecamatanOptions && kecamatanSuggestions.length > 0"
+                  class="absolute left-0 right-0 top-full z-30 mt-1 max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-xl dark:border-gray-700 dark:bg-gray-800"
+                >
+                  <button
+                    v-for="(k, idx) in kecamatanSuggestions"
+                    :key="k"
+                    type="button"
+                    @click="selectKecamatanSuggestion(idx)"
+                    @mouseenter="activeKecamatanIndex = idx"
+                    :class="[
+                      'block w-full px-4 py-2.5 text-left text-sm transition',
+                      idx === activeKecamatanIndex
+                        ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300'
+                        : 'text-gray-800 dark:text-gray-200'
+                    ]"
+                  >
+                    <span class="font-medium">{{ k }}</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -188,6 +210,12 @@ const searchQuery = ref('')
 const selectedKecamatan = ref('')
 const searchInput = ref<HTMLInputElement | null>(null)
 
+// Kecamatan filter — input + autocomplete
+const kecamatanQuery = ref('')
+const showKecamatanOptions = ref(false)
+const activeKecamatanIndex = ref(0)
+const kecamatanInputRef = ref<HTMLInputElement | null>(null)
+
 watch(
   () => props.modelValue,
   (newValue) => {
@@ -195,6 +223,9 @@ watch(
     if (newValue) {
       searchQuery.value = ''
       selectedKecamatan.value = ''
+      kecamatanQuery.value = ''
+      showKecamatanOptions.value = false
+      activeKecamatanIndex.value = 0
       // Only autofocus on desktop (screen width >= 768px)
       nextTick(() => {
         if (window.innerWidth >= 768) {
@@ -213,6 +244,37 @@ const availableKecamatan = computed(() => {
   })
   return Array.from(set).sort()
 })
+
+// Saran kecamatan yang cocok dengan yang diketik
+const kecamatanSuggestions = computed(() => {
+  const query = kecamatanQuery.value.trim().toLowerCase()
+  if (!query) return availableKecamatan.value
+  return availableKecamatan.value.filter((k) => k.toLowerCase().includes(query))
+})
+
+const selectKecamatanSuggestion = (index: number) => {
+  const option = kecamatanSuggestions.value[index]
+  if (!option) return
+  selectedKecamatan.value = option
+  kecamatanQuery.value = option
+  showKecamatanOptions.value = false
+}
+
+const highlightKecamatanSuggestion = (delta: number) => {
+  const length = kecamatanSuggestions.value.length
+  if (length === 0) return
+  activeKecamatanIndex.value = (activeKecamatanIndex.value + delta + length) % length
+}
+
+const clearKecamatan = () => {
+  selectedKecamatan.value = ''
+  kecamatanQuery.value = ''
+  showKecamatanOptions.value = false
+}
+
+const closeKecamatanOptions = () => {
+  showKecamatanOptions.value = false
+}
 
 const filteredCustomers = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -235,5 +297,15 @@ const selectCustomer = (customer: Customer) => {
 
 const close = () => {
   emit('update:modelValue', false)
+}
+</script>
+
+<script lang="ts">
+import vClickOutside from './v-click-outside.vue'
+
+export default {
+  directives: {
+    clickOutside: vClickOutside,
+  },
 }
 </script>

@@ -1,18 +1,37 @@
 <template>
   <Teleport to="body">
-    <div
-      v-if="modelValue"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      @click.self="close"
+    <Transition
+      enter-active-class="transition-opacity duration-200 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-150 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
     >
-      <div class="w-full max-w-6xl rounded-xl bg-white shadow-xl dark:bg-gray-800">
+      <div
+        v-if="modelValue"
+        class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
+        @click.self="close"
+      >
+        <Transition
+          enter-active-class="transition-all duration-200 ease-out"
+          enter-from-class="translate-y-full opacity-0 sm:translate-y-0 sm:scale-95"
+          enter-to-class="translate-y-0 opacity-100 sm:scale-100"
+          leave-active-class="transition-all duration-150 ease-in"
+          leave-from-class="translate-y-0 opacity-100 sm:scale-100"
+          leave-to-class="translate-y-full opacity-0 sm:translate-y-0 sm:scale-95"
+        >
+          <div
+            v-if="modelValue"
+            class="max-h-[92vh] w-full overflow-hidden rounded-t-2xl bg-white shadow-xl sm:max-w-6xl sm:rounded-xl dark:bg-gray-800"
+          >
         <!-- Header -->
-        <div class="flex items-center justify-between border-b border-gray-200 p-6 dark:border-white/[0.08]">
-          <div>
+        <div class="flex items-center justify-between border-b border-gray-200 p-4 sm:p-6 dark:border-white/[0.08]">
+          <div class="min-w-0">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
               Stock Opname
             </h3>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            <p class="mt-1 truncate text-sm text-gray-600 dark:text-gray-400">
               {{ opnameNumber }} - {{ formatDate(opnameDate) }}
             </p>
           </div>
@@ -27,7 +46,7 @@
         </div>
 
         <!-- Body -->
-        <div class="max-h-[calc(100vh-200px)] overflow-y-auto p-6">
+        <div class="max-h-[calc(100vh-160px)] overflow-y-auto p-4 sm:p-6">
           <!-- Filter & Search -->
           <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex-1">
@@ -64,8 +83,8 @@
           </div>
 
           <!-- Items Table -->
-          <div v-else class="overflow-hidden rounded-lg border border-gray-200 dark:border-white/[0.08]">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-white/[0.08]">
+          <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-white/[0.08]">
+            <table class="min-w-[720px] divide-y divide-gray-200 dark:divide-white/[0.08]">
               <thead class="bg-gray-50 dark:bg-white/[0.03]">
                 <tr>
                   <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
@@ -183,11 +202,11 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex gap-3 border-t border-gray-200 p-6 dark:border-white/[0.08]">
+        <div class="flex gap-3 border-t border-gray-200 p-4 sm:p-6 dark:border-white/[0.08]">
           <button
             type="button"
             @click="close"
-            class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-white/[0.08] dark:text-gray-300 dark:hover:bg-white/[0.05]"
+            class="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-white/[0.08] dark:text-gray-300 dark:hover:bg-white/[0.05]"
           >
             Batal
           </button>
@@ -196,7 +215,7 @@
             @click="handleSubmit"
             :disabled="items.length === 0 || !isFormValid || loading"
             :class="[
-              'flex-1 rounded-lg px-4 py-2 text-sm font-medium text-white',
+              'flex-1 rounded-lg px-4 py-2.5 text-sm font-medium text-white',
               items.length > 0 && isFormValid && !loading
                 ? 'bg-brand-600 hover:bg-brand-700'
                 : 'bg-gray-300 cursor-not-allowed dark:bg-gray-700'
@@ -205,8 +224,10 @@
             {{ loading ? 'Menyimpan...' : 'Simpan Stock Opname' }}
           </button>
         </div>
+        </div>
+        </Transition>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>
 

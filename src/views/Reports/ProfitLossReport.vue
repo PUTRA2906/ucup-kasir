@@ -571,7 +571,7 @@ const getPaymentStatusText = (status: string, paidAmount: number) => {
   } else if (paidAmount === 0) {
     return 'Tempo'
   } else {
-    return 'DP'
+    return 'Cicilan'
   }
 }
 

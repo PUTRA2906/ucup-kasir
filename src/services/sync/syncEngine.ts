@@ -105,10 +105,6 @@ export async function downloadAllFromSupabase(): Promise<SyncResult> {
       fetchAllFromTable('notifications'),
     ])
 
-    // --- 2. Bersihkan sync_queue (semua yang ada sudah didownload ke Supabase,
-    //         dan sekarang kita punya snapshot fresh) ---
-    await clearSyncQueue()
-
     // --- 3. Tulis ke SQLite (truncate + insert fresh, dalam urutan dependensi FK) ---
     // Matikan FK sementara: urutan DELETE (anak dulu) dan INSERT (induk dulu)
     // tidak bisa dipenuhi dalam satu urutan. Diaktifkan lagi di finally.
@@ -164,7 +160,13 @@ export async function downloadAllFromSupabase(): Promise<SyncResult> {
       await enableForeignKeys()
     }
 
-    // --- 4. Simpan metadata ---
+    // --- 4. Bersihkan sync_queue HANYA setelah semua write berhasil ---
+    // Semua item queue mewakili perubahan lokal yang sudah ada di Supabase
+    // (sudah didownload ke snapshot di atas). Jika salah satu replaceAll gagal,
+    // queue tetap utuh agar perubahan lokal tidak hilang.
+    await clearSyncQueue()
+
+    // --- 5. Simpan metadata ---
     await setMetadata('last_download_at', new Date().toISOString())
     await setMetadata('downloaded_user_id', user.id)
 
