@@ -380,6 +380,92 @@
         </div>
       </section>
 
+      <!-- Backup & Sinkronisasi -->
+      <section class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <button
+          @click="toggleSection('backup')"
+          class="flex w-full items-center justify-between p-4 text-left transition active:scale-[0.99]"
+        >
+          <div class="flex items-center gap-1.5">
+            <svg class="h-4 w-4 text-sky-500 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+            </svg>
+            <div>
+              <h2 class="font-outfit text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-200">
+                Backup & Sinkronisasi
+              </h2>
+              <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">Kirim perubahan data aplikasi ke server</p>
+            </div>
+          </div>
+          <svg
+            :class="[
+              'h-5 w-5 text-gray-400 transition-transform duration-200',
+              expandedSections.backup ? 'rotate-180' : ''
+            ]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <div
+          v-show="expandedSections.backup"
+          class="space-y-3 border-t border-gray-200 p-4 text-xs dark:border-gray-800"
+        >
+          <!-- Status backup -->
+          <div class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900">
+            <div class="flex items-center gap-2">
+              <span
+                :class="[
+                  'inline-flex h-2.5 w-2.5 rounded-full',
+                  !isOnline ? 'bg-gray-400' : backupBusy ? 'bg-amber-500 animate-pulse' : 'bg-success-500',
+                ]"
+              ></span>
+              <div>
+                <p class="font-bold text-gray-900 dark:text-white">
+                  {{ !isOnline ? 'Offline' : backupBusy ? 'Sedang mengirim...' : hasPending ? 'Ada perubahan menunggu' : 'Tersinkron' }}
+                </p>
+                <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
+                  {{
+                    !isOnline
+                      ? 'Tidak terhubung ke internet — perubahan disimpan lokal'
+                      : hasPending && !backupBusy
+                        ? `${pendingCount} perubahan belum dikirim`
+                        : 'Semua perubahan aplikasi sudah dikirim ke server'
+                  }}
+                </p>
+              </div>
+            </div>
+            <BackupStatus />
+          </div>
+
+          <!-- Info backup terakhir -->
+          <div v-if="lastSyncLabel" class="rounded-xl bg-gray-50 px-3 py-2 text-[11px] text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+            Backup terakhir: {{ lastSyncLabel }}
+          </div>
+
+          <!-- Tombol upload -->
+          <button
+            @click="handleUploadChanges"
+            :disabled="!isOnline || backupBusy"
+            class="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 py-2.5 font-outfit text-xs font-bold text-white shadow-md transition active:scale-95 disabled:opacity-50"
+          >
+            <svg v-if="backupBusy" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+            </svg>
+            {{ !isOnline ? 'Tidak Ada Internet' : backupBusy ? 'Mengirim...' : 'Upload Perubahan Aplikasi' }}
+          </button>
+
+          <p v-if="syncError" class="text-[11px] font-medium text-red-500 dark:text-red-400">{{ syncError }}</p>
+        </div>
+      </section>
+
       <!-- Keamanan -->
       <section class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
         <button
@@ -626,6 +712,64 @@
         </div>
       </div>
 
+      <!-- Backup & Sinkronisasi -->
+      <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+        <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Backup & Sinkronisasi</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Kirim perubahan data aplikasi ke server</p>
+        </div>
+        <div class="space-y-4 p-6">
+          <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+            <div class="flex items-center gap-3">
+              <span
+                :class="[
+                  'inline-flex h-2.5 w-2.5 rounded-full',
+                  !isOnline ? 'bg-gray-400' : backupBusy ? 'bg-amber-500 animate-pulse' : 'bg-success-500',
+                ]"
+              ></span>
+              <div>
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {{ !isOnline ? 'Offline' : backupBusy ? 'Sedang mengirim...' : hasPending ? 'Ada perubahan menunggu' : 'Tersinkron' }}
+                </p>
+                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  {{
+                    !isOnline
+                      ? 'Tidak terhubung ke internet — perubahan disimpan lokal'
+                      : hasPending && !backupBusy
+                        ? `${pendingCount} perubahan belum dikirim`
+                        : 'Semua perubahan aplikasi sudah dikirim ke server'
+                  }}
+                </p>
+              </div>
+            </div>
+            <BackupStatus />
+          </div>
+
+          <p v-if="lastSyncLabel" class="text-xs text-gray-500 dark:text-gray-400">
+            Backup terakhir: {{ lastSyncLabel }}
+          </p>
+
+          <div class="flex justify-end pt-1">
+            <button
+              @click="handleUploadChanges"
+              :disabled="!isOnline || backupBusy"
+              class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+            >
+              <svg v-if="backupBusy" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+              </svg>
+              {{ !isOnline ? 'Tidak Ada Internet' : backupBusy ? 'Mengirim...' : 'Upload Perubahan Aplikasi' }}
+            </button>
+          </div>
+
+          <p v-if="syncError" class="text-xs font-medium text-red-500 dark:text-red-400">{{ syncError }}</p>
+        </div>
+      </div>
+
     </div>
     </div>
   </AdminLayout>
@@ -637,20 +781,50 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useAuthStore } from '@/stores/auth'
+import { useSyncStore } from '@/stores/sync'
 import { useToast } from '@/composables/useToast'
 import { useTheme } from '@/components/layout/ThemeProvider.vue'
+import { useNetwork } from '@/lib/network'
+import BackupStatus from '@/views/Sync/BackupStatus.vue'
 import { supabase } from '@/lib/supabase'
 
 const settingsStore = useStoreSettingsStore()
 const authStore = useAuthStore()
+const syncStore = useSyncStore()
 const toast = useToast()
 const { isDarkMode, toggleTheme } = useTheme()
+const { isOnline } = useNetwork()
 
 const loading = ref(false)
 const saving = ref(false)
 const uploading = ref(false)
 const changingPassword = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
+const syncError = ref<string | null>(null)
+const lastSyncLabel = ref<string | null>(null)
+
+// Backup & Sinkronisasi — status dari sync store
+const backupBusy = computed(() => syncStore.uploading || syncStore.syncing)
+const hasPending = computed(() => syncStore.hasPending)
+const pendingCount = computed(() => syncStore.pendingCount)
+
+/** Upload perubahan aplikasi (sync_queue) ke server. */
+async function handleUploadChanges() {
+  if (!isOnline.value || backupBusy.value) return
+  syncError.value = null
+  try {
+    const result = await syncStore.uploadChanges()
+    if (result.uploaded && result.uploaded > 0) {
+      toast.success('Berhasil!', `${result.uploaded} perubahan berhasil diupload`)
+    } else {
+      toast.success('Berhasil!', 'Tidak ada perubahan untuk diupload')
+    }
+    lastSyncLabel.value = syncStore.lastSyncAt || null
+  } catch (e: any) {
+    syncError.value = e.message || 'Gagal upload perubahan'
+    toast.error('Gagal!', syncError.value || 'Gagal upload perubahan')
+  }
+}
 
 // Per-section saving state
 const savingStore = ref(false)
@@ -724,6 +898,7 @@ const expandedSections = reactive({
   display: false,
   profile: false,
   security: false,
+  backup: false,
 })
 
 const toggleSection = (section: keyof typeof expandedSections) => {
@@ -871,6 +1046,19 @@ onMounted(async () => {
   formData.tax_rate = s.tax_rate || 0
   formData.receipt_footer = s.receipt_footer || ''
   loadProfile()
+
+  // Muat info backup
+  await syncStore.loadInfo()
+  lastSyncLabel.value = syncStore.lastSyncAt || null
+  // Hitung pending queue
+  try {
+    const { getSyncQueue } = await import('@/lib/sqlite')
+    const queue = await getSyncQueue()
+    syncStore.pendingCount = queue.length
+  } catch {
+    // non-critical
+  }
+
   loading.value = false
 })
 </script>
