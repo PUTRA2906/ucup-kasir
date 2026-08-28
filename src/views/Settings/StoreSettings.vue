@@ -530,6 +530,22 @@
         </div>
       </section>
 
+      <!-- Keluar -->
+      <section class="rounded-2xl border border-red-200 bg-white shadow-sm dark:border-red-900/30 dark:bg-white/[0.03]">
+        <button
+          @click="showLogoutConfirm = true"
+          class="flex w-full items-center gap-3 p-4 text-left transition active:scale-[0.99]"
+        >
+          <LogoutIcon class="h-5 w-5 text-red-500 dark:text-red-400" />
+          <div>
+            <h2 class="font-outfit text-sm font-bold text-red-600 dark:text-red-400">
+              Keluar
+            </h2>
+            <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">Keluar dari akun aplikasi ini</p>
+          </div>
+        </button>
+      </section>
+
     </div>
 
     <!-- Desktop Layout -->
@@ -770,13 +786,44 @@
         </div>
       </div>
 
+      <!-- Keluar -->
+      <div class="overflow-hidden rounded-2xl border border-red-200 bg-white dark:border-red-900/30 dark:bg-gray-900">
+        <div class="flex items-center justify-between gap-4 p-6">
+          <div class="flex items-center gap-3">
+            <LogoutIcon class="h-5 w-5 text-red-500 dark:text-red-400" />
+            <div>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">Keluar</p>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Keluar dari akun aplikasi ini</p>
+            </div>
+          </div>
+          <button
+            @click="showLogoutConfirm = true"
+            class="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-5 py-2 text-sm font-medium text-red-600 hover:bg-red-100 disabled:opacity-50 dark:border-red-900/30 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20"
+          >
+            <LogoutIcon class="h-4 w-4" />
+            Keluar
+          </button>
+        </div>
+      </div>
+
     </div>
     </div>
+
+    <ConfirmDialog
+      v-model="showLogoutConfirm"
+      title="Keluar Aplikasi"
+      message="Yakin ingin keluar dari akun ini?"
+      confirm-text="Keluar"
+      cancel-text="Batal"
+      variant="danger"
+      @confirm="handleLogout"
+    />
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
@@ -786,11 +833,14 @@ import { useToast } from '@/composables/useToast'
 import { useTheme } from '@/components/layout/ThemeProvider.vue'
 import { useNetwork } from '@/lib/network'
 import BackupStatus from '@/views/Sync/BackupStatus.vue'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import { LogoutIcon } from '@/icons'
 import { supabase } from '@/lib/supabase'
 
 const settingsStore = useStoreSettingsStore()
 const authStore = useAuthStore()
 const syncStore = useSyncStore()
+const router = useRouter()
 const toast = useToast()
 const { isDarkMode, toggleTheme } = useTheme()
 const { isOnline } = useNetwork()
@@ -802,6 +852,7 @@ const changingPassword = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const syncError = ref<string | null>(null)
 const lastSyncLabel = ref<string | null>(null)
+const showLogoutConfirm = ref(false)
 
 // Backup & Sinkronisasi — status dari sync store
 const backupBusy = computed(() => syncStore.uploading || syncStore.syncing)
@@ -997,6 +1048,16 @@ const changePassword = async () => {
     toast.error('Gagal!', 'Gagal memperbarui kata sandi')
   } finally {
     changingPassword.value = false
+  }
+}
+
+const handleLogout = async () => {
+  showLogoutConfirm.value = false
+  try {
+    await authStore.signOut()
+    router.push('/signin')
+  } catch (error: any) {
+    toast.error('Gagal!', error.message || 'Gagal keluar dari akun')
   }
 }
 

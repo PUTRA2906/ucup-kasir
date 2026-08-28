@@ -52,7 +52,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import vClickOutside from './v-click-outside.vue'
 
 const props = defineProps({
   menuItems: {
@@ -94,6 +93,8 @@ const handleMenuItemClick = (callback) => {
 </script>
 
 <script>
+import vClickOutside from './v-click-outside.vue'
+
 export default {
   directives: {
     clickOutside: vClickOutside,
