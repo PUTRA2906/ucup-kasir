@@ -206,7 +206,7 @@ watch(
   (newValue) => {
     isOpen.value = newValue
     if (newValue) {
-      amountInput.value = props.remaining > 0 ? props.remaining.toString() : ''
+      amountInput.value = ''
       paymentMethod.value = 'tunai'
       notes.value = ''
       isSubmitting.value = false

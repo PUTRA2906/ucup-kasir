@@ -1039,7 +1039,7 @@ const handlePrintPdf = async () => {
       transaction_number: transaction.value.transaction_number,
       created_at: transaction.value.created_at,
       customer_name: transaction.value.customer_name || 'Umum',
-      customer_store_name: transaction.value.customer_store_name,
+      customer_store_name: customersStore.customers.find((c) => c.id === transaction.value.customer_id)?.store_name,
       customer_address: kecamatan || transaction.value.customer_address,
       items: transaction.value.items || [],
       return_items: allReturnItems.value,
@@ -1086,7 +1086,7 @@ const handleShareWhatsApp = async () => {
       transaction_number: transaction.value.transaction_number,
       created_at: transaction.value.created_at,
       customer_name: transaction.value.customer_name || 'Umum',
-      customer_store_name: transaction.value.customer_store_name,
+      customer_store_name: customersStore.customers.find((c) => c.id === transaction.value.customer_id)?.store_name,
       customer_address: kecamatan || transaction.value.customer_address,
       items: transaction.value.items || [],
       return_items: allReturnItems.value,
@@ -1125,7 +1125,8 @@ onMounted(async () => {
   try {
     // Fetch settings store data first
     await settingsStore.fetchSettings()
-    
+    await customersStore.fetchCustomers()
+
     transaction.value = await transactionsStore.getTransaction(invoiceId)
     await returnsStore.fetchReturns(invoiceId)
     await returnsStore.fetchLinkedReturns(invoiceId)
