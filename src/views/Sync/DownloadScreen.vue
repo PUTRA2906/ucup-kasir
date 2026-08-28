@@ -128,7 +128,7 @@ function finish() {
     props.onComplete()
   } else {
     const redirect = router.currentRoute.value.query.redirect as string | undefined
-    router.push(redirect || '/products')
+    router.push(redirect || '/')
   }
 }
 

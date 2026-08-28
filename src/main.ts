@@ -80,3 +80,19 @@ CapacitorApp.addListener('backButton', ({ canGoBack }) => {
     router.back()
   }
 })
+
+// ============================================================
+// Cold start: pastikan di halaman home
+// Android WebView bisa mengembalikan URL terakhir bahkan setelah
+// proses dimatikan. Redirect ke / jika perlu.
+// ============================================================
+if (isNativeApp()) {
+  router.isReady().then(async () => {
+    const { useAuthStore } = await import('@/stores/auth')
+    const authStore = useAuthStore()
+    await authStore.initialize()
+    if (authStore.isAuthenticated && router.currentRoute.value.path !== '/') {
+      router.replace('/')
+    }
+  })
+}

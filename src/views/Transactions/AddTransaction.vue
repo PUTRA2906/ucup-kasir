@@ -203,7 +203,8 @@
                     <input
                       type="text"
                       inputmode="numeric"
-                      :value="item.quantity"
+                      autocomplete="off"
+                      :value="getQtyDisplay(item)"
                       @input="updateQuantity(item, ($event.target as HTMLInputElement).value)"
                       @blur="validateQuantity(item)"
                       class="w-12 bg-transparent text-center text-xs font-bold text-gray-900 focus:outline-none dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -496,7 +497,8 @@
                       <input
                         type="text"
                         inputmode="numeric"
-                        :value="item.quantity"
+                        autocomplete="off"
+                        :value="getQtyDisplay(item)"
                         @input="updateQuantity(item, ($event.target as HTMLInputElement).value)"
                         @blur="() => validateQuantity(item)"
                         class="w-16 rounded-lg border border-gray-300 bg-transparent px-2 py-1.5 text-center text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
@@ -906,33 +908,50 @@ const handleReturnConfirm = (items: ReturnSelection[]) => {
   }
 }
 
-// Quantity management functions
+// ============================================================
+// Quantity handlers — pakai draft non-reaktif agar di Android
+// WebView input tidak ter-override Vue re-render saat user
+// mengetik multi-digit.
+// ============================================================
+const quantityDrafts = new Map<CartItem, string>()
+
+const getQtyDisplay = (item: CartItem) => quantityDrafts.get(item) ?? item.quantity
+
 const decrementQuantity = (item: CartItem) => {
+  quantityDrafts.delete(item)
   item.quantity = Math.max(1, item.quantity - 1)
   item.subtotal = item.quantity * item.price
 }
 
 const incrementQuantity = (item: CartItem) => {
+  quantityDrafts.delete(item)
   item.quantity = Math.min(item.stock, item.quantity + 1)
   item.subtotal = item.quantity * item.price
 }
 
 const updateQuantity = (item: CartItem, value: string) => {
-  // Allow empty string while user is still typing (will be validated on blur)
-  if (value === '' || value === '0') return
-
-  const parsed = parseInt(value)
-  if (isNaN(parsed)) return
-
-  // Clamp value between 1 and stock
-  const numValue = Math.max(1, Math.min(parsed, item.stock))
-
-  item.quantity = numValue
-  item.subtotal = item.quantity * item.price
+  // Simpan draft mentah — jangan update item.quantity dulu
+  if (value === '') {
+    quantityDrafts.set(item, '')
+    return
+  }
+  const filtered = value.replace(/\D/g, '')
+  if (filtered === '') return
+  quantityDrafts.set(item, filtered)
 }
 
 const validateQuantity = (item: CartItem) => {
-  // Ensure quantity is valid after blur
+  const draft = quantityDrafts.get(item)
+  if (draft !== undefined) {
+    quantityDrafts.delete(item)
+    const parsed = parseInt(draft)
+    if (!isNaN(parsed) && parsed > 0) {
+      item.quantity = Math.min(parsed, item.stock)
+    } else {
+      item.quantity = 1
+    }
+  }
+  // Ensure quantity is valid
   if (!item.quantity || item.quantity < 1) {
     item.quantity = 1
   } else if (item.quantity > item.stock) {

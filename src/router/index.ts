@@ -467,8 +467,10 @@ router.beforeEach(async (to, from, next) => {
     // Belum login -> arahkan ke halaman masuk, simpan tujuan awal
     next({ path: '/signin', query: { redirect: to.fullPath } })
   } else if (isPublic && authStore.isAuthenticated) {
-    // Sudah login -> jangan biarkan mengakses halaman signin/signup
-    next({ path: '/products' })
+    // Sudah login -> jangan biarkan mengakses halaman signin/signup.
+    // Hormati query redirect bila ada (dipakai saat user dikirim ke signin lalu login kembali).
+    const redirect = typeof to.query.redirect === 'string' ? to.query.redirect : ''
+    next({ path: redirect || '/' })
   } else if (isAuthRoute && !authStore.isAuthenticated) {
     // Rute auth tanpa login -> signin
     next({ path: '/signin', query: { redirect: to.fullPath } })

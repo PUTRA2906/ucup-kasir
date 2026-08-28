@@ -229,7 +229,7 @@ const handleSubmit = async () => {
     router.push(`/sync/download${encoded}`)
   } else {
     // Web: langsung ke app, data dibaca dari Supabase realtime
-    router.push(redirect || '/products')
+    router.push(redirect || '/')
   }
 }
 </script>
