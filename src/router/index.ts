@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { supabase } from '@/lib/supabase'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -458,6 +459,18 @@ router.beforeEach(async (to, from, next) => {
   // Muat session sekali saja (dari localStorage) sebelum cek auth
   if (!authStore.initialized) {
     await authStore.initialize()
+  }
+
+  // Terakhir kali dicek tidak login, coba ambil session segar dulu.
+  // Supabase bisa sesaat melaporkan session null (mis. refresh token gagal
+  // di background) padahal token masih valid — hindari redirect ke /signin
+  // tanpa konfirmasi nyata.
+  if (!authStore.isAuthenticated) {
+    const { data } = await supabase.auth.getSession()
+    if (data.session) {
+      authStore.session = data.session
+      authStore.user = data.session.user
+    }
   }
 
   const isPublic = publicRoutes.includes(to.path)

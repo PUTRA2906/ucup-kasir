@@ -2,18 +2,8 @@
   <admin-layout>
     <PageBreadcrumb pageTitle="Dashboard" class="hidden md:block" />
     <div class="space-y-6 px-4 md:px-0">
-      <!-- Loading Skeleton -->
-      <div v-if="loading" class="space-y-6">
-        <LoadingSkeleton type="mobile-greeting" />
-        <LoadingSkeleton type="mobile-menu" />
-        <div class="hidden md:block">
-          <LoadingSkeleton type="default" />
-        </div>
-      </div>
-
-      <template v-else>
-        <!-- Mobile Greeting Banner -->
-        <div class="flex items-center justify-between md:hidden">
+      <!-- Mobile Greeting Banner (data user — tidak butuh skeleton) -->
+      <div class="flex items-center justify-between md:hidden">
           <div>
             <p class="text-[11px] tracking-wide text-gray-500 dark:text-gray-400">
               Selamat Datang,
@@ -93,8 +83,12 @@
             </button>
           </div>
 
-          <!-- Kartu keuangan -->
-          <div class="grid grid-cols-2 gap-3">
+          <!-- Kartu keuangan — skeleton hanya saat data laporan dimuat -->
+          <div v-if="loading" class="grid grid-cols-2 gap-3">
+            <LoadingSkeleton type="stats" />
+            <LoadingSkeleton type="stats" />
+          </div>
+          <div v-else class="grid grid-cols-2 gap-3">
             <div
               class="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
             >
@@ -167,7 +161,7 @@
           </div>
         </div>
 
-        <!-- Mobile Quick Menu Grid (8 items) -->
+        <!-- Mobile Quick Menu Grid (8 items, drag & drop reorderable) -->
         <div
           class="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:hidden dark:border-gray-800 dark:bg-white/[0.03]"
         >
@@ -177,176 +171,92 @@
             >
               Menu Cepat
             </span>
-            <span class="text-[10px] font-medium text-brand-500">Akses Cepat</span>
+            <button
+              type="button"
+              @click="toggleQuickMenuEdit"
+              :class="[
+                'rounded-lg px-2.5 py-1 text-[10px] font-semibold transition active:scale-95',
+                quickMenuEditing
+                  ? 'bg-brand-500 text-white'
+                  : 'bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-300',
+              ]"
+            >
+              {{ quickMenuEditing ? 'Selesai' : 'Edit Urutan' }}
+            </button>
           </div>
-          <div class="grid grid-cols-4 gap-y-4 gap-x-2 text-center">
-            <router-link
-              to="/stock"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
+
+          <draggable
+            v-model="quickMenu"
+            item-key="id"
+            tag="div"
+            class="grid grid-cols-4 gap-y-4 gap-x-2 text-center"
+            :animation="150"
+            :disabled="!quickMenuEditing"
+            ghost-class="quick-menu-ghost"
+            chosen-class="quick-menu-chosen"
+            drag-class="quick-menu-drag"
+            @end="saveQuickMenu"
+          >
+            <template #item="{ element }">
               <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-500 transition-transform group-hover:scale-105"
+                :class="[
+                  'relative flex flex-col items-center',
+                  quickMenuEditing ? 'cursor-grab active:cursor-grabbing' : '',
+                ]"
               >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                  />
-                </svg>
+                <router-link
+                  :to="element.to"
+                  :class="[
+                    'group flex flex-col items-center transition',
+                    quickMenuEditing
+                      ? 'pointer-events-none opacity-80'
+                      : 'active:scale-95',
+                  ]"
+                >
+                  <div
+                    :class="[
+                      'flex h-12 w-12 items-center justify-center rounded-2xl border transition-transform',
+                      element.iconClass,
+                      quickMenuEditing ? '' : 'group-hover:scale-105',
+                    ]"
+                  >
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        :d="element.iconPath"
+                      />
+                    </svg>
+                  </div>
+                  <span
+                    class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
+                    >{{ element.label }}</span
+                  >
+                </router-link>
+
+                <!-- Indikator drag saat mode edit -->
+                <span
+                  v-if="quickMenuEditing"
+                  class="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white shadow"
+                >
+                  <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      d="M7 2a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM7 18a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                </span>
               </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Stok</span
-              >
-            </router-link>
+            </template>
+          </draggable>
 
-            <router-link
-              to="/customers"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
-              <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-500 transition-transform group-hover:scale-105"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Customer</span
-              >
-            </router-link>
-
-            <router-link
-              to="/returns"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
-              <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-500 transition-transform group-hover:scale-105"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-              </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Retur</span
-              >
-            </router-link>
-
-
-
-            <router-link
-              to="/categories"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
-              <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-teal-500/20 bg-teal-500/10 text-teal-500 transition-transform group-hover:scale-105"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                  />
-                </svg>
-              </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Kategori</span
-              >
-            </router-link>
-
-            <router-link
-              to="/products"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
-              <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-violet-500/20 bg-violet-500/10 text-violet-500 transition-transform group-hover:scale-105"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                  />
-                </svg>
-              </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Produk</span
-              >
-            </router-link>
-
-            <router-link
-              to="/transactions"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
-              <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-500 transition-transform group-hover:scale-105"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                  />
-                </svg>
-              </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Transaksi</span
-              >
-            </router-link>
-
-            <router-link
-              to="/stock/movements"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
-              <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-500/20 bg-orange-500/10 text-orange-500 transition-transform group-hover:scale-105"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                  />
-                </svg>
-              </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Mutasi</span
-              >
-            </router-link>
-
-            <router-link
-              to="/reports/transaction-profit"
-              class="group flex flex-col items-center transition active:scale-95"
-            >
-              <div
-                class="flex h-12 w-12 items-center justify-center rounded-2xl border border-purple-500/20 bg-purple-500/10 text-purple-500 transition-transform group-hover:scale-105"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                >Laba/Tx</span
-              >
-            </router-link>
-
-
-          </div>
+          <!-- Petunjuk saat mode edit -->
+          <p
+            v-if="quickMenuEditing"
+            class="text-center text-[10px] text-gray-500 dark:text-gray-400"
+          >
+            Seret menu untuk mengubah urutan
+          </p>
         </div>
 
         <!-- Mobile Peringatan Stok Gudang -->
@@ -365,36 +275,41 @@
             </router-link>
           </div>
 
-          <div v-if="lowStockProducts.length === 0" class="py-3 text-center">
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-              Semua stok aman. Tidak ada produk yang menipis.
-            </p>
+          <div v-if="loading" class="space-y-2">
+            <LoadingSkeleton v-for="i in 3" :key="i" type="list-item" />
           </div>
-
-          <div v-else class="space-y-2">
-            <div
-              v-for="product in lowStockProducts.slice(0, 4)"
-              :key="product.id"
-              class="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs dark:border-gray-700 dark:bg-white/[0.02]"
-            >
-              <div class="min-w-0">
-                <p class="truncate font-bold text-gray-900 dark:text-white">{{ product.name }}</p>
-                <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
-                  Batas minimum: {{ product.minimum_stock ?? 10 }}
-                </p>
-              </div>
-              <span
-                class="flex-shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-bold"
-                :class="
-                  product.stock === 0
-                    ? 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500'
-                    : 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500'
-                "
-              >
-                {{ product.stock === 0 ? 'Habis' : `Sisa ${product.stock}` }}
-              </span>
+          <template v-else>
+            <div v-if="lowStockProducts.length === 0" class="py-3 text-center">
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                Semua stok aman. Tidak ada produk yang menipis.
+              </p>
             </div>
-          </div>
+
+            <div v-else class="space-y-2">
+              <div
+                v-for="product in lowStockProducts.slice(0, 4)"
+                :key="product.id"
+                class="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs dark:border-gray-700 dark:bg-white/[0.02]"
+              >
+                <div class="min-w-0">
+                  <p class="truncate font-bold text-gray-900 dark:text-white">{{ product.name }}</p>
+                  <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
+                    Batas minimum: {{ product.minimum_stock ?? 10 }}
+                  </p>
+                </div>
+                <span
+                  class="flex-shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-bold"
+                  :class="
+                    product.stock === 0
+                      ? 'bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500'
+                      : 'bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500'
+                  "
+                >
+                  {{ product.stock === 0 ? 'Habis' : `Sisa ${product.stock}` }}
+                </span>
+              </div>
+            </div>
+          </template>
         </div>
 
         <!-- Desktop Greeting -->
@@ -497,13 +412,13 @@
             </div>
           </div>
         </template>
-      </template>
     </div>
   </admin-layout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import draggable from 'vuedraggable'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import DashboardStats from '@/components/ecommerce/DashboardStats.vue'
@@ -579,6 +494,121 @@ const closeInfoTooltip = () => {
   activeInfoTooltip.value = null
 }
 
+// ============================================================
+// Menu Cepat — drag & drop urutan, tersimpan di localStorage.
+// Berfungsi di Android (Capacitor WebView) dan web (browser).
+// ============================================================
+
+interface QuickMenuItem {
+  id: string
+  to: string
+  label: string
+  iconClass: string
+  iconPath: string
+}
+
+const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
+  {
+    id: 'stock',
+    to: '/stock',
+    label: 'Stok',
+    iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
+    iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+  },
+  {
+    id: 'customers',
+    to: '/customers',
+    label: 'Customer',
+    iconClass: 'border-amber-500/20 bg-amber-500/10 text-amber-500',
+    iconPath:
+      'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+  },
+  {
+    id: 'returns',
+    to: '/returns',
+    label: 'Retur',
+    iconClass: 'border-rose-500/20 bg-rose-500/10 text-rose-500',
+    iconPath: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
+  },
+  {
+    id: 'categories',
+    to: '/categories',
+    label: 'Kategori',
+    iconClass: 'border-teal-500/20 bg-teal-500/10 text-teal-500',
+    iconPath: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z',
+  },
+  {
+    id: 'products',
+    to: '/products',
+    label: 'Produk',
+    iconClass: 'border-violet-500/20 bg-violet-500/10 text-violet-500',
+    iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+  },
+  {
+    id: 'transactions',
+    to: '/transactions',
+    label: 'Transaksi',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
+    iconPath: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
+  },
+  {
+    id: 'stock-movements',
+    to: '/stock/movements',
+    label: 'Mutasi',
+    iconClass: 'border-orange-500/20 bg-orange-500/10 text-orange-500',
+    iconPath: 'M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4',
+  },
+  {
+    id: 'transaction-profit',
+    to: '/reports/transaction-profit',
+    label: 'Laba/Tx',
+    iconClass: 'border-purple-500/20 bg-purple-500/10 text-purple-500',
+    iconPath: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+  },
+]
+
+const QUICK_MENU_STORAGE_KEY = 'quick_menu_order'
+
+const quickMenuEditing = ref(false)
+
+/** Muat urutan menu dari localStorage; fallback ke default. */
+const loadQuickMenu = (): QuickMenuItem[] => {
+  try {
+    const saved = localStorage.getItem(QUICK_MENU_STORAGE_KEY)
+    if (saved) {
+      const ids = JSON.parse(saved) as string[]
+      const byId = new Map(DEFAULT_QUICK_MENU.map((item) => [item.id, item]))
+      const ordered = ids.map((id) => byId.get(id)).filter((i): i is QuickMenuItem => !!i)
+      // Tambahkan item yang belum ada di urutan tersimpan (mis. menu baru)
+      for (const item of DEFAULT_QUICK_MENU) {
+        if (!ordered.some((o) => o.id === item.id)) ordered.push(item)
+      }
+      return ordered
+    }
+  } catch (e) {
+    console.error('Gagal memuat urutan menu cepat:', e)
+  }
+  return [...DEFAULT_QUICK_MENU]
+}
+
+const quickMenu = ref<QuickMenuItem[]>(loadQuickMenu())
+
+const toggleQuickMenuEdit = () => {
+  quickMenuEditing.value = !quickMenuEditing.value
+}
+
+/** Simpan urutan menu ke localStorage (dipanggil setelah drag selesai). */
+const saveQuickMenu = () => {
+  try {
+    localStorage.setItem(
+      QUICK_MENU_STORAGE_KEY,
+      JSON.stringify(quickMenu.value.map((item) => item.id))
+    )
+  } catch (e) {
+    console.error('Gagal menyimpan urutan menu cepat:', e)
+  }
+}
+
 onMounted(() => {
   document.addEventListener('click', closeInfoTooltip)
 })
@@ -612,5 +642,30 @@ onMounted(async () => {
 .tooltip-fade-enter-from,
 .tooltip-fade-leave-to {
   opacity: 0;
+}
+</style>
+
+<style>
+/* Class SortableJS untuk visual drag & drop menu cepat.
+   Non-scoped karena elemen ghost/chosen di-clone dinamis oleh SortableJS. */
+.quick-menu-ghost {
+  opacity: 0.4;
+}
+.quick-menu-chosen {
+  opacity: 1;
+}
+.quick-menu-drag {
+  opacity: 1;
+  z-index: 50;
+}
+.quick-menu-drag > div {
+  border-radius: 1rem;
+  background-color: rgb(255 255 255 / 0.9);
+  box-shadow: 0 10px 25px rgb(0 0 0 / 0.15);
+}
+@media (prefers-color-scheme: dark) {
+  .quick-menu-drag > div {
+    background-color: rgb(17 24 39 / 0.9);
+  }
 }
 </style>

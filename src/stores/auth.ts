@@ -34,7 +34,24 @@ export const useAuthStore = defineStore('auth', () => {
       setCurrentUserId(null)
     }
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    // Event yang dianggap "logout nyata" (bukan artefak refresh token).
+    // Supabase bisa mengirim SIGNED_OUT sesaat saat refresh halaman bila
+    // refresh token gagal diperpanjang di background — jangan dianggap
+    // logout selama session masih bisa dibaca dari localStorage.
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      if (event === 'SIGNED_OUT') {
+        // Verifikasi ulang: jika localStorage masih punya session valid,
+        // ini bukan logout nyata — biarkan session tetap aktif.
+        // Satu-satunya jalan keluar dari blok ini adalah session
+        // beneran sudah tidak ada (token expire permanen / refresh gagal).
+        const { data: fresh } = await supabase.auth.getSession()
+        if (fresh.session) {
+          session.value = fresh.session
+          user.value = fresh.session.user
+          setCurrentUserId(fresh.session.user.id)
+          return
+        }
+      }
       session.value = newSession
       user.value = newSession?.user ?? null
       // Ikutkan perubahan user ke service SQLite
