@@ -2,34 +2,24 @@
   <AdminLayout hide-bottom-nav>
     <PageBreadcrumb pageTitle="Laba Per Transaksi" class="hidden md:block" />
 
-    <div class="space-y-4 px-4 md:px-0 pb-8">
+    <div class="space-y-4 pb-8">
       <!-- Mobile Header -->
-      <div class="flex items-center gap-3">
-        <button
-          @click="router.push('/')"
-          class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-        >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <div class="flex-1">
-          <h1 class="text-lg font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
-            LABA PER TRANSAKSI
-          </h1>
-          <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
-            {{ formatDateRange(store.dateRange.start, store.dateRange.end) }}
-          </p>
-        </div>
-        <button
-          @click="showFilter = true"
-          class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-600 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-        >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-        </button>
-      </div>
+      <MobilePageHeader
+        title="Laba Per Transaksi"
+        :subtitle="formatDateRange(store.dateRange.start, store.dateRange.end)"
+        back-to="/"
+      >
+        <template #actions>
+          <button
+            @click="showFilter = true"
+            class="flex h-8 w-8 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-600 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+          </button>
+        </template>
+      </MobilePageHeader>
 
       <!-- Ringkasan Kas & Laba (Mobile) -->
       <div class="grid grid-cols-2 gap-3">
@@ -269,6 +259,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useSalesReportEnhancedStore } from '@/stores/salesReportEnhanced'
 
 const router = useRouter()

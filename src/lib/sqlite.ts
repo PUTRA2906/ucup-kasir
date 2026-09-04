@@ -208,15 +208,18 @@ export async function run(sql: string, params: (string | number | boolean | null
   return { changes: res.changes?.changes ?? 0, lastId: res.changes?.lastId }
 }
 
+/** Executor transaksi: query & run dengan params bernilai nullable */
+export interface TransactionExecutor {
+  query: <T2 = any>(sql: string, params?: (string | number | boolean | null)[]) => Promise<T2[]>
+  run: (sql: string, params?: (string | number | boolean | null)[]) => Promise<{ changes: number; lastId?: number }>
+}
+
 /**
  * Jalankan banyak statement dalam satu transaksi atomik.
  * Mengembalikan promise yang resolve jika sukses, reject jika salah satu gagal.
  */
 export async function transaction<T>(
-  fn: (executor: {
-    query: <T2 = any>(sql: string, params?: (string | number | boolean | null)[]) => Promise<T2[]>
-    run: (sql: string, params?: (string | number | boolean | null)[]) => Promise<{ changes: number; lastId?: number }>
-  }) => Promise<T>
+  fn: (executor: TransactionExecutor) => Promise<T>
 ): Promise<T> {
   const conn = await getDb()
   try {

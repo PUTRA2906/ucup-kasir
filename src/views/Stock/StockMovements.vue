@@ -2,27 +2,9 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Riwayat Mutasi Stok" class="hidden md:block" />
     
-    <!-- Mobile Header -->
-    <div class="mb-6 flex items-center gap-3 px-4 md:hidden">
-      <button
-        @click="$router.push('/')"
-        class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-      >
-        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-      <div class="flex-1">
-        <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
-          RIWAYAT MUTASI STOK
-        </h1>
-        <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
-          {{ stockStore.movements.length }} Mutasi Stok
-        </p>
-      </div>
-    </div>
+    <MobilePageHeader title="Riwayat Mutasi Stok" :subtitle="stockStore.movements.length + ' Mutasi Stok'" back-to="/" />
 
-    <div class="space-y-6 px-4 md:px-0">
+    <div class="space-y-6">
       <!-- Mobile View: Filter & Cards -->
       <div class="space-y-4 md:hidden">
         <!-- Quick Filters -->
@@ -437,6 +419,7 @@ import { useRouter, useRoute } from 'vue-router'
 import DataTable from '@/components/tables/DataTable.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useProductsStore } from '@/stores/products'
 import { useStockStore } from '@/stores/stock'
 import { useToast } from '@/composables/useToast'

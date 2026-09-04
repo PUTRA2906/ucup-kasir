@@ -22,6 +22,10 @@ import { sqliteReturnsService } from '@/services/sqlite/returns'
 import { sqliteStockService } from '@/services/sqlite/stock'
 import { sqliteNotificationsService } from '@/services/sqlite/notifications'
 import { sqliteStoreSettingsService } from '@/services/sqlite/storeSettings'
+import { sqliteFinanceService } from '@/services/sqlite/finance'
+import { sqlitePurchasingService } from '@/services/sqlite/purchasing'
+import { sqliteHrService } from '@/services/sqlite/hr'
+import { sqliteShippingService } from '@/services/sqlite/shipping'
 import type { SyncQueueItem } from '@/lib/sqlite'
 
 // ============================================================
@@ -51,6 +55,31 @@ const DOWNLOAD_TABLES = [
   'stock_opname_items',
   'stock_alerts',
   'notifications',
+  'chart_of_accounts',
+  'journal_entries',
+  'journal_lines',
+  'suppliers',
+  'purchase_orders',
+  'po_items',
+  'goods_receipts',
+  'grn_items',
+  'purchase_invoices',
+  'pi_items',
+  'pi_payments',
+  'purchase_returns',
+  'purchase_return_items',
+  'departments',
+  'positions',
+  'employees',
+  'attendance',
+  'payroll_components',
+  'payroll_periods',
+  'payrolls',
+  'payroll_items',
+  'vehicles',
+  'delivery_orders',
+  'delivery_items',
+  'delivery_tracking',
 ] as const
 
 export interface SyncResult {
@@ -87,7 +116,13 @@ export async function downloadAllFromSupabase(): Promise<SyncResult> {
     // --- 1. Download semua tabel dari Supabase (berurutan sesuai dependensi) ---
     const [categories, products, customers, transactions, transactionItems, transactionPayments,
            returns, returnItems, storeSettings, stockMovements, stockAdjustments,
-           stockOpnames, stockOpnameItems, stockAlerts, notifications] = await Promise.all([
+           stockOpnames, stockOpnameItems, stockAlerts, notifications,
+           chartOfAccounts, journalEntries, journalLines,
+           suppliers, purchaseOrders, poItems, goodsReceipts, grnItems,
+           purchaseInvoices, piItems, piPayments, purchaseReturns, purchaseReturnItems,
+           departments, positions, employees, attendance,
+           payrollComponents, payrollPeriods, payrolls, payrollItems,
+           vehicles, deliveryOrders, deliveryItems, deliveryTracking] = await Promise.all([
       fetchAllFromTable('categories'),
       fetchAllFromTable('products'),
       fetchAllFromTable('customers'),
@@ -103,6 +138,31 @@ export async function downloadAllFromSupabase(): Promise<SyncResult> {
       fetchAllFromTable('stock_opname_items'),
       fetchAllFromTable('stock_alerts'),
       fetchAllFromTable('notifications'),
+      fetchAllFromTable('chart_of_accounts'),
+      fetchAllFromTable('journal_entries'),
+      fetchAllFromTable('journal_lines'),
+      fetchAllFromTable('suppliers'),
+      fetchAllFromTable('purchase_orders'),
+      fetchAllFromTable('po_items'),
+      fetchAllFromTable('goods_receipts'),
+      fetchAllFromTable('grn_items'),
+      fetchAllFromTable('purchase_invoices'),
+      fetchAllFromTable('pi_items'),
+      fetchAllFromTable('pi_payments'),
+      fetchAllFromTable('purchase_returns'),
+      fetchAllFromTable('purchase_return_items'),
+      fetchAllFromTable('departments'),
+      fetchAllFromTable('positions'),
+      fetchAllFromTable('employees'),
+      fetchAllFromTable('attendance'),
+      fetchAllFromTable('payroll_components'),
+      fetchAllFromTable('payroll_periods'),
+      fetchAllFromTable('payrolls'),
+      fetchAllFromTable('payroll_items'),
+      fetchAllFromTable('vehicles'),
+      fetchAllFromTable('delivery_orders'),
+      fetchAllFromTable('delivery_items'),
+      fetchAllFromTable('delivery_tracking'),
     ])
 
     // --- 3. Tulis ke SQLite (truncate + insert fresh, dalam urutan dependensi FK) ---
@@ -156,6 +216,88 @@ export async function downloadAllFromSupabase(): Promise<SyncResult> {
       await sqliteStockService.replaceAllAlerts(stockAlerts)
       await sqliteNotificationsService.replaceAll(notifications)
       await sqliteStoreSettingsService.replaceAll(storeSettings)
+
+      // finance: COA + jurnal (gabungkan lines ke entries)
+      await sqliteFinanceService.replaceAllAccounts(chartOfAccounts)
+      const jrnMap = new Map<string, any>()
+      for (const j of journalEntries) {
+        jrnMap.set(j.id, { ...j, lines: [] })
+      }
+      for (const l of journalLines) {
+        const j = jrnMap.get(l.journal_id)
+        if (j) j.lines.push(l)
+      }
+      await sqliteFinanceService.replaceAllJournals([...jrnMap.values()])
+
+      // purchasing: suppliers + PO (gabungkan items) + GRN (gabungkan items) + PI (gabungkan items+payments) + PR (gabungkan items)
+      await sqlitePurchasingService.replaceAllSuppliers(suppliers)
+
+      const poMap = new Map<string, any>()
+      for (const p of purchaseOrders) poMap.set(p.id, { ...p, items: [] })
+      for (const it of poItems) {
+        const po = poMap.get(it.po_id)
+        if (po) po.items.push(it)
+      }
+      await sqlitePurchasingService.replaceAllPurchaseOrders([...poMap.values()])
+
+      const grnMap = new Map<string, any>()
+      for (const g of goodsReceipts) grnMap.set(g.id, { ...g, items: [] })
+      for (const it of grnItems) {
+        const grn = grnMap.get(it.grn_id)
+        if (grn) grn.items.push(it)
+      }
+      await sqlitePurchasingService.replaceAllGoodsReceipts([...grnMap.values()])
+
+      const piMap = new Map<string, any>()
+      for (const p of purchaseInvoices) piMap.set(p.id, { ...p, items: [], payments: [] })
+      for (const it of piItems) {
+        const pi = piMap.get(it.pi_id)
+        if (pi) pi.items.push(it)
+      }
+      for (const p of piPayments) {
+        const pi = piMap.get(p.pi_id)
+        if (pi) pi.payments.push(p)
+      }
+      await sqlitePurchasingService.replaceAllPurchaseInvoices([...piMap.values()])
+
+      const prMap = new Map<string, any>()
+      for (const r of purchaseReturns) prMap.set(r.id, { ...r, items: [] })
+      for (const it of purchaseReturnItems) {
+        const pr = prMap.get(it.pr_id)
+        if (pr) pr.items.push(it)
+      }
+      await sqlitePurchasingService.replaceAllPurchaseReturns([...prMap.values()])
+
+      // HR: departments, positions, employees, attendance, payroll components, periods, payrolls
+      await sqliteHrService.replaceAllDepartments(departments)
+      await sqliteHrService.replaceAllPositions(positions)
+      await sqliteHrService.replaceAllEmployees(employees)
+      await sqliteHrService.replaceAllAttendance(attendance)
+      await sqliteHrService.replaceAllPayrollComponents(payrollComponents)
+      await sqliteHrService.replaceAllPayrollPeriods(payrollPeriods)
+
+      const payrollMap = new Map<string, any>()
+      for (const p of payrolls) payrollMap.set(p.id, { ...p, items: [] })
+      for (const it of payrollItems) {
+        const p = payrollMap.get(it.payroll_id)
+        if (p) p.items.push(it)
+      }
+      await sqliteHrService.replaceAllPayrolls([...payrollMap.values()])
+
+      // shipping: vehicles + delivery orders (gabungkan items + tracking)
+      await sqliteShippingService.replaceAllVehicles(vehicles)
+
+      const doMap = new Map<string, any>()
+      for (const d of deliveryOrders) doMap.set(d.id, { ...d, items: [], tracking: [] })
+      for (const it of deliveryItems) {
+        const d = doMap.get(it.delivery_order_id)
+        if (d) d.items.push(it)
+      }
+      for (const tr of deliveryTracking) {
+        const d = doMap.get(tr.delivery_order_id)
+        if (d) d.tracking.push(tr)
+      }
+      await sqliteShippingService.replaceAllDeliveryOrders([...doMap.values()])
     } finally {
       await enableForeignKeys()
     }
@@ -315,6 +457,81 @@ async function processQueueItem(item: SyncQueueItem): Promise<void> {
     case 'notifications':
       await genericUpsert('notifications', operation, record_id, data)
       break
+    case 'chart_of_accounts':
+      await genericUpsert('chart_of_accounts', operation, record_id, data)
+      break
+    case 'journal_entries':
+      await genericUpsert('journal_entries', operation, record_id, data)
+      break
+    case 'journal_lines':
+      await genericUpsert('journal_lines', operation, record_id, data)
+      break
+    case 'suppliers':
+      await genericUpsert('suppliers', operation, record_id, data)
+      break
+    case 'purchase_orders':
+      await genericUpsert('purchase_orders', operation, record_id, data)
+      break
+    case 'po_items':
+      await genericUpsert('po_items', operation, record_id, data)
+      break
+    case 'goods_receipts':
+      await genericUpsert('goods_receipts', operation, record_id, data)
+      break
+    case 'grn_items':
+      await genericUpsert('grn_items', operation, record_id, data)
+      break
+    case 'purchase_invoices':
+      await genericUpsert('purchase_invoices', operation, record_id, data)
+      break
+    case 'pi_items':
+      await genericUpsert('pi_items', operation, record_id, data)
+      break
+    case 'pi_payments':
+      await genericUpsert('pi_payments', operation, record_id, data)
+      break
+    case 'purchase_returns':
+      await genericUpsert('purchase_returns', operation, record_id, data)
+      break
+    case 'purchase_return_items':
+      await genericUpsert('purchase_return_items', operation, record_id, data)
+      break
+    case 'departments':
+      await genericUpsert('departments', operation, record_id, data)
+      break
+    case 'positions':
+      await genericUpsert('positions', operation, record_id, data)
+      break
+    case 'employees':
+      await genericUpsert('employees', operation, record_id, data)
+      break
+    case 'attendance':
+      await genericUpsert('attendance', operation, record_id, data)
+      break
+    case 'payroll_components':
+      await genericUpsert('payroll_components', operation, record_id, data)
+      break
+    case 'payroll_periods':
+      await genericUpsert('payroll_periods', operation, record_id, data)
+      break
+    case 'payrolls':
+      await genericUpsert('payrolls', operation, record_id, data)
+      break
+    case 'payroll_items':
+      await genericUpsert('payroll_items', operation, record_id, data)
+      break
+    case 'vehicles':
+      await genericUpsert('vehicles', operation, record_id, data)
+      break
+    case 'delivery_orders':
+      await genericUpsert('delivery_orders', operation, record_id, data)
+      break
+    case 'delivery_items':
+      await genericUpsert('delivery_items', operation, record_id, data)
+      break
+    case 'delivery_tracking':
+      await genericUpsert('delivery_tracking', operation, record_id, data)
+      break
     default:
       throw new Error(`Tabel tidak dikenal: ${table_name}`)
   }
@@ -384,6 +601,14 @@ export async function uploadAllToSupabase(): Promise<SyncResult> {
     'transaction_payments', 'returns', 'return_items', 'store_settings',
     'stock_movements', 'stock_adjustments', 'stock_opnames', 'stock_opname_items',
     'stock_alerts', 'notifications',
+    'chart_of_accounts', 'journal_entries', 'journal_lines',
+    'suppliers', 'purchase_orders', 'po_items',
+    'goods_receipts', 'grn_items',
+    'purchase_invoices', 'pi_items', 'pi_payments',
+    'purchase_returns', 'purchase_return_items',
+    'departments', 'positions', 'employees', 'attendance',
+    'payroll_components', 'payroll_periods', 'payrolls', 'payroll_items',
+    'vehicles', 'delivery_orders', 'delivery_items', 'delivery_tracking',
   ]
 
   let uploaded = 0

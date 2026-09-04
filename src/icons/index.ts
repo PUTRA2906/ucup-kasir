@@ -1,4 +1,5 @@
 import BoxCubeIcon from "./BoxCubeIcon.vue";
+import TruckIcon from "./TruckIcon.vue";
 import GridIcon from "./GridIcon.vue";
 import ReceiptIcon from "./ReceiptIcon.vue";
 import CalenderIcon from "./CalenderIcon.vue";
@@ -51,6 +52,7 @@ import WarehouseIcon from "./WarehouseIcon.vue";
 export {
   BellIcon,
   BarChartIcon,
+  TruckIcon,
   ReceiptIcon,
   LayoutDashboardIcon,
   UserGroupIcon,

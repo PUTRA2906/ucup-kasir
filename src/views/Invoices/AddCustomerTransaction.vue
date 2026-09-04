@@ -2,30 +2,18 @@
   <AdminLayout hide-bottom-nav>
     <PageBreadcrumb pageTitle="Transaksi Baru" class="hidden md:block" />
 
-    <!-- Mobile Header with Close Button -->
-    <div class="mb-4 flex items-center justify-between md:hidden">
-      <div class="flex items-center gap-2.5">
+    <!-- Mobile Header -->
+    <MobilePageHeader title="Transaksi Baru" icon-type="close" :subtitle="formatDateShort(new Date())" @back="router.push(`/customer-invoices/${route.params.kecamatan}/${route.params.customerId}`)">
+      <template #actions>
         <button
-          @click="router.push(`/customer-invoices/${route.params.kecamatan}/${route.params.customerId}`)"
-          class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+          type="button"
+          @click="resetForm"
+          class="text-xs font-bold text-gray-500 hover:text-error-500 dark:text-gray-400 dark:hover:text-error-400"
         >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          Reset
         </button>
-        <div>
-          <h1 class="text-lg font-extrabold leading-tight text-gray-900 dark:text-white">Transaksi Baru</h1>
-          <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ formatDateShort(new Date()) }}</p>
-        </div>
-      </div>
-      <button
-        type="button"
-        @click="resetForm"
-        class="text-xs font-bold text-gray-500 hover:text-error-500 dark:text-gray-400 dark:hover:text-error-400"
-      >
-        Reset
-      </button>
-    </div>
+      </template>
+    </MobilePageHeader>
 
     <form @submit.prevent="handleSubmit">
       <!-- Mobile Layout -->
@@ -709,6 +697,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import ProductPickerModal from '@/components/common/ProductPickerModal.vue'
 import PaymentModal from '@/components/common/PaymentModal.vue'
@@ -754,8 +743,6 @@ const formatDateDisplay = (value: string) => {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   })
 }
 
@@ -837,8 +824,6 @@ const formatDate = (date: Date) =>
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   })
 
 const formatDateShort = (date: Date) =>
@@ -847,8 +832,6 @@ const formatDateShort = (date: Date) =>
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   })
 
 const resetForm = () => {

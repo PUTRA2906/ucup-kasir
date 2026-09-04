@@ -3,20 +3,18 @@
     <PageBreadcrumb pageTitle="Laporan Laba Rugi" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <div class="mb-4 flex items-center justify-between md:hidden">
-      <div>
-        <h1 class="text-lg font-extrabold leading-tight text-gray-900 dark:text-white">Laporan Laba Rugi</h1>
-        <p class="text-[10px] text-gray-500 dark:text-gray-400">Analisis Penjualan & Profitabilitas</p>
-      </div>
-      <button
-        @click="showFilterModal = true"
-        class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.03]"
-      >
-        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-        </svg>
-      </button>
-    </div>
+    <MobilePageHeader title="Laporan Laba Rugi" subtitle="Analisis Penjualan & Profitabilitas" hide-back-button>
+      <template #actions>
+        <button
+          @click="showFilterModal = true"
+          class="flex h-8 w-8 items-center justify-center rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+        </button>
+      </template>
+    </MobilePageHeader>
 
     <!-- Loading State -->
     <div v-if="store.loading" class="flex items-center justify-center py-20">
@@ -157,6 +155,21 @@
         </div>
       </div>
 
+      <!-- Laba Bersih (Setelah Beban Operasional) -->
+      <div class="rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-sm dark:border-emerald-500/40 dark:from-emerald-500/10 dark:to-gray-900">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Laba Bersih</span>
+            <p class="text-[10px] text-emerald-600/70 dark:text-emerald-500/70">Laba Kotor − Beban Operasional</p>
+          </div>
+          <p class="text-lg font-black text-emerald-700 dark:text-emerald-400">{{ formatCurrency(netProfit) }}</p>
+        </div>
+        <div class="mt-2 flex items-center justify-between border-t border-emerald-200/60 pt-2 text-[10px] dark:border-emerald-500/20">
+          <span class="text-emerald-600/80 dark:text-emerald-500/70">Beban Operasional</span>
+          <span class="font-bold text-red-600 dark:text-red-400">-{{ formatCurrency(totalExpenses) }}</span>
+        </div>
+      </div>
+
       <!-- Breakdown Laba (Expandable) -->
       <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <button
@@ -199,6 +212,14 @@
           <div class="flex justify-between border-t border-gray-200 pt-2 text-xs font-bold dark:border-gray-700">
             <span class="text-purple-600 dark:text-purple-400">Laba Kotor</span>
             <span class="text-purple-600 dark:text-purple-400">{{ formatCurrency(store.summary.gross_profit) }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-600 dark:text-gray-400">- Beban Operasional (non-HPP)</span>
+            <span class="font-medium text-red-600 dark:text-red-400">-{{ formatCurrency(totalExpenses) }}</span>
+          </div>
+          <div class="flex justify-between border-t border-gray-200 pt-2 text-xs font-bold dark:border-gray-700">
+            <span class="text-emerald-600 dark:text-emerald-400">Laba Bersih</span>
+            <span class="text-emerald-600 dark:text-emerald-400">{{ formatCurrency(netProfit) }}</span>
           </div>
         </div>
       </div>
@@ -486,13 +507,27 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useSalesReportEnhancedStore } from '@/stores/salesReportEnhanced'
+import { useFinanceStore } from '@/stores/finance'
 
 const router = useRouter()
 const store = useSalesReportEnhancedStore()
+const financeStore = useFinanceStore()
 
 const showFilterModal = ref(false)
 const showBreakdown = ref(false)
+
+// Saldo beban operasional per akun (dari jurnal, modul finance)
+const expenseBalanceByAccount = ref<Record<string, number>>({})
+
+// Beban operasional dari jurnal (modul finance) — akun beban selain HPP
+const totalExpenses = computed(() => {
+  return financeStore.accounts
+    .filter((a) => a.type === 'beban' && a.code !== '5-5000')
+    .reduce((sum, acc) => sum + (expenseBalanceByAccount.value[acc.id] || 0), 0)
+})
+const netProfit = computed(() => store.summary.gross_profit - totalExpenses.value)
 
 // Temp filter state
 const tempDateRange = ref({
@@ -530,8 +565,6 @@ const formatDateTime = (dateString: string) => {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   })
 }
 
@@ -638,6 +671,7 @@ const applyFilters = () => {
   store.setPaymentStatusFilter(tempPaymentStatus.value)
   txStatusFilter.value = 'semua'
   store.fetchReport()
+  loadExpenseBalances()
   showFilterModal.value = false
 }
 
@@ -654,5 +688,26 @@ onMounted(() => {
   tempDateRange.value = { start: today, end: today }
   store.setDateRange(today, today)
   store.fetchReport()
+
+  // Ambil saldo beban operasional dari modul finance
+  loadExpenseBalances()
 })
+
+/** Muat saldo akun beban (non-HPP) dari modul finance. */
+async function loadExpenseBalances() {
+  try {
+    if (financeStore.accounts.length === 0) {
+      await financeStore.fetchAccounts()
+    }
+    const balances = await financeStore.getAccountBalances()
+    expenseBalanceByAccount.value = {}
+    for (const b of balances) {
+      if (b.account_type === 'beban' && b.balance !== 0) {
+        expenseBalanceByAccount.value[b.account_id] = b.balance
+      }
+    }
+  } catch {
+    // silently fail — beban tetap 0
+  }
+}
 </script>

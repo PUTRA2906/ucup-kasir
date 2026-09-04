@@ -3,31 +3,18 @@
     <PageBreadcrumb pageTitle="Daftar Transaksi" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <div class="mb-4 flex items-center justify-between md:hidden">
-      <div class="flex items-center gap-2.5">
+    <MobilePageHeader title="Daftar Transaksi" :subtitle="transactionsStore.transactions.length + ' Transaksi'" back-to="/">
+      <template #actions>
         <button
-          @click="router.push('/')"
-          class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+          @click="addTransaction"
+          class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm hover:bg-blue-500 active:scale-95"
         >
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
         </button>
-        <div>
-          <h1 class="text-lg font-extrabold leading-tight text-gray-900 dark:text-white">Daftar Transaksi</h1>
-          <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ transactionsStore.transactions.length }} Transaksi</p>
-        </div>
-      </div>
-      <button
-        @click="addTransaction"
-        class="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white shadow-lg hover:bg-blue-500"
-      >
-        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Transaksi Baru
-      </button>
-    </div>
+      </template>
+    </MobilePageHeader>
 
     <!-- Mobile Search & Filter -->
     <div class="space-y-2 pb-1 md:hidden">
@@ -510,6 +497,7 @@ import { useRouter } from 'vue-router'
 import DataTable from '@/components/tables/DataTable.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import { useTransactionsStore } from '@/stores/transactions'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
@@ -675,8 +663,6 @@ const formatDate = (value: string) => {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   })
 }
 

@@ -1,5 +1,6 @@
 import { query, queryOne, addToSyncQueue, transaction } from './db'
 import { getCurrentUserId, uuid, nowIso, generateReturnNumber } from './db'
+import { sqliteFinanceService } from './finance'
 import type { TransactionReturn, ReturnItem, ReturnItemInput } from '@/types/database'
 
 // ============================================================
@@ -25,6 +26,7 @@ export const sqliteReturnsService = {
     const returnId = uuid()
     const now = nowIso()
     const returnNumber = generateReturnNumber()
+    let autoJournalId: string | null = null
 
     return transaction(async (tx) => {
       // --- 1. Validasi transaksi ---
@@ -182,6 +184,23 @@ export const sqliteReturnsService = {
           now,
         ]
       )
+
+      // Hitung total COGS returned
+      const totalCogsReturned = validated.reduce((sum, v) => sum + v.priceBuy * v.quantity, 0)
+
+      // --- 8. Auto-jurnal: reversal jurnal penjualan ---
+      autoJournalId = await sqliteFinanceService.postReturnJournal(
+        tx,
+        userId,
+        returnId,
+        transactionId,
+        totalRefund,
+        txn.paid_amount,
+        txn.remaining_amount,
+        totalCogsReturned,
+        txn.transaction_number,
+        now
+      )
     }).then(async () => {
       // Queue retur (items ikut sebagai payload)
       const created = await this.getById(returnId)
@@ -189,6 +208,12 @@ export const sqliteReturnsService = {
       // Header transaksi juga berubah
       const txn = await this.getById(transactionId)
       if (txn) await addToSyncQueue('UPDATE', 'transactions', transactionId, txn)
+
+      // Queue jurnal reversal retur
+      if (autoJournalId) {
+        const journal = await sqliteFinanceService.getJournal(autoJournalId)
+        await addToSyncQueue('INSERT', 'journal_entries', autoJournalId, journal || { id: autoJournalId })
+      }
       return returnId
     })
   },
@@ -276,6 +301,22 @@ export const sqliteReturnsService = {
              sync_status = 'pending', updated_at_local = ?
          WHERE id = ? AND user_id = ?`,
         [newSubtotal, newTotal, newRemaining, newPaymentStatus, now, now, ret.transaction_id, userId]
+      )
+
+      // Hapus jurnal terkait retur (baris dulu, lalu header)
+      const journals = await tx.query<any>(
+        `SELECT id FROM journal_entries WHERE reference_type = 'return' AND reference_id = ? AND user_id = ?`,
+        [id, userId]
+      )
+      for (const j of journals) {
+        await tx.run(
+          `DELETE FROM journal_lines WHERE journal_id = ? AND user_id = ?`,
+          [j.id, userId]
+        )
+      }
+      await tx.run(
+        `DELETE FROM journal_entries WHERE reference_type = 'return' AND reference_id = ? AND user_id = ?`,
+        [id, userId]
       )
 
       // Hapus retur (return_items ikut cascade)

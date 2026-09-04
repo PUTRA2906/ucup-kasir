@@ -19,6 +19,14 @@ import { salesReportService } from './salesReport'
 import { sqliteSalesReportService } from './sqlite/salesReport'
 import { salesReportEnhancedService } from './salesReportEnhanced'
 import { sqliteSalesReportEnhancedService } from './sqlite/salesReportEnhanced'
+import { financeService } from './finance'
+import { sqliteFinanceService } from './sqlite/finance'
+import { purchasingService } from './purchasing'
+import { sqlitePurchasingService } from './sqlite/purchasing'
+import { hrService } from './hr'
+import { sqliteHrService } from './sqlite/hr'
+import { shippingService } from './shipping'
+import { sqliteShippingService } from './sqlite/shipping'
 
 // ============================================================
 // Service factory — pilih implementasi berdasarkan platform.
@@ -41,4 +49,8 @@ export const returnsServiceAdapter = isNativeApp() ? sqliteReturnsService : retu
 export const stockServiceAdapter = isNativeApp() ? sqliteStockService : stockService
 export const salesReportServiceAdapter = isNativeApp() ? sqliteSalesReportService : salesReportService
 export const salesReportEnhancedServiceAdapter = isNativeApp() ? sqliteSalesReportEnhancedService : salesReportEnhancedService
+export const financeServiceAdapter = isNativeApp() ? sqliteFinanceService : financeService
+export const purchasingServiceAdapter = isNativeApp() ? sqlitePurchasingService : purchasingService
+export const hrServiceAdapter = isNativeApp() ? sqliteHrService : hrService
+export const shippingServiceAdapter = isNativeApp() ? sqliteShippingService : shippingService
 export type { StockMovement, StockAdjustment, StockOpname, StockAlert }

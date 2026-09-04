@@ -406,15 +406,9 @@ const formatDate = (dateString: string) => {
 
 const formatDateTime = (dateString: string) => {
   const date = new Date(dateString)
-  const datePart = date
+  return date
     .toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' })
     .replace(/ /g, '-')
-  const time = date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
-  return `${datePart} ${time} WIB`
 }
 
 const printInvoice = () => {

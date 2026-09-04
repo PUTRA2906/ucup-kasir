@@ -2,7 +2,7 @@
   <AdminLayout hide-bottom-nav>
     <PageBreadcrumb pageTitle="Detail Laba Transaksi" class="hidden md:block" />
 
-    <div class="space-y-4 px-4 md:px-0 pb-8">
+    <div class="space-y-4 pb-8">
       <!-- Loading -->
       <div v-if="loading" class="flex items-center justify-center py-12">
         <div class="text-center">
@@ -27,34 +27,24 @@
 
       <template v-else-if="detail && tx">
         <!-- Header -->
-        <div class="flex items-center gap-3">
-          <button
-            @click="router.push('/reports/transaction-profit')"
-            class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-          >
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div class="flex-1 min-w-0">
-            <h1 class="text-lg font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
-              {{ tx.transaction_number }}
-            </h1>
-            <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
-              {{ tx.customer_name || 'Tanpa Customer' }} • {{ formatFullDate(tx.created_at) }}
-            </p>
-          </div>
-          <span
-            :class="[
-              'rounded-full px-2.5 py-1 text-[10px] font-bold',
-              tx.payment_status === 'lunas'
-                ? 'bg-success-100 text-success-700 dark:bg-success-900 dark:text-success-400'
-                : 'bg-warning-100 text-warning-700 dark:bg-warning-900 dark:bg-warning-400'
-            ]"
-          >
-            {{ tx.payment_status === 'lunas' ? 'LUNAS' : 'TEMPO' }}
-          </span>
-        </div>
+        <MobilePageHeader
+          :title="tx.transaction_number"
+          :subtitle="(tx.customer_name || 'Tanpa Customer') + ' • ' + formatFullDate(tx.created_at)"
+          back-to="/reports/transaction-profit"
+        >
+          <template #badge>
+            <span
+              :class="[
+                'rounded-full px-2.5 py-1 text-[10px] font-bold',
+                tx.payment_status === 'lunas'
+                  ? 'bg-success-100 text-success-700 dark:bg-success-900 dark:text-success-400'
+                  : 'bg-warning-100 text-warning-700 dark:bg-warning-900 dark:bg-warning-400'
+              ]"
+            >
+              {{ tx.payment_status === 'lunas' ? 'LUNAS' : 'TEMPO' }}
+            </span>
+          </template>
+        </MobilePageHeader>
 
         <!-- Total Laba Transaksi -->
         <div class="rounded-2xl border border-gray-200 bg-gradient-to-br from-brand-500/10 to-transparent p-4 shadow-sm dark:border-gray-800 dark:from-brand-500/5">
@@ -205,6 +195,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { salesReportEnhancedServiceAdapter as salesReportEnhancedService } from '@/services'
 import type { TransactionProfitDetail } from '@/services/salesReportEnhanced'
 
@@ -236,8 +227,6 @@ const formatFullDate = (dateStr: string) =>
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   })
 
 const formatPaymentMethod = (value: string) => {

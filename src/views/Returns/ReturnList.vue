@@ -2,26 +2,9 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Daftar Retur" class="hidden md:block" />
 
-    <div class="space-y-6 px-4 md:px-0">
+    <div class="space-y-6">
       <!-- Mobile Header -->
-      <div class="flex items-center gap-3 md:hidden">
-        <button
-          @click="$router.push('/')"
-          class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-        >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <div class="flex-1">
-          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
-            DAFTAR RETUR
-          </h1>
-          <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
-            {{ returnsList.length }} Retur
-          </p>
-        </div>
-      </div>
+      <MobilePageHeader title="Daftar Retur" :subtitle="returnsList.length + ' Retur'" back-to="/" />
 
       <!-- Mobile View: Search & Cards -->
       <div class="space-y-4 md:hidden">
@@ -364,6 +347,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import DataTable from '@/components/tables/DataTable.vue'
 import { useReturnsStore } from '@/stores/returns'
 
@@ -463,8 +447,6 @@ const formatDate = (dateString: string) => {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   })
 }
 

@@ -14,16 +14,9 @@
 
     <div v-else>
       <!-- Mobile Layout -->
-      <div class="mx-auto max-w-3xl space-y-4 px-4 pb-6 pt-6 md:hidden">
+      <div class="mx-auto max-w-3xl space-y-4 pb-6 pt-6 md:hidden">
       <!-- Header Mobile -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="font-outfit text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
-            Pengaturan Toko
-          </h1>
-          <p class="text-[11px] text-gray-500 dark:text-gray-400">Konfigurasi data usaha dan sistem</p>
-        </div>
-      </div>
+      <MobilePageHeader title="Pengaturan Toko" subtitle="Konfigurasi data usaha dan sistem" hide-back-button />
 
       <!-- Informasi Toko -->
       <section class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">

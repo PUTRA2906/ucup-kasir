@@ -2,22 +2,13 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Invoice Pelanggan" class="hidden md:block" />
 
+    <!-- Mobile Header -->
+    <MobilePageHeader title="Daftar Invoice" subtitle="Riwayat transaksi & status pembayaran" :back-to="'/customer-invoices/' + encodeURIComponent(kecamatan)" />
+
     <!-- Mobile View -->
-    <div class="md:hidden space-y-4 px-4 pb-6">
+    <div class="md:hidden space-y-4 pb-6">
       <!-- Loading Skeleton -->
       <div v-if="loading" class="space-y-4 animate-pulse">
-        <!-- Header Skeleton -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="h-9 w-9 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
-            <div class="space-y-1.5">
-              <div class="h-4 w-28 rounded-lg bg-gray-200 dark:bg-gray-800"></div>
-              <div class="h-2.5 w-44 rounded bg-gray-200 dark:bg-gray-800"></div>
-            </div>
-          </div>
-          <div class="h-7 w-14 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
-        </div>
-
         <!-- Kartu Profil Customer Skeleton -->
         <div class="rounded-3xl border border-gray-200 bg-white p-4 space-y-3.5 dark:border-gray-800 dark:bg-white/[0.03]">
           <!-- Identitas -->
@@ -88,32 +79,6 @@
 
       <!-- Content -->
       <div v-else class="space-y-4">
-        <!-- Header -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <button
-              @click="router.push(`/customer-invoices/${encodeURIComponent(kecamatan)}`)"
-              class="p-2 rounded-xl bg-gray-100 text-gray-600 hover:text-gray-900 border border-gray-200 active:scale-95 transition dark:bg-white/[0.03] dark:border-gray-800 dark:text-gray-400 dark:hover:text-white"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <div>
-              <h1 class="text-xl font-extrabold text-gray-900 tracking-tight leading-tight dark:text-white">
-                Daftar Invoice
-              </h1>
-              <p class="text-[11px] text-gray-500 dark:text-gray-400">Riwayat transaksi & status pembayaran</p>
-            </div>
-          </div>
-          <button
-            @click="router.push(`/customer-invoices/${encodeURIComponent(kecamatan)}`)"
-            class="text-xs font-bold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-xl border border-gray-200 active:scale-95 transition dark:bg-white/[0.03] dark:border-gray-800 dark:text-gray-300"
-          >
-            Ganti
-          </button>
-        </div>
-
         <!-- Kartu Profil Customer -->
         <div class="bg-white rounded-3xl border border-gray-200 p-4 space-y-3.5 shadow-sm dark:bg-white/[0.03] dark:border-gray-800">
           <!-- Identitas -->
@@ -542,6 +507,7 @@ import { useRouter, useRoute } from 'vue-router'
 import DataTable from '@/components/tables/DataTable.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import InvoiceFilterModal from '@/components/common/InvoiceFilterModal.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import { useCustomersStore } from '@/stores/customers'
@@ -556,6 +522,7 @@ const toast = useToast()
 
 const kecamatan = route.params.kecamatan as string
 const customerId = route.params.customerId as string
+const encodeURIComponent = (s: string) => window.encodeURIComponent(s)
 const loading = ref(true)
 const showFilterModal = ref(false)
 const searchQuery = ref('')
@@ -726,8 +693,6 @@ const formatDate = (value: string) => {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   })
 }
 
@@ -737,8 +702,6 @@ const formatDateShort = (value: string) => {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   })
 }
 

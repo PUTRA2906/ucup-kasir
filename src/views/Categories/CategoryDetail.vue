@@ -2,18 +2,7 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Detail Kategori" class="hidden md:block" />
 
-    <!-- Mobile Header with Back Button -->
-    <div class="mb-6 flex items-center gap-3 pl-2 pr-4 md:hidden">
-      <button
-        @click="router.push('/categories')"
-        class="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
-      >
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Detail Kategori</h1>
-    </div>
+    <MobilePageHeader title="Detail Kategori" back-to="/categories" />
 
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div class="text-center">
@@ -117,6 +106,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import { useCategoriesStore } from '@/stores/categories'

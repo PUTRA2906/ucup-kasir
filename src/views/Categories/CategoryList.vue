@@ -1,36 +1,22 @@
 <template>
   <AdminLayout>
     <PageBreadcrumb pageTitle="Daftar Kategori" class="hidden md:block" />
-    <div class="space-y-6 px-4 md:px-0">
-      <!-- Mobile Header -->
-      <div class="flex items-center gap-3 md:hidden">
-        <button
-          @click="$router.push('/')"
-          class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-        >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <div class="flex-1">
-          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
-            DAFTAR KATEGORI
-          </h1>
-          <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
-            {{ categoriesStore.categories.length }} Kategori
-          </p>
-        </div>
+
+    <!-- Mobile Header -->
+    <MobilePageHeader title="Daftar Kategori" :subtitle="categoriesStore.categories.length + ' Kategori'" back-to="/">
+      <template #actions>
         <button
           @click="addCategory"
-          class="flex h-10 w-10 items-center justify-center rounded-xl border border-brand-500 bg-brand-500 text-white transition hover:bg-brand-600 active:scale-95"
+          class="flex h-8 w-8 items-center justify-center rounded-xl border border-brand-500 bg-brand-500 text-white transition hover:bg-brand-600 active:scale-95"
         >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
         </button>
-      </div>
+      </template>
+    </MobilePageHeader>
 
-      <!-- Mobile View: Search & Cards -->
+    <!-- Mobile View: Search & Cards -->
       <div class="space-y-4 md:hidden">
         <!-- Search Bar -->
         <div class="relative">
@@ -273,8 +259,10 @@
               Hapus
             </button>
           </div>
-        </template>          <template #rowActions="{ row }">
-            <div class="flex items-center gap-2">
+        </template>
+
+        <template #rowActions="{ row }">
+          <div class="flex items-center gap-2">
               <button
                 @click="viewCategory(row)"
                 class="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
@@ -326,7 +314,6 @@
           </div>
         </template>
       </DataTable>
-    </div>
 
     <!-- Delete Confirmation Dialog -->
     <ConfirmDialog

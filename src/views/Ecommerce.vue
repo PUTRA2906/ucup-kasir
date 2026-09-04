@@ -161,102 +161,79 @@
           </div>
         </div>
 
-        <!-- Mobile Quick Menu Grid (8 items, drag & drop reorderable) -->
-        <div
-          class="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:hidden dark:border-gray-800 dark:bg-white/[0.03]"
-        >
-          <div class="flex items-center justify-between border-b border-gray-200 pb-2 dark:border-gray-800">
-            <span
-              class="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300"
-            >
+        <!-- Mobile Quick Menu — 3 item + "Lihat Semua" per grup -->
+        <div class="md:hidden space-y-3">
+          <!-- Header bar -->
+          <div class="flex items-center justify-between px-1">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Menu Cepat
             </span>
-            <button
-              type="button"
-              @click="toggleQuickMenuEdit"
-              :class="[
-                'rounded-lg px-2.5 py-1 text-[10px] font-semibold transition active:scale-95',
-                quickMenuEditing
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-300',
-              ]"
-            >
-              {{ quickMenuEditing ? 'Selesai' : 'Edit Urutan' }}
-            </button>
           </div>
 
-          <draggable
-            v-model="quickMenu"
-            item-key="id"
-            tag="div"
-            class="grid grid-cols-4 gap-y-4 gap-x-2 text-center"
-            :animation="150"
-            :disabled="!quickMenuEditing"
-            ghost-class="quick-menu-ghost"
-            chosen-class="quick-menu-chosen"
-            drag-class="quick-menu-drag"
-            @end="saveQuickMenu"
+          <!-- Each Module Group -->
+          <div
+            v-for="group in quickMenuGrouped"
+            :key="group.title"
+            class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
           >
-            <template #item="{ element }">
-              <div
-                :class="[
-                  'relative flex flex-col items-center',
-                  quickMenuEditing ? 'cursor-grab active:cursor-grabbing' : '',
-                ]"
-              >
-                <router-link
-                  :to="element.to"
-                  :class="[
-                    'group flex flex-col items-center transition',
-                    quickMenuEditing
-                      ? 'pointer-events-none opacity-80'
-                      : 'active:scale-95',
-                  ]"
-                >
-                  <div
-                    :class="[
-                      'flex h-12 w-12 items-center justify-center rounded-2xl border transition-transform',
-                      element.iconClass,
-                      quickMenuEditing ? '' : 'group-hover:scale-105',
-                    ]"
-                  >
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        :d="element.iconPath"
-                      />
-                    </svg>
+            <!-- Section Header -->
+            <div class="flex items-center gap-2.5 border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+              
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                {{ group.title }}
+              </span>
+              <span class="text-[10px] text-gray-400">({{ group.total }})</span>
+            </div>
+
+            <!-- Items Grid: 3 item + tombol "Lihat Semua" -->
+            <div class="px-4 py-3">
+              <div class="grid grid-cols-4 gap-y-4 gap-x-2 text-center">
+                <template v-for="(item, iIdx) in group.visible" :key="item.id">
+                  <div class="relative flex flex-col items-center">
+                    <router-link
+                      :to="item.to"
+                      class="group flex flex-col items-center transition active:scale-95"
+                    >
+                      <div
+                        class="flex h-12 w-12 items-center justify-center rounded-2xl border transition-transform group-hover:scale-105"
+                        :class="item.iconClass"
+                      >
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
+                        </svg>
+                      </div>
+                      <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300">
+                        {{ item.label }}
+                      </span>
+                    </router-link>
                   </div>
-                  <span
-                    class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300"
-                    >{{ element.label }}</span
-                  >
-                </router-link>
+                </template>
 
-                <!-- Indikator drag saat mode edit -->
-                <span
-                  v-if="quickMenuEditing"
-                  class="pointer-events-none absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white shadow"
+                <!-- Tombol "Lihat Semua" di slot keempat -->
+                <div
+                  v-if="group.total > 3"
+                  class="flex flex-col items-center"
                 >
-                  <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      d="M7 2a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM7 18a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
-                </span>
+                  <button
+                    type="button"
+                    @click="router.push(`/quick-menu/${group.slug}`)"
+                    class="group flex flex-col items-center transition active:scale-95"
+                  >
+                    <div
+                      class="flex h-12 w-12 items-center justify-center rounded-2xl border border-brand-500/20 bg-brand-500/10 text-brand-500 transition-transform group-hover:scale-105"
+                    >
+                      <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                      </svg>
+                    </div>
+                    <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-500 dark:text-gray-400">
+                      Lihat Semua
+                    </span>
+                  </button>
+                </div>
               </div>
-            </template>
-          </draggable>
-
-          <!-- Petunjuk saat mode edit -->
-          <p
-            v-if="quickMenuEditing"
-            class="text-center text-[10px] text-gray-500 dark:text-gray-400"
-          >
-            Seret menu untuk mengubah urutan
-          </p>
+            </div>
+          </div>
         </div>
 
         <!-- Mobile Peringatan Stok Gudang -->
@@ -418,7 +395,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import draggable from 'vuedraggable'
+import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import DashboardStats from '@/components/ecommerce/DashboardStats.vue'
@@ -431,6 +408,12 @@ import { useCategoriesStore } from '@/stores/categories'
 import { useAuthStore } from '@/stores/auth'
 import { useSalesReportStore } from '@/stores/salesReport'
 import { useNotificationsStore } from '@/stores/notifications'
+import {
+  QUICK_MENU_GROUPS,
+  GROUP_MAP,
+  loadQuickMenuFromStorage,
+  type QuickMenuItem,
+} from '@/data/quickMenu'
 
 const productsStore = useProductsStore()
 const categoriesStore = useCategoriesStore()
@@ -495,119 +478,42 @@ const closeInfoTooltip = () => {
 }
 
 // ============================================================
-// Menu Cepat — drag & drop urutan, tersimpan di localStorage.
-// Berfungsi di Android (Capacitor WebView) dan web (browser).
+// Menu Cepat — urutan diambil dari localStorage (single source
+// of truth: src/data/quickMenu.ts), hanya tampil 3 item per grup.
 // ============================================================
 
-interface QuickMenuItem {
-  id: string
-  to: string
-  label: string
-  iconClass: string
-  iconPath: string
-}
+const router = useRouter()
 
-const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
-  {
-    id: 'stock',
-    to: '/stock',
-    label: 'Stok',
-    iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
-    iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
-  },
-  {
-    id: 'customers',
-    to: '/customers',
-    label: 'Customer',
-    iconClass: 'border-amber-500/20 bg-amber-500/10 text-amber-500',
-    iconPath:
-      'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
-  },
-  {
-    id: 'returns',
-    to: '/returns',
-    label: 'Retur',
-    iconClass: 'border-rose-500/20 bg-rose-500/10 text-rose-500',
-    iconPath: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
-  },
-  {
-    id: 'categories',
-    to: '/categories',
-    label: 'Kategori',
-    iconClass: 'border-teal-500/20 bg-teal-500/10 text-teal-500',
-    iconPath: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z',
-  },
-  {
-    id: 'products',
-    to: '/products',
-    label: 'Produk',
-    iconClass: 'border-violet-500/20 bg-violet-500/10 text-violet-500',
-    iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
-  },
-  {
-    id: 'transactions',
-    to: '/transactions',
-    label: 'Transaksi',
-    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
-    iconPath: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
-  },
-  {
-    id: 'stock-movements',
-    to: '/stock/movements',
-    label: 'Mutasi',
-    iconClass: 'border-orange-500/20 bg-orange-500/10 text-orange-500',
-    iconPath: 'M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4',
-  },
-  {
-    id: 'transaction-profit',
-    to: '/reports/transaction-profit',
-    label: 'Laba/Tx',
-    iconClass: 'border-purple-500/20 bg-purple-500/10 text-purple-500',
-    iconPath: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
-  },
-]
+const quickMenu = ref<QuickMenuItem[]>(loadQuickMenuFromStorage())
 
-const QUICK_MENU_STORAGE_KEY = 'quick_menu_order'
+/** Derived: quickMenu yang sudah di-group per modul */
+const quickMenuGrouped = computed(() => {
+  // Buat bucket
+  const buckets: Record<string, QuickMenuItem[]> = {}
+  for (const g of QUICK_MENU_GROUPS) {
+    buckets[g.title] = []
+  }
 
-const quickMenuEditing = ref(false)
-
-/** Muat urutan menu dari localStorage; fallback ke default. */
-const loadQuickMenu = (): QuickMenuItem[] => {
-  try {
-    const saved = localStorage.getItem(QUICK_MENU_STORAGE_KEY)
-    if (saved) {
-      const ids = JSON.parse(saved) as string[]
-      const byId = new Map(DEFAULT_QUICK_MENU.map((item) => [item.id, item]))
-      const ordered = ids.map((id) => byId.get(id)).filter((i): i is QuickMenuItem => !!i)
-      // Tambahkan item yang belum ada di urutan tersimpan (mis. menu baru)
-      for (const item of DEFAULT_QUICK_MENU) {
-        if (!ordered.some((o) => o.id === item.id)) ordered.push(item)
-      }
-      return ordered
+  // Distribusi item ke bucket
+  for (const item of quickMenu.value) {
+    const groupName = GROUP_MAP[item.id]
+    if (groupName && buckets[groupName]) {
+      buckets[groupName].push(item)
     }
-  } catch (e) {
-    console.error('Gagal memuat urutan menu cepat:', e)
   }
-  return [...DEFAULT_QUICK_MENU]
-}
 
-const quickMenu = ref<QuickMenuItem[]>(loadQuickMenu())
-
-const toggleQuickMenuEdit = () => {
-  quickMenuEditing.value = !quickMenuEditing.value
-}
-
-/** Simpan urutan menu ke localStorage (dipanggil setelah drag selesai). */
-const saveQuickMenu = () => {
-  try {
-    localStorage.setItem(
-      QUICK_MENU_STORAGE_KEY,
-      JSON.stringify(quickMenu.value.map((item) => item.id))
-    )
-  } catch (e) {
-    console.error('Gagal menyimpan urutan menu cepat:', e)
-  }
-}
+  // Kembalikan hanya grup yang punya item
+  return QUICK_MENU_GROUPS
+    .map((g) => ({
+      title: g.title,
+      color: g.color,
+      slug: g.slug,
+      items: buckets[g.title],
+      visible: buckets[g.title].slice(0, 3),
+      total: buckets[g.title].length,
+    }))
+    .filter((g) => g.items.length > 0)
+})
 
 onMounted(() => {
   document.addEventListener('click', closeInfoTooltip)
@@ -642,30 +548,5 @@ onMounted(async () => {
 .tooltip-fade-enter-from,
 .tooltip-fade-leave-to {
   opacity: 0;
-}
-</style>
-
-<style>
-/* Class SortableJS untuk visual drag & drop menu cepat.
-   Non-scoped karena elemen ghost/chosen di-clone dinamis oleh SortableJS. */
-.quick-menu-ghost {
-  opacity: 0.4;
-}
-.quick-menu-chosen {
-  opacity: 1;
-}
-.quick-menu-drag {
-  opacity: 1;
-  z-index: 50;
-}
-.quick-menu-drag > div {
-  border-radius: 1rem;
-  background-color: rgb(255 255 255 / 0.9);
-  box-shadow: 0 10px 25px rgb(0 0 0 / 0.15);
-}
-@media (prefers-color-scheme: dark) {
-  .quick-menu-drag > div {
-    background-color: rgb(17 24 39 / 0.9);
-  }
 }
 </style>

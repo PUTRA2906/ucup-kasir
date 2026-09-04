@@ -2,25 +2,7 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Detail Produk" class="hidden md:block" />
 
-    <!-- Mobile Header with Back Button -->
-    <div class="mb-6 flex items-center gap-3 px-4 md:hidden">
-      <button
-        @click="router.push('/products')"
-        class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:bg-gray-50 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-      >
-        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-      <div class="flex-1">
-        <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
-          DETAIL PRODUK
-        </h1>
-        <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
-          Informasi lengkap produk
-        </p>
-      </div>
-    </div>
+    <MobilePageHeader title="Detail Produk" subtitle="Informasi lengkap produk" back-to="/products" />
 
     <div v-if="loading" class="space-y-6">
       <LoadingSkeleton type="card" />
@@ -29,7 +11,7 @@
 
     <div v-else-if="product" class="space-y-4 md:space-y-6">
       <!-- Mobile Layout -->
-      <div class="space-y-4 px-4 md:hidden">
+      <div class="space-y-4 md:hidden">
         <!-- Nama & Status Card -->
         <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
           <div class="flex items-start justify-between gap-3">
@@ -282,6 +264,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'

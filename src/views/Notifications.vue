@@ -1,34 +1,22 @@
 <template>
   <AdminLayout>
-    <div class="mx-auto max-w-3xl px-4 pb-20 pt-4 md:px-0 md:pb-6">
+    <div class="mx-auto max-w-3xl pb-20 pt-4 md:pb-6">
       <!-- Header Mobile -->
-      <div class="mb-4 flex items-center justify-between md:mb-6">
-        <div class="flex items-center gap-3">
-          <router-link
-            to="/"
-            class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition hover:text-gray-900 active:scale-95 md:hidden dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-white"
+      <MobilePageHeader
+        title="Notifikasi"
+        :subtitle="unreadCount > 0 ? unreadCount + ' notifikasi baru' : 'Tidak ada notifikasi baru'"
+        back-to="/"
+      >
+        <template #actions>
+          <button
+            v-if="notifications.length > 0"
+            @click="markAllAsRead"
+            class="rounded-xl border border-blue-500/20 bg-blue-500/10 px-3.5 py-1.5 font-outfit text-xs font-bold text-blue-500 transition active:scale-95 dark:text-blue-400"
           >
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </router-link>
-          <div>
-            <h1 class="font-outfit text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
-              Notifikasi
-            </h1>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400">
-              {{ unreadCount > 0 ? `${unreadCount} notifikasi baru` : 'Tidak ada notifikasi baru' }}
-            </p>
-          </div>
-        </div>
-        <button
-          v-if="notifications.length > 0"
-          @click="markAllAsRead"
-          class="rounded-xl border border-blue-500/20 bg-blue-500/10 px-3.5 py-1.5 font-outfit text-xs font-bold text-blue-500 transition active:scale-95 dark:text-blue-400"
-        >
-          Tandai Semua Dibaca
-        </button>
-      </div>
+            Tandai Semua Dibaca
+          </button>
+        </template>
+      </MobilePageHeader>
 
       <!-- Loading State -->
       <div v-if="loading" class="space-y-3">
@@ -133,6 +121,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useNotificationsStore } from '@/stores/notifications'
 
 const router = useRouter()

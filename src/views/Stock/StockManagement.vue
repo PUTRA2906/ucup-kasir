@@ -1,27 +1,13 @@
 <template>
   <AdminLayout>
     <PageBreadcrumb pageTitle="Stok Gudang" class="hidden md:block" />
-    <div class="space-y-6 px-4 md:px-0">
+    <div class="space-y-6">
       <!-- ===== MOBILE: Header & Tombol Aksi ===== -->
-      <div class="flex items-center justify-between md:hidden">
-        <div class="flex items-center gap-2">
-          <button
-            @click="router.push('/')"
-            class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-500 transition active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400"
-            aria-label="Kembali"
-          >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <h1 class="text-xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white">
-            Stok Gudang
-          </h1>
-        </div>
-        <div class="flex items-center gap-1.5">
+      <MobilePageHeader title="Stok Gudang" back-to="/">
+        <template #actions>
           <button
             @click="openOpnameModal"
-            class="flex h-9 w-9 items-center justify-center rounded-xl border border-brand-600 bg-white text-brand-600 shadow-sm transition active:scale-95 dark:bg-gray-900"
+            class="flex h-8 w-8 items-center justify-center rounded-xl border border-brand-600 bg-white text-brand-600 shadow-sm transition active:scale-95 dark:bg-gray-900"
             aria-label="Stock Opname"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,15 +16,15 @@
           </button>
           <button
             @click="openAdjustmentModal"
-            class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white shadow-md transition active:scale-95"
+            class="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-600 text-white shadow-md transition active:scale-95"
             aria-label="Penyesuaian Stok"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
           </button>
-        </div>
-      </div>
+        </template>
+      </MobilePageHeader>
 
       <!-- ===== MOBILE: Metrics Strip ===== -->
       <div
@@ -503,6 +489,7 @@ import { useRouter } from 'vue-router'
 import DataTable from '@/components/tables/DataTable.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import StockAdjustmentModal from './StockAdjustmentModal.vue'
 import StockOpnameModal from './StockOpnameModal.vue'
 import { useProductsStore } from '@/stores/products'

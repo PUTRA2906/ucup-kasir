@@ -14,27 +14,9 @@
 
     <!-- Mobile + Desktop View -->
     <template v-else-if="transaction">
-    <div class="md:hidden space-y-4 px-4 pb-32">
-      <!-- 1. BARIS JUDUL & STATUS -->
-      <section class="flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <button
-            @click="router.push('/transactions')"
-            class="p-2 rounded-xl bg-gray-100 text-gray-600 hover:text-gray-900 border border-gray-200 active:scale-95 transition dark:bg-white/[0.03] dark:border-gray-800 dark:text-gray-400 dark:hover:text-white"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div>
-            <span class="text-[10px] text-brand-500 font-mono block leading-none dark:text-brand-400">
-              {{ transaction.transaction_number }}
-            </span>
-            <h1 class="text-xl font-extrabold text-gray-900 tracking-tight leading-tight mt-0.5 dark:text-white">
-              Detail Transaksi
-            </h1>
-          </div>
-        </div>
+    <!-- Mobile Header -->
+    <MobilePageHeader title="Detail Transaksi" :subtitle="transaction.transaction_number" back-to="/transactions">
+      <template #badge>
         <span
           :class="[
             'px-2.5 py-1 rounded-lg text-[10px] font-bold border',
@@ -45,7 +27,10 @@
         >
           {{ isOverpaid || transaction.payment_status === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
         </span>
-      </section>
+      </template>
+    </MobilePageHeader>
+
+    <div class="md:hidden space-y-4 pb-32">
 
       <!-- 2. KARTU PELANGGAN & WAKTU -->
       <section class="bg-white rounded-3xl border border-gray-200 p-4 flex justify-between items-center shadow-sm dark:bg-white/[0.03] dark:border-gray-800">
@@ -64,7 +49,6 @@
         </div>
         <div class="text-right">
           <span class="text-[10px] text-gray-500 block dark:text-gray-400">{{ formatDateShort(transaction.created_at) }}</span>
-          <span class="text-[10px] text-gray-500 block font-mono dark:text-gray-400">{{ formatTimeShort(transaction.created_at) }}</span>
         </div>
       </section>
 
@@ -156,7 +140,7 @@
               <div>
                 <p class="font-bold text-gray-900 leading-tight dark:text-white">Faktur Diterbitkan</p>
                 <p class="text-[10px] text-gray-500 dark:text-gray-400">
-                  {{ formatDateShort(transaction.created_at) }}, {{ formatTimeShort(transaction.created_at) }} &bull; Total {{ transaction.items?.length || 0 }} Item
+                  {{ formatDateShort(transaction.created_at) }} &bull; Total {{ transaction.items?.length || 0 }} Item
                 </p>
               </div>
               <span class="font-extrabold text-gray-900 dark:text-white">
@@ -176,7 +160,7 @@
                 <div>
                   <p class="font-semibold text-gray-700 leading-tight dark:text-gray-200">Pembayaran {{ activity.sequence }}</p>
                   <p class="text-[10px] text-gray-500 dark:text-gray-400">
-                    {{ formatDateShort(activity.created_at) }}, {{ formatTimeShort(activity.created_at) }} &bull; {{ formatPaymentMethod(activity.payment_method) }}
+                    {{ formatDateShort(activity.created_at) }} &bull; {{ formatPaymentMethod(activity.payment_method) }}
                   </p>
                 </div>
                 <span class="font-extrabold font-outfit text-success-500 dark:text-success-400">
@@ -196,7 +180,7 @@
                     Retur Barang ({{ activity.return_number }})
                   </p>
                   <p class="text-[10px] text-gray-500 dark:text-gray-400">
-                    {{ formatDateShort(activity.created_at) }}, {{ formatTimeShort(activity.created_at) }} &bull; {{ activity.items?.length || 0 }} Item
+                    {{ formatDateShort(activity.created_at) }} &bull; {{ activity.items?.length || 0 }} Item
                   </p>
                 </div>
                 <span class="font-extrabold font-outfit text-error-600 dark:text-error-400">
@@ -784,6 +768,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import PaymentModal from '@/components/common/PaymentModal.vue'
 import ReturnModal from '@/components/common/ReturnModal.vue'
@@ -983,9 +968,7 @@ const formatDate = (dateString: string) => {
   return date.toLocaleDateString('id-ID', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+    day: 'numeric'
   })
 }
 
@@ -996,30 +979,6 @@ const formatDateShort = (dateString: string) => {
     month: 'short',
     year: 'numeric'
   })
-}
-
-const formatTimeShort = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleTimeString('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  }) + ' WIB'
-}
-
-const formatDateTime = (dateString: string) => {
-  const date = new Date(dateString)
-  const datePart = date.toLocaleDateString('id-ID', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  })
-  const timePart = date.toLocaleTimeString('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  })
-  return `${datePart} ${timePart} WIB`
 }
 
 const handleAddPayment = async (payload: {

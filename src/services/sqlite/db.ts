@@ -76,6 +76,15 @@ export function generateOpnameNumber(): string {
   return `OPN-${date}-${randomSuffix()}`
 }
 
+/** Generate nomor surat jalan: SJ-YYYYMMDD-XXXXXX */
+export function generateDeliveryNumber(): string {
+  const now = new Date()
+  const date = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(
+    now.getDate()
+  ).padStart(2, '0')}`
+  return `SJ-${date}-${randomSuffix()}`
+}
+
 /** Suffix acak 6 karakter uppercase (mirip substr(md5(random()), 1, 6)). */
 function randomSuffix(): string {
   return Math.random().toString(36).substring(2, 8).toUpperCase().padEnd(6, 'X')

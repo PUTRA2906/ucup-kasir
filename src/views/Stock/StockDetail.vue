@@ -27,33 +27,24 @@
       </div>
 
       <!-- Content -->
-      <div v-else-if="product" class="space-y-4 px-4 pb-28">
-        <!-- Header -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
+      <div v-else-if="product" class="space-y-4 pb-28">
+        <MobilePageHeader
+          title="Detail Stok"
+          :subtitle="product.category?.name || 'Tanpa Kategori'"
+          back-to="/stock"
+        >
+          <template #actions>
             <button
-              @click="router.push('/stock')"
-              class="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 transition active:scale-95 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400"
+              @click="openAdjustment"
+              class="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-3 py-2 text-xs font-bold text-white shadow-md transition active:scale-95"
             >
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
+              Sesuaikan
             </button>
-            <div>
-              <h1 class="text-base font-extrabold leading-tight text-gray-900 dark:text-white">Detail Stok</h1>
-              <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ product.category?.name || 'Tanpa Kategori' }}</p>
-            </div>
-          </div>
-          <button
-            @click="openAdjustment"
-            class="inline-flex items-center gap-1.5 rounded-xl bg-brand-600 px-3 py-2 text-xs font-bold text-white shadow-md transition active:scale-95"
-          >
-            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            Sesuaikan
-          </button>
-        </div>
+          </template>
+        </MobilePageHeader>
 
         <!-- Info Produk -->
         <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
@@ -218,6 +209,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import StockAdjustmentModal from './StockAdjustmentModal.vue'
 import { useProductsStore } from '@/stores/products'
 import { useStockStore } from '@/stores/stock'

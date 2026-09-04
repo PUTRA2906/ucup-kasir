@@ -1,24 +1,9 @@
 <template>
   <AdminLayout>
     <PageBreadcrumb pageTitle="Invoice Pelanggan" class="hidden md:block" />
-    <div class="space-y-6 px-4 md:px-0">
+    <div class="space-y-6">
       <!-- ============ MOBILE: Header ============ -->
-      <div class="flex items-center gap-2.5 md:hidden">
-        <button
-          @click="router.push('/customer-invoices')"
-          class="flex-shrink-0 rounded-xl border border-gray-300 bg-white p-2 text-gray-500 transition hover:text-gray-900 active:scale-95 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-white"
-        >
-          <ArrowLeft class="h-4 w-4" />
-        </button>
-        <div class="min-w-0 flex-1">
-          <h1 class="font-outfit text-lg font-extrabold leading-tight tracking-tight text-gray-900 break-words dark:text-white">
-            Customer di {{ kecamatan }}
-          </h1>
-          <p class="text-[11px] text-gray-500 dark:text-gray-400">
-            Pilih mitra untuk melihat riwayat invoice & piutang
-          </p>
-        </div>
-      </div>
+      <MobilePageHeader :title="'Customer di ' + kecamatan" subtitle="Pilih mitra untuk melihat riwayat invoice & piutang" back-to="/customer-invoices" />
 
       <!-- ============ DESKTOP: Header ============ -->
       <div class="hidden items-center gap-2 md:flex">
@@ -232,9 +217,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ArrowLeft, MessageCircle, Plus, Search } from 'lucide-vue-next'
+import { MessageCircle, Plus, Search } from 'lucide-vue-next'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useCustomersStore } from '@/stores/customers'
 import { useTransactionsStore } from '@/stores/transactions'
 import { useToast } from '@/composables/useToast'

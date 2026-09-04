@@ -1,7 +1,7 @@
 <template>
   <aside
     :class="[
-      'fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-99999 border-r border-gray-200',
+      'fixed top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 flex flex-col min-h-dvh h-dvh overflow-y-auto custom-scrollbar transition-all duration-300 ease-in-out z-99999 border-r border-gray-200',
       {
         'lg:w-[290px]': isExpanded || isMobileOpen || isHovered,
         'lg:w-[90px]': !isExpanded && !isHovered,
@@ -35,7 +35,7 @@
       </router-link>
     </div>
     <div
-      class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar"
+      class="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden duration-300 ease-linear custom-scrollbar"
     >
       <nav class="mb-6">
         <div class="flex flex-col gap-4">
@@ -222,9 +222,11 @@ import {
   ReceiptIcon,
   SettingsIcon,
   WarehouseIcon,
+  TruckIcon,
 } from "../../icons";
 import SidebarWidget from "./SidebarWidget.vue";
 import BoxCubeIcon from "@/icons/BoxCubeIcon.vue";
+import BarChartIcon from "@/icons/BarChartIcon.vue";
 import { useSidebar } from "@/composables/useSidebar";
 
 const route = useRoute();
@@ -275,6 +277,55 @@ const menuGroups = [
         icon: PieChartIcon,
         subItems: [
           { name: "Laporan Penjualan", path: "/reports/sales", pro: false },
+          { name: "Laporan Laba Rugi", path: "/reports/profit-loss", pro: false },
+          { name: "Laba Per Transaksi", path: "/reports/transaction-profit", pro: false },
+        ],
+      },
+      {
+        name: "Keuangan",
+        icon: BarChartIcon,
+        subItems: [
+          { name: "Dashboard Keuangan", path: "/finance", pro: false },
+          { name: "Chart of Accounts", path: "/finance/accounts", pro: false },
+          { name: "Jurnal Umum", path: "/finance/journal", pro: false },
+          { name: "Buku Besar", path: "/finance/ledger", pro: false },
+          { name: "Neraca Saldo", path: "/finance/trial-balance", pro: false },
+          { name: "Neraca", path: "/finance/balance-sheet", pro: false },
+          { name: "Arus Kas", path: "/finance/cash-flow", pro: false },
+        ],
+      },
+      {
+        name: "Pembelian",
+        icon: BoxCubeIcon,
+        subItems: [
+          { name: "Dashboard", path: "/purchasing", pro: false },
+          { name: "Supplier", path: "/purchasing/suppliers", pro: false },
+          { name: "Purchase Order", path: "/purchasing/pos", pro: false },
+          { name: "Terima Barang", path: "/purchasing/grns", pro: false },
+          { name: "Faktur", path: "/purchasing/pis", pro: false },
+          { name: "Retur", path: "/purchasing/returns", pro: false },
+        ],
+      },
+      {
+        name: "Karyawan & Payroll",
+        icon: UserCircleIcon,
+        subItems: [
+          { name: "Dashboard HR", path: "/hr", pro: false },
+          { name: "Daftar Karyawan", path: "/hr/employees", pro: false },
+          { name: "Departemen", path: "/hr/departments", pro: false },
+          { name: "Jabatan", path: "/hr/positions", pro: false },
+          { name: "Absensi", path: "/hr/attendance", pro: false },
+          { name: "Payroll", path: "/hr/payroll", pro: false },
+          { name: "Komponen Gaji", path: "/hr/payroll/components", pro: false },
+        ],
+      },
+      {
+        name: "Pengiriman",
+        icon: TruckIcon,
+        subItems: [
+          { name: "Dashboard", path: "/shipping", pro: false },
+          { name: "Surat Jalan", path: "/shipping/deliveries", pro: false },
+          { name: "Kendaraan", path: "/shipping/vehicles", pro: false },
         ],
       },
       {

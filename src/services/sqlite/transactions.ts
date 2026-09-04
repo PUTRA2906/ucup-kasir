@@ -1,5 +1,6 @@
 import { query, queryOne, run, addToSyncQueue, transaction } from './db'
 import { getCurrentUserId, uuid, nowIso, generateTransactionNumber } from './db'
+import { sqliteFinanceService } from './finance'
 import type { Transaction, TransactionInput, TransactionItem, TransactionPayment } from '@/types/database'
 
 // ============================================================
@@ -93,6 +94,8 @@ export const sqliteTransactionsService = {
     const now = nowIso()
     const transactionDate = input.transaction_date || now
 
+    let autoJournalId: string | null = null
+
     return transaction(async (tx) => {
       // 1. Validasi stok & hitung total
       let total = 0
@@ -101,13 +104,14 @@ export const sqliteTransactionsService = {
         productName: string
         price: number
         quantity: number
+        priceBuy: number
         stockBefore: number
         stockAfter: number
       }> = []
 
       for (const item of input.items) {
         const product = await tx.query<any>(
-          `SELECT id, name, price_sell, stock FROM products WHERE id = ? AND user_id = ?`,
+          `SELECT id, name, price_sell, price_buy, stock FROM products WHERE id = ? AND user_id = ?`,
           [item.product_id, userId]
         )
         const p = product[0]
@@ -127,6 +131,7 @@ export const sqliteTransactionsService = {
           productName: p.name,
           price,
           quantity: item.quantity,
+          priceBuy: p.price_buy || 0,
           stockBefore: p.stock,
           stockAfter: p.stock - item.quantity,
         })
@@ -138,6 +143,9 @@ export const sqliteTransactionsService = {
       const remaining = Math.max(total - paid, 0)
       const paymentStatus = paid >= total ? 'lunas' : 'belum_lunas'
       const transactionNumber = generateTransactionNumber()
+
+      // Hitung total HPP (cost of goods sold) untuk auto-jurnal
+      const totalCogs = itemDetails.reduce((sum, d) => sum + d.priceBuy * d.quantity, 0)
 
       // 3. Simpan header transaksi
       await tx.run(
@@ -246,10 +254,30 @@ export const sqliteTransactionsService = {
           now,
         ]
       )
+
+      // 7. Auto-jurnal: catat penjualan ke pembukuan (jika COA sudah di-seed)
+      autoJournalId = await sqliteFinanceService.postSalesJournal(
+        tx,
+        userId,
+        txnId,
+        input.customer_name ?? null,
+        total,
+        paid,
+        remaining,
+        totalCogs,
+        transactionDate,
+        now
+      )
     }).then(async () => {
       // Queue header transaksi (items/stock movements ikut terqueue sebagai payload)
       const txn = await this.getById(txnId)
       await addToSyncQueue('INSERT', 'transactions', txnId, txn || { id: txnId })
+
+      // Queue jurnal otomatis (header + lines) agar ikut tersinkron
+      if (autoJournalId) {
+        const journal = await sqliteFinanceService.getJournal(autoJournalId)
+        await addToSyncQueue('INSERT', 'journal_entries', autoJournalId, journal || { id: autoJournalId })
+      }
       return txnId
     })
   },
@@ -270,6 +298,7 @@ export const sqliteTransactionsService = {
     const userId = getCurrentUserId()
     const paymentId = uuid()
     const now = nowIso()
+    let autoJournalId: string | null = null
 
     await transaction(async (tx) => {
       // Ambil transaksi
@@ -317,12 +346,28 @@ export const sqliteTransactionsService = {
           now,
         ]
       )
+
+      // Auto-jurnal: pindahkan Piutang → Kas
+      autoJournalId = await sqliteFinanceService.postPaymentJournal(
+        tx,
+        userId,
+        transactionId,
+        amount,
+        txn.transaction_number,
+        now
+      )
     })
 
     await addToSyncQueue('INSERT', 'transaction_payments', paymentId, { id: paymentId, transaction_id: transactionId, amount, payment_method: paymentMethod })
     // Header transaksi juga berubah
     const txn = await this.getById(transactionId)
     if (txn) await addToSyncQueue('UPDATE', 'transactions', transactionId, txn)
+
+    // Queue jurnal pembayaran
+    if (autoJournalId) {
+      const journal = await sqliteFinanceService.getJournal(autoJournalId)
+      await addToSyncQueue('INSERT', 'journal_entries', autoJournalId, journal || { id: autoJournalId })
+    }
 
     return paymentId
   },
@@ -334,7 +379,29 @@ export const sqliteTransactionsService = {
    */
   async delete(id: string): Promise<void> {
     const userId = getCurrentUserId()
+    const now = nowIso()
+    const deletedJournalIds: string[] = []
+
     await transaction(async (tx) => {
+      // Hapus baris jurnal & jurnal terkait (agar tidak orphan)
+      const journals = await tx.query<any>(
+        `SELECT id FROM journal_entries WHERE reference_type IN ('transaction', 'payment', 'void')
+         AND reference_id = ? AND user_id = ?`,
+        [id, userId]
+      )
+      for (const j of journals) {
+        deletedJournalIds.push(j.id)
+        await tx.run(
+          `DELETE FROM journal_lines WHERE journal_id = ? AND user_id = ?`,
+          [j.id, userId]
+        )
+      }
+      await tx.run(
+        `DELETE FROM journal_entries WHERE reference_type IN ('transaction', 'payment', 'void')
+         AND reference_id = ? AND user_id = ?`,
+        [id, userId]
+      )
+
       const items = await tx.query<any>(
         `SELECT product_id, quantity FROM transaction_items WHERE transaction_id = ? AND user_id = ?`,
         [id, userId]
@@ -364,6 +431,10 @@ export const sqliteTransactionsService = {
     })
 
     await addToSyncQueue('DELETE', 'transactions', id, { id })
+    // Queue DELETE jurnal yang ikut terhapus
+    for (const jid of deletedJournalIds) {
+      await addToSyncQueue('DELETE', 'journal_entries', jid, { id: jid })
+    }
   },
 
   /**
@@ -374,9 +445,12 @@ export const sqliteTransactionsService = {
    */
   async voidTransaction(id: string): Promise<void> {
     const userId = getCurrentUserId()
+    const now = nowIso()
+    let autoJournalId: string | null = null
+
     await transaction(async (tx) => {
       const txnRows = await tx.query<any>(
-        `SELECT status FROM transactions WHERE id = ? AND user_id = ?`,
+        `SELECT status, transaction_number, total, paid_amount, remaining_amount FROM transactions WHERE id = ? AND user_id = ?`,
         [id, userId]
       )
       const txn = txnRows[0]
@@ -384,25 +458,30 @@ export const sqliteTransactionsService = {
       if (txn.status === 'batal') throw new Error('Transaksi sudah dibatalkan sebelumnya')
 
       const items = await tx.query<any>(
-        `SELECT product_id, quantity FROM transaction_items WHERE transaction_id = ? AND user_id = ?`,
+        `SELECT ti.product_id, ti.quantity, COALESCE(p.price_buy, 0) AS price_buy
+         FROM transaction_items ti
+         LEFT JOIN products p ON p.id = ti.product_id
+         WHERE ti.transaction_id = ? AND ti.user_id = ?`,
         [id, userId]
       )
 
+      let totalCogs = 0
       for (const item of items) {
+        totalCogs += item.price_buy * item.quantity
         if (item.product_id) {
           const before = await tx.query<any>('SELECT stock FROM products WHERE id = ? AND user_id = ?', [item.product_id, userId])
           const after = before[0] ? before[0].stock + item.quantity : item.quantity
           await tx.run(
             `UPDATE products SET stock = ?, updated_at = ?, sync_status = 'pending', updated_at_local = ?
              WHERE id = ? AND user_id = ?`,
-            [after, nowIso(), nowIso(), item.product_id, userId]
+            [after, now, now, item.product_id, userId]
           )
           await tx.run(
             `INSERT INTO stock_movements (id, user_id, product_id, movement_type, quantity,
                                           quantity_before, quantity_after, reference_type, reference_id,
                                           notes, created_at, created_by, sync_status, updated_at_local)
              VALUES (?, ?, ?, 'in', ?, ?, ?, 'transaction_void', ?, 'Pengembalian stok transaksi batal', ?, ?, 'pending', ?)`,
-            [uuid(), userId, item.product_id, item.quantity, before[0]?.stock ?? 0, after, id, nowIso(), userId, nowIso()]
+            [uuid(), userId, item.product_id, item.quantity, before[0]?.stock ?? 0, after, id, now, userId, now]
           )
         }
       }
@@ -410,12 +489,34 @@ export const sqliteTransactionsService = {
       await tx.run(
         `UPDATE transactions SET status = 'batal', updated_at = ?, sync_status = 'pending', updated_at_local = ?
          WHERE id = ? AND user_id = ?`,
-        [nowIso(), nowIso(), id, userId]
+        [now, now, id, userId]
+      )
+
+      // Void jurnal penjualan terkait
+      await sqliteFinanceService.voidJournalByReference(tx, userId, 'transaction', id, now)
+
+      // Auto-jurnal: jurnal reversal void
+      autoJournalId = await sqliteFinanceService.postVoidJournal(
+        tx,
+        userId,
+        id,
+        txn.transaction_number,
+        txn.total,
+        txn.paid_amount,
+        txn.remaining_amount,
+        totalCogs,
+        now
       )
     })
 
     const txn = await this.getById(id)
     if (txn) await addToSyncQueue('UPDATE', 'transactions', id, txn)
+
+    // Queue jurnal void
+    if (autoJournalId) {
+      const journal = await sqliteFinanceService.getJournal(autoJournalId)
+      await addToSyncQueue('INSERT', 'journal_entries', autoJournalId, journal || { id: autoJournalId })
+    }
   },
 
   async search(queryStr: string): Promise<Transaction[]> {
