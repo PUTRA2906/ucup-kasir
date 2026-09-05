@@ -234,7 +234,7 @@
           </div>
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Plafon Kredit</label>
-            <input v-model.number="form.credit_limit" type="number" min="0" placeholder="0" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            <CurrencyInput v-model="form.credit_limit" placeholder="0" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"/>
           </div>
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Catatan</label>
@@ -275,13 +275,18 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { ref, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import CurrencyInput from '@/components/common/CurrencyInput.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { usePurchasingStore } from '@/stores/purchasing'
 import type { SupplierInsert, SupplierUpdate } from '@/types/database'
 
+const { confirm } = useConfirm()
+const toast = useToast()
 const store = usePurchasingStore()
 
 const showModal = ref(false)
@@ -377,11 +382,11 @@ const handleSave = async () => {
 }
 
 const handleDelete = async (s: any) => {
-  if (!confirm(`Hapus supplier "${s.name}"?`)) return
+  if (!(await confirm(`Hapus supplier "${s.name}"?`))) return
   try {
     await store.deleteSupplier(s.id)
   } catch (e: any) {
-    alert(e.message)
+    toast.error('Gagal!', e.message)
   }
 }
 

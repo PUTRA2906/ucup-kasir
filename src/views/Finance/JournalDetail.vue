@@ -143,6 +143,7 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -151,6 +152,7 @@ import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useFinanceStore } from '@/stores/finance'
 import type { JournalEntry } from '@/types/database'
 
+const { confirm } = useConfirm()
 const router = useRouter()
 const route = useRoute()
 const store = useFinanceStore()
@@ -205,7 +207,7 @@ const getRefBadge = (r: string) => {
 }
 
 const handleVoid = async () => {
-  if (!confirm('Void jurnal ini? Data tetap tersimpan tapi status menjadi void.')) return
+  if (!(await confirm('Void jurnal ini? Data tetap tersimpan tapi status menjadi void.'))) return
   try {
     await store.voidJournal(journal.value!.id)
     journal.value!.status = 'void'

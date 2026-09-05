@@ -175,6 +175,8 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { ref, computed, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
@@ -182,6 +184,8 @@ import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { usePurchasingStore } from '@/stores/purchasing'
 import type { PurchaseOrder } from '@/types/database'
 
+const { confirm } = useConfirm()
+const toast = useToast()
 const store = usePurchasingStore()
 
 const statusFilter = ref<string>('semua')
@@ -238,16 +242,16 @@ const handleChangeStatus = async (po: PurchaseOrder, status: PurchaseOrder['stat
   try {
     await store.updatePurchaseOrderStatus(po.id, status)
   } catch (e: any) {
-    alert(e.message)
+    toast.error('Gagal!', e.message)
   }
 }
 
 const handleDelete = async (po: PurchaseOrder) => {
-  if (!confirm(`Hapus PO "${po.po_number}"?`)) return
+  if (!(await confirm(`Hapus PO "${po.po_number}"?`))) return
   try {
     await store.deletePurchaseOrder(po.id)
   } catch (e: any) {
-    alert(e.message)
+    toast.error('Gagal!', e.message)
   }
 }
 

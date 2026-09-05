@@ -128,6 +128,8 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -136,6 +138,8 @@ import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { usePurchasingStore } from '@/stores/purchasing'
 import type { PurchaseOrder } from '@/types/database'
 
+const { confirm } = useConfirm()
+const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 const store = usePurchasingStore()
@@ -173,12 +177,12 @@ const getStatusBadge = (status: string) => {
 }
 
 const handleChangeStatus = async (status: PurchaseOrder['status']) => {
-  if (status === 'cancelled' && !confirm(`Batalkan PO "${po.value?.po_number}"?`)) return
+  if (status === 'cancelled' && !(await confirm(`Batalkan PO "${po.value?.po_number}"?`))) return
   try {
     await store.updatePurchaseOrderStatus(route.params.id as string, status)
     await load()
   } catch (e: any) {
-    alert(e.message)
+    toast.error('Gagal!', e.message)
   }
 }
 
@@ -188,7 +192,7 @@ const load = async () => {
     po.value = await store.getPurchaseOrder(route.params.id as string)
     if (!po.value) router.replace('/purchasing/pos')
   } catch (e: any) {
-    alert(e.message)
+    toast.error('Gagal!', e.message)
     router.replace('/purchasing/pos')
   } finally {
     loading.value = false

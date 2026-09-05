@@ -572,7 +572,7 @@ onMounted(async () => {
     ])
   } catch (error) {
     console.error('Error loading data:', error)
-    alert('Gagal memuat data. Silakan refresh halaman.')
+    toast.error('Gagal!', 'Gagal memuat data. Silakan refresh halaman.')
   } finally {
     mobileLoading.value = false
   }
@@ -585,7 +585,7 @@ const addProduct = () => {
 const refreshData = () => {
   searchQuery.value = ''
   selectedProducts.value = []
-  alert('Data telah di-refresh')
+  toast.success('Berhasil!', 'Data telah di-refresh')
 }
 
 const editProduct = (product: any) => {
@@ -643,7 +643,7 @@ const handleMenuAction = ({ action, row }: { action: string; row: any }) => {
       editProduct(row)
       break
     case 'outlet':
-      alert(`Atur per outlet: ${row.name}`)
+      toast.info('Info', `Atur per outlet: ${row.name}`)
       break
     case 'delete':
       deleteProduct(row)

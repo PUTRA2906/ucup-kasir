@@ -32,21 +32,13 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
     iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
   },
-  {
-    id: 'customers',
-    to: '/customers',
-    label: 'Customer',
-    description: 'Data pelanggan, limit kredit & histori',
-    iconClass: 'border-amber-500/20 bg-amber-500/10 text-amber-500',
-    iconPath:
-      'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
-  },
+  
   {
     id: 'returns',
     to: '/returns',
     label: 'Retur',
     description: 'Pengajuan & daftar retur penjualan',
-    iconClass: 'border-rose-500/20 bg-rose-500/10 text-rose-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
   },
   {
@@ -54,7 +46,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/categories',
     label: 'Kategori',
     description: 'Kelola kategori & pengelompokan produk',
-    iconClass: 'border-teal-500/20 bg-teal-500/10 text-teal-500',
+    iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
     iconPath: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z',
   },
   {
@@ -62,7 +54,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/products',
     label: 'Produk',
     description: 'Daftar produk, harga & stok',
-    iconClass: 'border-violet-500/20 bg-violet-500/10 text-violet-500',
+    iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
     iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
   },
   {
@@ -78,7 +70,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/stock/movements',
     label: 'Mutasi',
     description: 'Riwayat perpindahan stok barang',
-    iconClass: 'border-orange-500/20 bg-orange-500/10 text-orange-500',
+    iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
     iconPath: 'M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4',
   },
   {
@@ -86,8 +78,17 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/reports/transaction-profit',
     label: 'Laba/Tx',
     description: 'Rincian laba per transaksi penjualan',
-    iconClass: 'border-purple-500/20 bg-purple-500/10 text-purple-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+  },
+  {
+    id: 'customers',
+    to: '/customers',
+    label: 'Master Pelanggan',
+    description: 'Data Toko, limit kredit & histori',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
+    iconPath:
+      'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
   },
   {
     id: 'finance-dashboard',
@@ -102,7 +103,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/accounts',
     label: 'Akun',
     description: 'Chart of accounts / daftar akun',
-    iconClass: 'border-indigo-500/20 bg-indigo-500/10 text-indigo-500',
+    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
     iconPath: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
   },
   {
@@ -110,7 +111,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/journal',
     label: 'Jurnal',
     description: 'Jurnal umum seluruh transaksi',
-    iconClass: 'border-sky-500/20 bg-sky-500/10 text-sky-500',
+    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
     iconPath: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
   },
   {
@@ -118,7 +119,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/ledger',
     label: 'Buku Besar',
     description: 'Rekap transaksi per akun',
-    iconClass: 'border-lime-500/20 bg-lime-500/10 text-lime-500',
+    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
     iconPath: 'M9 17h6m-6-4h6m-6-4h6M5 7h.01M5 11h.01M5 15h.01M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z',
   },
   {
@@ -126,7 +127,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/trial-balance',
     label: 'Neraca Saldo',
     description: 'Keseimbangan debit & kredit',
-    iconClass: 'border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-500',
+    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
     iconPath: 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3',
   },
   {
@@ -134,7 +135,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/balance-sheet',
     label: 'Neraca',
     description: 'Laporan posisi aset, utang & modal',
-    iconClass: 'border-green-500/20 bg-green-500/10 text-green-500',
+    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
     iconPath: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
   },
   {
@@ -142,7 +143,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/cash-flow',
     label: 'Arus Kas',
     description: 'Laporan pemasukan & pengeluaran kas',
-    iconClass: 'border-pink-500/20 bg-pink-500/10 text-pink-500',
+    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
     iconPath: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z',
   },
   {
@@ -278,9 +279,14 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
 /** Grup menu (urutan tampilan di dashboard) */
 export const QUICK_MENU_GROUPS: Omit<QuickMenuGroup, 'items'>[] = [
   {
-    title: 'Stok & Transaksi',
-    slug: 'stok-transaksi',
-    color: 'bg-violet-400',
+    title: 'Penjualan',
+    slug: 'penjualan',
+    color: 'bg-cyan-400',
+  },
+  {
+    title: 'Gudang & Stok',
+    slug: 'gudang-stok',
+    color: 'bg-blue-400',
   },
   {
     title: 'Keuangan',
@@ -306,15 +312,16 @@ export const QUICK_MENU_GROUPS: Omit<QuickMenuGroup, 'items'>[] = [
 
 /** Mapping id menu → judul grup */
 export const GROUP_MAP: Record<string, string> = {
-  // Stok & Transaksi
-  stock: 'Stok & Transaksi',
-  products: 'Stok & Transaksi',
-  categories: 'Stok & Transaksi',
-  'stock-movements': 'Stok & Transaksi',
-  transactions: 'Stok & Transaksi',
-  returns: 'Stok & Transaksi',
-  'transaction-profit': 'Stok & Transaksi',
-  customers: 'Stok & Transaksi',
+  // Gudang & Stok
+  stock: 'Gudang & Stok',
+  products: 'Gudang & Stok',
+  categories: 'Gudang & Stok',
+  'stock-movements': 'Gudang & Stok',
+  // Penjualan
+  customers: 'Penjualan',
+  transactions: 'Penjualan',
+  returns: 'Penjualan',
+  'transaction-profit': 'Penjualan',
   // Keuangan
   'finance-dashboard': 'Keuangan',
   'chart-of-accounts': 'Keuangan',
@@ -346,15 +353,16 @@ export const GROUP_MAP: Record<string, string> = {
 
 /** Mapping id menu → subgrup (dipakai di halaman "Lihat Semua") */
 export const SUBGROUP_MAP: Record<string, string> = {
-  // Stok & Transaksi
+  // Gudang & Stok
   products: 'Master Produk',
   categories: 'Master Produk',
   stock: 'Gudang',
   'stock-movements': 'Gudang',
-  customers: 'Penjualan',
-  transactions: 'Penjualan',
-  returns: 'Penjualan',
-  'transaction-profit': 'Penjualan',
+  // Penjualan
+  customers: 'Pelanggan',
+  transactions: 'Transaksi',
+  returns: 'Transaksi',
+  'transaction-profit': 'Transaksi',
   // Keuangan
   'finance-dashboard': 'Ringkasan',
   'chart-of-accounts': 'Pencatatan',
@@ -382,6 +390,16 @@ export const SUBGROUP_MAP: Record<string, string> = {
   'hr-attendance': 'Absensi & Payroll',
   'hr-payroll': 'Absensi & Payroll',
   'hr-payroll-components': 'Absensi & Payroll',
+}
+
+/** Urutan tampil subgrup per grup di halaman "Lihat Semua" */
+export const SUBGROUP_ORDER: Record<string, string[]> = {
+  penjualan: ['Transaksi', 'Pelanggan'],
+  'gudang-stok': ['Master Produk', 'Gudang'],
+  keuangan: ['Ringkasan', 'Pencatatan', 'Laporan Keuangan'],
+  pembelian: ['Ringkasan', 'Master Supplier', 'Transaksi Pembelian'],
+  pengiriman: ['Ringkasan', 'Operasional'],
+  karyawan: ['Ringkasan', 'Master Data', 'Absensi & Payroll'],
 }
 
 /** Muat urutan menu dari localStorage; fallback ke default. */

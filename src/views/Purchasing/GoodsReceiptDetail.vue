@@ -98,6 +98,7 @@
 </template>
 
 <script setup lang="ts">
+import { useToast } from '@/composables/useToast'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -106,6 +107,7 @@ import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { usePurchasingStore } from '@/stores/purchasing'
 import type { GoodsReceipt } from '@/types/database'
 
+const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 const store = usePurchasingStore()
@@ -128,7 +130,7 @@ const load = async () => {
     grn.value = await store.getGoodsReceipt(route.params.id as string)
     if (!grn.value) router.replace('/purchasing/grns')
   } catch (e: any) {
-    alert(e.message)
+    toast.error('Gagal!', e.message)
     router.replace('/purchasing/grns')
   } finally {
     loading.value = false

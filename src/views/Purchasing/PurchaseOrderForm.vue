@@ -82,11 +82,11 @@
             </div>
             <div>
               <label class="mb-1 block text-[10px] font-medium text-gray-500 dark:text-gray-400">Harga</label>
-              <input v-model.number="item.price" type="number" min="0" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              <CurrencyInput v-model="item.price" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"/>
             </div>
             <div>
               <label class="mb-1 block text-[10px] font-medium text-gray-500 dark:text-gray-400">Disc</label>
-              <input v-model.number="item.discount" type="number" min="0" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              <CurrencyInput v-model="item.discount" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"/>
             </div>
           </div>
           <p class="mt-2 text-right text-xs font-semibold text-gray-900 dark:text-white">
@@ -100,15 +100,15 @@
         <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Diskon (Rp)</label>
-            <input v-model.number="form.discount" type="number" min="0" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            <CurrencyInput v-model="form.discount" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"/>
           </div>
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Pajak (Rp)</label>
-            <input v-model.number="form.tax" type="number" min="0" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            <CurrencyInput v-model="form.tax" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
           </div>
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Ongkir (Rp)</label>
-            <input v-model.number="form.shipping_cost" type="number" min="0" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            <CurrencyInput v-model="form.shipping_cost" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"/>
           </div>
         </div>
         <div class="mt-4 space-y-1 border-t border-gray-200 pt-3 text-sm dark:border-gray-700">
@@ -166,6 +166,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import CurrencyInput from '@/components/common/CurrencyInput.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { usePurchasingStore } from '@/stores/purchasing'

@@ -37,7 +37,7 @@
         </div>
         <div>
           <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Gaji Pokok (Rp) <span class="text-red-500">*</span></label>
-          <input v-model.number="formPos.base_salary" type="number" min="0" step="1000" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="0" />
+          <CurrencyInput v-model="formPos.base_salary" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="0"/>
         </div>
         <div class="flex items-center gap-2">
           <input v-model="formPos.is_active" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600" />
@@ -111,12 +111,17 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { ref, reactive, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import CurrencyInput from '@/components/common/CurrencyInput.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useHrStore } from '@/stores/hr'
 
+const { confirm } = useConfirm()
+const toast = useToast()
 const store = useHrStore()
 const showForm = ref(false)
 const editTarget = ref<string | null>(null)
@@ -152,12 +157,12 @@ const handleSubmit = async () => {
     }
     resetForm()
     showForm.value = false
-  } catch (e: any) { alert(e.message) }
+  } catch (e: any) { toast.error('Gagal!', e.message) }
 }
 
 const handleDelete = async (id: string) => {
-  if (!confirm('Hapus jabatan ini?')) return
-  try { await store.deletePosition(id) } catch (e: any) { alert(e.message) }
+  if (!(await confirm('Hapus jabatan ini?'))) return
+  try { await store.deletePosition(id) } catch (e: any) { toast.error('Gagal!', e.message) }
 }
 
 const formatCurrency = (v: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(v || 0)

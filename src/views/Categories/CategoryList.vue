@@ -454,7 +454,7 @@ onMounted(async () => {
     ])
   } catch (error) {
     console.error('Error loading data:', error)
-    alert('Gagal memuat data. Silakan refresh halaman.')
+    toast.info('Info', 'Gagal memuat data. Silakan refresh halaman.')
   }
 })
 

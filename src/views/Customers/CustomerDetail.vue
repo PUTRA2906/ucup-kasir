@@ -329,9 +329,8 @@
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Nominal Min
                 </label>
-                <input
-                  type="number"
-                  v-model.number="filters.minAmount"
+                <CurrencyInput
+                  v-model="filters.minAmount"
                   placeholder="0"
                   class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:focus:border-brand-500"
                 />
@@ -342,9 +341,8 @@
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                   Nominal Max
                 </label>
-                <input
-                  type="number"
-                  v-model.number="filters.maxAmount"
+                <CurrencyInput
+                  v-model="filters.maxAmount"
                   placeholder="Tanpa batas"
                   class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:focus:border-brand-500"
                 />
@@ -604,9 +602,8 @@
                   <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Nominal Minimal
                   </label>
-                  <input
-                    type="number"
-                    v-model.number="filters.minAmount"
+                  <CurrencyInput
+                    v-model="filters.minAmount"
                     placeholder="0"
                     class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   />
@@ -617,9 +614,8 @@
                   <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Nominal Maksimal
                   </label>
-                  <input
-                    type="number"
-                    v-model.number="filters.maxAmount"
+                  <CurrencyInput
+                    v-model="filters.maxAmount"
                     placeholder="Tanpa batas"
                     class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   />
@@ -674,6 +670,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import CurrencyInput from '@/components/common/CurrencyInput.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import ComponentCard from '@/components/common/ComponentCard.vue'

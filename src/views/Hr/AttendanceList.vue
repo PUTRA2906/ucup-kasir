@@ -156,6 +156,8 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { ref, reactive, computed, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
@@ -163,6 +165,8 @@ import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useHrStore } from '@/stores/hr'
 import type { AttendanceInsert } from '@/types/database'
 
+const { confirm } = useConfirm()
+const toast = useToast()
 const store = useHrStore()
 const loading = computed(() => store.loading)
 
@@ -242,12 +246,12 @@ const handleAttSubmit = async () => {
       await store.createAttendance(payload)
     }
     closeModal()
-  } catch (e: any) { alert(e.message) }
+  } catch (e: any) { toast.error('Gagal!', e.message) }
 }
 
 const handleDelete = async (id: string) => {
-  if (!confirm('Hapus data absensi ini?')) return
-  try { await store.deleteAttendance(id) } catch (e: any) { alert(e.message) }
+  if (!(await confirm('Hapus data absensi ini?'))) return
+  try { await store.deleteAttendance(id) } catch (e: any) { toast.error('Gagal!', e.message) }
 }
 
 onMounted(async () => {

@@ -132,12 +132,16 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { ref, reactive, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useHrStore } from '@/stores/hr'
 
+const { confirm } = useConfirm()
+const toast = useToast()
 const store = useHrStore()
 const showForm = ref(false)
 const editTarget = ref<string | null>(null)
@@ -169,16 +173,16 @@ const handleDeptSubmit = async () => {
     resetForm()
     showForm.value = false
   } catch (e: any) {
-    alert(e.message)
+    toast.error('Gagal!', e.message)
   }
 }
 
 const handleDelete = async (id: string) => {
-  if (!confirm('Hapus departemen ini?')) return
+  if (!(await confirm('Hapus departemen ini?'))) return
   try {
     await store.deleteDepartment(id)
   } catch (e: any) {
-    alert(e.message)
+    toast.error('Gagal!', e.message)
   }
 }
 

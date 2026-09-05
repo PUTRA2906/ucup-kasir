@@ -133,12 +133,16 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { ref, reactive, onMounted, computed } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useShippingStore } from '@/stores/shipping'
 
+const { confirm } = useConfirm()
+const toast = useToast()
 const store = useShippingStore()
 const showForm = ref(false)
 const editTarget = ref<string | null>(null)
@@ -177,12 +181,12 @@ const handleSubmit = async () => {
       await store.createVehicle(payload)
     }
     closeForm()
-  } catch (e: any) { alert(e.message) }
+  } catch (e: any) { toast.error('Gagal!', e.message) }
 }
 
 const handleDelete = async (id: string) => {
-  if (!confirm('Hapus kendaraan ini?')) return
-  try { await store.deleteVehicle(id) } catch (e: any) { alert(e.message) }
+  if (!(await confirm('Hapus kendaraan ini?'))) return
+  try { await store.deleteVehicle(id) } catch (e: any) { toast.error('Gagal!', e.message) }
 }
 
 const getStatusBadge = (status: string) => {

@@ -45,7 +45,7 @@
           </div>
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Nilai <span class="text-red-500">*</span></label>
-            <input v-model.number="formComp.amount" type="number" min="0" step="0.01" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="0" />
+            <CurrencyInput v-model="formComp.amount" required class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="0"/>
           </div>
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Berlaku Untuk</label>
@@ -146,13 +146,18 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { ref, reactive, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import CurrencyInput from '@/components/common/CurrencyInput.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useHrStore } from '@/stores/hr'
 import type { PayrollComponentInsert } from '@/types/database'
 
+const { confirm } = useConfirm()
+const toast = useToast()
 const store = useHrStore()
 const showForm = ref(false)
 const editTarget = ref<string | null>(null)
@@ -223,12 +228,12 @@ const handleSubmit = async () => {
       await store.createPayrollComponent(payload)
     }
     closeForm()
-  } catch (e: any) { alert(e.message) }
+  } catch (e: any) { toast.error('Gagal!', e.message) }
 }
 
 const handleDelete = async (id: string) => {
-  if (!confirm('Hapus komponen ini?')) return
-  try { await store.deletePayrollComponent(id) } catch (e: any) { alert(e.message) }
+  if (!(await confirm('Hapus komponen ini?'))) return
+  try { await store.deletePayrollComponent(id) } catch (e: any) { toast.error('Gagal!', e.message) }
 }
 
 onMounted(() => Promise.all([store.fetchPayrollComponents(), store.fetchPositions(), store.fetchEmployees()]))

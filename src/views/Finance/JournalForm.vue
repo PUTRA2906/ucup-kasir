@@ -95,20 +95,16 @@
               <div class="grid grid-cols-2 gap-2">
                 <div>
                   <label class="mb-1 block text-[10px] font-medium text-gray-500 dark:text-gray-400">Debit</label>
-                  <input
-                    v-model.number="line.debit"
-                    type="number"
-                    min="0"
+                  <CurrencyInput
+                    v-model="line.debit"
                     placeholder="0"
                     class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   />
                 </div>
                 <div>
                   <label class="mb-1 block text-[10px] font-medium text-gray-500 dark:text-gray-400">Kredit</label>
-                  <input
-                    v-model.number="line.credit"
-                    type="number"
-                    min="0"
+                  <CurrencyInput
+                    v-model="line.credit"
                     placeholder="0"
                     class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   />
@@ -168,6 +164,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import CurrencyInput from '@/components/common/CurrencyInput.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useFinanceStore } from '@/stores/finance'

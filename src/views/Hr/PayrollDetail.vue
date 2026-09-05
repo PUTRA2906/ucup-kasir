@@ -159,6 +159,8 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -166,6 +168,8 @@ import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useHrStore } from '@/stores/hr'
 
+const { confirm } = useConfirm()
+const toast = useToast()
 const route = useRoute()
 const store = useHrStore()
 
@@ -208,17 +212,17 @@ const statusBadge = (s: string) => {
 }
 
 const handleGenerate = async () => {
-  if (!confirm('Generate payroll untuk periode ini?')) return
+  if (!(await confirm('Generate payroll untuk periode ini?'))) return
   try {
     await store.generatePayroll(route.params.id as string)
-  } catch (e: any) { alert(e.message) }
+  } catch (e: any) { toast.error('Gagal!', e.message) }
 }
 
 const handlePost = async () => {
-  if (!confirm('Post jurnal akuntansi untuk payroll ini?')) return
+  if (!(await confirm('Post jurnal akuntansi untuk payroll ini?'))) return
   try {
     await store.postPayrollJournal(route.params.id as string)
-  } catch (e: any) { alert(e.message) }
+  } catch (e: any) { toast.error('Gagal!', e.message) }
 }
 
 onMounted(async () => {

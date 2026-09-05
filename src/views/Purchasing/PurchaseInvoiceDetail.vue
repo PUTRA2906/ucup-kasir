@@ -123,7 +123,7 @@
         <div class="space-y-4">
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Jumlah (maks {{ formatRupiah(pi!.remaining_amount) }})</label>
-            <input v-model.number="payAmount" type="number" min="0" :max="pi!.remaining_amount" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            <CurrencyInput v-model="payAmount" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
           </div>
           <div>
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Metode</label>
@@ -153,14 +153,17 @@
 </template>
 
 <script setup lang="ts">
+import { useToast } from '@/composables/useToast'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import CurrencyInput from '@/components/common/CurrencyInput.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { usePurchasingStore } from '@/stores/purchasing'
 import type { PurchaseInvoice } from '@/types/database'
 
+const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 const store = usePurchasingStore()
@@ -188,7 +191,7 @@ const load = async () => {
     pi.value = await store.getPurchaseInvoice(route.params.id as string)
     if (!pi.value) router.replace('/purchasing/pis')
     else payAmount.value = pi.value.remaining_amount
-  } catch (e: any) { alert(e.message); router.replace('/purchasing/pis') } finally { loading.value = false }
+  } catch (e: any) { toast.error('Gagal!', e.message); router.replace('/purchasing/pis') } finally { loading.value = false }
 }
 
 const handlePay = async () => {

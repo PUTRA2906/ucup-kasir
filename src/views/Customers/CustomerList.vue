@@ -648,7 +648,7 @@ onMounted(async () => {
     await customersStore.fetchCustomers()
   } catch (error) {
     console.error('Error loading customers:', error)
-    alert('Gagal memuat data. Silakan refresh halaman.')
+    toast.info('Info', 'Gagal memuat data. Silakan refresh halaman.')
   }
 })
 

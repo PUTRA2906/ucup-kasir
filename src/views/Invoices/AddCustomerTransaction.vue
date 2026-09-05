@@ -290,7 +290,8 @@
               <div class="relative w-36">
                 <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] text-gray-500">Rp</span>
                 <input
-                  v-model="discountInput"
+                  :value="discountInput ? formatNumber(parseInt(discountInput)) : ''"
+                  @input="discountInput = ($event.target as HTMLInputElement).value.replace(/\D/g, '')"
                   type="text"
                   inputmode="numeric"
                   placeholder="0"
@@ -544,7 +545,8 @@
                   <div class="flex items-center gap-1">
                     <span class="text-xs text-gray-400 dark:text-gray-600">Rp</span>
                     <input
-                      v-model="discountInput"
+                      :value="discountInput ? formatNumber(parseInt(discountInput)) : ''"
+                      @input="discountInput = ($event.target as HTMLInputElement).value.replace(/\D/g, '')"
                       type="text"
                       inputmode="numeric"
                       placeholder="0"
@@ -709,6 +711,7 @@ import { useCustomersStore } from '@/stores/customers'
 import { useTransactionsStore } from '@/stores/transactions'
 import { useReturnsStore } from '@/stores/returns'
 import { useToast } from '@/composables/useToast'
+import { useConfirm } from '@/composables/useConfirm'
 
 const router = useRouter()
 const route = useRoute()
@@ -717,6 +720,7 @@ const customersStore = useCustomersStore()
 const transactionsStore = useTransactionsStore()
 const returnsStore = useReturnsStore()
 const toast = useToast()
+const { confirm } = useConfirm()
 
 const selectedCustomerId = ref((route.params.customerId as string) || '')
 const discountInput = ref('')
@@ -834,8 +838,8 @@ const formatDateShort = (date: Date) =>
     year: 'numeric',
   })
 
-const resetForm = () => {
-  if (confirm('Reset data transaksi ini?')) {
+const resetForm = async () => {
+  if (await confirm('Reset data transaksi ini?')) {
     cartItems.splice(0, cartItems.length)
     discountInput.value = ''
     notes.value = ''

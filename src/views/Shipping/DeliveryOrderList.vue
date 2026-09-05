@@ -101,6 +101,8 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -108,6 +110,8 @@ import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useShippingStore } from '@/stores/shipping'
 
+const { confirm } = useConfirm()
+const toast = useToast()
 const router = useRouter()
 const store = useShippingStore()
 
@@ -167,8 +171,8 @@ const formatDate = (d: string) => {
 }
 
 const handleDelete = async (id: string) => {
-  if (!confirm('Hapus surat jalan ini?')) return
-  try { await store.deleteDeliveryOrder(id) } catch (e: any) { alert(e.message) }
+  if (!(await confirm('Hapus surat jalan ini?'))) return
+  try { await store.deleteDeliveryOrder(id) } catch (e: any) { toast.error('Gagal!', e.message) }
 }
 
 onMounted(() => store.fetchDeliveryOrders())

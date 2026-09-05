@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ERP Mobile - Sales & Distribution Module</title>
+  <title>ERP Mobile - Detail Transaksi UX Redesign</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -11,178 +11,174 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-20 max-w-md mx-auto border-x border-slate-800">
+<body class="bg-[#0b1320] text-slate-100 font-sans min-h-screen pb-44 max-w-md mx-auto relative border-x border-slate-800/60">
 
-  <!-- Header dengan tombol Kembali -->
-  <header class="p-4 bg-slate-800/80 backdrop-blur sticky top-0 z-10 border-b border-slate-700/50 flex items-center justify-between">
+  <!-- Header Section -->
+  <header class="p-4 bg-[#0b1320]/90 backdrop-blur-md sticky top-0 z-10 border-b border-slate-800/50 flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <button class="w-9 h-9 rounded-xl bg-slate-700/50 flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition">
-        <i class="fa-solid fa-arrow-left"></i>
+      <button class="w-9 h-9 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-slate-300 hover:text-white transition active:scale-95">
+        <i class="fa-solid fa-arrow-left text-sm"></i>
       </button>
       <div>
-        <h1 class="text-base font-bold text-white">Sales & Distribution</h1>
-        <p class="text-[11px] text-slate-400">12 Fitur Tersedia</p>
+        <h1 class="text-sm font-bold text-white leading-tight">Detail Transaksi</h1>
+        <p class="text-[11px] text-slate-400 font-mono">TRX-20260901-2D9EFE</p>
       </div>
     </div>
-    <button class="w-9 h-9 rounded-xl bg-slate-700/50 flex items-center justify-center text-slate-300">
-      <i class="fa-solid fa-sliders"></i>
-    </button>
+    <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[11px] px-3 py-1 rounded-full font-semibold flex items-center gap-1.5">
+      <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+      Belum Lunas
+    </span>
   </header>
 
-  <main class="p-4 space-y-5">
+  <main class="p-4 space-y-4">
 
-    <!-- Search Bar Khusus Modul -->
-    <div class="relative">
-      <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-      <input type="text" placeholder="Cari fitur sales, transaksi, atau order..." 
-             class="w-full bg-slate-800 border border-slate-700/60 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 placeholder-slate-400 focus:outline-none focus:border-blue-500">
+    <!-- Card 1: Informasi Pelanggan & Metode Pembayaran -->
+    <div class="bg-slate-800/50 border border-slate-700/40 rounded-2xl p-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center font-bold text-base">
+          A
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm font-bold text-white">agus</h2>
+            <span class="text-[10px] bg-slate-700/60 text-slate-300 px-2 py-0.5 rounded-md font-medium">Pelanggan</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-0.5"><i class="fa-solid fa-wallet text-[10px] mr-1"></i>Pembayaran: Tunai</p>
+        </div>
+      </div>
+      <div class="text-right">
+        <span class="text-[11px] text-slate-400 block">Tanggal</span>
+        <span class="text-xs font-semibold text-slate-200">16 Sep 2026</span>
+      </div>
     </div>
 
-    <!-- Kelompok 1: Transaksi Utama (List Style dengan Deskripsi & Badge) -->
-    <section class="space-y-2">
-      <h2 class="text-xs uppercase tracking-wider font-bold text-slate-400 px-1">Transaksi & Pesanan</h2>
-      
-      <div class="bg-slate-800/80 border border-slate-700/40 rounded-2xl divide-y divide-slate-700/40">
-        
-        <a href="#" class="p-3.5 flex items-center justify-between hover:bg-slate-700/30 transition">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
-              <i class="fa-solid fa-cart-plus"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-white">Buat Sales Order (SO)</p>
-              <p class="text-[10px] text-slate-400">Input pesanan baru dari pelanggan</p>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
-        </a>
-
-        <a href="#" class="p-3.5 flex items-center justify-between hover:bg-slate-700/30 transition">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
-              <i class="fa-solid fa-file-lines"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-white">Daftar Sales Order</p>
-              <p class="text-[10px] text-slate-400">Cek status pengajuan & approval</p>
-            </div>
-          </div>
-          <span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded-full font-medium">5 Pending</span>
-        </a>
-
-        <a href="#" class="p-3.5 flex items-center justify-between hover:bg-slate-700/30 transition">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
-              <i class="fa-solid fa-file-invoice-dollar"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-white">Faktur Penjualan</p>
-              <p class="text-[10px] text-slate-400">Cetak & kirim tagihan ke pembeli</p>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
-        </a>
-
-        <a href="#" class="p-3.5 flex items-center justify-between hover:bg-slate-700/30 transition">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">
-              <i class="fa-solid fa-rotate-left"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-white">Retur Penjualan</p>
-              <p class="text-[10px] text-slate-400">Pengajuan klaim barang kembali</p>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
-        </a>
-
+    <!-- Card 2: Rincian Barang (Itemized List) -->
+    <div class="bg-slate-800/50 border border-slate-700/40 rounded-2xl p-4 space-y-3">
+      <div class="flex justify-between items-center text-xs border-b border-slate-700/50 pb-2.5">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Item Pembelian (2)</span>
+        <span class="text-[11px] font-medium text-slate-400">Subtotal</span>
       </div>
-    </section>
 
-    <!-- Kelompok 2: CRM & Master Data -->
-    <section class="space-y-2">
-      <h2 class="text-xs uppercase tracking-wider font-bold text-slate-400 px-1">Pelanggan & Lapangan</h2>
-      
-      <div class="bg-slate-800/80 border border-slate-700/40 rounded-2xl divide-y divide-slate-700/40">
-        
-        <a href="#" class="p-3.5 flex items-center justify-between hover:bg-slate-700/30 transition">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg">
-              <i class="fa-solid fa-users"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-white">Master Pelanggan</p>
-              <p class="text-[10px] text-slate-400">Database toko, limit kredit, & histori</p>
-            </div>
+      <div class="space-y-3">
+        <!-- Item 1 -->
+        <div class="flex justify-between items-start gap-2">
+          <div class="flex-1">
+            <p class="text-xs font-semibold text-slate-100">Fungisida Antracol 70 WP 250gr</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">1 unit × <span class="text-slate-300">Rp 60.000</span></p>
           </div>
-          <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
-        </a>
+          <span class="text-xs font-bold text-white font-mono">Rp 60.000</span>
+        </div>
 
-        <a href="#" class="p-3.5 flex items-center justify-between hover:bg-slate-700/30 transition">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg">
-              <i class="fa-solid fa-route"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-white">Rute & Kunjungan Sales</p>
-              <p class="text-[10px] text-slate-400">Jadwal salesman & abseing GPS</p>
-            </div>
+        <!-- Item 2 -->
+        <div class="flex justify-between items-start gap-2">
+          <div class="flex-1">
+            <p class="text-xs font-semibold text-slate-100">Herbisida Gramoxone 276 SL 1 Liter</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">1 unit × <span class="text-slate-300">Rp 92.000</span></p>
           </div>
-          <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
-        </a>
-
-        <a href="#" class="p-3.5 flex items-center justify-between hover:bg-slate-700/30 transition">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg">
-              <i class="fa-solid fa-tags"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-white">Matriks Harga & Diskon</p>
-              <p class="text-[10px] text-slate-400">Skema diskon per tiering pelanggan</p>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
-        </a>
-
+          <span class="text-xs font-bold text-white font-mono">Rp 92.000</span>
+        </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Kelompok 3: Laporan & Analitik -->
-    <section class="space-y-2">
-      <h2 class="text-xs uppercase tracking-wider font-bold text-slate-400 px-1">Analitik & Laporan</h2>
-      
-      <div class="bg-slate-800/80 border border-slate-700/40 rounded-2xl divide-y divide-slate-700/40">
-        
-        <a href="#" class="p-3.5 flex items-center justify-between hover:bg-slate-700/30 transition">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg">
-              <i class="fa-solid fa-chart-line"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-white">Laporan Omset Penjualan</p>
-              <p class="text-[10px] text-slate-400">Grafik performa harian & bulanan</p>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
-        </a>
-
-        <a href="#" class="p-3.5 flex items-center justify-between hover:bg-slate-700/30 transition">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg">
-              <i class="fa-solid fa-trophy"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-white">Performa Salesman</p>
-              <p class="text-[10px] text-slate-400">Pencapaian target & komisi</p>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
-        </a>
-
+    <!-- Card 3: Timeline Riwayat Pembayaran -->
+    <div class="bg-slate-800/50 border border-slate-700/40 rounded-2xl p-4 space-y-3">
+      <div class="flex justify-between items-center text-xs border-b border-slate-700/50 pb-2.5">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Riwayat Pembayaran
+        </span>
+        <span class="text-[10px] bg-slate-700/40 text-slate-300 px-2 py-0.5 rounded-full">2 Aktivitas</span>
       </div>
-    </section>
+
+      <!-- Timeline Component -->
+      <div class="relative pl-5 space-y-4 text-xs pt-1 before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-700/60">
+        <!-- Event 1 -->
+        <div class="relative">
+          <span class="absolute -left-[21px] top-0.5 w-3.5 h-3.5 rounded-full bg-blue-500 ring-4 ring-[#0b1320]"></span>
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-semibold text-slate-200">Faktur Diterbitkan</p>
+              <p class="text-[10px] text-slate-400">16 Sep 2026 • 2 Item</p>
+            </div>
+            <span class="font-semibold text-slate-200 font-mono">Rp 152.000</span>
+          </div>
+        </div>
+
+        <!-- Event 2 -->
+        <div class="relative">
+          <span class="absolute -left-[21px] top-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-4 ring-[#0b1320]"></span>
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-semibold text-slate-200">Pembayaran ke-1 (DP)</p>
+              <p class="text-[10px] text-slate-400">01 Sep 2026 • Tunai</p>
+            </div>
+            <span class="font-bold text-emerald-400 font-mono">- Rp 76.000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Ringkasan Tagihan (Financial Summary) -->
+    <div class="bg-slate-800/50 border border-slate-700/40 rounded-2xl p-4 space-y-2.5 text-xs">
+      <div class="flex justify-between text-slate-400">
+        <span>Total Barang (Kotor)</span>
+        <span class="font-mono text-slate-200">Rp 152.000</span>
+      </div>
+      <div class="flex justify-between text-slate-400">
+        <span>Total Bersih Faktur</span>
+        <span class="font-mono text-slate-200">Rp 152.000</span>
+      </div>
+      <div class="flex justify-between text-slate-400">
+        <span>Total Uang Diterima</span>
+        <span class="font-mono text-emerald-400 font-semibold">Rp 76.000</span>
+      </div>
+
+      <div class="border-t border-slate-700/50 pt-2.5 mt-2 flex justify-between items-center">
+        <div>
+          <span class="text-xs font-bold text-amber-400 block">Sisa Tagihan</span>
+          <span class="text-[10px] text-slate-400">Jatuh Tempo: 30 Sep 2026</span>
+        </div>
+        <span class="text-lg font-extrabold text-amber-400 font-mono">Rp 76.000</span>
+      </div>
+    </div>
 
   </main>
+
+  <!-- Sticky Bottom Action Bar (Ergonomic UX Layout) -->
+  <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#0b1320]/95 backdrop-blur-md border-t border-slate-800/80 p-3 space-y-2 z-20">
+    
+    <!-- Primary Actions: Kirim Dokumen & Bayar -->
+    <div class="grid grid-cols-3 gap-2">
+      <button class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95 shadow-lg shadow-amber-500/10">
+        <i class="fa-solid fa-plus text-xs"></i>
+        Bayar
+      </button>
+      <button class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+        <i class="fa-brands fa-whatsapp text-sm"></i>
+        WhatsApp
+      </button>
+      <button class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+        <i class="fa-solid fa-file-pdf text-xs"></i>
+        PDF
+      </button>
+    </div>
+
+    <!-- Secondary & Danger Actions -->
+    <div class="grid grid-cols-3 gap-2 pt-0.5">
+      <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2 rounded-xl text-[11px] border border-slate-700/60 flex items-center justify-center gap-1">
+        <i class="fa-solid fa-rotate-left text-[10px]"></i>
+        Retur
+      </button>
+      <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2 rounded-xl text-[11px] border border-slate-700/60 flex items-center justify-center gap-1">
+        <i class="fa-solid fa-print text-[10px]"></i>
+        Cetak
+      </button>
+      <button class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-semibold py-2 rounded-xl text-[11px] border border-rose-500/20 flex items-center justify-center gap-1">
+        <i class="fa-solid fa-xmark text-[10px]"></i>
+        Batal TRX
+      </button>
+    </div>
+
+  </div>
 
 </body>
 </html>

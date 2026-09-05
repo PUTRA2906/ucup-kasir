@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-dvh bg-white dark:bg-gray-900">
+  <div class="min-h-dvh bg-gray-50 dark:bg-gray-900">
     <!-- Sticky Header -->
     <header
       class="sticky top-0 z-20 border-b border-gray-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-gray-800 dark:bg-gray-900/90"
@@ -9,21 +9,21 @@
           <button
             type="button"
             @click="router.back()"
-            class="flex h-8 w-8 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+            class="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-600 transition active:scale-95 dark:bg-gray-800 dark:text-gray-300"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
           <div>
-            <h1 class="font-bold leading-tight text-gray-900 dark:text-white">{{ group.title }}</h1>
+            <h1 class="text-base font-bold leading-tight text-gray-900 dark:text-white">{{ group.title }}</h1>
             <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ group.items.length }} fitur tersedia</p>
           </div>
         </div>
       </div>
     </header>
 
-    <main class="mx-auto max-w-md space-y-4 px-4 py-4">
+    <main class="mx-auto max-w-md space-y-5 px-4 py-4">
       <!-- Search -->
       <div class="relative">
         <svg
@@ -35,78 +35,79 @@
         <input
           v-model="search"
           type="text"
-          placeholder="Cari fitur..."
-          class="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+          :placeholder="`Cari fitur ${group.title.toLowerCase()}...`"
+          class="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-xs text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
         />
       </div>
 
       <!-- Search Result -->
       <div
         v-if="search.trim()"
-        class="space-y-2.5 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+        class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:divide-gray-800 dark:border-gray-800 dark:bg-white/[0.03]"
       >
         <router-link
           v-for="item in filteredItems"
           :key="item.id"
           :to="item.to"
-          class="flex items-center gap-3 rounded-xl p-2.5 transition hover:bg-gray-50 active:scale-[0.99] dark:hover:bg-white/[0.03]"
+          class="flex items-center justify-between p-3.5 transition hover:bg-gray-50 active:scale-[0.99] dark:hover:bg-white/[0.03]"
         >
-          <div
-            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border"
-            :class="item.iconClass"
-          >
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
-            </svg>
+          <div class="flex items-center gap-3">
+            <div
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+              :class="item.iconClass"
+            >
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ item.label }}</p>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ item.description }}</p>
+            </div>
           </div>
-          <span class="flex-1 text-sm font-semibold text-gray-800 dark:text-gray-100">{{ item.label }}</span>
-          <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-3.5 w-3.5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </router-link>
+        <p v-if="filteredItems.length === 0" class="p-6 text-center text-xs text-gray-500 dark:text-gray-400">
+          Tidak ada fitur yang cocok.
+        </p>
       </div>
 
-      <!-- Full List — dikelompokkan per subgrup -->
-      <div v-else class="space-y-4">
-        <div
-          v-for="sub in subgroups"
-          :key="sub.title"
-          class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
-        >
-          <!-- Subgroup Header -->
-          <div class="flex items-center gap-2 border-b border-gray-100 px-4 py-2.5 dark:border-gray-800">
-          
-            <span class="text-[11px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300">
-              {{ sub.title }}
-            </span>
-            <span class="text-[10px] text-gray-400">({{ sub.items.length }})</span>
-          </div>
+      <!-- Full List — seksi dengan judul di luar kartu (gaya home.html) -->
+      <div v-else class="space-y-5">
+        <section v-for="sub in subgroups" :key="sub.title" class="space-y-2">
+          <h2 class="px-1 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            {{ sub.title }}
+          </h2>
 
-          <div class="divide-y divide-gray-100 dark:divide-gray-800">
+          <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:divide-gray-800 dark:border-gray-800 dark:bg-white/[0.03]">
             <router-link
               v-for="item in sub.items"
               :key="item.id"
               :to="item.to"
-              class="flex items-center gap-3 p-3.5 transition hover:bg-gray-50 active:scale-[0.99] dark:hover:bg-white/[0.03]"
+              class="flex items-center justify-between p-3.5 transition hover:bg-gray-50 active:scale-[0.99] dark:hover:bg-white/[0.03]"
             >
-              <div
-                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border"
-                :class="item.iconClass"
-              >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
-                </svg>
+              <div class="flex items-center gap-3">
+                <div
+                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                  :class="item.iconClass"
+                >
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ item.label }}</p>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ item.description }}</p>
+                </div>
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-gray-800 dark:text-white">
-                   {{ item.label }}
-                </p>
-                <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ item.description }}</p>
-              </div>
-              
+              <svg class="h-3.5 w-3.5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
             </router-link>
           </div>
-        </div>
+        </section>
       </div>
     </main>
   </div>
@@ -118,6 +119,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   QUICK_MENU_GROUPS,
   SUBGROUP_MAP,
+  SUBGROUP_ORDER,
   getGroupItems,
   type QuickMenuGroup,
   type QuickMenuItem,
@@ -137,7 +139,7 @@ const group = computed<QuickMenuGroup>(() => {
   }
 })
 
-/** Kelompokkan item grup menjadi subgrup (urut sesuai urutan tampil item) */
+/** Kelompokkan item grup menjadi subgrup, urut sesuai SUBGROUP_ORDER */
 const subgroups = computed<{ title: string; items: QuickMenuItem[] }[]>(() => {
   const map = new Map<string, QuickMenuItem[]>()
   for (const item of group.value.items) {
@@ -145,7 +147,18 @@ const subgroups = computed<{ title: string; items: QuickMenuItem[] }[]>(() => {
     if (!map.has(title)) map.set(title, [])
     map.get(title)!.push(item)
   }
-  return [...map.entries()].map(([title, items]) => ({ title, items }))
+  const order = SUBGROUP_ORDER[slug] ?? []
+  const titles = [...map.keys()]
+  titles.sort((a, b) => {
+    const ia = order.indexOf(a)
+    const ib = order.indexOf(b)
+    // Subgrup tanpa urutan eksplisit ditaruh di belakang
+    if (ia === -1 && ib === -1) return 0
+    if (ia === -1) return 1
+    if (ib === -1) return -1
+    return ia - ib
+  })
+  return titles.map((title) => ({ title, items: map.get(title)! }))
 })
 
 const search = ref('')
@@ -153,6 +166,10 @@ const search = ref('')
 const filteredItems = computed(() => {
   const q = search.value.trim().toLowerCase()
   if (!q) return []
-  return group.value.items.filter((item) => item.label.toLowerCase().includes(q))
+  return group.value.items.filter(
+    (item) =>
+      item.label.toLowerCase().includes(q) ||
+      item.description.toLowerCase().includes(q)
+  )
 })
 </script>

@@ -293,6 +293,8 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { ref, computed, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
@@ -300,6 +302,8 @@ import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useFinanceStore } from '@/stores/finance'
 import type { Account, AccountInsert, AccountUpdate } from '@/types/database'
 
+const { confirm } = useConfirm()
+const toast = useToast()
 const store = useFinanceStore()
 
 const showAddModal = ref(false)
@@ -422,11 +426,11 @@ const handleSave = async () => {
 }
 
 const handleDelete = async (acc: Account) => {
-  if (!confirm(`Hapus akun "${acc.name}"?`)) return
+  if (!(await confirm(`Hapus akun "${acc.name}"?`))) return
   try {
     await store.deleteAccount(acc.id)
   } catch (e: any) {
-    alert(e.message)
+    toast.error('Gagal!', e.message)
   }
 }
 

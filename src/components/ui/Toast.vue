@@ -2,7 +2,12 @@
   <Transition name="toast">
     <div
       v-if="visible"
-      :class="['fixed left-3 right-3 top-20 z-[9999] mx-auto rounded-lg border p-2.5 shadow-xl md:left-auto md:right-6 md:top-24 md:w-full md:max-w-xs md:p-3', variantClasses[variant].container]"
+      :class="['fixed left-3 right-3 top-20 z-[9999] mx-auto rounded-lg border p-2.5 shadow-xl md:left-auto md:right-6 md:top-24 md:w-full md:max-w-xs md:p-3 select-none touch-pan-y', variantClasses[variant].container]"
+      :style="dragStyle"
+      @pointerdown="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="onPointerUp"
+      @pointercancel="onPointerUp"
     >
       <div class="flex items-start gap-2 md:gap-2.5">
         <div :class="['flex-shrink-0', variantClasses[variant].icon]">
@@ -30,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { SuccessIcon, ErrorIcon, WarningIcon, InfoCircleIcon } from '@/icons'
 
 interface ToastProps {
@@ -50,6 +55,71 @@ const emit = defineEmits<{
 
 const visible = ref(false)
 let timeoutId: ReturnType<typeof setTimeout> | null = null
+
+// ── Swipe to dismiss ──────────────────────────────
+const SWIPE_THRESHOLD = 80 // px — jarak geser untuk menutup
+const dragX = ref(0)
+const dragging = ref(false)
+const snapping = ref(false)
+const dismissDir = ref<'left' | 'right' | null>(null)
+let startX = 0
+
+const dragStyle = computed(() => {
+  // Fly-out ke arah geseran (inline style agar override transisi CSS)
+  if (dismissDir.value) {
+    return {
+      transform: `translateX(${dismissDir.value === 'right' ? '120%' : '-120%'})`,
+      opacity: '0',
+      transition: 'transform 0.25s ease, opacity 0.25s ease',
+    }
+  }
+  if (dragging.value) {
+    return {
+      transform: `translateX(${dragX.value}px)`,
+      opacity: String(Math.max(0.35, 1 - Math.abs(dragX.value) / 250)),
+      transition: 'none',
+    }
+  }
+  if (snapping.value) {
+    // Snap-back halus setelah geseran di bawah ambang
+    return { transform: 'translateX(0)', transition: 'transform 0.2s ease' }
+  }
+  return {} // tidak pernah di-drag → biarkan transisi CSS bekerja normal
+})
+
+const onPointerDown = (e: PointerEvent) => {
+  // Jangan mulai drag kalau yang ditekan tombol close
+  if ((e.target as HTMLElement).closest('button')) return
+  dragging.value = true
+  startX = e.clientX
+  dragX.value = 0
+  // Jeda auto-dismiss selama digeser
+  if (timeoutId) {
+    clearTimeout(timeoutId)
+    timeoutId = null
+  }
+  ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+}
+
+const onPointerMove = (e: PointerEvent) => {
+  if (!dragging.value) return
+  dragX.value = e.clientX - startX
+}
+
+const onPointerUp = () => {
+  if (!dragging.value) return
+  dragging.value = false
+  if (Math.abs(dragX.value) > SWIPE_THRESHOLD) {
+    dismissDir.value = dragX.value > 0 ? 'right' : 'left'
+    close()
+  } else {
+    // Snap-back lalu matikan override agar transisi CSS normal lagi
+    snapping.value = true
+    dragX.value = 0
+    setTimeout(() => (snapping.value = false), 220)
+    if (props.duration > 0) restartTimer()
+  }
+}
 
 const variantClasses = {
   success: {
@@ -89,13 +159,16 @@ const close = () => {
   }, 300)
 }
 
+const restartTimer = () => {
+  if (timeoutId) clearTimeout(timeoutId)
+  timeoutId = setTimeout(() => close(), props.duration)
+}
+
 onMounted(() => {
   visible.value = true
 
   if (props.duration > 0) {
-    timeoutId = setTimeout(() => {
-      close()
-    }, props.duration)
+    restartTimer()
   }
 })
 </script>

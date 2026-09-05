@@ -147,6 +147,8 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -154,6 +156,8 @@ import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useShippingStore } from '@/stores/shipping'
 
+const { confirm } = useConfirm()
+const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 const store = useShippingStore()
@@ -208,12 +212,12 @@ const formatDateTime = (d: string) => {
 }
 
 const changeStatus = async (status: 'draft' | 'disiapkan' | 'dikirim' | 'selesai' | 'batal') => {
-  if (status === 'batal' && !confirm('Batalkan surat jalan ini?')) return
+  if (status === 'batal' && !(await confirm('Batalkan surat jalan ini?'))) return
   try {
     await store.updateDeliveryStatus(doId, status)
     await store.getDeliveryOrder(doId)
   } catch (e: any) {
-    alert(e.message)
+    toast.error('Gagal!', e.message)
   }
 }
 

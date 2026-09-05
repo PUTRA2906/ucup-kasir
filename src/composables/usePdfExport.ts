@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf'
+import { useToast } from '@/composables/useToast'
 import { Share } from '@capacitor/share'
 import { Capacitor } from '@capacitor/core'
 
@@ -43,6 +44,7 @@ interface StoreSettings {
 }
 
 export function usePdfExport() {
+  const toast = useToast()
   const formatPrice = (value: number): string => {
     return 'Rp ' + (value || 0).toLocaleString('id-ID')
   }
@@ -408,7 +410,7 @@ export function usePdfExport() {
         URL.revokeObjectURL(url)
 
         // Tampilkan pesan untuk manual share
-        alert('PDF berhasil diunduh. Silakan buka WhatsApp dan kirim file yang sudah diunduh.')
+        toast.info('Info', 'PDF berhasil diunduh. Silakan buka WhatsApp dan kirim file yang sudah diunduh.')
       } catch (error) {
         console.error('Error sharing invoice on web:', error)
         throw error

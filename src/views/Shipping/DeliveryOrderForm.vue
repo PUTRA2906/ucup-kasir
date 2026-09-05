@@ -104,6 +104,7 @@
 </template>
 
 <script setup lang="ts">
+import { useToast } from '@/composables/useToast'
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -114,6 +115,7 @@ import { useHrStore } from '@/stores/hr'
 import { useTransactionsStore } from '@/stores/transactions'
 import { useProductsStore } from '@/stores/products'
 
+const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 const shipping = useShippingStore()
@@ -171,11 +173,11 @@ const removeItem = (i: number) => {
 }
 
 const handleSave = async (status: 'draft' | 'disiapkan') => {
-  if (!form.driver_id) return alert('Pilih sopir terlebih dahulu')
-  if (!form.vehicle_id) return alert('Pilih kendaraan terlebih dahulu')
-  if (items.value.length === 0) return alert('Tambahkan minimal 1 item')
+  if (!form.driver_id) return toast.warning('Perhatian', 'Pilih sopir terlebih dahulu')
+  if (!form.vehicle_id) return toast.warning('Perhatian', 'Pilih kendaraan terlebih dahulu')
+  if (items.value.length === 0) return toast.warning('Perhatian', 'Tambahkan minimal 1 item')
   const validItems = items.value.filter((i) => i.product_id && i.quantity > 0)
-  if (validItems.length === 0) return alert('Item belum lengkap')
+  if (validItems.length === 0) return toast.warning('Perhatian', 'Item belum lengkap')
 
   try {
     const payload: any = {
@@ -201,7 +203,7 @@ const handleSave = async (status: 'draft' | 'disiapkan') => {
       router.push(`/shipping/deliveries/${created.id}`)
     }
   } catch (e: any) {
-    alert(e.message)
+    toast.error('Gagal!', e.message)
   }
 }
 

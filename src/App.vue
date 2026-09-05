@@ -3,6 +3,7 @@
     <SidebarProvider>
       <RouterView />
     </SidebarProvider>
+    <ConfirmDialogHost />
   </ThemeProvider>
 </template>
 
@@ -10,6 +11,7 @@
 import { onMounted, watch } from 'vue'
 import ThemeProvider from './components/layout/ThemeProvider.vue'
 import SidebarProvider from './components/layout/SidebarProvider.vue'
+import ConfirmDialogHost from './components/common/ConfirmDialogHost.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 

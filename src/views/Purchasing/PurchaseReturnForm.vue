@@ -66,7 +66,7 @@
             </div>
             <div>
               <label class="mb-1 block text-[10px] font-medium text-gray-500 dark:text-gray-400">Harga</label>
-              <input v-model.number="item.price" type="number" min="0" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+              <CurrencyInput v-model="item.price" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"/>
             </div>
             <div class="flex items-end">
               <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ formatRupiah((item.quantity_received || 0) * item.price) }}</p>
@@ -99,6 +99,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import CurrencyInput from '@/components/common/CurrencyInput.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { usePurchasingStore } from '@/stores/purchasing'
