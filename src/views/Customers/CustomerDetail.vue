@@ -711,11 +711,10 @@ const showDeleteDialog = ref(false)
 
 // Limit kredit efektif: pakai limit khusus customer, fallback ke default global
 const effectiveCreditLimit = computed(() => {
-  const own = customer.value?.credit_limit || 0
-  return own || settingsStore.settings.default_credit_limit || 0
+  return customer.value?.credit_limit ?? settingsStore.settings.default_credit_limit ?? 0
 })
 const usesDefaultLimit = computed(
-  () => (customer.value?.credit_limit || 0) === 0 && effectiveCreditLimit.value > 0
+  () => (customer.value?.credit_limit === null || customer.value?.credit_limit === undefined) && effectiveCreditLimit.value > 0
 )
 
 // Transactions
