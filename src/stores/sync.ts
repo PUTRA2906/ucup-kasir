@@ -64,7 +64,10 @@ export const useSyncStore = defineStore('sync', () => {
     uploading.value = true
     error.value = null
     try {
-      const result = await uploadChangesToSupabase()
+      // Gunakan uploadAll() karena uploadChangesToSupabase() tidak menangkap
+      // semua perubahan (transaction_items, transaction_payments, stock_movements, dll
+      // tidak masuk ke sync_queue). uploadAll() membaca langsung dari SQLite.
+      const result = await uploadAllToSupabase()
       if (!result.success && result.message) {
         error.value = result.message
       }
