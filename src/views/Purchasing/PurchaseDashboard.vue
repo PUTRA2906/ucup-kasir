@@ -60,6 +60,46 @@
         </div>
       </div>
 
+      <!-- Barang Menipis → Auto Faktur -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+        <div class="mb-3 flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white">Barang Menipis</h3>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400">Buat faktur pembelian otomatis untuk barang di bawah stok minimum</p>
+          </div>
+          <span v-if="lowStockList.length" class="rounded-lg bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:bg-red-500/20 dark:text-red-400">{{ lowStockList.length }} item</span>
+        </div>
+
+        <div v-if="lowStockList.length === 0" class="rounded-xl border border-dashed border-gray-300 p-6 text-center text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
+          Semua stok aman 🎉
+        </div>
+        <div v-else class="space-y-2">
+          <label v-for="p in lowStockList" :key="p.id" class="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-gray-200 p-3 dark:border-gray-700">
+            <div class="flex min-w-0 items-start gap-2">
+              <input v-model="p.selected" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+              <div class="min-w-0">
+                <p class="truncate text-xs font-semibold text-gray-900 dark:text-white">{{ p.name }}</p>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400">
+                  Stok <span class="font-bold text-red-600 dark:text-red-400">{{ p.stock }}</span> / min {{ p.min }} ·
+                  beli <span class="font-bold text-gray-700 dark:text-gray-300">{{ p.restockQty }}</span> ·
+                  {{ p.supplierName }}
+                </p>
+              </div>
+            </div>
+            <p class="flex-shrink-0 text-right text-[10px] font-semibold text-gray-600 dark:text-gray-400">{{ formatRupiah(p.restockQty * (p.price_buy || 0)) }}</p>
+          </label>
+
+          <div class="flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700">
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ selectedCount }} item · estimasi {{ formatRupiah(selectedTotal) }}
+            </p>
+            <button @click="generateInvoices" :disabled="generating || selectedCount === 0" class="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50">
+              {{ generating ? 'Membuat...' : 'Buat Faktur Otomatis' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Hutang Belum Lunas -->
       <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
         <div class="mb-3 flex items-center justify-between">
@@ -115,9 +155,134 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { usePurchasingStore } from '@/stores/purchasing'
+import { useProductsStore } from '@/stores/products'
+import { useToast } from '@/composables/useToast'
+import { useConfirm } from '@/composables/useConfirm'
+import type { PurchaseInvoiceInput } from '@/types/database'
 
 const store = usePurchasingStore()
+const productsStore = useProductsStore()
+const toast = useToast()
+const { confirm } = useConfirm()
 const loading = ref(true)
+const generating = ref(false)
+
+interface LowStockRow {
+  id: string
+  name: string
+  stock: number
+  min: number
+  price_buy: number
+  restockQty: number
+  supplier_id: string | null
+  supplierName: string
+  selected: boolean
+}
+
+/** Cari supplier terakhir yang pernah menjual produk ini (dari faktur lalu PO). */
+function findLastSupplier(productId: string): { id: string | null; name: string } {
+  for (const pi of store.purchaseInvoices) {
+    if ((pi.items || []).some((it) => it.product_id === productId)) {
+      return { id: pi.supplier_id || null, name: pi.supplier_name || 'Tanpa supplier' }
+    }
+  }
+  for (const po of store.purchaseOrders) {
+    if ((po.items || []).some((it) => it.product_id === productId)) {
+      return { id: po.supplier_id || null, name: po.supplier_name || 'Tanpa supplier' }
+    }
+  }
+  return { id: null, name: 'Tanpa supplier' }
+}
+
+/** Produk yang sudah masuk faktur hari ini tidak dibuatkan faktur lagi. */
+const alreadyInvoicedToday = computed(() => {
+  const today = new Date().toISOString().slice(0, 10)
+  const ids = new Set<string>()
+  for (const pi of store.purchaseInvoices) {
+    if ((pi.invoice_date || pi.created_at || '').slice(0, 10) !== today) continue
+    for (const it of pi.items || []) {
+      if (it.product_id) ids.add(it.product_id)
+    }
+  }
+  return ids
+})
+
+const lowStockList = computed<LowStockRow[]>(() => {
+  const rows: LowStockRow[] = []
+  for (const p of productsStore.products) {
+    if (!p.is_active) continue
+    const min = p.minimum_stock ?? 10
+    if (p.stock > min) continue
+    if (alreadyInvoicedToday.value.has(p.id)) continue
+    const target = min * 2
+    const supplier = findLastSupplier(p.id)
+    rows.push({
+      id: p.id,
+      name: p.name,
+      stock: p.stock,
+      min,
+      price_buy: p.price_buy || 0,
+      restockQty: Math.max(1, target - p.stock),
+      supplier_id: supplier.id,
+      supplierName: supplier.name,
+      selected: true,
+    })
+  }
+  return rows
+})
+
+const selectedCount = computed(() => lowStockList.value.filter((p) => p.selected).length)
+const selectedTotal = computed(() =>
+  lowStockList.value.filter((p) => p.selected).reduce((sum, p) => sum + p.restockQty * p.price_buy, 0)
+)
+
+async function generateInvoices() {
+  const selected = lowStockList.value.filter((p) => p.selected)
+  if (selected.length === 0) return
+
+  const supplierGroups = new Map<string, LowStockRow[]>()
+  for (const p of selected) {
+    const key = p.supplier_id || `anon:${p.supplierName}`
+    if (!supplierGroups.has(key)) supplierGroups.set(key, [])
+    supplierGroups.get(key)!.push(p)
+  }
+
+  const ok = await confirm({
+    title: 'Buat Faktur Otomatis',
+    message: `Buat ${supplierGroups.size} faktur pembelian untuk ${selected.length} barang menipis (estimasi ${formatRupiah(selectedTotal.value)})? Supplier diambil dari pembelian terakhir tiap barang.`,
+    confirmText: 'Buat Faktur',
+    variant: 'primary',
+  })
+  if (!ok) return
+
+  generating.value = true
+  const today = new Date().toISOString().slice(0, 10)
+  let created = 0
+  try {
+    for (const [, group] of supplierGroups) {
+      const input: PurchaseInvoiceInput = {
+        supplier_id: group[0].supplier_id || undefined,
+        supplier_name: group[0].supplierName !== 'Tanpa supplier' ? group[0].supplierName : undefined,
+        invoice_date: today,
+        notes: 'Faktur otomatis: restock barang menipis',
+        items: group.map((p) => ({
+          product_id: p.id,
+          product_name: p.name,
+          quantity_received: p.restockQty,
+          price: p.price_buy,
+        })),
+      }
+      await store.createPurchaseInvoice(input)
+      created++
+    }
+    toast.success('Berhasil!', `${created} faktur pembelian otomatis dibuat`)
+    await Promise.all([store.fetchPurchaseInvoices(), productsStore.fetchProducts()])
+  } catch (e) {
+    toast.error('Gagal!', e instanceof Error ? e.message : 'Gagal membuat faktur otomatis')
+  } finally {
+    generating.value = false
+  }
+}
 
 const stats = computed(() => {
   const suppliers = store.suppliersWithStats
@@ -152,6 +317,7 @@ onMounted(async () => {
       store.fetchGoodsReceipts(),
       store.fetchPurchaseInvoices(),
       store.fetchPurchaseReturns(),
+      productsStore.fetchProducts(),
     ])
   } catch (e: any) {
     console.error(e)
