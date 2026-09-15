@@ -16,8 +16,22 @@ const router = createRouter({
         title: 'eCommerce Dashboard',
       },
     },
-    
-   
+    {
+      path: '/signin',
+      name: 'Signin',
+      component: () => import('../views/Auth/Signin.vue'),
+      meta: {
+        title: 'Masuk',
+      },
+    },
+    {
+      path: '/signup',
+      name: 'Signup',
+      component: () => import('../views/Auth/Signup.vue'),
+      meta: {
+        title: 'Daftar',
+      },
+    },
     {
       path: '/settings',
       name: 'Store Settings',
