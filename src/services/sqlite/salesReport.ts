@@ -204,8 +204,31 @@ export const sqliteSalesReportService = {
       returns.push(ret)
     }
 
-    // --- 4. Kalkulasi (reuse logika yang sama persis) ---
-    const summary = this.calculateSummary(txns, returns)
+    // --- 4. Fetch alokasi pembayaran per item (untuk laba riil berbasis FIFO) ---
+    const txIds = txns.map((t) => t.id)
+    const paidByItemByTx = new Map<string, Map<string, number>>()
+
+    if (txIds.length > 0) {
+      // SQLite tidak support IN dengan array besar tapi untuk laporan ini cukup
+      const placeholders = txIds.map(() => '?').join(', ')
+      const ipRows = await query<any>(
+        `SELECT item_id, transaction_id, allocated_amount
+         FROM transaction_item_payments
+         WHERE transaction_id IN (${placeholders}) AND user_id = ?`,
+        [...txIds, userId]
+      )
+      ipRows.forEach((ip: any) => {
+        let txMap = paidByItemByTx.get(ip.transaction_id)
+        if (!txMap) {
+          txMap = new Map<string, number>()
+          paidByItemByTx.set(ip.transaction_id, txMap)
+        }
+        txMap.set(ip.item_id, (txMap.get(ip.item_id) || 0) + Number(ip.allocated_amount))
+      })
+    }
+
+    // --- 5. Kalkulasi ---
+    const summary = this.calculateSummary(txns, returns, paidByItemByTx)
     const dailySales = this.calculateDailySales(txns, startDate, endDate)
     const topProducts = this.calculateProductSales(txns, categoryId)
     const categorySales = this.calculateCategorySales(txns, categoryId)
@@ -225,7 +248,11 @@ export const sqliteSalesReportService = {
   // Kalkulasi (identik dengan salesReport.ts — di-copy agar konsisten)
   // ============================================================
 
-  calculateSummary(transactions: Transaction[], returns: any[] = []): SalesSummary {
+  calculateSummary(
+    transactions: Transaction[],
+    returns: any[] = [],
+    paidByItemByTx: Map<string, Map<string, number>> = new Map()
+  ): SalesSummary {
     let gross_sales = 0
     let shipping_cost = 0
     let total_discount = 0
@@ -239,11 +266,11 @@ export const sqliteSalesReportService = {
         totalItems += item.quantity || 0
       })
       gross_sales += transactionGrossSales
-
       shipping_cost += t.shipping_cost || 0
       total_discount += t.discount || 0
     })
 
+    // Hitung total retur SEKALI (sumber kebenaran tunggal)
     returns.forEach((r: any) => {
       total_returns += parseFloat(r.total_refund || 0)
     })
@@ -262,8 +289,7 @@ export const sqliteSalesReportService = {
 
     returns.forEach((r: any) => {
       r.items?.forEach((item: any) => {
-        const hargaBeli = item.price_buy || 0
-        returned_cogs += hargaBeli * (item.quantity || 0)
+        returned_cogs += (item.price_buy || 0) * (item.quantity || 0)
       })
     })
 
@@ -272,7 +298,7 @@ export const sqliteSalesReportService = {
     const total_operating_expenses = 0
     const net_profit = gross_profit - total_operating_expenses
 
-    // Laba terealisasi
+    // === LABA TEREALISASI BERBASIS ITEM (FIFO) ===
     const returnsByTx = new Map<string, any[]>()
     returns.forEach((r: any) => {
       const list = returnsByTx.get(r.transaction_id) || []
@@ -308,6 +334,7 @@ export const sqliteSalesReportService = {
         txRevenue += item.subtotal || 0
         txCogs += (item.product?.price_buy || 0) * (item.quantity || 0)
       })
+
       const txNetSales = txRevenue - (t.discount || 0) - txReturnValue
       const txProfit = txNetSales - (txCogs - txReturnCogs)
 
@@ -315,9 +342,63 @@ export const sqliteSalesReportService = {
       total_cash_received += effectiveCash
       total_receivables += remainingAmount
 
-      const txRatio = txNetSales > 0 ? effectiveCash / txNetSales : 0
-      realized_profit += txProfit * txRatio
-      unrealized_profit += txProfit * (1 - txRatio)
+      // Hitung laba riil berdasarkan alokasi per-item (FIFO)
+      const itemPaidMap = paidByItemByTx.get(t.id)
+      let txRealized = 0
+
+      if (itemPaidMap && itemPaidMap.size > 0) {
+        // Retur per product untuk pengurangan per-item
+        const returnByProduct = new Map<string, { value: number; cogs: number }>()
+        txReturns.forEach((r: any) => {
+          r.items?.forEach((ri: any) => {
+            const pid = ri.product_id || 'unknown'
+            const existing = returnByProduct.get(pid) || { value: 0, cogs: 0 }
+            existing.value += (ri.price || 0) * (ri.quantity || 0)
+            existing.cogs += (ri.price_buy || 0) * (ri.quantity || 0)
+            returnByProduct.set(pid, existing)
+          })
+        })
+
+        const grossRevenue = t.items?.reduce((s: number, i: any) => s + (i.subtotal || 0), 0) || 0
+
+        t.items?.forEach((item: any) => {
+          const itemId = item.id
+          const pid = item.product_id || 'unknown'
+          const priceBuy = item.product?.price_buy || 0
+          const qty = item.quantity || 0
+          const subtotal = item.subtotal || 0
+
+          const discountRatio = grossRevenue > 0 ? subtotal / grossRevenue : 0
+          const itemDiscount = (t.discount || 0) * discountRatio
+
+          const ret = returnByProduct.get(pid) || { value: 0, cogs: 0 }
+          const itemNetSubtotal = subtotal - itemDiscount - ret.value
+          const itemNetCogs = priceBuy * qty - ret.cogs
+          const itemProfit = itemNetSubtotal - itemNetCogs
+
+          const itemPaid = itemPaidMap.get(itemId) || 0
+          const realizationRatio = subtotal > 0 ? Math.min(itemPaid / subtotal, 1) : 0
+
+          const itemRealized = itemProfit >= 0
+            ? Math.min(Math.max(0, itemProfit * realizationRatio), itemProfit)
+            : Math.max(Math.min(0, itemProfit * realizationRatio), itemProfit)
+
+          txRealized += itemRealized
+        })
+      } else {
+        // Fallback proporsional jika data item_payments belum tersedia
+        const txRatio = txNetSales > 0 ? effectiveCash / txNetSales : 0
+        txRealized = txProfit >= 0
+          ? Math.min(Math.max(0, txProfit * txRatio), txProfit)
+          : Math.max(Math.min(0, txProfit * txRatio), txProfit)
+      }
+
+      const finalRealized = txProfit >= 0
+        ? Math.min(Math.max(0, txRealized), txProfit)
+        : Math.max(Math.min(0, txRealized), txProfit)
+
+      realized_profit += finalRealized
+      unrealized_profit += txProfit - finalRealized
 
       if (t.payment_status === 'lunas') {
         lunas_count++

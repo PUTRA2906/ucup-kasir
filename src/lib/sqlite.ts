@@ -348,6 +348,60 @@ async function migrateSchema(): Promise<void> {
     console.warn('SQLite migrate: gagal rebuild skema karyawan:', (e as Error).message)
   }
 
+  // Migrasi: transaction_item_payments (alokasi pembayaran per item untuk
+  // perhitungan laba terealisasi yang akurat). Database lama tidak punya tabel
+  // ini — CREATE TABLE IF NOT EXISTS akan membuatnya kosong, tidak ada backfill
+  // otomatis (berbeda dengan Supabase yang punya trigger backfill saat migrasi).
+  // Data alokasi akan diisi saat:
+  // 1. Transaksi baru dibuat (auto-allocate di create/addPayment)
+  // 2. User manual reallocate via UI
+  // 3. Sync dari Supabase (replaceAll) membawa alokasi yang sudah ada
+  try {
+    const res = await db.query(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='transaction_item_payments'"
+    )
+    if (!res.values || res.values.length === 0) {
+      // Tabel belum ada, buat sekarang
+      await db.execute(
+        `CREATE TABLE transaction_item_payments (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          transaction_id TEXT NOT NULL,
+          item_id TEXT NOT NULL,
+          payment_id TEXT NOT NULL,
+          allocated_amount REAL NOT NULL DEFAULT 0,
+          notes TEXT,
+          created_at TEXT NOT NULL,
+          sync_status TEXT NOT NULL DEFAULT 'synced',
+          updated_at_local TEXT,
+          FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE,
+          FOREIGN KEY (item_id) REFERENCES transaction_items(id) ON DELETE CASCADE,
+          FOREIGN KEY (payment_id) REFERENCES transaction_payments(id) ON DELETE CASCADE,
+          CHECK (allocated_amount > 0)
+        )`,
+        false
+      )
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_item_payments_transaction ON transaction_item_payments (transaction_id)',
+        false
+      )
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_item_payments_item ON transaction_item_payments (item_id)',
+        false
+      )
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_item_payments_payment ON transaction_item_payments (payment_id)',
+        false
+      )
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_item_payments_user_created ON transaction_item_payments (user_id, created_at DESC)',
+        false
+      )
+    }
+  } catch (e) {
+    console.warn('SQLite migrate: gagal membuat transaction_item_payments:', (e as Error).message)
+  }
+
   try {
     const res = await db.query('SELECT value FROM sync_metadata WHERE key = ?', ['schema_version'])
     const currentVersion = res.values?.[0]?.value ? parseInt(String(res.values[0].value), 10) : 0

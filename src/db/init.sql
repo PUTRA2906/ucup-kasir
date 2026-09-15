@@ -120,6 +120,28 @@ CREATE TABLE IF NOT EXISTS transaction_payments (
 );
 CREATE INDEX IF NOT EXISTS idx_transaction_payments_txn ON transaction_payments (transaction_id, created_at DESC);
 
+-- 6b) Transaction Item Payments (alokasi pembayaran per item)
+CREATE TABLE IF NOT EXISTS transaction_item_payments (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  transaction_id TEXT NOT NULL,
+  item_id TEXT NOT NULL,
+  payment_id TEXT NOT NULL,
+  allocated_amount REAL NOT NULL DEFAULT 0,
+  notes TEXT,
+  created_at TEXT NOT NULL,
+  sync_status TEXT NOT NULL DEFAULT 'synced',
+  updated_at_local TEXT,
+  FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE,
+  FOREIGN KEY (item_id) REFERENCES transaction_items(id) ON DELETE CASCADE,
+  FOREIGN KEY (payment_id) REFERENCES transaction_payments(id) ON DELETE CASCADE,
+  CHECK (allocated_amount > 0)
+);
+CREATE INDEX IF NOT EXISTS idx_item_payments_transaction ON transaction_item_payments (transaction_id);
+CREATE INDEX IF NOT EXISTS idx_item_payments_item ON transaction_item_payments (item_id);
+CREATE INDEX IF NOT EXISTS idx_item_payments_payment ON transaction_item_payments (payment_id);
+CREATE INDEX IF NOT EXISTS idx_item_payments_user_created ON transaction_item_payments (user_id, created_at DESC);
+
 -- 7) Returns (header)
 CREATE TABLE IF NOT EXISTS returns (
   id TEXT PRIMARY KEY,

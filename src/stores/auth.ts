@@ -3,6 +3,10 @@ import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
 import type { Session, User } from '@supabase/supabase-js'
 import { setCurrentUserId } from '@/services/sqlite/db'
+import { isNativeApp } from '@/lib/platform'
+import { isOnlineNow } from '@/lib/network'
+import { getSyncQueue } from '@/lib/sqlite'
+import { useConfirm } from '@/composables/useConfirm'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
@@ -84,13 +88,75 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function signOut() {
+  /**
+   * Keluar dari akun.
+   *
+   * (Isu #2) Pada aplikasi Android (offline-first), data perubahan lokal menunggu
+   * di sync_queue untuk di-upload. Jika user logout dalam keadaan queue masih
+   * berisi perubahan yang belum tersinkron, login berikutnya (akun sama atau beda)
+   * akan men-truncate SQLite + mengosongkan queue → perubahan itu hilang permanen.
+   * Karena itu signOut WAJIB memaksakan upload perubahan lokal dulu.
+   *
+   * Return { cancelled: true } bila user menolak keluar (mis. gagal sinkron lalu
+   * memilih batal) — pemanggil tidak boleh navigasi ke /signin saat itu.
+   */
+  async function signOut(): Promise<{ cancelled: boolean }> {
+    // === Lapis perlindungan: flush sync_queue sebelum sesi benar-benar ditutup ===
+    if (isNativeApp()) {
+      try {
+        const pending = await getSyncQueue()
+        if (pending.length > 0) {
+          if (!isOnlineNow()) {
+            // Offline: perubahan TIDAK bisa dikirim. Kalau lanjut logout, login
+            // berikutnya menghapusnya (trunkasi + clearSyncQueue). Peringatkan,
+            // jangan biarkan hilang tanpa keputusan sadar.
+            const { confirm } = useConfirm()
+            const proceed = await confirm({
+              title: 'Perubahan Belum Tersinkron',
+              message:
+                `Masih ada ${pending.length} perubahan yang belum tersinkron dan perangkat sedang offline. ` +
+                `Jika Anda keluar sekarang, perubahan ini bisa hilang saat login lagi.\n\n` +
+                `Sambungkan internet lalu logout ulang untuk amannya. Keluar sekarang juga?`,
+              confirmText: 'Keluar Tetap',
+              cancelText: 'Batal',
+              variant: 'danger',
+            })
+            if (!proceed) return { cancelled: true }
+          } else {
+            // Online: upload dulu. Beri tahu sedang memproses (dialog tanpa tombol
+            // batal tidak tepat di sini — upload bisa cepat). Cukup jalankan.
+            const { uploadChangesToSupabase } = await import('@/services/sync/syncEngine')
+            const result = await uploadChangesToSupabase()
+            if (result.failed && result.failed > 0) {
+              const { confirm } = useConfirm()
+              const proceed = await confirm({
+                title: 'Sinkronisasi Belum Selesai',
+                message:
+                  `${result.failed} perubahan gagal tersinkron ke server. ` +
+                  `Keluar sekarang berisiko membuat perubahan itu hilang saat login berikutnya.\n\n` +
+                  `Coba sinkronkan lagi dari Pengaturan sebelum keluar. Tetap keluar?`,
+                confirmText: 'Keluar Tetap',
+                cancelText: 'Batal',
+                variant: 'danger',
+              })
+              if (!proceed) return { cancelled: true }
+            }
+          }
+        }
+      } catch (e) {
+        // Gagal membaca/meng-upload queue tidak boleh mengunci user di dalam app.
+        // Lanjutkan logout biasa; kesalahan tercatat oleh sync engine itu sendiri.
+        console.error('Flush sync_queue sebelum logout gagal:', e)
+      }
+    }
+
     loading.value = true
     try {
       await supabase.auth.signOut()
       session.value = null
       user.value = null
       setCurrentUserId(null)
+      return { cancelled: false }
     } finally {
       loading.value = false
     }

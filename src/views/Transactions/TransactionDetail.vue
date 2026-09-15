@@ -163,14 +163,26 @@
             <!-- Pembayaran -->
             <div v-if="activity.type === 'payment'" class="relative">
               <span class="absolute -left-[21px] top-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-4 ring-white dark:ring-[#0b1320]"></span>
-              <div class="flex justify-between items-start">
-                <div>
-                  <p class="font-semibold text-gray-800 dark:text-slate-200">Pembayaran {{ activity.sequence }}</p>
-                  <p class="text-[10px] text-gray-400 dark:text-gray-500">
-                    {{ formatDateShort(activity.created_at) }} &bull; {{ formatPaymentMethod(activity.payment_method) }}
-                  </p>
+              <div class="space-y-2">
+                <div class="flex justify-between items-start">
+                  <div class="flex-1">
+                    <p class="font-semibold text-gray-800 dark:text-slate-200">Pembayaran {{ activity.sequence }}</p>
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500">
+                      {{ formatDateShort(activity.created_at) }} &bull; {{ formatPaymentMethod(activity.payment_method) }}
+                    </p>
+                  </div>
+                  <span class="font-bold text-emerald-600 dark:text-emerald-400 font-mono">- {{ formatCurrency(activity.amount) }}</span>
                 </div>
-                <span class="font-bold text-emerald-600 dark:text-emerald-400 font-mono">- {{ formatCurrency(activity.amount) }}</span>
+                <!-- Button Lihat Alokasi -->
+                <button
+                  @click="openAllocationModal(activity)"
+                  class="text-[10px] font-semibold text-brand-600 dark:text-brand-400 flex items-center gap-1 hover:underline"
+                >
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                  Lihat Alokasi per Item
+                </button>
               </div>
             </div>
 
@@ -532,19 +544,31 @@
               <div
                 v-for="payment in transaction.payments"
                 :key="payment.id"
-                class="flex items-center justify-between gap-2"
+                class="space-y-1"
               >
-                <div class="min-w-0">
-                  <p class="truncate text-sm text-gray-700 dark:text-gray-300">
-                    {{ formatDate(payment.created_at) }}
-                  </p>
-                  <p class="text-xs text-gray-400 dark:text-gray-500">
-                    {{ formatPaymentMethod(payment.payment_method) }}
-                  </p>
+                <div class="flex items-center justify-between gap-2">
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm text-gray-700 dark:text-gray-300">
+                      {{ formatDate(payment.created_at) }}
+                    </p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">
+                      {{ formatPaymentMethod(payment.payment_method) }}
+                    </p>
+                  </div>
+                  <span class="text-sm font-semibold text-success-600 dark:text-success-400">
+                    - {{ formatCurrency(payment.amount) }}
+                  </span>
                 </div>
-                <span class="text-sm font-semibold text-success-600 dark:text-success-400">
-                  - {{ formatCurrency(payment.amount) }}
-                </span>
+                <!-- Button Lihat Alokasi -->
+                <button
+                  @click="openAllocationModal(payment)"
+                  class="text-xs font-semibold text-brand-600 dark:text-brand-400 flex items-center gap-1 hover:underline"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                  Lihat Alokasi per Item
+                </button>
               </div>
             </div>
             <div v-else>
@@ -742,6 +766,21 @@
       @confirm="confirmDelete"
     />
 
+    <!-- Payment Allocation Modal -->
+    <PaymentAllocationModal
+      v-if="selectedPayment"
+      v-model="showAllocationModal"
+      :payment-id="selectedPayment.id"
+      :transaction-id="transactionId"
+      :payment-data="{
+        amount: selectedPayment.amount,
+        payment_method: selectedPayment.payment_method,
+        notes: selectedPayment.notes,
+        created_at: selectedPayment.created_at
+      }"
+      @saved="handleAllocationSaved"
+    />
+
     <ConfirmDialog
       v-model="showDeleteReturnDialog"
       title="Batalkan Retur?"
@@ -763,6 +802,7 @@ import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import PaymentModal from '@/components/common/PaymentModal.vue'
 import ReturnModal from '@/components/common/ReturnModal.vue'
+import PaymentAllocationModal from '@/components/PaymentAllocationModal.vue'
 import { useTransactionsStore } from '@/stores/transactions'
 import { useReturnsStore } from '@/stores/returns'
 import { useCustomersStore } from '@/stores/customers'
@@ -787,12 +827,15 @@ const showDeleteDialog = ref(false)
 const showPaymentModal = ref(false)
 const showReturnModal = ref(false)
 const showDeleteReturnDialog = ref(false)
+const showAllocationModal = ref(false)
+const selectedPayment = ref<any>(null)
 
 // Auto register/unregister layer di navigation stack
 useAutoNavigationStack(showDeleteDialog, 'transaction-delete-dialog')
 useAutoNavigationStack(showPaymentModal, 'transaction-payment-modal')
 useAutoNavigationStack(showReturnModal, 'transaction-return-modal')
 useAutoNavigationStack(showDeleteReturnDialog, 'transaction-delete-return-dialog')
+useAutoNavigationStack(showAllocationModal, 'payment-allocation-modal')
 const returnToDelete = ref<any>(null)
 const isGeneratingPdf = ref(false)
 
@@ -998,6 +1041,17 @@ const handleAddPayment = async (payload: {
     console.error('Error adding payment:', error)
     toast.error('Gagal!', error.message || 'Gagal mencatat pembayaran')
   }
+}
+
+const openAllocationModal = (payment: any) => {
+  selectedPayment.value = payment
+  showAllocationModal.value = true
+}
+
+const handleAllocationSaved = async () => {
+  toast.success('Berhasil!', 'Alokasi pembayaran berhasil disimpan')
+  // Refresh transaction data (optional - jika butuh update UI)
+  transaction.value = await transactionsStore.getTransaction(transactionId)
 }
 
 const confirmDelete = async () => {

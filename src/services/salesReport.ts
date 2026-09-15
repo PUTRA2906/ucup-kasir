@@ -117,8 +117,34 @@ export const salesReportService = {
 
     const returnData = (returns || []) as any[]
 
-    // Calculate summary dengan data retur
-    const summary = this.calculateSummary(txns, returnData)
+    // Fetch alokasi pembayaran per item untuk semua transaksi dalam periode ini
+    // Digunakan untuk menghitung laba riil berdasarkan item yang sudah terbayar (FIFO)
+    const txIds = txns.map((t) => t.id)
+    let itemPaymentsData: any[] = []
+    if (txIds.length > 0) {
+      const { data: itemPayments, error: ipError } = await supabase
+        .from('transaction_item_payments')
+        .select('item_id, transaction_id, allocated_amount')
+        .in('transaction_id', txIds)
+
+      if (!ipError) {
+        itemPaymentsData = itemPayments || []
+      }
+    }
+
+    // Buat map: transaction_id -> { item_id -> total_paid }
+    const paidByItemByTx = new Map<string, Map<string, number>>()
+    itemPaymentsData.forEach((ip: any) => {
+      let txMap = paidByItemByTx.get(ip.transaction_id)
+      if (!txMap) {
+        txMap = new Map<string, number>()
+        paidByItemByTx.set(ip.transaction_id, txMap)
+      }
+      txMap.set(ip.item_id, (txMap.get(ip.item_id) || 0) + Number(ip.allocated_amount))
+    })
+
+    // Calculate summary dengan data retur + item payments
+    const summary = this.calculateSummary(txns, returnData, paidByItemByTx)
 
     // Calculate daily sales
     const dailySales = this.calculateDailySales(txns, startDate, endDate)
@@ -142,7 +168,14 @@ export const salesReportService = {
     }
   },
 
-  calculateSummary(transactions: Transaction[], returns: any[] = []): SalesSummary {
+  calculateSummary(
+    transactions: Transaction[],
+    returns: any[] = [],
+    // Map: transaction_id -> { item_id -> total_paid }
+    // Diisi dari tabel transaction_item_payments untuk akurasi per-item (FIFO)
+    // Jika tidak tersedia (misal data lama), fallback ke rasio proporsional
+    paidByItemByTx: Map<string, Map<string, number>> = new Map()
+  ): SalesSummary {
     let gross_sales = 0          // Penjualan Kotor (subtotal ASLI dari items sebelum retur)
     let shipping_cost = 0         // Ongkos Kirim
     let total_discount = 0        // Total Diskon
@@ -151,8 +184,6 @@ export const salesReportService = {
 
     // Hitung penjualan ASLI dari transaction_items (sebelum retur mengurangi transactions.subtotal)
     transactions.forEach((t) => {
-      // Hitung gross_sales dari SUM(transaction_items.subtotal)
-      // BUKAN dari transactions.subtotal yang sudah dikurangi retur
       let transactionGrossSales = 0
       t.items?.forEach((item) => {
         transactionGrossSales += item.subtotal || 0
@@ -164,7 +195,7 @@ export const salesReportService = {
       total_discount += t.discount || 0
     })
 
-    // Hitung total retur dari tabel returns (field: total_refund)
+    // Hitung total retur dari tabel returns (sumber kebenaran tunggal)
     returns.forEach((r: any) => {
       total_returns += parseFloat(r.total_refund || 0)
     })
@@ -173,8 +204,8 @@ export const salesReportService = {
     const net_sales = gross_sales - total_discount - total_returns
 
     // Hitung modal (HPP)
-    let raw_cogs = 0              // Modal kotor semua barang terjual
-    let returned_cogs = 0         // Modal barang yang diretur
+    let raw_cogs = 0
+    let returned_cogs = 0
 
     transactions.forEach((t) => {
       t.items?.forEach((item: any) => {
@@ -183,28 +214,21 @@ export const salesReportService = {
       })
     })
 
-    // Hitung modal barang yang diretur dari tabel return_items
-    // Gunakan price_buy yang tersimpan di return_items (historis)
     returns.forEach((r: any) => {
       r.items?.forEach((item: any) => {
-        const hargaBeli = item.price_buy || 0
-        returned_cogs += hargaBeli * (item.quantity || 0)
+        returned_cogs += (item.price_buy || 0) * (item.quantity || 0)
       })
     })
 
     const net_cogs = raw_cogs - returned_cogs
-
-    // Laba Kotor = Penjualan Bersih - HPP Bersih
     const gross_profit = net_sales - net_cogs
-
-    // Beban Operasional (sementara default 0, nanti bisa diambil dari tabel expenses)
     const total_operating_expenses = 0
-
-    // Laba Bersih = Laba Kotor - Beban Operasional
     const net_profit = gross_profit - total_operating_expenses
 
-    // === PERHITUNGAN LABA TEREALISASI (KAS) ===
-    // Kelompokkan retur per transaksi agar laba dihitung per transaksi dengan akurat
+    // === PERHITUNGAN LABA TEREALISASI BERDASARKAN ITEM YANG SUDAH DIBAYAR ===
+    // Alokasi pembayaran dilakukan FIFO per-item (via transaction_item_payments).
+    // Laba riil = laba item yang sudah terbayar penuh atau proporsional bayarnya.
+
     const returnsByTx = new Map<string, any[]>()
     returns.forEach((r: any) => {
       const list = returnsByTx.get(r.transaction_id) || []
@@ -224,7 +248,7 @@ export const salesReportService = {
       const paidAmount = t.paid_amount || 0
       const remainingAmount = t.remaining_amount || 0
 
-      // Nilai & modal retur untuk transaksi ini
+      // Retur untuk transaksi ini (hanya untuk clamp effectiveCash)
       const txReturns = returnsByTx.get(t.id) || []
       let txReturnValue = 0
       let txReturnCogs = 0
@@ -235,27 +259,86 @@ export const salesReportService = {
         })
       })
 
-      // Penjualan bersih & laba kotor per transaksi (sudah dikurangi diskon & retur)
       let txRevenue = 0
       let txCogs = 0
       t.items?.forEach((item: any) => {
         txRevenue += item.subtotal || 0
         txCogs += (item.product?.price_buy || 0) * (item.quantity || 0)
       })
+
       const txNetSales = txRevenue - (t.discount || 0) - txReturnValue
       const txProfit = txNetSales - (txCogs - txReturnCogs)
 
-      // Kas efektif: dibatasi agar tidak melebihi nilai bersih transaksi
-      // (karena saat retur, paid_amount di DB tidak dikurangi padahal sebagian sudah direfund)
+      // Kas efektif (clamp agar tidak melebihi nilai bersih setelah retur)
       const effectiveCash = Math.max(0, Math.min(paidAmount, txNetSales))
-
       total_cash_received += effectiveCash
       total_receivables += remainingAmount
 
-      // Laba riil & tertahan per transaksi (rasio otomatis 0..1)
-      const txRatio = txNetSales > 0 ? effectiveCash / txNetSales : 0
-      realized_profit += txProfit * txRatio
-      unrealized_profit += txProfit * (1 - txRatio)
+      // ── Hitung laba riil berdasarkan alokasi per-item ──
+      const itemPaidMap = paidByItemByTx.get(t.id)
+      let txRealized = 0
+
+      if (itemPaidMap && itemPaidMap.size > 0) {
+        // Map retur per product_id untuk pengurangan per-item
+        const returnByProduct = new Map<string, { value: number; cogs: number }>()
+        txReturns.forEach((r: any) => {
+          r.items?.forEach((ri: any) => {
+            const pid = ri.product_id || 'unknown'
+            const existing = returnByProduct.get(pid) || { value: 0, cogs: 0 }
+            existing.value += (ri.price || 0) * (ri.quantity || 0)
+            existing.cogs += (ri.price_buy || 0) * (ri.quantity || 0)
+            returnByProduct.set(pid, existing)
+          })
+        })
+
+        // Hitung diskon proporsional per item (berdasarkan subtotal gross)
+        const grossRevenue = t.items?.reduce((s: number, i: any) => s + (i.subtotal || 0), 0) || 0
+
+        t.items?.forEach((item: any) => {
+          const itemId = item.id
+          const pid = item.product_id || 'unknown'
+          const priceBuy = item.product?.price_buy || 0
+          const qty = item.quantity || 0
+          const subtotal = item.subtotal || 0
+
+          // Diskon dialokasikan proporsional ke item
+          const discountRatio = grossRevenue > 0 ? subtotal / grossRevenue : 0
+          const itemDiscount = (t.discount || 0) * discountRatio
+
+          // Kurangi retur jika ada
+          const ret = returnByProduct.get(pid) || { value: 0, cogs: 0 }
+          const itemNetSubtotal = subtotal - itemDiscount - ret.value
+          const itemNetCogs = priceBuy * qty - ret.cogs
+          const itemProfit = itemNetSubtotal - itemNetCogs
+
+          // Alokasi yang sudah dibayar untuk item ini
+          const itemPaid = itemPaidMap.get(itemId) || 0
+          // Denominator: subtotal item (sebelum diskon/retur) karena alokasi FIFO
+          // mengacu pada subtotal item asli
+          const realizationRatio = subtotal > 0 ? Math.min(itemPaid / subtotal, 1) : 0
+
+          // Clamp: realized per item tidak bisa > itemProfit (atau < 0 jika rugi)
+          const itemRealized = itemProfit >= 0
+            ? Math.min(Math.max(0, itemProfit * realizationRatio), itemProfit)
+            : Math.max(Math.min(0, itemProfit * realizationRatio), itemProfit)
+
+          txRealized += itemRealized
+        })
+      } else {
+        // Fallback proporsional jika data item_payments belum tersedia
+        const txRatio = txNetSales > 0 ? effectiveCash / txNetSales : 0
+        txRealized = txProfit >= 0
+          ? Math.min(Math.max(0, txProfit * txRatio), txProfit)
+          : Math.max(Math.min(0, txProfit * txRatio), txProfit)
+      }
+
+      // Clamp final: realized + unrealized == txProfit
+      const finalRealized = txProfit >= 0
+        ? Math.min(Math.max(0, txRealized), txProfit)
+        : Math.max(Math.min(0, txRealized), txProfit)
+
+      realized_profit += finalRealized
+      unrealized_profit += txProfit - finalRealized
 
       // Breakdown status pembayaran
       if (t.payment_status === 'lunas') {

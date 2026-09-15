@@ -280,13 +280,17 @@ export const sqliteTransactionsService = {
       }
 
       // 5. Catat pembayaran awal (jika ada)
+      let paymentId: string | null = null
       if (paid > 0) {
-        const paymentId = uuid()
+        paymentId = uuid()
         await tx.run(
           `INSERT INTO transaction_payments (id, user_id, transaction_id, amount, payment_method, notes, created_at, sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, NULL, ?, 'pending', ?)`,
           [paymentId, userId, txnId, paid, input.payment_method || 'tunai', transactionDate, now]
         )
+        
+        // ✅ NEW: Auto-allocate payment ke items (FIFO)
+        await this.allocatePaymentToItems(tx, txnId, paymentId, paid, userId, now)
       }
 
       // 6. Replikasi trigger: create_transaction_notification
@@ -372,6 +376,9 @@ export const sqliteTransactionsService = {
          VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
         [paymentId, userId, transactionId, amount, paymentMethod || 'tunai', notes ?? null, now, now]
       )
+      
+      // ✅ NEW: Auto-allocate payment ke items (FIFO)
+      await this.allocatePaymentToItems(tx, transactionId, paymentId, amount, userId, now)
 
       // Update transaksi
       const newPaid = txn.paid_amount + amount
@@ -701,6 +708,63 @@ export const sqliteTransactionsService = {
         now,
       ]
     )
+  },
+
+  /**
+   * ✅ NEW: Auto-allocate payment to items (FIFO strategy)
+   * Replikasi fungsi allocate_payment_to_items dari Supabase
+   */
+  async allocatePaymentToItems(
+    tx: any,
+    transactionId: string,
+    paymentId: string,
+    paymentAmount: number,
+    userId: string,
+    now: string
+  ): Promise<void> {
+    // Get items dalam transaksi (FIFO: by created_at)
+    const txDb = tx as { query: (sql: string, params: any[]) => Promise<any[]>; run: (sql: string, params: any[]) => Promise<void> }
+    const items = await txDb.query(
+      `SELECT 
+        ti.id as item_id,
+        ti.subtotal,
+        COALESCE(SUM(tip.allocated_amount), 0) as already_paid
+      FROM transaction_items ti
+      LEFT JOIN transaction_item_payments tip ON tip.item_id = ti.id
+      WHERE ti.transaction_id = ? AND ti.user_id = ?
+      GROUP BY ti.id, ti.subtotal, ti.created_at
+      ORDER BY ti.created_at ASC`,
+      [transactionId, userId]
+    )
+    
+    let remainingPayment = paymentAmount
+    
+    for (const item of items) {
+      // Skip item yang sudah lunas
+      const itemRemaining = item.subtotal - item.already_paid
+      if (itemRemaining <= 0) continue
+      
+      // Hitung alokasi untuk item ini
+      const allocated = Math.min(remainingPayment, itemRemaining)
+      
+      // Insert alokasi
+      await txDb.run(
+        `INSERT INTO transaction_item_payments 
+         (id, user_id, transaction_id, item_id, payment_id, allocated_amount, notes, created_at, sync_status, updated_at_local)
+         VALUES (?, ?, ?, ?, ?, ?, NULL, ?, 'pending', ?)`,
+        [uuid(), userId, transactionId, item.item_id, paymentId, allocated, now, now]
+      )
+      
+      // Kurangi sisa pembayaran
+      remainingPayment -= allocated
+      
+      // Berhenti jika pembayaran habis
+      if (remainingPayment <= 0) break
+    }
+    
+    if (remainingPayment > 0.01) {
+      console.warn(`Sisa pembayaran ${remainingPayment} tidak teralokasi untuk transaction ${transactionId}`)
+    }
   },
 
   mapRow(r: any): Transaction {

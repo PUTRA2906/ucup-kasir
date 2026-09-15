@@ -120,6 +120,27 @@ export async function downloadAllFromSupabase(): Promise<SyncResult> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Tidak ada user yang login')
 
+  // --- Guard (Isu #2): jangan timpa data lokal jika masih ada perubahan yang
+  // belum ter-upload. Download di bawah men-truncate semua tabel + clearSyncQueue;
+  // bila masih ada item di sync_queue, baris tersebut BELUM ada di server dan
+  // akan hilang permanen saat truncate. Pemanggil (login/full-sync) wajib upload
+  // dulu sehingga queue kosong sebelum sampai di sini.
+  try {
+    const pending = await getSyncQueue()
+    if (pending.length > 0) {
+      throw new Error(
+        `${pending.length} perubahan lokal belum tersinkron. Sinkronkan terlebih dahulu sebelum mengunduh data.`
+      )
+    }
+  } catch (e: any) {
+    const msg = String(e?.message || '')
+    // Sengaja tolak download → propagasikan apa adanya.
+    if (/belum tersinkron/.test(msg)) throw e
+    // Gagal baca queue (mis. tabel belum ada) → jangan blokir login.
+    // Perubahan diasumsikan sudah dikirim lebih dulu oleh pemanggil.
+    logError('sync', 'queue_guard_check_failed', e, 'Gagal cek sync_queue sebelum download')
+  }
+
   try {
     // --- 1. Download semua tabel dari Supabase (berurutan sesuai dependensi) ---
     const [categories, products, customers, transactions, transactionItems, transactionPayments,

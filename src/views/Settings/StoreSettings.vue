@@ -1473,7 +1473,9 @@ const changePassword = async () => {
 const handleLogout = async () => {
   showLogoutConfirm.value = false
   try {
-    await authStore.signOut()
+    const result = await authStore.signOut()
+    // Batal oleh user (mis. gagal sinkron lalu pilih "Batal") → tetap di app.
+    if (result.cancelled) return
     router.push('/signin')
   } catch (error: any) {
     toast.error('Gagal!', error.message || 'Gagal keluar dari akun')

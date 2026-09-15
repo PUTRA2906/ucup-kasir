@@ -713,9 +713,11 @@ export const sqliteFinanceService = {
       [uuid(), userId, journalId, pendapatan.id, round2(totalRefund), now, now]
     )
 
-    // Hitung refund proporsional: prioritas kas dulu, sisa ke piutang
-    const refundFromCash = round2(Math.min(totalRefund, paidAmount))
-    const refundFromAr = round2(totalRefund - refundFromCash)
+    // Bagi refund: porsi piutang diserap dulu (konsisten dengan update
+    // remaining_amount = MAX(total - refund - paid, 0) di returns.ts),
+    // sisanya baru porsi kas yang benar-benar dikembalikan tunai
+    const refundFromAr = round2(Math.min(totalRefund, remainingAmount))
+    const refundFromCash = round2(totalRefund - refundFromAr)
 
     // Kredit Kas (dari yang sudah dibayar)
     if (refundFromCash > 0 && kas) {

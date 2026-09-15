@@ -202,7 +202,7 @@
           {{ financialHidden ? 'Rp ××××××' : formatCurrency(summary.realized_profit || 0) }}
         </p>
         <p class="mt-1 text-[9px] text-emerald-600 dark:text-emerald-400">
-          {{ ((summary.realized_profit || 0) / (summary.gross_profit || 1) * 100).toFixed(0) }}% kas
+          {{ summary.gross_profit > 0 ? ((summary.realized_profit || 0) / summary.gross_profit * 100).toFixed(0) : 0 }}% dari laba kotor
         </p>
         <!-- Tooltip Info -->
         <div
@@ -237,7 +237,7 @@
           {{ financialHidden ? 'Rp ××××××' : formatCurrency(summary.unrealized_profit || 0) }}
         </p>
         <p class="mt-1 text-[9px] text-amber-600 dark:text-amber-400">
-          {{ ((summary.unrealized_profit || 0) / (summary.gross_profit || 1) * 100).toFixed(0) }}% piutang
+          {{ summary.gross_profit > 0 ? ((summary.unrealized_profit || 0) / summary.gross_profit * 100).toFixed(0) : 0 }}% dari laba kotor
         </p>
         <!-- Tooltip Info -->
         <div

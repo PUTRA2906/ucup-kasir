@@ -103,7 +103,9 @@ const closeDropdown = () => {
 
 const handleSignOut = async () => {
   closeDropdown()
-  await authStore.signOut()
+  const result = await authStore.signOut()
+  // Batal oleh user (mis. gagal sinkron lalu pilih "Batal") → tetap di app.
+  if (result.cancelled) return
   router.push('/signin')
 }
 

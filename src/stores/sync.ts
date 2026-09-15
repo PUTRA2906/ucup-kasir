@@ -35,12 +35,23 @@ export const useSyncStore = defineStore('sync', () => {
     }
   }
 
-  /** Download semua data dari Supabase ke SQLite (saat login). */
+  /** Download semua data dari Supabase ke SQLite (saat login).
+   *
+   * (Isu #2) Upload perubahan lokal DULU sebelum download: download
+   * men-truncate seluruh SQLite + mengosongkan sync_queue — perubahan yang
+   * belum ter-upload akan hilang permanen bila tidak dikirim lebih dulu. */
   async function downloadAll() {
     syncing.value = true
     error.value = null
-    message.value = 'Mengunduh data dari server...'
+    message.value = 'Mengunggah perubahan lokal...'
     try {
+      const uploadResult = await uploadChangesToSupabase()
+      if (uploadResult.failed && uploadResult.failed > 0) {
+        const msg = `${uploadResult.failed} perubahan lokal gagal tersinkron — unduh dibatalkan agar data tidak hilang`
+        error.value = msg
+        throw new Error(msg)
+      }
+      message.value = 'Mengunduh data dari server...'
       const result = await downloadAllFromSupabase()
       if (!result.success) {
         error.value = result.message || 'Gagal mengunduh data'

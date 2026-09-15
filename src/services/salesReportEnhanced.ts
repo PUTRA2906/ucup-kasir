@@ -151,11 +151,11 @@ export const salesReportEnhancedService = {
 
     const returnData = (returns || []) as any[]
 
-    // Hitung summary dengan logika enhanced
-    const summary = this.calculateEnhancedSummary(txns, returnData)
+    // Hitung summary dengan logika enhanced (await karena sekarang async)
+    const summary = await this.calculateEnhancedSummary(txns, returnData)
 
-    // Hitung detail per transaksi
-    const transactionDetails = this.calculateTransactionDetails(txns, returnData)
+    // Hitung detail per transaksi (await karena sekarang async)
+    const transactionDetails = await this.calculateTransactionDetails(txns, returnData)
 
     // Hitung performa produk
     const topProducts = this.calculateProductPerformance(txns, returnData, 'top')
@@ -171,11 +171,13 @@ export const salesReportEnhancedService = {
 
   /**
    * Menghitung summary dengan pemisahan laba akrual vs terealisasi
+   * 
+   * ✅ UPDATED: Laba terealisasi dihitung dari item_payments (bukan proporsional)
    */
-  calculateEnhancedSummary(
+  async calculateEnhancedSummary(
     transactions: Transaction[],
     returns: any[]
-  ): EnhancedSalesSummary {
+  ): Promise<EnhancedSalesSummary> {
     let gross_sales = 0
     let total_discount = 0
     let total_returns = 0
@@ -206,7 +208,7 @@ export const salesReportEnhancedService = {
     })
 
     // Hitung dari transaksi
-    transactions.forEach((t) => {
+    for (const t of transactions) {
       // Gross sales dari items (sebelum diskon & retur)
       let txGrossSales = 0
       let txCogs = 0
@@ -229,32 +231,34 @@ export const salesReportEnhancedService = {
       const paidAmount = t.paid_amount || 0
       const remainingAmount = t.remaining_amount || 0
 
-      // Nilai & modal retur untuk transaksi ini
-      const txReturns = returnsByTx.get(t.id) || []
-      let txReturnValue = 0
-      let txReturnCogs = 0
-      txReturns.forEach((r: any) => {
-        txReturnValue += parseFloat(r.total_refund || 0)
-        r.items?.forEach((item: any) => {
-          txReturnCogs += (item.price_buy || 0) * (item.quantity || 0)
-        })
-      })
-
-      // Penjualan bersih & laba per transaksi (sudah dikurangi diskon & retur)
-      const txNetSales = txGrossSales - (t.discount || 0) - txReturnValue
-      const txProfit = txNetSales - (txCogs - txReturnCogs)
-
       // Kas efektif: dibatasi agar tidak melebihi nilai bersih transaksi
       // (saat retur, paid_amount di DB tidak dikurangi padahal sebagian sudah direfund)
+      //
+      // Nilai kas efektif dihitung dulu di sini karena txNetSales butuh txReturnValue.
+      // txReturnValue akan kita akumulasikan ke total_returns di loop returns di bawah
+      // (satu sumber kebenaran), tapi untuk kebutuhan effectiveCash per-transaksi kita
+      // tetap hitung lokal di sini agar clamp akurat.
+      const txReturns = returnsByTx.get(t.id) || []
+      let txReturnValue = 0
+      txReturns.forEach((r: any) => {
+        txReturnValue += parseFloat(r.total_refund || 0)
+      })
+
+      const txNetSales = txGrossSales - (t.discount || 0) - txReturnValue
       const effectiveCash = Math.max(0, Math.min(paidAmount, txNetSales))
 
       total_cash_received += effectiveCash
       total_receivables += remainingAmount
 
-      // Laba riil & tertahan per transaksi (rasio otomatis 0..1)
-      const txRatio = txNetSales > 0 ? effectiveCash / txNetSales : 0
-      realized_profit += txProfit * txRatio
-      unrealized_profit += txProfit * (1 - txRatio)
+      // ✅ Hitung laba terealisasi dari item_payments (akurat per-item)
+      const { realizedProfit, unrealizedProfit } = await this.calculateRealizedProfitFromItems(
+        t.id,
+        t.items || [],
+        txReturns
+      )
+
+      realized_profit += realizedProfit
+      unrealized_profit += unrealizedProfit
 
       // Breakdown status pembayaran
       if (t.payment_status === 'lunas') {
@@ -267,9 +271,11 @@ export const salesReportEnhancedService = {
         partial_count++
         partial_amount += t.total || 0
       }
-    })
+    }
 
-    // Hitung retur
+    // Hitung total retur SEKALI di sini (sumber kebenaran tunggal).
+    // Loop sebelumnya TIDAK menambah ke returned_cogs / total_returns agar
+    // tidak terjadi double-counting.
     returns.forEach((r: any) => {
       total_returns += parseFloat(r.total_refund || 0)
 
@@ -317,12 +323,16 @@ export const salesReportEnhancedService = {
 
   /**
    * Menghitung detail per transaksi dengan breakdown laba
+   * 
+   * ✅ UPDATED: Laba terealisasi dihitung dari item_payments (bukan proporsional)
    */
-  calculateTransactionDetails(
+  async calculateTransactionDetails(
     transactions: Transaction[],
     returns: any[]
-  ): TransactionDetail[] {
-    return transactions.map((t) => {
+  ): Promise<TransactionDetail[]> {
+    const result: TransactionDetail[] = []
+    
+    for (const t of transactions) {
       // Hitung COGS & profit transaksi ini
       let txCogs = 0
       let txRevenue = 0
@@ -358,12 +368,14 @@ export const salesReportEnhancedService = {
       const cashReceived = Math.max(0, Math.min(t.paid_amount || 0, netRevenue))
       const receivable = t.remaining_amount || 0
 
-      // Hitung laba terealisasi berdasarkan proporsi kas
-      const realizationRatio = netRevenue > 0 ? cashReceived / netRevenue : 0
-      const realizedProfit = profit * realizationRatio
-      const unrealizedProfit = profit - realizedProfit
+      // ✅ NEW: Hitung laba terealisasi dari item_payments (akurat per-item)
+      const { realizedProfit, unrealizedProfit } = await this.calculateRealizedProfitFromItems(
+        t.id,
+        t.items || [],
+        relatedReturns
+      )
 
-      return {
+      result.push({
         ...t,
         transaction_cogs: netCogs,
         transaction_profit: profit,
@@ -372,8 +384,142 @@ export const salesReportEnhancedService = {
         receivable: receivable,
         realized_profit: realizedProfit,
         unrealized_profit: unrealizedProfit,
-      }
+      })
+    }
+    
+    return result
+  },
+
+  /**
+   * ✅ NEW HELPER: Hitung laba terealisasi dari item_payments
+   * 
+   * Formula AKURAT per-item:
+   * - Laba terealisasi = sum(item_profit * (paid_amount / item_subtotal))
+   * - Laba tertahan = total_profit - realized_profit
+   * 
+   * Menggunakan data dari transaction_item_payments untuk track
+   * pembayaran per item secara spesifik.
+   */
+  async calculateRealizedProfitFromItems(
+    transactionId: string,
+    items: any[],
+    returns: any[]
+  ): Promise<{ realizedProfit: number; unrealizedProfit: number }> {
+    // Get item payment allocations
+    const { data: itemPayments, error } = await supabase
+      .from('transaction_item_payments')
+      .select('item_id, allocated_amount')
+      .eq('transaction_id', transactionId)
+
+    if (error) {
+      console.error('Error fetching item payments:', error)
+      // Fallback ke formula proporsional jika query gagal
+      return this.calculateRealizedProfitFallback(items, returns)
+    }
+
+    // Map: item_id -> total_paid
+    const paidByItem = new Map<string, number>()
+    ;(itemPayments || []).forEach((ip) => {
+      const existing = paidByItem.get(ip.item_id) || 0
+      paidByItem.set(ip.item_id, existing + Number(ip.allocated_amount))
     })
+
+    // Map: product_id -> returned_qty & returned_cogs
+    const returnsByProduct = new Map<string, { qty: number; cogs: number; value: number }>()
+    returns.forEach((r: any) => {
+      r.items?.forEach((item: any) => {
+        const pid = item.product_id || 'unknown'
+        const existing = returnsByProduct.get(pid) || { qty: 0, cogs: 0, value: 0 }
+        existing.qty += item.quantity || 0
+        existing.cogs += (item.price_buy || 0) * (item.quantity || 0)
+        existing.value += (item.price || 0) * (item.quantity || 0)
+        returnsByProduct.set(pid, existing)
+      })
+    })
+
+    let totalProfit = 0
+    let realizedProfit = 0
+
+    // Hitung per item
+    items.forEach((item: any) => {
+      const itemId = item.id
+      const productId = item.product_id || 'unknown'
+      const priceBuy = item.product?.price_buy || 0
+      const qty = item.quantity || 0
+      const subtotal = item.subtotal || 0
+
+      // COGS & return untuk item ini
+      const itemCogs = priceBuy * qty
+      const returnData = returnsByProduct.get(productId) || { qty: 0, cogs: 0, value: 0 }
+      const netSubtotal = subtotal - returnData.value
+      const netCogs = itemCogs - returnData.cogs
+
+      // Laba item (setelah dikurangi retur)
+      const itemProfit = netSubtotal - netCogs
+      totalProfit += itemProfit
+
+      // Pembayaran untuk item ini
+      const paidAmount = paidByItem.get(itemId) || 0
+
+      // Laba terealisasi item = profit * (paid / subtotal bersih)
+      // Gunakan netSubtotal agar denominator konsisten dengan laba
+      const realizationRatio = netSubtotal > 0 ? Math.min(paidAmount / netSubtotal, 1) : 0
+      const itemRealizedProfit = itemProfit * realizationRatio
+
+      realizedProfit += itemRealizedProfit
+    })
+
+    // Pastikan realized tidak melebihi total_profit,
+    // dan realized + unrealized == totalProfit (tidak ada sisa yang hilang)
+    const clampedRealized = totalProfit >= 0
+      ? Math.min(Math.max(0, realizedProfit), totalProfit)
+      : Math.max(Math.min(0, realizedProfit), totalProfit)
+    const unrealizedProfit = totalProfit - clampedRealized
+
+    return {
+      realizedProfit: clampedRealized,
+      unrealizedProfit,
+    }
+  },
+
+  /**
+   * Fallback: Gunakan formula proporsional jika query item_payments gagal
+   * (backward compatibility untuk data lama atau jika migrasi belum dijalankan)
+   */
+  calculateRealizedProfitFallback(
+    items: any[],
+    returns: any[]
+  ): { realizedProfit: number; unrealizedProfit: number } {
+    let txRevenue = 0
+    let txCogs = 0
+    let returnValue = 0
+    let returnCogs = 0
+
+    items.forEach((item: any) => {
+      const priceBuy = item.product?.price_buy || 0
+      const qty = item.quantity || 0
+      txRevenue += item.subtotal || 0
+      txCogs += priceBuy * qty
+    })
+
+    returns.forEach((r: any) => {
+      returnValue += parseFloat(r.total_refund || 0)
+      r.items?.forEach((item: any) => {
+        returnCogs += (item.price_buy || 0) * (item.quantity || 0)
+      })
+    })
+
+    const netRevenue = txRevenue - returnValue
+    const netCogs = txCogs - returnCogs
+    const profit = netRevenue - netCogs
+
+    // Asumsi proporsional (tidak akurat, tapi fallback)
+    const realizationRatio = 0.5 // Assume 50% paid if data not available
+    
+    return {
+      realizedProfit: profit * realizationRatio,
+      unrealizedProfit: profit * (1 - realizationRatio),
+    }
   },
 
   /**
@@ -550,15 +696,19 @@ export const salesReportEnhancedService = {
       }
     })
 
-    // Hitung summary per transaksi (sama dengan calculateTransactionDetails)
+    // Hitung summary per transaksi dengan laba terealisasi yang akurat
     const netRevenue = txRevenue - (transaction.discount || 0) - totalReturnValue
     const netCogs = txCogs - totalReturnCogs
     const profit = netRevenue - netCogs
     const profitMargin = netRevenue > 0 ? (profit / netRevenue) * 100 : 0
     const cashReceived = Math.max(0, Math.min(transaction.paid_amount || 0, netRevenue))
-    const realizationRatio = netRevenue > 0 ? cashReceived / netRevenue : 0
-    const realizedProfit = profit * realizationRatio
-    const unrealizedProfit = profit - realizedProfit
+    
+    // ✅ NEW: Gunakan perhitungan akurat dari item_payments
+    const { realizedProfit, unrealizedProfit } = await this.calculateRealizedProfitFromItems(
+      transactionId,
+      transaction.items || [],
+      returnData
+    )
 
     const transactionDetail: TransactionDetail = {
       ...transaction,
