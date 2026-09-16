@@ -70,12 +70,15 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { Transaction } from '@/types/database'
+import type { Transaction, DeliveryOrder } from '@/types/database'
 
 interface Props {
   modelValue: boolean
   transactions: Transaction[]
   initialSelected?: string[]
+  deliveryOrders?: DeliveryOrder[]
+  excludeCurrentDo?: boolean
+  currentDoId?: string
 }
 
 interface Emits {
@@ -84,7 +87,10 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  initialSelected: () => []
+  initialSelected: () => [],
+  deliveryOrders: () => [],
+  excludeCurrentDo: true,
+  currentDoId: undefined
 })
 
 const emit = defineEmits<Emits>()
@@ -92,10 +98,43 @@ const emit = defineEmits<Emits>()
 const searchQuery = ref('')
 const selectedIds = ref<string[]>([...props.initialSelected])
 
+// Kumpulkan ID transaksi yang sudah ada di surat jalan lain
+const shippedTransactionIds = computed(() => {
+  const shippedIds = new Set<string>()
+  
+  for (const dorder of props.deliveryOrders) {
+    // Jika edit mode dan excludeCurrentDo true, skip DO yang sedang diedit
+    if (props.excludeCurrentDo && props.currentDoId && dorder.id === props.currentDoId) {
+      continue
+    }
+    
+    const txIds = dorder.transaction_ids || []
+    txIds.forEach((id) => shippedIds.add(id))
+  }
+  
+  return shippedIds
+})
+
+// Transaksi yang belum shipped (kecuali yang sudah dipilih/ada di DO saat ini)
+const availableTransactions = computed(() => {
+  return props.transactions.filter(tx => {
+    // Skip transaksi void/batal
+    if (tx.status === 'void' || tx.status === 'batal') return false
+    
+    // Jika sudah di initial selected (dari DO yang sedang diedit), tampilkan
+    if (props.initialSelected.includes(tx.id)) return true
+    
+    // Jika sudah shipped, jangan tampilkan
+    if (shippedTransactionIds.value.has(tx.id)) return false
+    
+    return true
+  })
+})
+
 const filteredTransactions = computed(() => {
   const q = searchQuery.value.toLowerCase()
-  if (!q) return props.transactions
-  return props.transactions.filter(tx =>
+  if (!q) return availableTransactions.value
+  return availableTransactions.value.filter(tx =>
     (tx.transaction_number || '').toLowerCase().includes(q) ||
     (tx.customer_name || '').toLowerCase().includes(q)
   )

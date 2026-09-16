@@ -36,3 +36,8 @@ android/*.jks
 *.sln
 *.sw?
 .claude/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/

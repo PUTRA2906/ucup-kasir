@@ -187,12 +187,12 @@ export const sqliteShippingService = {
     await transaction(async (tx) => {
       await tx.run(
         `INSERT INTO delivery_orders (id, user_id, do_number, do_date, customer_id,
-           customer_name, customer_address, vehicle_id, driver_id, driver_name, notes, status,
+           customer_name, customer_address, vehicle_id, driver_id, driver_name, driver_fee, notes, status,
            created_at, updated_at, sync_status, updated_at_local)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
         [id, userId, doNumber, input.do_date, input.customer_id || null,
          input.customer_name || null, input.customer_address || null, input.vehicle_id || null,
-         input.driver_id || null, input.driver_name || null, input.notes || null, 'draft', now, now, now]
+         input.driver_id || null, input.driver_name || null, input.driver_fee || 0, input.notes || null, 'draft', now, now, now]
       )
 
       // Tracking awal
@@ -215,7 +215,7 @@ export const sqliteShippingService = {
     const values: any[] = []
 
     const updatable = ['do_date', 'customer_id', 'customer_name',
-      'customer_address', 'vehicle_id', 'driver_id', 'driver_name', 'notes'] as const
+      'customer_address', 'vehicle_id', 'driver_id', 'driver_name', 'driver_fee', 'notes'] as const
     for (const key of updatable) {
       if ((updates as any)[key] !== undefined) {
         fields.push(`${key} = ?`)
@@ -519,12 +519,12 @@ export const sqliteShippingService = {
     for (const r of records) {
       await run(
         `INSERT OR REPLACE INTO delivery_orders (id, user_id, do_number, do_date, customer_id,
-           customer_name, customer_address, vehicle_id, driver_id, driver_name, notes, status,
+           customer_name, customer_address, vehicle_id, driver_id, driver_name, driver_fee, notes, status,
            created_at, updated_at, sync_status, updated_at_local)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
         [r.id, r.user_id || userId, r.do_number, r.do_date,
          r.customer_id || null, r.customer_name || null, r.customer_address || null,
-         r.vehicle_id || null, r.driver_id || null, r.driver_name || null, r.notes || null,
+         r.vehicle_id || null, r.driver_id || null, r.driver_name || null, r.driver_fee ?? 0, r.notes || null,
          r.status, r.created_at, r.updated_at, r.updated_at || now]
       )
       for (const item of r.items || []) {
@@ -618,6 +618,7 @@ export const sqliteShippingService = {
       vehicle_id: r.vehicle_id ?? undefined,
       driver_id: r.driver_id ?? undefined,
       driver_name: r.driver_name ?? undefined,
+      driver_fee: r.driver_fee ?? undefined,
       notes: r.notes ?? undefined,
       status: r.status,
       created_at: r.created_at,

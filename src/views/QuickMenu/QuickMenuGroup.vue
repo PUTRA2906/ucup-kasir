@@ -52,13 +52,22 @@
           class="flex items-center justify-between p-3.5 transition hover:bg-gray-50 active:scale-[0.99] dark:hover:bg-white/[0.03]"
         >
           <div class="flex items-center gap-3">
-            <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-              :class="item.iconClass"
-            >
-              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
-              </svg>
+            <div class="relative">
+              <div
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                :class="item.iconClass"
+              >
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
+                </svg>
+              </div>
+              <!-- Badge Counter -->
+              <span
+                v-if="getItemBadgeCount(item.id)"
+                class="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shadow-sm"
+              >
+                {{ getItemBadgeCount(item.id) }}
+              </span>
             </div>
             <div>
               <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ item.label }}</p>
@@ -89,13 +98,22 @@
               class="flex items-center justify-between p-3.5 transition hover:bg-gray-50 active:scale-[0.99] dark:hover:bg-white/[0.03]"
             >
               <div class="flex items-center gap-3">
-                <div
-                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                  :class="item.iconClass"
-                >
-                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
-                  </svg>
+                <div class="relative">
+                  <div
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                    :class="item.iconClass"
+                  >
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
+                    </svg>
+                  </div>
+                  <!-- Badge Counter -->
+                  <span
+                    v-if="getItemBadgeCount(item.id)"
+                    class="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shadow-sm"
+                  >
+                    {{ getItemBadgeCount(item.id) }}
+                  </span>
                 </div>
                 <div>
                   <p class="text-xs font-semibold text-gray-900 dark:text-white">{{ item.label }}</p>
@@ -114,7 +132,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   QUICK_MENU_GROUPS,
@@ -124,9 +142,13 @@ import {
   type QuickMenuGroup,
   type QuickMenuItem,
 } from '@/data/quickMenu'
+import { useTransactionsStore } from '@/stores/transactions'
+import { useShippingStore } from '@/stores/shipping'
 
 const route = useRoute()
 const router = useRouter()
+const transactionsStore = useTransactionsStore()
+const shippingStore = useShippingStore()
 
 const slug = route.params.slug as string
 const group = computed<QuickMenuGroup>(() => {
@@ -163,6 +185,31 @@ const subgroups = computed<{ title: string; items: QuickMenuItem[] }[]>(() => {
 
 const search = ref('')
 
+/** Hitung transaksi yang perlu dikirim */
+const pendingShipmentsCount = computed(() => {
+  // Kumpulkan semua ID transaksi yang sudah ada di surat jalan
+  const shippedIds = new Set<string>()
+  for (const dorder of shippingStore.deliveryOrders) {
+    const txIds = dorder.transaction_ids || []
+    txIds.forEach((id) => shippedIds.add(id))
+  }
+
+  // Hitung transaksi yang belum ada di surat jalan dan tidak batal/void
+  return transactionsStore.transactions.filter((t) => {
+    const notVoided = t.status !== 'void' && t.status !== 'batal'
+    const notShipped = !shippedIds.has(t.id)
+    return notVoided && notShipped
+  }).length
+})
+
+/** Check apakah item memiliki badge count */
+const getItemBadgeCount = (itemId: string): number | null => {
+  if (itemId === 'shipping-pending') {
+    return pendingShipmentsCount.value || null
+  }
+  return null
+}
+
 const filteredItems = computed(() => {
   const q = search.value.trim().toLowerCase()
   if (!q) return []
@@ -171,5 +218,19 @@ const filteredItems = computed(() => {
       item.label.toLowerCase().includes(q) ||
       item.description.toLowerCase().includes(q)
   )
+})
+
+onMounted(async () => {
+  // Load data hanya jika di grup Pengiriman
+  if (slug === 'pengiriman') {
+    try {
+      await Promise.all([
+        transactionsStore.fetchTransactions(),
+        shippingStore.fetchDeliveryOrders(),
+      ])
+    } catch (error) {
+      console.error('Error loading shipping data:', error)
+    }
+  }
 })
 </script>

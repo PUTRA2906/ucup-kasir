@@ -25,14 +25,13 @@ export const QUICK_MENU_STORAGE_KEY = 'quick_menu_order'
 
 export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
   {
-    id: 'stock',
-    to: '/stock',
-    label: 'Stok',
-    description: 'Kelola stok gudang & mutasi barang',
+    id: 'products',
+    to: '/products',
+    label: 'Produk',
+    description: 'Daftar produk, harga & stok',
     iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
     iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
   },
-  
   {
     id: 'categories',
     to: '/categories',
@@ -42,10 +41,10 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     iconPath: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z',
   },
   {
-    id: 'products',
-    to: '/products',
-    label: 'Produk',
-    description: 'Daftar produk, harga & stok',
+    id: 'stock',
+    to: '/stock',
+    label: 'Stok',
+    description: 'Kelola stok gudang & mutasi barang',
     iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
     iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
   },
@@ -163,20 +162,20 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     iconPath: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z',
   },
   {
+    id: 'closing-periods',
+    to: '/finance/closing-periods',
+    label: 'Tutup Buku',
+    description: 'Kunci periode akuntansi',
+    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconPath: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
+  },
+  {
     id: 'purchasing',
     to: '/purchasing',
     label: 'Pembelian',
     description: 'Dashboard pembelian & overview',
     iconClass: 'border-orange-500/20 bg-orange-500/10 text-orange-500',
     iconPath: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z',
-  },
-  {
-    id: 'shipping',
-    to: '/shipping',
-    label: 'Pengiriman',
-    description: 'Dashboard pengiriman & overview',
-    iconClass: 'border-sky-500/20 bg-sky-500/10 text-sky-500',
-    iconPath: 'M3 7h11v10H3V7zm0 0V5a2 2 0 012-2h4v4m4 8h2a3 3 0 003-3v-2h-5m-2 0V8a2 2 0 012-2h3l4 4v5a2 2 0 01-2 2h-3',
   },
   {
     id: 'hr',
@@ -284,13 +283,18 @@ export const QUICK_MENU_GROUPS: Omit<QuickMenuGroup, 'items'>[] = [
     color: 'bg-cyan-400',
   },
   {
-    title: 'Gudang & Stok',
-    slug: 'gudang-stok',
-    color: 'bg-blue-400',
+    title: 'Pengiriman',
+    slug: 'pengiriman',
+    color: 'bg-sky-400',
   },
   {
     title: 'Keuangan',
     slug: 'keuangan',
+    color: 'bg-emerald-400',
+  },
+  {
+    title: 'Karyawan & Payroll',
+    slug: 'karyawan',
     color: 'bg-emerald-400',
   },
   {
@@ -299,14 +303,9 @@ export const QUICK_MENU_GROUPS: Omit<QuickMenuGroup, 'items'>[] = [
     color: 'bg-orange-400',
   },
   {
-    title: 'Pengiriman',
-    slug: 'pengiriman',
-    color: 'bg-sky-400',
-  },
-  {
-    title: 'Karyawan & Payroll',
-    slug: 'karyawan',
-    color: 'bg-emerald-400',
+    title: 'Gudang & Stok',
+    slug: 'gudang-stok',
+    color: 'bg-blue-400',
   },
 ]
 
@@ -332,6 +331,7 @@ export const GROUP_MAP: Record<string, string> = {
   'trial-balance': 'Keuangan',
   'balance-sheet': 'Keuangan',
   'cash-flow': 'Keuangan',
+  'closing-periods': 'Keuangan',
   // Pembelian
   purchasing: 'Pembelian',
   'purchasing-suppliers': 'Pembelian',
@@ -340,7 +340,6 @@ export const GROUP_MAP: Record<string, string> = {
   'purchasing-pis': 'Pembelian',
   'purchasing-returns': 'Pembelian',
   // Pengiriman
-  shipping: 'Pengiriman',
   'shipping-pending': 'Pengiriman',
   'shipping-deliveries': 'Pengiriman',
   'shipping-vehicles': 'Pengiriman',
@@ -380,7 +379,6 @@ export const SUBGROUP_MAP: Record<string, string> = {
   'purchasing-pis': 'Transaksi Pembelian',
   'purchasing-returns': 'Transaksi Pembelian',
   // Pengiriman
-  shipping: 'Ringkasan',
   'shipping-pending': 'Operasional',
   'shipping-deliveries': 'Operasional',
   'shipping-vehicles': 'Operasional',
@@ -396,7 +394,7 @@ export const SUBGROUP_ORDER: Record<string, string[]> = {
   'gudang-stok': ['Master Produk', 'Gudang'],
   keuangan: ['Ringkasan', 'Pencatatan', 'Laporan Keuangan'],
   pembelian: ['Ringkasan', 'Master Supplier', 'Transaksi Pembelian'],
-  pengiriman: ['Ringkasan', 'Operasional'],
+  pengiriman: ['Operasional'],
   karyawan: ['Master Data', 'Payroll'],
 }
 

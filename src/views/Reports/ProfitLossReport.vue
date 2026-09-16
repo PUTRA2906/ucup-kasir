@@ -670,7 +670,7 @@ const applyFilters = () => {
   store.setPaymentStatusFilter(tempPaymentStatus.value)
   txStatusFilter.value = 'semua'
   store.fetchReport()
-  loadExpenseBalances()
+  loadExpenseBalances(tempDateRange.value.start, tempDateRange.value.end)
   showFilterModal.value = false
 }
 
@@ -689,23 +689,38 @@ onMounted(() => {
   store.fetchReport()
 
   // Ambil saldo beban operasional dari modul finance
-  loadExpenseBalances()
+  loadExpenseBalances(today, today)
 })
 
-/** Muat saldo akun beban (non-HPP) dari modul finance. */
-async function loadExpenseBalances() {
+/** Muat saldo akun beban (non-HPP) dari modul finance dalam rentang periode. */
+async function loadExpenseBalances(startDate: string, endDate: string) {
   try {
     if (financeStore.accounts.length === 0) {
       await financeStore.fetchAccounts()
     }
-    const balances = await financeStore.getAccountBalances()
+
+    // Ambil saldo awal (sebelum startDate) dan saldo akhir (sampai endDate)
+    const balancesStart = await financeStore.getAccountBalances(
+      new Date(new Date(startDate + 'T00:00:00').getTime() - 86400000)
+        .toLocaleDateString('en-CA')
+    )
+    const balancesEnd = await financeStore.getAccountBalances(endDate)
+
+    // Hitung selisih saldo dalam periode (beban dalam periode = saldo akhir - saldo awal)
     expenseBalanceByAccount.value = {}
-    for (const b of balances) {
-      if (b.account_type === 'beban' && b.balance !== 0) {
-        expenseBalanceByAccount.value[b.account_id] = b.balance
+    for (const accEnd of balancesEnd) {
+      if (accEnd.account_type === 'beban') {
+        const accStart = balancesStart.find(b => b.account_id === accEnd.account_id)
+        const balanceStart = accStart?.balance || 0
+        const expenseInPeriod = accEnd.balance - balanceStart
+
+        if (expenseInPeriod !== 0) {
+          expenseBalanceByAccount.value[accEnd.account_id] = expenseInPeriod
+        }
       }
     }
-  } catch {
+  } catch (error) {
+    console.error('Error loading expense balances:', error)
     // silently fail — beban tetap 0
   }
 }

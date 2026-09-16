@@ -233,6 +233,12 @@
             <span class="font-semibold text-gray-700 dark:text-gray-300">{{ formatCurrency(transaction.change_amount) }}</span>
           </div>
 
+          <!-- Kelebihan Pembayaran (Overpayment) -->
+          <div v-if="isOverpaid" class="flex justify-between bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-2 -mx-3.5 border-y border-emerald-100 dark:border-emerald-500/20">
+            <span class="text-emerald-700 dark:text-emerald-400 font-medium">Kelebihan Pembayaran</span>
+            <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(overpayAmount) }}</span>
+          </div>
+
           <!-- Sisa Tagihan -->
           <div
             :class="[
@@ -527,8 +533,8 @@
               <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(transaction.change_amount) }}</span>
             </div>
             <div v-if="isOverpaid" class="flex justify-between text-sm">
-              <span class="text-success-600 dark:text-success-400">Pengembalian Lebih Bayar</span>
-              <span class="font-semibold text-success-600 dark:text-success-400">- {{ formatCurrency(overpayAmount) }}</span>
+              <span class="text-emerald-600 dark:text-emerald-400">Kelebihan Pembayaran</span>
+              <span class="font-semibold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(overpayAmount) }}</span>
             </div>
             <div
               v-if="isOverpaid"

@@ -5,26 +5,26 @@
     <!-- Mobile Header -->
     <MobilePageHeader title="Supplier" subtitle="Master Pemasok" back-to="/quick-menu/pembelian">
       <template #actions>
-        <button
-          @click="openAdd"
+        <router-link
+          to="/purchasing/suppliers/add"
           class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-500"
         >
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
-        </button>
+        </router-link>
       </template>
     </MobilePageHeader>
 
     <!-- Desktop Header -->
     <div class="mb-4 hidden items-center justify-between md:flex">
       <div></div>
-      <button
-        @click="openAdd"
+      <router-link
+        to="/purchasing/suppliers/add"
         class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500"
       >
         + Tambah Supplier
-      </button>
+      </router-link>
     </div>
 
     <!-- Loading -->
@@ -50,12 +50,12 @@
         </div>
         <h3 class="text-sm font-bold text-gray-900 dark:text-white">Belum ada supplier</h3>
         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Tambah supplier pertama untuk mulai pembelian.</p>
-        <button
-          @click="openAdd"
-          class="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500"
+        <router-link
+          to="/purchasing/suppliers/add"
+          class="mt-4 inline-block rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500"
         >
           Tambah Supplier
-        </button>
+        </router-link>
       </div>
 
       <!-- Supplier List -->
@@ -96,14 +96,14 @@
                 </td>
                 <td class="px-4 py-3">
                   <div class="flex items-center justify-end gap-1">
-                    <button
-                      @click="openEdit(s)"
+                    <router-link
+                      :to="`/purchasing/suppliers/${s.id}/edit`"
                       class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700"
                     >
                       <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                    </button>
+                    </router-link>
                     <button
                       @click="handleDelete(s)"
                       class="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
@@ -144,14 +144,14 @@
                 {{ s.is_active ? 'Aktif' : 'Nonaktif' }}
               </span>
               <div class="flex gap-1">
-                <button
-                  @click="openEdit(s)"
+                <router-link
+                  :to="`/purchasing/suppliers/${s.id}/edit`"
                   class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800"
                 >
                   <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
-                </button>
+                </router-link>
                 <button
                   @click="handleDelete(s)"
                   class="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
@@ -166,163 +166,21 @@
         </div>
       </div>
     </div>
-
-    <!-- Add/Edit Modal -->
-    <div
-      v-if="showModal"
-      class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 md:items-center"
-      @click.self="showModal = false"
-    >
-      <div
-        class="w-full max-w-md rounded-t-3xl bg-white p-6 md:rounded-2xl dark:bg-gray-900"
-        @click.stop
-      >
-        <div class="mb-4 flex items-center justify-between">
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ editingId ? 'Edit Supplier' : 'Tambah Supplier' }}</h3>
-          <button
-            @click="showModal = false"
-            class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div class="space-y-4">
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Nama Supplier *</label>
-            <input v-model="form.name" type="text" placeholder="Nama pemasok" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Kontak Person</label>
-            <input v-model="form.contact_person" type="text" placeholder="Nama sales" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Telepon</label>
-              <input v-model="form.phone" type="text" placeholder="08xxx" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-            </div>
-            <div>
-              <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Email</label>
-              <input v-model="form.email" type="email" placeholder="email@example.com" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-            </div>
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Alamat</label>
-            <textarea v-model="form.address" rows="2" placeholder="Alamat supplier" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"></textarea>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Tipe Supplier</label>
-              <SelectField
-                v-model="form.supplier_type"
-                :options="[
-                  { label: 'Langsung', value: 'langsung' },
-                  { label: 'Distributor', value: 'distributor' },
-                  { label: 'Grosir', value: 'grosir' },
-                  { label: 'Importir', value: 'importir' }
-                ]"
-                title="Tipe Supplier"
-                placeholder="Pilih tipe..."
-                button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-              />
-            </div>
-            <div>
-              <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Termin Pembayaran</label>
-              <SelectField
-                v-model="form.payment_term"
-                :options="[
-                  { label: 'Tunai', value: 'tunai' },
-                  { label: '7 Hari', value: '7' },
-                  { label: '14 Hari', value: '14' },
-                  { label: '30 Hari', value: '30' }
-                ]"
-                title="Termin Pembayaran"
-                placeholder="Pilih termin..."
-                button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-              />
-            </div>
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Plafon Kredit</label>
-            <CurrencyInput v-model="form.credit_limit" placeholder="0" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"/>
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Catatan</label>
-            <textarea v-model="form.notes" rows="2" placeholder="Catatan (opsional)" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"></textarea>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Aktif</span>
-            <label class="relative inline-flex cursor-pointer items-center">
-              <input type="checkbox" v-model="form.is_active" class="peer sr-only" />
-              <div class="h-5 w-9 rounded-full bg-gray-300 peer-checked:bg-blue-600 dark:bg-gray-700"></div>
-              <div class="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white transition peer-checked:translate-x-4"></div>
-            </label>
-          </div>
-
-          <div v-if="formError" class="rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-500/30 dark:bg-red-500/10">
-            <p class="text-xs text-red-600 dark:text-red-400">{{ formError }}</p>
-          </div>
-
-          <div class="flex gap-2 pt-2">
-            <button
-              @click="showModal = false"
-              class="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-            >
-              Batal
-            </button>
-            <button
-              @click="handleSave"
-              :disabled="saving"
-              class="flex-1 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50"
-            >
-              {{ saving ? 'Menyimpan...' : 'Simpan' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
-import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 import { ref, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import CurrencyInput from '@/components/common/CurrencyInput.vue'
-import SelectField from '@/components/common/SelectField.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { usePurchasingStore } from '@/stores/purchasing'
-import type { SupplierInsert, SupplierUpdate } from '@/types/database'
 
 const { confirm } = useConfirm()
 const toast = useToast()
 const store = usePurchasingStore()
-
-const showModal = ref(false)
-const editingId = ref<string | null>(null)
-const saving = ref(false)
-const formError = ref<string | null>(null)
-
-// Auto register/unregister modal di navigation stack
-useAutoNavigationStack(showModal, 'supplier-add-modal')
-
-const form = ref<SupplierInsert>({
-  name: '',
-  contact_person: '',
-  phone: '',
-  email: '',
-  address: '',
-  supplier_type: 'langsung',
-  payment_term: 'tunai',
-  credit_limit: 0,
-  notes: '',
-  is_active: true,
-})
 
 const getTypeBadge = (type: string) => {
   const badges: Record<string, string> = {
@@ -332,70 +190,6 @@ const getTypeBadge = (type: string) => {
     importir: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400',
   }
   return badges[type] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
-}
-
-const openAdd = () => {
-  editingId.value = null
-  form.value = { name: '', contact_person: '', phone: '', email: '', address: '', supplier_type: 'langsung', payment_term: 'tunai', credit_limit: 0, notes: '', is_active: true }
-  formError.value = null
-  showModal.value = true
-}
-
-const openEdit = (s: any) => {
-  editingId.value = s.id
-  form.value = {
-    name: s.name,
-    contact_person: s.contact_person ?? '',
-    phone: s.phone ?? '',
-    email: s.email ?? '',
-    address: s.address ?? '',
-    supplier_type: s.supplier_type,
-    payment_term: s.payment_term,
-    credit_limit: s.credit_limit,
-    notes: s.notes ?? '',
-    is_active: s.is_active,
-  }
-  formError.value = null
-  showModal.value = true
-}
-
-const handleSave = async () => {
-  formError.value = null
-  if (!form.value.name.trim()) {
-    formError.value = 'Nama supplier wajib diisi'
-    return
-  }
-  saving.value = true
-  try {
-    if (editingId.value) {
-      const updates: SupplierUpdate = {}
-      if (form.value.name !== undefined) updates.name = form.value.name
-      if (form.value.contact_person !== undefined) updates.contact_person = form.value.contact_person || undefined
-      if (form.value.phone !== undefined) updates.phone = form.value.phone || undefined
-      if (form.value.email !== undefined) updates.email = form.value.email || undefined
-      if (form.value.address !== undefined) updates.address = form.value.address || undefined
-      if (form.value.supplier_type !== undefined) updates.supplier_type = form.value.supplier_type
-      if (form.value.payment_term !== undefined) updates.payment_term = form.value.payment_term
-      if (form.value.credit_limit !== undefined) updates.credit_limit = form.value.credit_limit
-      if (form.value.notes !== undefined) updates.notes = form.value.notes || undefined
-      if (form.value.is_active !== undefined) updates.is_active = form.value.is_active
-      await store.updateSupplier(editingId.value, updates)
-    } else {
-      await store.createSupplier({
-        ...form.value,
-        contact_person: form.value.contact_person || undefined,
-        phone: form.value.phone || undefined,
-        email: form.value.email || undefined,
-        address: form.value.address || undefined,
-        notes: form.value.notes || undefined,
-      })
-    }
-    showModal.value = false
-  } catch (e: any) {
-    formError.value = e.message
-  } finally {
-    saving.value = false
-  }
 }
 
 const handleDelete = async (s: any) => {

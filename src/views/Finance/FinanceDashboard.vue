@@ -37,6 +37,43 @@
 
     <!-- Content -->
     <div v-else class="space-y-4 pb-6">
+      <!-- Indikator Periode Tertutup -->
+      <div v-if="lastClosedPeriod" class="rounded-xl border border-blue-200 bg-blue-50 p-3 dark:border-blue-500/30 dark:bg-blue-500/10">
+        <div class="flex items-center gap-2">
+          <svg class="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <p class="text-sm font-semibold text-blue-900 dark:text-blue-100">
+              Periode Terakhir Ditutup: {{ formatPeriod(lastClosedPeriod) }}
+            </p>
+            <p class="text-xs text-blue-700 dark:text-blue-300">
+              Transaksi dalam periode ini tidak dapat diubah.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning: Transaksi Lama Belum Masuk Periode Tertutup -->
+      <div v-if="hasOldTransactions" class="rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/30 dark:bg-amber-500/10">
+        <div class="flex items-center gap-2">
+          <svg class="h-5 w-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <p class="text-sm font-semibold text-amber-900 dark:text-amber-100">
+              Ada transaksi > 30 hari yang belum masuk periode tertutup
+            </p>
+            <button
+              @click="router.push('/finance/closing-periods')"
+              class="text-xs text-amber-700 underline hover:no-underline dark:text-amber-300"
+            >
+              Tutup periode sekarang →
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Filter Pills (Mobile) -->
       <div class="flex items-center gap-2 overflow-x-auto pb-2 md:hidden">
         <button
@@ -317,6 +354,8 @@ import { useFinanceStore } from '@/stores/finance'
 import { useNavigationStack } from '@/composables/useNavigationStack'
 import { useToast } from '@/composables/useToast'
 import { localTodayStr, localDateOffsetStr, localDateStr } from '@/utils/date'
+import { financeService } from '@/services/finance'
+import type { ClosingPeriod } from '@/types/database'
 
 const router = useRouter()
 const store = useFinanceStore()
@@ -327,6 +366,8 @@ const toast = useToast()
 const showFilterModal = ref(false)
 const loadError = ref<string | null>(null)
 const tempRange = ref('thisMonth')
+const lastClosedPeriod = ref<ClosingPeriod | null>(null)
+const hasOldTransactions = ref(false)
 const tempCustom = ref({
   start: localTodayStr(),
   end: localTodayStr(),
@@ -468,5 +509,39 @@ onMounted(async () => {
   setPeriod(localDateStr(firstDay), localTodayStr())
   tempCustom.value.end = localTodayStr()
   await fetchData()
+  await fetchClosingPeriods()
 })
+
+const fetchClosingPeriods = async () => {
+  try {
+    const periods = await financeService.getClosingPeriods()
+    // Ambil periode tertutup terakhir
+    const closed = periods.filter(p => p.status === 'closed')
+    if (closed.length > 0) {
+      lastClosedPeriod.value = closed[0]
+    }
+
+    // Cek apakah ada transaksi > 30 hari yang belum masuk periode tertutup
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const cutoffDate = thirtyDaysAgo.toISOString().split('T')[0]
+
+    // Jika ada periode tertutup, cek apakah cutoff date sudah masuk periode tertutup
+    if (lastClosedPeriod.value) {
+      hasOldTransactions.value = cutoffDate > lastClosedPeriod.value.period_end
+    } else {
+      // Jika belum ada periode tertutup sama sekali
+      hasOldTransactions.value = true
+    }
+  } catch (error) {
+    // Silent fail - notifikasi closing period tidak krusial
+    console.error('Failed to fetch closing periods:', error)
+  }
+}
+
+const formatPeriod = (period: ClosingPeriod) => {
+  const start = new Date(period.period_start + 'T00:00:00')
+  const end = new Date(period.period_end + 'T00:00:00')
+  return `${start.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} - ${end.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`
+}
 </script>

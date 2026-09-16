@@ -213,6 +213,9 @@
       v-model="showTransactionDialog"
       :transactions="tx.transactions || []"
       :initial-selected="selectedTransactionIds"
+      :delivery-orders="shipping.deliveryOrders"
+      :exclude-current-do="isEdit"
+      :current-do-id="doId"
       @confirm="onTransactionsConfirm"
     />
     <ProductSearchDialog

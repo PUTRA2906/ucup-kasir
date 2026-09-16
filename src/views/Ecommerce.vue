@@ -178,13 +178,22 @@
                       :to="item.to"
                       class="group flex flex-col items-center transition active:scale-95"
                     >
-                      <div
-                        class="flex h-12 w-12 items-center justify-center rounded-2xl border transition-transform group-hover:scale-105"
-                        :class="item.iconClass"
-                      >
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
-                        </svg>
+                      <div class="relative">
+                        <div
+                          class="flex h-12 w-12 items-center justify-center rounded-2xl border transition-transform group-hover:scale-105"
+                          :class="item.iconClass"
+                        >
+                          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
+                          </svg>
+                        </div>
+                        <!-- Badge Counter -->
+                        <span
+                          v-if="getItemBadgeCount(item.id)"
+                          class="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shadow-sm"
+                        >
+                          {{ getItemBadgeCount(item.id) }}
+                        </span>
                       </div>
                       <span class="mt-1.5 text-[11px] font-medium leading-tight text-gray-700 dark:text-gray-300">
                         {{ item.label }}
@@ -393,6 +402,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useSalesReportStore } from '@/stores/salesReport'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useFinanceStore } from '@/stores/finance'
+import { useTransactionsStore } from '@/stores/transactions'
+import { useShippingStore } from '@/stores/shipping'
 import {
   QUICK_MENU_GROUPS,
   GROUP_MAP,
@@ -406,6 +417,8 @@ const authStore = useAuthStore()
 const salesReportStore = useSalesReportStore()
 const notificationsStore = useNotificationsStore()
 const financeStore = useFinanceStore()
+const transactionsStore = useTransactionsStore()
+const shippingStore = useShippingStore()
 
 const loading = ref(true)
 const loadingAccounts = ref(true)
@@ -494,6 +507,31 @@ const router = useRouter()
 
 const quickMenu = ref<QuickMenuItem[]>(loadQuickMenuFromStorage())
 
+/** Hitung transaksi yang perlu dikirim */
+const pendingShipmentsCount = computed(() => {
+  // Kumpulkan semua ID transaksi yang sudah ada di surat jalan
+  const shippedIds = new Set<string>()
+  for (const dorder of shippingStore.deliveryOrders) {
+    const txIds = dorder.transaction_ids || []
+    txIds.forEach((id) => shippedIds.add(id))
+  }
+
+  // Hitung transaksi yang belum ada di surat jalan dan tidak batal/void
+  return transactionsStore.transactions.filter((t) => {
+    const notVoided = t.status !== 'void' && t.status !== 'batal'
+    const notShipped = !shippedIds.has(t.id)
+    return notVoided && notShipped
+  }).length
+})
+
+/** Check apakah item memiliki badge count */
+const getItemBadgeCount = (itemId: string): number | null => {
+  if (itemId === 'shipping-pending') {
+    return pendingShipmentsCount.value || null
+  }
+  return null
+}
+
 /** Derived: quickMenu yang sudah di-group per modul */
 const quickMenuGrouped = computed(() => {
   // Buat bucket
@@ -540,6 +578,8 @@ onMounted(async () => {
       salesReportStore.fetchSalesReport(),
       notificationsStore.fetchNotifications(),
       loadAccountBalances(),
+      transactionsStore.fetchTransactions(),
+      shippingStore.fetchDeliveryOrders(),
     ])
   } catch (error) {
     console.error('Error loading dashboard:', error)

@@ -68,9 +68,14 @@
                     >
                       −
                     </button>
-                    <span class="w-8 text-center text-sm font-semibold text-gray-900 dark:text-white">
-                      {{ quantities[item.product_id] || 0 }}
-                    </span>
+                    <input
+                      type="number"
+                      v-model.number="quantities[item.product_id]"
+                      @input="validateQuantity(item)"
+                      :max="item.max"
+                      min="0"
+                      class="w-14 h-7 text-center text-sm font-semibold text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:text-white dark:bg-gray-800 dark:border-gray-700"
+                    />
                     <button
                       type="button"
                       @click="increase(item)"
@@ -188,6 +193,31 @@ const decrease = (item: ReturnableItem) => {
   if (current > 0) {
     quantities[item.product_id] = current - 1
   }
+}
+
+const validateQuantity = (item: ReturnableItem) => {
+  const current = quantities[item.product_id] || 0
+  
+  // Pastikan nilai adalah angka
+  if (isNaN(current)) {
+    quantities[item.product_id] = 0
+    return
+  }
+  
+  // Pastikan tidak negatif
+  if (current < 0) {
+    quantities[item.product_id] = 0
+    return
+  }
+  
+  // Pastikan tidak melebihi max
+  if (current > item.max) {
+    quantities[item.product_id] = item.max
+    return
+  }
+  
+  // Pastikan integer (bulatkan jika desimal)
+  quantities[item.product_id] = Math.floor(current)
 }
 
 const formatCurrency = (value: number) =>

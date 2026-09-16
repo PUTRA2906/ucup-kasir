@@ -484,6 +484,12 @@ const router = createRouter({
       component: () => import('../views/Finance/CashFlow.vue'),
       meta: { title: 'Arus Kas' },
     },
+    {
+      path: '/finance/closing-periods',
+      name: 'Closing Periods',
+      component: () => import('../views/Finance/ClosingPeriods.vue'),
+      meta: { title: 'Tutup Buku' },
+    },
     // ============================================================
     // Modul Pembelian Barang (Purchasing / Procurement)
     // ============================================================
@@ -498,6 +504,18 @@ const router = createRouter({
       name: 'Supplier List',
       component: () => import('../views/Purchasing/SupplierList.vue'),
       meta: { title: 'Daftar Supplier' },
+    },
+    {
+      path: '/purchasing/suppliers/add',
+      name: 'Add Supplier',
+      component: () => import('../views/Purchasing/AddSupplier.vue'),
+      meta: { title: 'Tambah Supplier' },
+    },
+    {
+      path: '/purchasing/suppliers/:id/edit',
+      name: 'Edit Supplier',
+      component: () => import('../views/Purchasing/EditSupplier.vue'),
+      meta: { title: 'Edit Supplier' },
     },
     {
       path: '/purchasing/pos',
@@ -620,12 +638,6 @@ const router = createRouter({
     // ============================================================
     // Modul Pengiriman / Shipping — Surat Jalan
     // ============================================================
-    {
-      path: '/shipping',
-      name: 'Shipping Dashboard',
-      component: () => import('../views/Shipping/ShippingDashboard.vue'),
-      meta: { title: 'Dashboard Pengiriman' },
-    },
     {
       path: '/shipping/deliveries',
       name: 'Delivery Order List',

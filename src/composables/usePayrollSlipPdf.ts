@@ -24,6 +24,15 @@ export interface PayrollSlipPdfData {
   notes?: string
   baseSalary: number
   incentive: number
+  incentiveDetails?: Array<{
+    type: 'loader' | 'driver'
+    date: string
+    do_number: string
+    description: string
+    quantity?: number
+    unit_price?: number
+    amount: number
+  }>
   kasbonDeduction: number
   totalNet: number
 }
@@ -145,7 +154,42 @@ export function usePayrollSlipPdf() {
 
     sectionHeader('PEMASUKAN')
     row('Gaji Pokok', formatCurrency(data.baseSalary))
-    row('Insentif', formatCurrency(data.incentive))
+    
+    // Detail breakdown insentif
+    if (data.incentiveDetails && data.incentiveDetails.length > 0) {
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(8)
+      doc.setFillColor(245, 245, 245)
+      doc.rect(margin, yPos, contentWidth, 5, 'F')
+      doc.text('Detail Insentif:', margin + 4, yPos + 3.5)
+      yPos += 5
+      
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      for (const detail of data.incentiveDetails) {
+        // Header: Tanggal dan DO Number
+        doc.setFont('helvetica', 'bold')
+        doc.text(`${formatDate(detail.date)} - ${detail.do_number}`, margin + 8, yPos + 4)
+        yPos += 4
+        
+        // Deskripsi
+        doc.setFont('helvetica', 'normal')
+        const descLines = doc.splitTextToSize(detail.description, contentWidth - 60)
+        doc.text(descLines, margin + 8, yPos + 3)
+        const descHeight = descLines.length * 3
+        
+        // Amount di kanan
+        doc.text(formatCurrency(detail.amount), colAmount, yPos + 3, { align: 'right' })
+        
+        yPos += descHeight + 4
+        doc.setDrawColor(220, 220, 220)
+        doc.setLineWidth(0.05)
+        doc.line(margin + 4, yPos - 1, pageWidth - margin, yPos - 1)
+      }
+      yPos += 2
+    }
+    
+    row('Total Insentif', formatCurrency(data.incentive), true)
     row('Total Pemasukan', formatCurrency((data.baseSalary || 0) + (data.incentive || 0)), true)
     yPos += 4
 

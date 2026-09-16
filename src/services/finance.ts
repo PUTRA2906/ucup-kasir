@@ -8,6 +8,8 @@ import type {
   JournalInput,
   JournalLine,
   LedgerEntry,
+  ClosingPeriod,
+  ClosePeriodInput,
 } from '@/types/database'
 
 // ============================================================
@@ -318,5 +320,79 @@ export const financeService = {
     })
 
     return { cashIn, cashOut, netCash: cashIn - cashOut, lines }
+  },
+
+  // ============================================================
+  // Tutup Buku (Closing Period)
+  // ============================================================
+
+  async getClosingPeriods(): Promise<ClosingPeriod[]> {
+    const { data, error } = await supabase
+      .from('closing_periods')
+      .select('*')
+      .order('period_end', { ascending: false })
+
+    if (error) throw error
+
+    // Parse snapshot_balances dari JSONB ke array
+    return (data || []).map(cp => ({
+      ...cp,
+      snapshot_balances: cp.snapshot_balances
+        ? (Array.isArray(cp.snapshot_balances)
+            ? cp.snapshot_balances
+            : [])
+        : []
+    }))
+  },
+
+  async getClosingPeriod(id: string): Promise<ClosingPeriod | null> {
+    const { data, error } = await supabase
+      .from('closing_periods')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+
+    return data ? {
+      ...data,
+      snapshot_balances: data.snapshot_balances
+        ? (Array.isArray(data.snapshot_balances)
+            ? data.snapshot_balances
+            : [])
+        : []
+    } : null
+  },
+
+  async closePeriod(input: ClosePeriodInput): Promise<string> {
+    const { data, error } = await supabase.rpc('close_period', {
+      p_period_start: input.period_start,
+      p_period_end: input.period_end,
+      p_notes: input.notes || null
+    })
+
+    if (error) throw error
+    return data as string
+  },
+
+  async reopenPeriod(closingId: string): Promise<void> {
+    const { error } = await supabase.rpc('reopen_period', {
+      p_closing_id: closingId
+    })
+
+    if (error) throw error
+  },
+
+  async checkPeriodClosed(date: string): Promise<boolean> {
+    const { data: user } = await supabase.auth.getUser()
+    if (!user.user) return false
+
+    const { data, error } = await supabase.rpc('check_period_closed', {
+      p_date: date,
+      p_user_id: user.user.id
+    })
+
+    if (error) throw error
+    return data as boolean
   },
 }

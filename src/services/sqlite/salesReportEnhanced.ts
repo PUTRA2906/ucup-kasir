@@ -1,4 +1,4 @@
-import { query } from '@/lib/sqlite'
+import { query, queryOne } from '@/lib/sqlite'
 import { getCurrentUserId } from '@/services/sqlite/db'
 import type { Transaction } from '@/types/database'
 
@@ -138,8 +138,8 @@ export const sqliteSalesReportEnhancedService = {
     const returnData = await this.fetchReturnsWithItems(returnRows)
 
     // --- 3. Kalkulasi (reuse logika identik) ---
-    const summary = this.calculateEnhancedSummary(txns, returnData)
-    const transactionDetails = this.calculateTransactionDetails(txns, returnData)
+    const summary = await this.calculateEnhancedSummary(txns, returnData)
+    const transactionDetails = await this.calculateTransactionDetails(txns, returnData)
     const topProducts = this.calculateProductPerformance(txns, returnData, 'top')
     const topReturns = this.calculateProductPerformance(txns, returnData, 'returns')
 
@@ -242,12 +242,13 @@ export const sqliteSalesReportEnhancedService = {
     const profit = netRevenue - netCogs
     const profitMargin = netRevenue > 0 ? (profit / netRevenue) * 100 : 0
     const cashReceived = Math.max(0, Math.min(transaction.paid_amount || 0, netRevenue))
-    const realizationRatio = netRevenue > 0 ? cashReceived / netRevenue : 0
-    // Clamp: realized + unrealized == profit (bukan keduanya max(0,...) yang bisa saling meniadakan)
-    const realizedProfit = profit >= 0
-      ? Math.min(Math.max(0, profit * realizationRatio), profit)
-      : Math.max(Math.min(0, profit * realizationRatio), profit)
-    const unrealizedProfit = profit - realizedProfit
+    
+    // Hitung laba terealisasi per-item (seperti di web)
+    const { realizedProfit, unrealizedProfit } = await this.calculateRealizedProfitFromItems(
+      transactionId,
+      transaction.items || [],
+      returnData
+    )
 
     const transactionDetail: TransactionDetail = {
       ...transaction,
@@ -269,12 +270,108 @@ export const sqliteSalesReportEnhancedService = {
   },
 
   /**
-   * Menghitung summary dengan pemisahan laba akrual vs terealisasi
+   * Menghitung laba terealisasi per-item berdasarkan transaction_item_payments.
+   * Identik dengan versi web untuk akurasi pada transaksi dengan margin berbeda per item.
    */
-  calculateEnhancedSummary(
+  async calculateRealizedProfitFromItems(
+    transactionId: string,
+    items: any[],
+    returns: any[]
+  ): Promise<{ realizedProfit: number; unrealizedProfit: number }> {
+    const userId = getCurrentUserId()
+
+    // Ambil data transaksi untuk mendapatkan total diskon
+    const txRow = await queryOne<any>(
+      `SELECT discount FROM transactions WHERE id = ? AND user_id = ?`,
+      [transactionId, userId]
+    )
+    const transactionDiscount = Number(txRow?.discount || 0)
+
+    // Hitung total revenue untuk alokasi diskon proporsional
+    const txRevenue = items.reduce((sum: number, item: any) => sum + (item.subtotal || 0), 0)
+
+    // Ambil alokasi pembayaran per item
+    const itemPaymentRows = await query<any>(
+      `SELECT item_id, allocated_amount FROM transaction_item_payments 
+       WHERE transaction_id = ? AND user_id = ?`,
+      [transactionId, userId]
+    )
+
+    // Map: item_id -> total_paid
+    const paidByItem = new Map<string, number>()
+    itemPaymentRows.forEach((ip: any) => {
+      const existing = paidByItem.get(ip.item_id) || 0
+      paidByItem.set(ip.item_id, existing + Number(ip.allocated_amount || 0))
+    })
+
+    // Map: product_id -> returned data
+    const returnsByProduct = new Map<string, { qty: number; cogs: number; value: number }>()
+    returns.forEach((r: any) => {
+      r.items?.forEach((item: any) => {
+        const pid = item.product_id || 'unknown'
+        const existing = returnsByProduct.get(pid) || { qty: 0, cogs: 0, value: 0 }
+        existing.qty += item.quantity || 0
+        existing.cogs += (item.price_buy || 0) * (item.quantity || 0)
+        existing.value += (item.price || 0) * (item.quantity || 0)
+        returnsByProduct.set(pid, existing)
+      })
+    })
+
+    let totalProfit = 0
+    let realizedProfit = 0
+
+    // Hitung per item
+    items.forEach((item: any) => {
+      const itemId = item.id
+      const productId = item.product_id || 'unknown'
+      const priceBuy = item.product?.price_buy || 0
+      const qty = item.quantity || 0
+      const subtotal = item.subtotal || 0
+
+      // Diskon proporsional untuk item ini
+      const discountRatio = txRevenue > 0 ? subtotal / txRevenue : 0
+      const itemDiscount = transactionDiscount * discountRatio
+
+      // COGS & return untuk item ini
+      const itemCogs = priceBuy * qty
+      const returnData = returnsByProduct.get(productId) || { qty: 0, cogs: 0, value: 0 }
+      const netSubtotal = subtotal - itemDiscount - returnData.value
+      const netCogs = itemCogs - returnData.cogs
+
+      // Laba item (setelah dikurangi diskon dan retur)
+      const itemProfit = netSubtotal - netCogs
+      totalProfit += itemProfit
+
+      // Pembayaran untuk item ini
+      const paidAmount = paidByItem.get(itemId) || 0
+
+      // Laba terealisasi item = profit * (paid / subtotal bersih)
+      const realizationRatio = netSubtotal > 0 ? Math.min(paidAmount / netSubtotal, 1) : 0
+      const itemRealizedProfit = itemProfit * realizationRatio
+
+      realizedProfit += itemRealizedProfit
+    })
+
+    // Clamp: realized + unrealized == totalProfit (tidak ada sisa yang hilang)
+    const clampedRealized = totalProfit >= 0
+      ? Math.min(Math.max(0, realizedProfit), totalProfit)
+      : Math.max(Math.min(0, realizedProfit), totalProfit)
+    const unrealizedProfit = totalProfit - clampedRealized
+
+    return {
+      realizedProfit: clampedRealized,
+      unrealizedProfit,
+    }
+  },
+
+  /**
+   * Menghitung summary dengan pemisahan laba akrual vs terealisasi
+   * Menggunakan perhitungan per-item untuk akurasi seperti di web
+   */
+  async calculateEnhancedSummary(
     transactions: Transaction[],
     returns: any[]
-  ): EnhancedSalesSummary {
+  ): Promise<EnhancedSalesSummary> {
     let gross_sales = 0
     let total_discount = 0
     let total_returns = 0
@@ -304,8 +401,8 @@ export const sqliteSalesReportEnhancedService = {
       returnsByTx.set(r.transaction_id, list)
     })
 
-    // Hitung dari transaksi
-    transactions.forEach((t) => {
+    // Hitung dari transaksi (dengan perhitungan per-item untuk realized profit)
+    for (const t of transactions) {
       let txGrossSales = 0
       let txCogs = 0
 
@@ -328,8 +425,6 @@ export const sqliteSalesReportEnhancedService = {
       const remainingAmount = t.remaining_amount || 0
 
       // Hitung nilai retur lokal hanya untuk keperluan clamp effectiveCash.
-      // total_returns & returned_cogs diakumulasikan SEKALI di loop returns di bawah
-      // agar tidak terjadi double-counting.
       const txReturns = returnsByTx.get(t.id) || []
       let txReturnValue = 0
       txReturns.forEach((r: any) => {
@@ -345,23 +440,16 @@ export const sqliteSalesReportEnhancedService = {
       total_cash_received += effectiveCash
       total_receivables += remainingAmount
 
-      // Laba per transaksi (butuh txReturnCogs hanya untuk profit, bukan untuk returned_cogs summary)
-      let txReturnCogs = 0
-      txReturns.forEach((r: any) => {
-        r.items?.forEach((item: any) => {
-          txReturnCogs += (item.price_buy || 0) * (item.quantity || 0)
-        })
-      })
-      const txProfit = txNetSales - (txCogs - txReturnCogs)
-
-      // Laba riil & tertahan per transaksi (proporsional kas)
-      const txRatio = txNetSales > 0 ? effectiveCash / txNetSales : 0
-      // Clamp: realized + unrealized == txProfit
-      const txRealized = txProfit >= 0
-        ? Math.min(Math.max(0, txProfit * txRatio), txProfit)
-        : Math.max(Math.min(0, txProfit * txRatio), txProfit)
+      // ✅ Gunakan perhitungan per-item untuk realized profit (sama seperti di web)
+      const { realizedProfit: txRealized, unrealizedProfit: txUnrealized } = 
+        await this.calculateRealizedProfitFromItems(
+          t.id,
+          t.items || [],
+          txReturns
+        )
+      
       realized_profit += txRealized
-      unrealized_profit += txProfit - txRealized
+      unrealized_profit += txUnrealized
 
       // Breakdown status pembayaran
       if (t.payment_status === 'lunas') {
@@ -374,7 +462,7 @@ export const sqliteSalesReportEnhancedService = {
         partial_count++
         partial_amount += t.total || 0
       }
-    })
+    }
 
     // Hitung total retur SEKALI di sini (sumber kebenaran tunggal untuk summary).
     returns.forEach((r: any) => {
@@ -424,12 +512,23 @@ export const sqliteSalesReportEnhancedService = {
 
   /**
    * Menghitung detail per transaksi dengan breakdown laba
+   * ✅ Menggunakan perhitungan per-item allocation (konsisten dengan detail & summary)
    */
-  calculateTransactionDetails(
+  async calculateTransactionDetails(
     transactions: Transaction[],
     returns: any[]
-  ): TransactionDetail[] {
-    return transactions.map((t) => {
+  ): Promise<TransactionDetail[]> {
+    // Kelompokkan retur per transaksi
+    const returnsByTx = new Map<string, any[]>()
+    returns.forEach((r: any) => {
+      const list = returnsByTx.get(r.transaction_id) || []
+      list.push(r)
+      returnsByTx.set(r.transaction_id, list)
+    })
+
+    const details: TransactionDetail[] = []
+
+    for (const t of transactions) {
       let txCogs = 0
       let txRevenue = 0
 
@@ -443,7 +542,7 @@ export const sqliteSalesReportEnhancedService = {
       })
 
       // Cari retur yang terkait dengan transaksi ini
-      const relatedReturns = returns.filter((r: any) => r.transaction_id === t.id)
+      const relatedReturns = returnsByTx.get(t.id) || []
       let returnValue = 0
       let returnCogs = 0
 
@@ -463,14 +562,14 @@ export const sqliteSalesReportEnhancedService = {
       const cashReceived = Math.max(0, Math.min(t.paid_amount || 0, netRevenue))
       const receivable = t.remaining_amount || 0
 
-      // Laba terealisasi berdasarkan proporsi kas (clamp: realized + unrealized == profit)
-      const realizationRatio = netRevenue > 0 ? cashReceived / netRevenue : 0
-      const realizedProfit = profit >= 0
-        ? Math.min(Math.max(0, profit * realizationRatio), profit)
-        : Math.max(Math.min(0, profit * realizationRatio), profit)
-      const unrealizedProfit = profit - realizedProfit
+      // ✅ Gunakan perhitungan per-item untuk realized profit (sama seperti di summary & detail)
+      const { realizedProfit, unrealizedProfit } = await this.calculateRealizedProfitFromItems(
+        t.id,
+        t.items || [],
+        relatedReturns
+      )
 
-      return {
+      details.push({
         ...t,
         transaction_cogs: netCogs,
         transaction_profit: profit,
@@ -479,8 +578,10 @@ export const sqliteSalesReportEnhancedService = {
         receivable: receivable,
         realized_profit: realizedProfit,
         unrealized_profit: unrealizedProfit,
-      }
-    })
+      })
+    }
+
+    return details
   },
 
   /**

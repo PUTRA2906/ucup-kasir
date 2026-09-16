@@ -352,6 +352,17 @@ export const sqliteHrService = {
     const payrollId = uuid()
     const baseSalary = Number(emp.base_salary) || 0
 
+    // Detail insentif untuk slip gaji
+    const incentiveDetails: Array<{
+      type: 'loader' | 'driver'
+      date: string
+      do_number: string
+      description: string
+      quantity?: number
+      unit_price?: number
+      amount: number
+    }> = []
+
     // Insentif bongkar muat (hanya jika karyawan pernah jadi loader)
     let incentive = 0
     const isLoader = await queryOne<any>(
@@ -360,19 +371,67 @@ export const sqliteHrService = {
     )
     if (isLoader) {
       const doRows = await query<any>(
-        `SELECT dor.id,
+        `SELECT dor.id, dor.do_number, dor.do_date,
                 COALESCE((SELECT SUM(li.quantity * li.unit_price) FROM delivery_load_items li WHERE li.delivery_order_id = dor.id), 0) as nilai_muatan,
                 (SELECT COUNT(*) FROM delivery_loaders l WHERE l.delivery_order_id = dor.id) as jumlah_loader
          FROM delivery_orders dor
          WHERE dor.user_id = ? AND dor.status = 'selesai'
-           AND dor.do_date >= ? AND dor.do_date <= ?
+           AND substr(dor.do_date, 1, 10) >= ? AND substr(dor.do_date, 1, 10) <= ?
            AND EXISTS (SELECT 1 FROM delivery_loaders l WHERE l.delivery_order_id = dor.id AND l.employee_id = ?)`,
         [userId, periodStart, periodEnd, employeeId]
       )
       for (const dor of doRows) {
         const nilai = Number(dor.nilai_muatan) || 0
         const orang = Number(dor.jumlah_loader) || 0
-        if (orang > 0 && nilai > 0) incentive += Math.ceil(nilai / orang)
+        if (orang > 0 && nilai > 0) {
+          const bagianLoader = Math.ceil(nilai / orang)
+          incentive += bagianLoader
+          
+          // Dapatkan detail barang untuk deskripsi
+          const items = await query<any>(
+            `SELECT product_name, quantity, unit_price FROM delivery_load_items WHERE delivery_order_id = ?`,
+            [dor.id]
+          )
+          const itemDesc = items.map((it: any) => 
+            `${it.product_name} (${it.quantity} x ${new Intl.NumberFormat('id-ID').format(it.unit_price)})`
+          ).join(', ')
+          
+          incentiveDetails.push({
+            type: 'loader',
+            date: dor.do_date.slice(0, 10),
+            do_number: dor.do_number || dor.id.slice(0, 8),
+            description: `Bongkar muat: ${itemDesc} — Dibagi ${orang} orang`,
+            amount: bagianLoader
+          })
+        }
+      }
+    }
+
+    // Insentif supir (hitung total driver_fee dari surat jalan yang diselesaikan)
+    const isDriver = await queryOne<any>(
+      `SELECT 1 as x FROM delivery_orders WHERE driver_id = ? AND user_id = ? LIMIT 1`,
+      [employeeId, userId]
+    )
+    if (isDriver) {
+      const driverTrips = await query<any>(
+        `SELECT id, do_number, do_date, driver_fee
+         FROM delivery_orders
+         WHERE user_id = ? AND driver_id = ? AND status = 'selesai'
+           AND substr(do_date, 1, 10) >= ? AND substr(do_date, 1, 10) <= ?`,
+        [userId, employeeId, periodStart, periodEnd]
+      )
+      for (const trip of driverTrips) {
+        const fee = Number(trip.driver_fee) || 0
+        if (fee > 0) {
+          incentive += fee
+          incentiveDetails.push({
+            type: 'driver',
+            date: trip.do_date.slice(0, 10),
+            do_number: trip.do_number || trip.id.slice(0, 8),
+            description: `Ongkos supir`,
+            amount: fee
+          })
+        }
       }
     }
 
@@ -381,10 +440,10 @@ export const sqliteHrService = {
 
     await run(
       `INSERT INTO payrolls (id, user_id, employee_id, period_code, period_start, period_end,
-        base_salary, incentive_amount, kasbon_deduction, total_net, status, created_at, updated_at, sync_status, updated_at_local)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, 'pending', ?)`,
+        base_salary, incentive_amount, kasbon_deduction, total_net, incentive_details, status, created_at, updated_at, sync_status, updated_at_local)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, 'pending', ?)`,
       [payrollId, userId, employeeId, periodCode, periodStart, periodEnd,
-       baseSalary, incentive, kasbon, totalNet, now, now, now]
+       baseSalary, incentive, kasbon, totalNet, JSON.stringify(incentiveDetails), now, now, now]
     )
 
     const created = await this.getPayroll(payrollId)
@@ -845,6 +904,7 @@ export const sqliteHrService = {
       incentive_amount: r.incentive_amount,
       kasbon_deduction: r.kasbon_deduction,
       total_net: r.total_net,
+      incentive_details: r.incentive_details ? JSON.parse(r.incentive_details) : undefined,
       status: r.status,
       journal_entry_id: r.journal_entry_id ?? undefined,
       paid_at: r.paid_at ?? undefined,

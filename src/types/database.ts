@@ -265,6 +265,30 @@ export interface LedgerEntry {
 }
 
 // ============================================================
+// Tutup Buku (Closing Period)
+// ============================================================
+
+export interface ClosingPeriod {
+  id: string
+  user_id?: string
+  period_start: string  // 'YYYY-MM-DD'
+  period_end: string    // 'YYYY-MM-DD'
+  closed_at: string     // ISO timestamp
+  closed_by: string     // user_id
+  notes?: string
+  status: 'closed' | 'reopened'
+  snapshot_balances?: AccountBalance[]  // JSON parsed dari JSONB
+  created_at: string
+  updated_at: string
+}
+
+export interface ClosePeriodInput {
+  period_start: string  // 'YYYY-MM-DD'
+  period_end: string    // 'YYYY-MM-DD'
+  notes?: string
+}
+
+// ============================================================
 // Modul Pembelian Barang — Purchasing / Procurement
 // ============================================================
 
@@ -579,6 +603,15 @@ export interface Payroll {
   incentive_amount: number
   kasbon_deduction: number
   total_net: number
+  incentive_details?: Array<{
+    type: 'loader' | 'driver'
+    date: string
+    do_number: string
+    description: string
+    quantity?: number
+    unit_price?: number
+    amount: number
+  }>
   status: 'draft' | 'paid'
   journal_entry_id?: string
   paid_at?: string

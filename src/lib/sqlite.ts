@@ -88,6 +88,9 @@ export async function initSQLite(): Promise<void> {
       // yang dibutuhkan (categories, products, transactions, sync_queue, dll).
       await initSchema()
 
+      // Jalankan migrations untuk update schema yang sudah ada
+      await runCustomMigrations()
+
       if (!existing) {
         // Database baru — versi schema sudah ter-set saat init
         await setMetadata('schema_version', SCHEMA_VERSION.toString())
@@ -104,6 +107,19 @@ export async function initSQLite(): Promise<void> {
   })()
 
   return initPromise
+}
+
+/** Jalankan custom migrations untuk update schema */
+async function runCustomMigrations(): Promise<void> {
+  if (!db) throw new Error('SQLite belum diinisialisasi')
+  
+  try {
+    const { runMigrations } = await import('@/db/migrations')
+    await runMigrations(db)
+  } catch (e) {
+    console.warn('Migration warning:', e)
+    // Tidak throw error agar init tetap lanjut
+  }
 }
 
 /** Jalankan seluruh isi src/db/init.sql (untuk database baru ATAU existing). */
@@ -263,6 +279,10 @@ async function migrateSchema(): Promise<void> {
     await addColumnIfMissing('transactions', 'transaction_status', "TEXT NOT NULL DEFAULT 'disiapkan'")
     // Jabatan kini teks tetap ('supir' | 'loader') — tabel departments/positions dihapus
     await addColumnIfMissing('employees', 'position', 'TEXT')
+    // Tarif supir per trip (dasar insentif supir di payroll). DB lama tidak
+    // punya kolom ini — tanpa ALTER, INSERT delivery_orders gagal dengan
+    // "no such column: driver_fee" dan gaji supir tidak pernah tersimpan.
+    await addColumnIfMissing('delivery_orders', 'driver_fee', 'REAL NOT NULL DEFAULT 0')
   } catch (e) {
     console.warn('SQLite migrate: gagal menambah kolom limit kredit:', (e as Error).message)
   }
