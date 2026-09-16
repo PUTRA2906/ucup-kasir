@@ -262,6 +262,7 @@ import DateField from '@/components/common/DateField.vue'
 import SelectField from '@/components/common/SelectField.vue'
 import { useSalesReportEnhancedStore } from '@/stores/salesReportEnhanced'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
+import { localDateStr, localTodayStr, localDateOffsetStr } from '@/utils/date'
 
 const router = useRouter()
 const store = useSalesReportEnhancedStore()
@@ -313,23 +314,25 @@ const formatDateRange = (start: string, end: string) => {
 
 const applyPreset = (preset: string) => {
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
+  // Tanggal lokal — toISOString() memberi tanggal UTC (masih "kemarin"
+  // sebelum jam 07:00 WIB) sehingga transaksi hari ini ter-exclude.
+  const today = localTodayStr()
   let start = today
   let end = today
 
   switch (preset) {
     case '7days': {
-      const d = new Date(now); d.setDate(d.getDate() - 6); start = d.toISOString().split('T')[0]; break
+      start = localDateOffsetStr(-6); break
     }
     case '30days': {
-      const d = new Date(now); d.setDate(d.getDate() - 29); start = d.toISOString().split('T')[0]; break
+      start = localDateOffsetStr(-29); break
     }
     case 'thisMonth': {
-      start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]; break
+      start = localDateStr(new Date(now.getFullYear(), now.getMonth(), 1)); break
     }
     case 'lastMonth': {
-      start = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0]
-      end = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0]
+      start = localDateStr(new Date(now.getFullYear(), now.getMonth() - 1, 1))
+      end = localDateStr(new Date(now.getFullYear(), now.getMonth(), 0))
       break
     }
   }
@@ -351,8 +354,8 @@ const applyFilter = () => {
 onMounted(() => {
   // Set default periode ke bulan ini
   const now = new Date()
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-  const today = now.toISOString().split('T')[0]
+  const startOfMonth = localDateStr(new Date(now.getFullYear(), now.getMonth(), 1))
+  const today = localTodayStr()
 
   store.setDateRange(startOfMonth, today)
   tempStart.value = startOfMonth

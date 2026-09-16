@@ -10,6 +10,7 @@ import type {
   PaymentMethodSales,
 } from '@/services/salesReport'
 import type { Transaction } from '@/types/database'
+import { localDateStr, localTodayStr, localDateOffsetStr } from '@/utils/date'
 
 export const useSalesReportStore = defineStore('salesReport', () => {
   const loading = ref(false)
@@ -86,55 +87,51 @@ export const useSalesReportStore = defineStore('salesReport', () => {
     { label: 'Tahun Ini', value: 'thisYear' },
   ]
 
+  // Pakai helper tanggal LOKAL (Asia/Jakarta). `toISOString()` menghasilkan
+  // tanggal UTC → sebelum jam 07:00 WIB hasilnya masih "kemarin", sehingga
+  // preset apa pun yang berakhir "hari ini" tanpa sengaja meng-exclude
+  // transaksi hari ini (laporan tampak kosong).
   function getTodayStart(): string {
-    const now = new Date()
-    return now.toISOString().split('T')[0]
+    return localTodayStr()
   }
 
   function getTodayEnd(): string {
-    const now = new Date()
-    return now.toISOString().split('T')[0]
+    return localTodayStr()
   }
 
   function applyPreset(preset: string) {
     const now = new Date()
-    const today = now.toISOString().split('T')[0]
+    const today = localTodayStr()
 
     switch (preset) {
       case 'today':
         startDate.value = today
         endDate.value = today
         break
-      case '7days': {
-        const sevenDaysAgo = new Date(now)
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
-        startDate.value = sevenDaysAgo.toISOString().split('T')[0]
+      case '7days':
+        startDate.value = localDateOffsetStr(-6)
         endDate.value = today
         break
-      }
-      case '30days': {
-        const thirtyDaysAgo = new Date(now)
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29)
-        startDate.value = thirtyDaysAgo.toISOString().split('T')[0]
+      case '30days':
+        startDate.value = localDateOffsetStr(-29)
         endDate.value = today
         break
-      }
       case 'thisMonth': {
         const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
-        startDate.value = firstDay.toISOString().split('T')[0]
+        startDate.value = localDateStr(firstDay)
         endDate.value = today
         break
       }
       case 'lastMonth': {
         const lastMonthFirst = new Date(now.getFullYear(), now.getMonth() - 1, 1)
         const lastMonthLast = new Date(now.getFullYear(), now.getMonth(), 0)
-        startDate.value = lastMonthFirst.toISOString().split('T')[0]
-        endDate.value = lastMonthLast.toISOString().split('T')[0]
+        startDate.value = localDateStr(lastMonthFirst)
+        endDate.value = localDateStr(lastMonthLast)
         break
       }
       case 'thisYear': {
         const yearStart = new Date(now.getFullYear(), 0, 1)
-        startDate.value = yearStart.toISOString().split('T')[0]
+        startDate.value = localDateStr(yearStart)
         endDate.value = today
         break
       }

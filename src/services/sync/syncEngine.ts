@@ -11,6 +11,7 @@ import {
   markSyncQueueFailed,
   disableForeignKeys,
   enableForeignKeys,
+  transaction,
 } from '@/lib/sqlite'
 import { getCurrentUserId } from '@/services/sqlite/db'
 import { isOnlineNow } from '@/lib/network'
@@ -394,6 +395,63 @@ async function fetchAllFromTable(table: string): Promise<any[]> {
 /** Hapus semua isi sync_queue (dipakai setelah download penuh). */
 async function clearSyncQueue(): Promise<void> {
   await run('DELETE FROM sync_queue')
+}
+
+/**
+ * Wipe total database lokal saat logout.
+ *
+ * Dipanggil authStore.signOut() HANYA setelah sync_queue bersih (semua perubahan
+ * lokal sudah terkonfirmasi naik ke Supabase). Device kembali "bersih": baris
+ * milik user lama tidak tertinggal → tidak ada risiko campur/penumpukan data
+ * saat akun lain login, dan data pribadi tidak tersimpan di perangkat setelah
+ * user keluar.
+ *
+ * Pengecualian wipe: sync_queue & sync_metadata (infra lokal), app_event_log
+ * (diagnostik per-device).
+ *
+ * Catatan: PRAGMA foreign_keys tidak efektif di dalam transaksi SQLite —
+ * disable dilakukan sebelum transaction(), enable kembali sesudahnya (atau via
+ * VACUUM + PRAGMA recursive_triggers yang tidak boleh dalam transaksi).
+ */
+export async function clearLocalDatabase(): Promise<boolean> {
+  if (!isNativeApp()) return false
+  try {
+    await initSQLite()
+    await disableForeignKeys()
+    const tables = await query<{ name: string }>(
+      `SELECT name FROM sqlite_master WHERE type = 'table'
+       AND name NOT IN ('sync_queue', 'sync_metadata', 'app_event_log')
+       AND name NOT LIKE 'sqlite_%'`
+    )
+    await transaction(async (tx) => {
+      for (const t of tables) {
+        // wipe total TANPA filter user_id — seluruh penghuni device dibersihkan
+        await tx.run(`DELETE FROM "${t.name}"`)
+      }
+      await tx.run('DELETE FROM sync_queue')
+      await tx.run(
+        `DELETE FROM sync_metadata WHERE key IN ('last_download_at', 'downloaded_user_id', 'last_sync_at')`
+      )
+    })
+    await setMetadata('last_logout_wipe_at', new Date().toISOString())
+    logEvent({
+      level: 'info',
+      source: 'sync',
+      event: 'logout_wipe_ok',
+      message: `Logout wipe selesai: ${tables.length} tabel lokal dikosongkan`,
+    })
+    return true
+  } catch (e: any) {
+    logError('sync', 'logout_wipe_failed', e, 'Wipe database lokal saat logout gagal')
+    return false
+  } finally {
+    try {
+      await enableForeignKeys()
+      await query('VACUUM')
+    } catch {
+      /* kosmetik saja */
+    }
+  }
 }
 
 // ============================================================

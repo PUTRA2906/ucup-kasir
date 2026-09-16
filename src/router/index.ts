@@ -41,6 +41,30 @@ const router = createRouter({
       },
     },
     {
+      path: '/settings/store-info',
+      name: 'Store Info',
+      component: () => import('../views/Settings/StoreInfo.vue'),
+      meta: {
+        title: 'Informasi Toko',
+      },
+    },
+    {
+      path: '/settings/global-variables',
+      name: 'Global Variables',
+      component: () => import('../views/Settings/GlobalVariables.vue'),
+      meta: {
+        title: 'Variabel Global',
+      },
+    },
+    {
+      path: '/settings/profile',
+      name: 'Profile Settings',
+      component: () => import('../views/Settings/ProfileSettings.vue'),
+      meta: {
+        title: 'Profil & Keamanan',
+      },
+    },
+    {
       path: '/settings/sync-debugger',
       name: 'Sync Debugger',
       component: () => import('../views/Settings/SyncDebugger.vue'),

@@ -156,6 +156,36 @@ export const useAuthStore = defineStore('auth', () => {
       session.value = null
       user.value = null
       setCurrentUserId(null)
+
+      // Reset preferensi UI yang tersimpan per-perangkat (bukan per-akun).
+      // Tanpa ini, filter periode laporan milik user lama ikut terlihat saat
+      // akun lain login di perangkat yang sama → laporan tampak "kosong"
+      // karena range tanggalnya mengacu ke periode akun sebelumnya.
+      try {
+        localStorage.removeItem('sales_report_period')
+        localStorage.removeItem('transaction_profit_period')
+      } catch {
+        // localStorage tidak tersedia — abaikan
+      }
+
+      // === Wipe database lokal setelah sesi ditutup ===
+      // Hanya bila perubahan lokal dipastikan sudah tidak menggantung di
+      // sync_queue (flush di atas sukses, atau memang tidak ada dari awal).
+      // Bila masih ada queue tersisa (offline / upload gagal lalu user tetap
+      // keluar), baris lokal JANGAN dihapus — satu-satunya salinan data itu
+      // ada di device ini. Queue itu tetap terlindungi lapis-pengaman di
+      // downloadAllFromSupabase pada login berikutnya.
+      if (isNativeApp()) {
+        try {
+          const leftover = await getSyncQueue()
+          if (leftover.length === 0) {
+            const { clearLocalDatabase } = await import('@/services/sync/syncEngine')
+            await clearLocalDatabase()
+          }
+        } catch (e) {
+          console.error('Wipe database lokal saat logout gagal:', e)
+        }
+      }
       return { cancelled: false }
     } finally {
       loading.value = false

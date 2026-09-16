@@ -278,7 +278,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { itemPaymentServiceAdapter as itemPaymentService } from '@/services'
 import type { ItemPaymentSummary } from '@/services/itemPaymentService'
 
@@ -324,7 +324,7 @@ watch(() => props.modelValue, async (isOpen) => {
   if (isOpen) {
     await loadData()
   }
-})
+}, { immediate: true })
 
 // Methods
 async function loadData() {

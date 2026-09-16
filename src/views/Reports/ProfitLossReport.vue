@@ -512,6 +512,7 @@ import DateField from '@/components/common/DateField.vue'
 import { useSalesReportEnhancedStore } from '@/stores/salesReportEnhanced'
 import { useFinanceStore } from '@/stores/finance'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
+import { localDateStr, localTodayStr, localDateOffsetStr } from '@/utils/date'
 
 const router = useRouter()
 const store = useSalesReportEnhancedStore()
@@ -534,10 +535,10 @@ const totalExpenses = computed(() => {
 })
 const netProfit = computed(() => store.summary.gross_profit - totalExpenses.value)
 
-// Temp filter state
+// Temp filter state — tanggal LOKAL (lihat @/utils/date), bukan UTC
 const tempDateRange = ref({
-  start: new Date().toISOString().split('T')[0],
-  end: new Date().toISOString().split('T')[0],
+  start: localTodayStr(),
+  end: localTodayStr(),
 })
 const tempPaymentStatus = ref<'lunas' | 'belum_lunas' | 'all'>('all')
 
@@ -614,33 +615,28 @@ const getPaymentStatusText = (status: string, paidAmount: number) => {
 }
 
 const setQuickDateRange = (range: string) => {
-  const today = new Date()
-  const endDate = today.toISOString().split('T')[0]
+  const now = new Date()
+  const endDate = localTodayStr()
 
   switch (range) {
     case 'today':
       tempDateRange.value = { start: endDate, end: endDate }
       break
     case '7days':
-      const sevenDaysAgo = new Date(today)
-      sevenDaysAgo.setDate(today.getDate() - 6)
       tempDateRange.value = {
-        start: sevenDaysAgo.toISOString().split('T')[0],
+        start: localDateOffsetStr(-6),
         end: endDate,
       }
       break
     case '30days':
-      const thirtyDaysAgo = new Date(today)
-      thirtyDaysAgo.setDate(today.getDate() - 29)
       tempDateRange.value = {
-        start: thirtyDaysAgo.toISOString().split('T')[0],
+        start: localDateOffsetStr(-29),
         end: endDate,
       }
       break
     case 'thisMonth':
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
       tempDateRange.value = {
-        start: firstDay.toISOString().split('T')[0],
+        start: localDateStr(new Date(now.getFullYear(), now.getMonth(), 1)),
         end: endDate,
       }
       break
@@ -648,24 +644,22 @@ const setQuickDateRange = (range: string) => {
 }
 
 const isQuickDateRange = (range: string) => {
-  const today = new Date().toISOString().split('T')[0]
+  const today = localTodayStr()
+  const now = new Date()
   const { start, end } = tempDateRange.value
 
   switch (range) {
     case 'today':
       return start === today && end === today
     case '7days':
-      const sevenDaysAgo = new Date()
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
-      return start === sevenDaysAgo.toISOString().split('T')[0] && end === today
+      return start === localDateOffsetStr(-6) && end === today
     case '30days':
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29)
-      return start === thirtyDaysAgo.toISOString().split('T')[0] && end === today
+      return start === localDateOffsetStr(-29) && end === today
     case 'thisMonth':
-      const firstDay = new Date()
-      firstDay.setDate(1)
-      return start === firstDay.toISOString().split('T')[0] && end === today
+      return (
+        start === localDateStr(new Date(now.getFullYear(), now.getMonth(), 1)) &&
+        end === today
+      )
     default:
       return false
   }
@@ -681,7 +675,7 @@ const applyFilters = () => {
 }
 
 const resetFilters = () => {
-  const today = new Date().toISOString().split('T')[0]
+  const today = localTodayStr()
   tempDateRange.value = { start: today, end: today }
   tempPaymentStatus.value = 'all'
   txStatusFilter.value = 'semua'
@@ -689,7 +683,7 @@ const resetFilters = () => {
 
 onMounted(() => {
   // Set default ke hari ini
-  const today = new Date().toISOString().split('T')[0]
+  const today = localTodayStr()
   tempDateRange.value = { start: today, end: today }
   store.setDateRange(today, today)
   store.fetchReport()

@@ -7,6 +7,15 @@ import type {
   ProductPerformance,
   EnhancedReportData,
 } from '@/services/salesReportEnhanced'
+import { localDateStr, localTodayStr } from '@/utils/date'
+
+// Semua perhitungan "hari ini / awal bulan" memakai tanggal LOKAL —
+// `toISOString()` memberi tanggal UTC yang sebelum jam 07:00 WIB masih
+// "kemarin", membuat filter periode salah dan laporan tampak kosong.
+function localMonthStart(): string {
+  const now = new Date()
+  return localDateStr(new Date(now.getFullYear(), now.getMonth(), 1))
+}
 
 export const useSalesReportEnhancedStore = defineStore('salesReportEnhanced', () => {
   // Load saved period from localStorage
@@ -15,24 +24,16 @@ export const useSalesReportEnhancedStore = defineStore('salesReportEnhanced', ()
       const saved = localStorage.getItem('transaction_profit_period')
       if (saved) {
         const parsed = JSON.parse(saved)
-        const now = new Date()
-        const today = now.toISOString().split('T')[0]
-        // Default to bulan ini jika tidak ada saved period
-        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-
         return {
-          start: parsed.start || firstDay,
-          end: parsed.end || today,
+          start: parsed.start || localMonthStart(),
+          end: parsed.end || localTodayStr(),
         }
       }
     } catch (e) {
       console.error('Failed to load saved period:', e)
     }
     // Default: bulan ini
-    const now = new Date()
-    const today = now.toISOString().split('T')[0]
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-    return { start: firstDay, end: today }
+    return { start: localMonthStart(), end: localTodayStr() }
   }
 
   const savedPeriod = loadSavedPeriod()
@@ -125,10 +126,7 @@ export const useSalesReportEnhancedStore = defineStore('salesReportEnhanced', ()
   }
 
   function resetFilters() {
-    const now = new Date()
-    const today = now.toISOString().split('T')[0]
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-    dateRange.value = { start: firstDay, end: today }
+    dateRange.value = { start: localMonthStart(), end: localTodayStr() }
     paymentStatusFilter.value = 'all'
     selectedCustomerIds.value = []
     savePeriod()
