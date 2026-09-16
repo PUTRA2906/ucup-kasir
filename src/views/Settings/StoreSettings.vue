@@ -14,7 +14,7 @@
 
     <div v-else>
       <!-- Mobile Layout -->
-      <div class="mx-auto max-w-3xl space-y-4 pb-6 pt-6 md:hidden">
+      <div class="mx-auto max-w-3xl space-y-4 pb-6 pr-2 md:hidden">
       <!-- Header Mobile -->
       <MobilePageHeader title="Pengaturan Toko" subtitle="Konfigurasi data usaha dan sistem" hide-back-button />
 
@@ -544,6 +544,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
+import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useAuthStore } from '@/stores/auth'
 import { useSyncStore } from '@/stores/sync'
