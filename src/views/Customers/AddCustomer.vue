@@ -325,7 +325,7 @@ const handleSubmit = async () => {
     })
     toast.success('Berhasil!', 'Customer berhasil ditambahkan')
     setTimeout(() => {
-      router.push('/customers')
+      router.replace('/customers')
     }, 1000)
   } catch (error) {
     console.error('Error creating customer:', error)
@@ -336,6 +336,6 @@ const handleSubmit = async () => {
 }
 
 const handleConfirmCancel = () => {
-  router.push('/customers')
+  router.replace('/customers')
 }
 </script>

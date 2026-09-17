@@ -106,7 +106,7 @@ const handleSubmit = async () => {
     })
     toast.success('Berhasil!', 'Kategori berhasil ditambahkan')
     setTimeout(() => {
-      router.push('/categories')
+      router.replace('/categories')
     }, 1000)
   } catch (error) {
     console.error('Error creating category:', error)
@@ -117,6 +117,6 @@ const handleSubmit = async () => {
 }
 
 const handleConfirmCancel = () => {
-  router.push('/categories')
+  router.replace('/categories')
 }
 </script>

@@ -353,7 +353,7 @@ const handleSubmit = async () => {
     })
     toast.success('Berhasil!', 'Produk berhasil ditambahkan')
     setTimeout(() => {
-      router.push('/products')
+      router.replace('/products')
     }, 1000)
   } catch (error) {
     console.error('Error creating product:', error)
@@ -364,6 +364,6 @@ const handleSubmit = async () => {
 }
 
 const handleConfirmCancel = () => {
-  router.push('/products')
+  router.replace('/products')
 }
 </script>

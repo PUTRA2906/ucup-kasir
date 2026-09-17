@@ -340,7 +340,7 @@ const handleSubmit = async () => {
     })
     toast.success('Berhasil!', 'Customer berhasil diperbarui')
     setTimeout(() => {
-      router.push('/customers')
+      router.replace('/customers')
     }, 1000)
   } catch (error) {
     console.error('Error updating customer:', error)
@@ -351,7 +351,7 @@ const handleSubmit = async () => {
 }
 
 const handleConfirmCancel = () => {
-  router.push('/customers')
+  router.replace('/customers')
 }
 
 onMounted(async () => {
