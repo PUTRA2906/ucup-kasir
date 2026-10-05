@@ -53,11 +53,11 @@ export const sqliteDailyBankService = {
       [date, userId]
     )
 
-    const transfer_in =
+    let transfer_in =
       sales.reduce((sum, s) => sum + (s.paid_amount || 0), 0) +
       payments.reduce((sum, p) => sum + (p.amount || 0), 0)
 
-    // 3. Bank keluar dari jurnal (credit di akun bank)
+    // 3. Ambil akun bank
     const bankAccounts = await query<{
       id: string
       code: string
@@ -76,10 +76,12 @@ export const sqliteDailyBankService = {
     if (bankAccountIds.length > 0) {
       const placeholders = bankAccountIds.map(() => '?').join(',')
 
+      // Ambil semua jurnal lines untuk akun bank (baik debit maupun credit)
       const journalLines = await query<{
+        debit: number
         credit: number
       }>(
-        `SELECT jl.credit
+        `SELECT jl.debit, jl.credit
          FROM journal_lines jl
          INNER JOIN journal_entries je ON jl.journal_entry_id = je.id
          WHERE jl.account_id IN (${placeholders})
@@ -88,6 +90,11 @@ export const sqliteDailyBankService = {
         [...bankAccountIds, date]
       )
 
+      // Debit di akun bank = pemasukan
+      const journalIn = journalLines.reduce((sum, line) => sum + Number(line.debit || 0), 0)
+      transfer_in += journalIn
+
+      // Credit di akun bank = pengeluaran
       bankOut = journalLines.reduce((sum, line) => sum + Number(line.credit || 0), 0)
     }
 
@@ -185,7 +192,7 @@ export const sqliteDailyBankService = {
       })
     }
 
-    // 3. Bank keluar dari jurnal
+    // 3. Transaksi dari jurnal (baik masuk maupun keluar)
     const bankAccounts = await query<{
       id: string
       code: string
@@ -205,22 +212,28 @@ export const sqliteDailyBankService = {
 
       const journalLines = await query<{
         id: string
+        debit: number
         credit: number
         account_id: string
         created_at: string
         journal_entry_id: string
       }>(
-        `SELECT jl.id, jl.credit, jl.account_id, jl.created_at, jl.journal_entry_id
+        `SELECT jl.id, jl.debit, jl.credit, jl.account_id, jl.created_at, jl.journal_entry_id
          FROM journal_lines jl
          INNER JOIN journal_entries je ON jl.journal_entry_id = je.id
          WHERE jl.account_id IN (${placeholders})
            AND je.status = 'posted'
-           AND DATE(je.entry_date) = DATE(?)
-           AND jl.credit > 0`,
+           AND DATE(je.entry_date) = DATE(?)`,
         [...bankAccountIds, date]
       )
 
       for (const line of journalLines) {
+        const debit = Number(line.debit || 0)
+        const credit = Number(line.credit || 0)
+
+        // Skip jika debit dan credit keduanya 0
+        if (debit === 0 && credit === 0) continue
+
         // Ambil data journal entry
         const journalData = await query<{
           journal_number: string
@@ -234,15 +247,31 @@ export const sqliteDailyBankService = {
 
         const journal = journalData[0]
 
-        transactions.push({
-          id: line.id,
-          time: line.created_at,
-          type: 'journal',
-          amount: Number(line.credit),
-          reference: journal?.journal_number || '-',
-          description: journal?.description || 'Pengeluaran',
-          is_in: false
-        })
+        // Debit di bank = pemasukan
+        if (debit > 0) {
+          transactions.push({
+            id: line.id,
+            time: line.created_at,
+            type: 'journal',
+            amount: debit,
+            reference: journal?.journal_number || '-',
+            description: journal?.description || 'Pemasukan',
+            is_in: true
+          })
+        }
+
+        // Credit di bank = pengeluaran
+        if (credit > 0) {
+          transactions.push({
+            id: line.id,
+            time: line.created_at,
+            type: 'journal',
+            amount: credit,
+            reference: journal?.journal_number || '-',
+            description: journal?.description || 'Pengeluaran',
+            is_in: false
+          })
+        }
       }
     }
 

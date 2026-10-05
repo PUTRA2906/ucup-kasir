@@ -58,15 +58,13 @@ export const dailyCashService = {
     const paymentsList = payments || []
 
     // Hitung total
-    const tunai_in =
+    let tunai_in =
       salesList.filter(s => s.payment_method === 'tunai').reduce((sum, s) => sum + (s.paid_amount || 0), 0) +
       paymentsList.filter(p => p.payment_method === 'tunai').reduce((sum, p) => sum + (p.amount || 0), 0)
 
-    const transfer_in =
+    let transfer_in =
       salesList.filter(s => s.payment_method === 'transfer').reduce((sum, s) => sum + (s.paid_amount || 0), 0) +
       paymentsList.filter(p => p.payment_method === 'transfer').reduce((sum, p) => sum + (p.amount || 0), 0)
-
-    const total_in = tunai_in + transfer_in
 
     // Untuk kas keluar, kita ambil dari jurnal (credit di akun kas/bank)
     const { data: cashAccounts } = await supabase
@@ -84,7 +82,7 @@ export const dailyCashService = {
     if (cashAccountIds.length > 0) {
       const { data: journalLines } = await supabase
         .from('journal_lines')
-        .select('credit, account_id, journal:journal_entries!inner(entry_date, status)')
+        .select('debit, credit, account_id, journal:journal_entries!inner(entry_date, status)')
         .in('account_id', cashAccountIds)
         .eq('journal.status', 'posted')
         .gte('journal.entry_date', date + 'T00:00:00.000')
@@ -93,23 +91,37 @@ export const dailyCashService = {
       const lines = journalLines || []
 
       for (const line of lines) {
+        const debit = Number(line.debit || 0)
         const credit = Number(line.credit || 0)
-        cashOut += credit
-
-        // Tentukan kas vs bank berdasarkan account_id
         const account = cashAccounts?.find(a => a.id === line.account_id)
-        if (account?.code === '1-1000') {
-          tunai_out += credit
-        } else {
-          transfer_out += credit
+
+        // Debit di kas/bank = pemasukan
+        if (debit > 0) {
+          if (account?.code === '1-1000') {
+            tunai_in += debit
+          } else {
+            transfer_in += debit
+          }
+        }
+
+        // Credit di kas/bank = pengeluaran
+        if (credit > 0) {
+          cashOut += credit
+          if (account?.code === '1-1000') {
+            tunai_out += credit
+          } else {
+            transfer_out += credit
+          }
         }
       }
     }
 
+    const total_in_final = tunai_in + transfer_in
+
     return {
-      total_in,
+      total_in: total_in_final,
       total_out: cashOut,
-      net: total_in - cashOut,
+      net: total_in_final - cashOut,
       tunai_in,
       tunai_out,
       transfer_in,
@@ -183,7 +195,7 @@ export const dailyCashService = {
       })
     }
 
-    // 3. Kas keluar dari jurnal
+    // 3. Transaksi dari jurnal (baik masuk maupun keluar)
     const { data: cashAccounts } = await supabase
       .from('chart_of_accounts')
       .select('id, code, name')
@@ -195,27 +207,45 @@ export const dailyCashService = {
     if (cashAccountIds.length > 0) {
       const { data: journalLines } = await supabase
         .from('journal_lines')
-        .select('id, credit, account_id, created_at, journal:journal_entries!inner(journal_number, entry_date, description, status)')
+        .select('id, debit, credit, account_id, created_at, journal:journal_entries!inner(journal_number, entry_date, description, status)')
         .in('account_id', cashAccountIds)
         .eq('journal.status', 'posted')
         .gte('journal.entry_date', date + 'T00:00:00.000')
         .lte('journal.entry_date', date + 'T23:59:59.999')
-        .gt('credit', 0)
 
       for (const line of journalLines || []) {
         const journal = line.journal as any
         const account = cashAccounts?.find(a => a.id === line.account_id)
+        const debit = Number(line.debit || 0)
+        const credit = Number(line.credit || 0)
 
-        transactions.push({
-          id: line.id,
-          time: line.created_at,
-          type: 'journal',
-          amount: Number(line.credit),
-          method: account?.code === '1-1000' ? 'tunai' : 'transfer',
-          reference: journal?.journal_number || '-',
-          description: journal?.description || 'Pengeluaran',
-          is_in: false
-        })
+        // Debit di kas/bank = pemasukan
+        if (debit > 0) {
+          transactions.push({
+            id: line.id,
+            time: line.created_at,
+            type: 'journal',
+            amount: debit,
+            method: account?.code === '1-1000' ? 'tunai' : 'transfer',
+            reference: journal?.journal_number || '-',
+            description: journal?.description || 'Pemasukan',
+            is_in: true
+          })
+        }
+
+        // Credit di kas/bank = pengeluaran
+        if (credit > 0) {
+          transactions.push({
+            id: line.id,
+            time: line.created_at,
+            type: 'journal',
+            amount: credit,
+            method: account?.code === '1-1000' ? 'tunai' : 'transfer',
+            reference: journal?.journal_number || '-',
+            description: journal?.description || 'Pengeluaran',
+            is_in: false
+          })
+        }
       }
     }
 

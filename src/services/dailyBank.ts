@@ -54,11 +54,11 @@ export const dailyBankService = {
     const salesList = sales || []
     const paymentsList = payments || []
 
-    const transfer_in =
+    let transfer_in =
       salesList.reduce((sum, s) => sum + (s.paid_amount || 0), 0) +
       paymentsList.reduce((sum, p) => sum + (p.amount || 0), 0)
 
-    // Untuk bank keluar, kita ambil dari jurnal (credit di akun bank)
+    // Ambil akun bank
     const { data: bankAccounts } = await supabase
       .from('chart_of_accounts')
       .select('id, code')
@@ -70,15 +70,22 @@ export const dailyBankService = {
     let bankOut = 0
 
     if (bankAccountIds.length > 0) {
+      // Ambil semua jurnal lines untuk akun bank (baik debit maupun credit)
       const { data: journalLines } = await supabase
         .from('journal_lines')
-        .select('credit, account_id, journal:journal_entries!inner(entry_date, status)')
+        .select('debit, credit, account_id, journal:journal_entries!inner(entry_date, status)')
         .in('account_id', bankAccountIds)
         .eq('journal.status', 'posted')
         .gte('journal.entry_date', date + 'T00:00:00.000')
         .lte('journal.entry_date', date + 'T23:59:59.999')
 
       const lines = journalLines || []
+
+      // Debit di akun bank = pemasukan
+      const journalIn = lines.reduce((sum, line) => sum + Number(line.debit || 0), 0)
+      transfer_in += journalIn
+
+      // Credit di akun bank = pengeluaran
       bankOut = lines.reduce((sum, line) => sum + Number(line.credit || 0), 0)
     }
 
@@ -155,7 +162,7 @@ export const dailyBankService = {
       })
     }
 
-    // 3. Bank keluar dari jurnal
+    // 3. Transaksi dari jurnal (baik masuk maupun keluar)
     const { data: bankAccounts } = await supabase
       .from('chart_of_accounts')
       .select('id, code, name')
@@ -167,25 +174,42 @@ export const dailyBankService = {
     if (bankAccountIds.length > 0) {
       const { data: journalLines } = await supabase
         .from('journal_lines')
-        .select('id, credit, account_id, created_at, journal:journal_entries!inner(journal_number, entry_date, description, status)')
+        .select('id, debit, credit, account_id, created_at, journal:journal_entries!inner(journal_number, entry_date, description, status)')
         .in('account_id', bankAccountIds)
         .eq('journal.status', 'posted')
         .gte('journal.entry_date', date + 'T00:00:00.000')
         .lte('journal.entry_date', date + 'T23:59:59.999')
-        .gt('credit', 0)
 
       for (const line of journalLines || []) {
         const journal = line.journal as any
+        const debit = Number(line.debit || 0)
+        const credit = Number(line.credit || 0)
 
-        transactions.push({
-          id: line.id,
-          time: line.created_at,
-          type: 'journal',
-          amount: Number(line.credit),
-          reference: journal?.journal_number || '-',
-          description: journal?.description || 'Pengeluaran',
-          is_in: false
-        })
+        // Debit di bank = pemasukan
+        if (debit > 0) {
+          transactions.push({
+            id: line.id,
+            time: line.created_at,
+            type: 'journal',
+            amount: debit,
+            reference: journal?.journal_number || '-',
+            description: journal?.description || 'Pemasukan',
+            is_in: true
+          })
+        }
+
+        // Credit di bank = pengeluaran
+        if (credit > 0) {
+          transactions.push({
+            id: line.id,
+            time: line.created_at,
+            type: 'journal',
+            amount: credit,
+            reference: journal?.journal_number || '-',
+            description: journal?.description || 'Pengeluaran',
+            is_in: false
+          })
+        }
       }
     }
 

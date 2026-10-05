@@ -315,14 +315,6 @@ const router = createRouter({
       meta: { title: 'Edit Harga Khusus' },
     },
     {
-      path: '/reports',
-      name: 'Report Menu',
-      component: () => import('../views/Reports/ReportMenu.vue'),
-      meta: {
-        title: 'Laporan',
-      },
-    },
-    {
       path: '/reports/sales',
       name: 'Sales Report',
       component: () => import('../views/Reports/SalesReport.vue'),
