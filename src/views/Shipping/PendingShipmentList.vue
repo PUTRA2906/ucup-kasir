@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Transaksi Belum Dikirim" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Transaksi Belum Dikirim" subtitle="Pilih transaksi untuk dibuat surat jalan" back-to="/quick-menu/pengiriman">
+    <MobilePageHeader title="Transaksi Belum Dikirim" subtitle="Pilih transaksi untuk dibuat surat jalan">
       <template #actions>
         <button
           v-if="selectedTxIds.length > 0"

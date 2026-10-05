@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Slip Gaji" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Slip Gaji" :subtitle="`${filteredPayrolls.length} slip gaji`" back-to="/quick-menu/karyawan">
+    <MobilePageHeader title="Slip Gaji" :subtitle="`${filteredPayrolls.length} slip gaji`">
       <template #actions>
         <button
           @click="showCreateForm = true"
@@ -167,12 +167,8 @@
             <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-1">{{ formatDate(p.period_start) }} - {{ formatDate(p.period_end) }}</p>
             <div class="grid grid-cols-2 gap-2 text-[10px]">
               <div>
-                <p class="text-gray-500 dark:text-gray-400">Gaji Pokok</p>
-                <p class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(p.base_salary) }}</p>
-              </div>
-              <div>
-                <p class="text-gray-500 dark:text-gray-400">Insentif</p>
-                <p class="font-medium text-emerald-600 dark:text-emerald-400">{{ formatCurrency(p.incentive_amount) }}</p>
+                <p class="text-gray-500 dark:text-gray-400">Gaji</p>
+                <p class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(p.incentive_amount) }}</p>
               </div>
               <div>
                 <p class="text-gray-500 dark:text-gray-400">Pot. Kasbon</p>
@@ -181,6 +177,50 @@
               <div>
                 <p class="text-gray-500 dark:text-gray-400">Gaji Bersih</p>
                 <p class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(p.total_net) }}</p>
+              </div>
+            </div>
+
+            <!-- Detail Gaji -->
+            <div
+              v-if="p.incentive_details && p.incentive_details.length > 0"
+              class="mt-2 rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50"
+            >
+              <p class="border-b border-gray-100 px-3 py-1.5 text-[10px] font-semibold text-gray-600 dark:border-gray-800 dark:text-gray-400">
+                Detail Gaji
+              </p>
+              <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                <div
+                  v-for="(detail, idx) in p.incentive_details"
+                  :key="idx"
+                  class="px-3 py-2"
+                >
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <span
+                          :class="detail.type === 'loader'
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
+                            : 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400'"
+                          class="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase"
+                        >
+                          {{ detail.type === 'loader' ? 'Loader' : 'Driver' }}
+                        </span>
+                        <span class="text-[10px] font-medium text-gray-700 dark:text-gray-300">
+                          {{ detail.do_number }}
+                        </span>
+                        <span class="text-[9px] text-gray-400 dark:text-gray-500">
+                          {{ formatDate(detail.date) }}
+                        </span>
+                      </div>
+                      <p class="mt-0.5 text-[9px] leading-relaxed text-gray-500 dark:text-gray-400">
+                        {{ detail.description }}
+                      </p>
+                    </div>
+                    <p class="flex-shrink-0 text-[10px] font-semibold text-gray-900 dark:text-white">
+                      {{ formatCurrency(detail.amount) }}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

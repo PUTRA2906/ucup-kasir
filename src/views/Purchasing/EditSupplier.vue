@@ -6,7 +6,7 @@
     <MobilePageHeader 
       title="Edit Supplier" 
       subtitle="Ubah Data Pemasok" 
-      back-to="/purchasing/suppliers"
+     
     />
 
     <!-- Loading -->

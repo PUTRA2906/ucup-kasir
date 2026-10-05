@@ -477,6 +477,120 @@ export const sqliteStockService = {
   },
 
   // ============================================================
+  // Import Stok dari CSV (SQLite / offline)
+  // ============================================================
+
+  async importStockFromCsv(
+    rows: Record<string, string>[]
+  ): Promise<{ updated: number; skipped: number; errors: string[] }> {
+    const userId = getCurrentUserId()
+
+    const allProducts = await query<any>(
+      `SELECT id, name, sku, barcode, stock FROM products WHERE user_id = ? AND is_active = 1`,
+      [userId]
+    )
+
+    const byName    = new Map<string, { id: string; stock: number }>()
+    const bySku     = new Map<string, { id: string; stock: number }>()
+    const byBarcode = new Map<string, { id: string; stock: number }>()
+
+    for (const p of allProducts) {
+      byName.set(p.name.toLowerCase().trim(), { id: p.id, stock: p.stock })
+      if (p.sku)     bySku.set(p.sku.toLowerCase().trim(), { id: p.id, stock: p.stock })
+      if (p.barcode) byBarcode.set(p.barcode.toLowerCase().trim(), { id: p.id, stock: p.stock })
+    }
+
+    const norm    = (s: string) => s.toLowerCase().replace(/[\s_\-./]/g, '')
+    const findCol = (record: Record<string, string>, aliases: string[]): string => {
+      for (const key of Object.keys(record)) {
+        if (aliases.includes(norm(key))) return record[key] ?? ''
+      }
+      return ''
+    }
+    const parseNum = (s: string): number => {
+      const clean = s.replace(/[^0-9.,\-]/g, '').replace(/\./g, '').replace(',', '.')
+      return parseFloat(clean)
+    }
+
+    let updated = 0
+    let skipped = 0
+    const errors: string[] = []
+
+    for (let idx = 0; idx < rows.length; idx++) {
+      const row    = rows[idx]
+      const rowNum = idx + 2
+
+      const identifier = findCol(row, ['namaproduk', 'produk', 'product', 'nama', 'sku', 'barcode', 'kode'])
+      const stokRaw    = findCol(row, ['stokbaru', 'stok', 'qty', 'jumlah', 'quantity', 'nilai', 'stock'])
+      const tipeRaw    = findCol(row, ['tipe', 'type', 'mode', 'metode'])
+      const alasanRaw  = findCol(row, ['alasan', 'reason', 'keterangan'])
+      const notesRaw   = findCol(row, ['catatan', 'notes'])
+
+      if (!identifier.trim()) {
+        errors.push(`Baris ${rowNum}: Kolom produk/SKU kosong, dilewati`)
+        skipped++; continue
+      }
+
+      const idLower = identifier.toLowerCase().trim()
+      const produk  = byName.get(idLower) || bySku.get(idLower) || byBarcode.get(idLower)
+
+      if (!produk) {
+        errors.push(`Baris ${rowNum}: Produk "${identifier}" tidak ditemukan, dilewati`)
+        skipped++; continue
+      }
+
+      const qty = parseNum(stokRaw)
+      if (isNaN(qty) || stokRaw.trim() === '') {
+        errors.push(`Baris ${rowNum}: Nilai stok tidak valid ("${stokRaw}"), dilewati`)
+        skipped++; continue
+      }
+
+      const tipeMap: Record<string, 'add' | 'subtract' | 'correction'> = {
+        add: 'add', tambah: 'add', masuk: 'add',
+        subtract: 'subtract', kurangi: 'subtract', kurang: 'subtract', keluar: 'subtract',
+        correction: 'correction', koreksi: 'correction', set: 'correction', opname: 'correction',
+      }
+      const tipe: 'add' | 'subtract' | 'correction' = tipeMap[norm(tipeRaw)] || 'correction'
+
+      const stockBefore = produk.stock
+      let stockAfter: number
+      let quantityChange: number
+
+      if (tipe === 'correction') {
+        stockAfter     = Math.max(qty, 0)
+        quantityChange = stockAfter - stockBefore
+      } else if (tipe === 'add') {
+        quantityChange = Math.max(qty, 0)
+        stockAfter     = stockBefore + quantityChange
+      } else {
+        stockAfter     = Math.max(stockBefore - Math.abs(qty), 0)
+        quantityChange = stockAfter - stockBefore
+      }
+
+      if (stockAfter === stockBefore) { skipped++; continue }
+
+      try {
+        await this.createAdjustment({
+          product_id:      produk.id,
+          adjustment_type: tipe,
+          quantity_before: stockBefore,
+          quantity_after:  stockAfter,
+          quantity_change: quantityChange,
+          reason:          alasanRaw.trim() || 'Import CSV',
+          notes:           notesRaw.trim() || undefined,
+        })
+        produk.stock = stockAfter
+        updated++
+      } catch (e: any) {
+        errors.push(`Baris ${rowNum}: ${e.message}`)
+        skipped++
+      }
+    }
+
+    return { updated, skipped, errors }
+  },
+
+  // ============================================================
   // Internal helpers
   // ============================================================
 

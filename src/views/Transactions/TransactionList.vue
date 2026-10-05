@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Daftar Transaksi" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Daftar Transaksi" :subtitle="transactionsStore.transactions.length + ' Transaksi'" back-to="/quick-menu/penjualan">
+    <MobilePageHeader title="Daftar Transaksi" :subtitle="transactionsStore.paginationTotal + ' Transaksi'">
       <template #actions>
         <button
           @click="addTransaction"
@@ -122,7 +122,7 @@
     <!-- Mobile Cards -->
     <div class="space-y-3 pb-4 md:hidden">
       <div
-        v-for="transaction in paginatedTransactions"
+        v-for="transaction in displayTransactions"
         :key="transaction.id"
         class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900"
       >
@@ -268,7 +268,7 @@
       </div>
 
       <!-- Empty State -->
-      <div v-if="filteredTransactions.length === 0" class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-800">
+      <div v-if="displayTransactions.length === 0 && !isLoading" class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-800">
         <template v-if="hasActiveFilter">
           <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Tidak ada transaksi yang cocok</p>
           <button
@@ -287,7 +287,7 @@
       <!-- Pagination -->
       <div v-if="totalPages > 1" class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900">
         <button
-          @click="currentPage--"
+          @click="fetchData(currentPage - 1)"
           :disabled="currentPage === 1"
           class="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-300 dark:hover:bg-gray-800"
         >
@@ -297,10 +297,10 @@
           Prev
         </button>
         <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
-          Hal {{ currentPage }} dari {{ totalPages }}
+          Hal {{ currentPage }} dari {{ totalPages }} ({{ transactionsStore.paginationTotal }} transaksi)
         </span>
         <button
-          @click="currentPage++"
+          @click="fetchData(currentPage + 1)"
           :disabled="currentPage === totalPages"
           class="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-300 dark:hover:bg-gray-800"
         >
@@ -365,14 +365,16 @@
       <!-- DataTable -->
       <DataTable
         :columns="columns"
-        :data="filteredTransactions"
-        :per-page="10"
+        :data="displayTransactions"
+        :per-page="PER_PAGE"
         :searchable="false"
         :show-add-button="true"
         add-button-text="Transaksi Baru"
         title="Daftar Transaksi"
-        :subtitle="`${settingsStore.storeSubtitle} - ${filteredTransactions.length} Transaksi`"
+        :subtitle="`${settingsStore.storeSubtitle} - ${transactionsStore.paginationTotal} Transaksi`"
+        :show-import-button="true"
         @add-click="addTransaction"
+        @import-click="showImportModal = true"
         @menu-action="handleMenuAction"
       >
         <template #header-checkbox>
@@ -578,6 +580,14 @@
       variant="danger"
       @confirm="confirmBulkDelete"
     />
+
+    <!-- Import Transaksi Modal -->
+    <ImportTransactionModal
+      ref="importModalRef"
+      v-model="showImportModal"
+      @import="handleImportFile"
+      @download-template="downloadImportTemplate"
+    />
   </AdminLayout>
 </template>
 
@@ -591,11 +601,13 @@ import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import SelectField from '@/components/common/SelectField.vue'
 import TransactionFilterModal from '@/components/common/TransactionFilterModal.vue'
+import ImportTransactionModal from '@/components/common/ImportTransactionModal.vue'
 import { useTransactionsStore } from '@/stores/transactions'
 import { useShippingStore } from '@/stores/shipping'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
+import { parseCsv, downloadCsv, readFileAsText } from '@/composables/useCsv'
 import type { TransactionStatus } from '@/types/database'
 
 const router = useRouter()
@@ -610,8 +622,14 @@ const transactionToDelete = ref<any>(null)
 const selectedTransactions = ref<string[]>([])
 const selectAllCheckbox = ref<HTMLInputElement | null>(null)
 const expandedCards = ref<string[]>([])
+
+// Import modal
+const showImportModal = ref(false)
+const importModalRef = ref<InstanceType<typeof ImportTransactionModal> | null>(null)
+
+// Server-side pagination
+const PER_PAGE = 20
 const currentPage = ref(1)
-const perPage = 10
 
 // Pencarian & filter
 const searchQuery = ref('')
@@ -649,132 +667,70 @@ const emptyModalFilters = (): ModalFilterValues => ({
 
 const modalFilters = ref<ModalFilterValues>(emptyModalFilters())
 
-const onModalApply = (values: ModalFilterValues) => {
-  modalFilters.value = { ...values }
-  // Sinkronkan kontrol cepat dengan nilai modal (satu sumber kebenaran)
-  transactionStatusFilter.value = values.transactionStatus as any
-  paymentFilter.value = values.paymentStatus as any
+// Bangun filters object untuk dikirim ke server
+const buildServerFilters = () => {
+  const f = modalFilters.value
+  return {
+    search: searchQuery.value.trim() || undefined,
+    paymentStatus: f.paymentStatus !== 'semua' ? f.paymentStatus : undefined,
+    transactionStatus: f.transactionStatus !== 'semua' ? f.transactionStatus : undefined,
+    recordStatus: f.recordStatus !== 'semua' ? f.recordStatus : undefined,
+    paymentMethod: f.paymentMethod || undefined,
+    customer: f.customer || undefined,
+    dateFrom: f.dateFrom || undefined,
+    dateTo: f.dateTo || undefined,
+    minAmount: f.minAmount ? Number(f.minAmount) : undefined,
+    maxAmount: f.maxAmount ? Number(f.maxAmount) : undefined,
+    sortOrder: f.sortOrder !== 'newest' ? f.sortOrder : undefined,
+  }
 }
 
-// Kontrol cepat → nilai modal
+// Debounce untuk search agar tidak terlalu sering request
+let searchDebounce: ReturnType<typeof setTimeout> | null = null
+const fetchData = (page = 1) => {
+  currentPage.value = page
+  transactionsStore.fetchTransactionsPaginated(page, PER_PAGE, buildServerFilters())
+}
+
+const fetchDataDebounced = () => {
+  if (searchDebounce) clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(() => fetchData(1), 400)
+}
+
+const onModalApply = (values: ModalFilterValues) => {
+  modalFilters.value = { ...values }
+  transactionStatusFilter.value = values.transactionStatus as any
+  paymentFilter.value = values.paymentStatus as any
+  fetchData(1)
+}
+
+// Kontrol cepat → fetch ulang
 watch(transactionStatusFilter, (v) => {
   modalFilters.value.transactionStatus = v
+  fetchData(1)
 })
 watch(paymentFilter, (v) => {
   modalFilters.value.paymentStatus = v
+  fetchData(1)
 })
+watch(searchQuery, fetchDataDebounced)
 
-// Opsi customer (unik, dari data transaksi)
+// Data dari store (server-side)
+const displayTransactions = computed(() => transactionsStore.paginatedTransactions)
+const totalPages = computed(() => Math.ceil(transactionsStore.paginationTotal / PER_PAGE))
+const isLoading = computed(() => transactionsStore.paginationLoading)
+
+// Opsi customer untuk filter modal — ambil dari data yang sedang ditampilkan
+// (tidak bisa dari semua data karena server-side, jadi fallback ke input manual)
 const customerFilterOptions = computed(() => {
   const names = new Set<string>()
-  for (const t of transactionsStore.transactions) {
+  for (const t of transactionsStore.paginatedTransactions) {
     if (t.customer_name) names.add(t.customer_name)
   }
   return [...names].sort((a, b) => a.localeCompare(b)).map((name) => ({ value: name, label: name }))
 })
 
 const isBatal = (t: any) => t.status === 'void' || t.status === 'batal'
-
-const filteredTransactions = computed(() => {
-  const f = modalFilters.value
-  let result = [...transactionsStore.transactions]
-
-  // Status catatan (aktif / batal)
-  if (f.recordStatus === 'aktif') {
-    result = result.filter((t) => !isBatal(t))
-  } else if (f.recordStatus === 'batal') {
-    result = result.filter((t) => isBatal(t))
-  }
-
-  // Filter status transaksi (disiapkan / dikirim / selesai)
-  if (f.transactionStatus !== 'semua') {
-    result = result.filter((t) => (t.transaction_status ?? 'disiapkan') === f.transactionStatus)
-  }
-
-  // Filter status pembayaran (lunas / belum lunas)
-  if (f.paymentStatus !== 'semua') {
-    result = result.filter((t) =>
-      f.paymentStatus === 'lunas'
-        ? t.payment_status === 'lunas' || t.remaining_amount <= 0
-        : t.payment_status !== 'lunas' && t.remaining_amount > 0
-    )
-  }
-
-  // Metode pembayaran
-  if (f.paymentMethod) {
-    result = result.filter((t) => t.payment_method === f.paymentMethod)
-  }
-
-  // Customer
-  if (f.customer === '__tanpa__') {
-    result = result.filter((t) => !t.customer_name)
-  } else if (f.customer) {
-    result = result.filter((t) => t.customer_name === f.customer)
-  }
-
-  // Periode tanggal
-  if (f.dateFrom) {
-    const from = new Date(f.dateFrom + 'T00:00:00')
-    result = result.filter((t) => new Date(t.created_at) >= from)
-  }
-  if (f.dateTo) {
-    const to = new Date(f.dateTo + 'T23:59:59.999')
-    result = result.filter((t) => new Date(t.created_at) <= to)
-  }
-
-  // Rentang nominal
-  const min = Number(f.minAmount)
-  const max = Number(f.maxAmount)
-  if (f.minAmount && !Number.isNaN(min)) result = result.filter((t) => t.total >= min)
-  if (f.maxAmount && !Number.isNaN(max)) result = result.filter((t) => t.total <= max)
-
-  // Pencarian
-  const query = searchQuery.value.trim().toLowerCase()
-  if (query) {
-    result = result.filter((t) => {
-      const q = query
-      return (
-        (t.transaction_number || '').toLowerCase().includes(q) ||
-        (t.customer_name || '').toLowerCase().includes(q) ||
-        (t.payment_method || '').toLowerCase().includes(q) ||
-        formatCurrency(t.total).toLowerCase().includes(q) ||
-        formatDate(t.created_at).toLowerCase().includes(q)
-      )
-    })
-  }
-
-  // Pengurutan
-  switch (f.sortOrder) {
-    case 'oldest':
-      result.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-      break
-    case 'highest':
-      result.sort((a, b) => b.total - a.total)
-      break
-    case 'lowest':
-      result.sort((a, b) => a.total - b.total)
-      break
-    default:
-      result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-  }
-
-  return result
-})
-
-const paginatedTransactions = computed(() => {
-  const start = (currentPage.value - 1) * perPage
-  const end = start + perPage
-  return filteredTransactions.value.slice(start, end)
-})
-
-const totalPages = computed(() => {
-  return Math.ceil(filteredTransactions.value.length / perPage)
-})
-
-// Reset ke halaman 1 ketika filter/pencarian berubah
-watch([searchQuery, transactionStatusFilter, paymentFilter, modalFilters], () => {
-  currentPage.value = 1
-}, { deep: true })
 
 // Opsi filter status transaksi (dropdown)
 const transactionStatusOptions = [
@@ -802,7 +758,7 @@ const formatShortDate = (ymd: string) => {
   return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
 }
 
-// Chip filter aktif dari modal (di luar kontrol cepat status/pembayaran)
+// Chip filter aktif dari modal
 const activeFilterChips = computed(() => {
   const f = modalFilters.value
   const chips: { key: string; label: string }[] = []
@@ -840,12 +796,14 @@ const removeFilterChip = (key: string) => {
   } else {
     (modalFilters.value as any)[key] = key === 'recordStatus' ? 'semua' : ''
   }
+  fetchData(1)
 }
 
 const clearModalFilters = () => {
   modalFilters.value = emptyModalFilters()
   transactionStatusFilter.value = 'semua'
   paymentFilter.value = 'semua'
+  fetchData(1)
 }
 
 const hasActiveFilter = computed(() => {
@@ -867,11 +825,11 @@ const toggleExpand = (id: string) => {
 }
 
 const allSelected = computed(() => {
-  return filteredTransactions.value.length > 0 && selectedTransactions.value.length === filteredTransactions.value.length
+  return displayTransactions.value.length > 0 && selectedTransactions.value.length === displayTransactions.value.length
 })
 
 const someSelected = computed(() => {
-  return selectedTransactions.value.length > 0 && selectedTransactions.value.length < filteredTransactions.value.length
+  return selectedTransactions.value.length > 0 && selectedTransactions.value.length < displayTransactions.value.length
 })
 
 watchEffect(() => {
@@ -884,7 +842,7 @@ const toggleSelectAll = () => {
   if (allSelected.value) {
     selectedTransactions.value = []
   } else {
-    selectedTransactions.value = filteredTransactions.value.map(t => t.id)
+    selectedTransactions.value = displayTransactions.value.map(t => t.id)
   }
 }
 
@@ -906,7 +864,6 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value || 0)
 
-// Badge & handler status transaksi (disiapkan/dikirim/selesai)
 const transactionStatusBadge = (value?: string) => {
   switch (value) {
     case 'dikirim':
@@ -921,7 +878,6 @@ const transactionStatusBadge = (value?: string) => {
 
 const statusUpdatingId = ref<string | null>(null)
 
-// Transaksi yang dirujuk surat jalan berstatus "selesai" → status pengirimannya terkunci
 const lockedShippingTxIds = computed(() => {
   const ids = new Set<string>()
   for (const d of shippingStore.deliveryOrders || []) {
@@ -941,6 +897,8 @@ const changeTransactionStatus = async (transaction: any, value: TransactionStatu
   statusUpdatingId.value = transaction.id
   try {
     await transactionsStore.updateTransactionStatus(transaction.id, value)
+    // Refresh halaman saat ini
+    fetchData(currentPage.value)
     toast.success('Berhasil!', 'Status transaksi diperbarui')
   } catch (error: any) {
     console.error('Error updating transaction status:', error)
@@ -971,10 +929,8 @@ const formatDate = (value: string) => {
 onMounted(async () => {
   try {
     await Promise.all([
-      transactionsStore.fetchTransactions(),
-      shippingStore.fetchDeliveryOrders().catch(() => {
-        /* daftar pengiriman hanya untuk lock; gagal muat tidak menggagalkan halaman */
-      }),
+      fetchData(1),
+      shippingStore.fetchDeliveryOrders().catch(() => {}),
     ])
   } catch (error) {
     console.error('Error loading transactions:', error)
@@ -997,10 +953,10 @@ const deleteTransaction = (transaction: any) => {
 
 const confirmDelete = async () => {
   if (!transactionToDelete.value) return
-
   try {
     await transactionsStore.deleteTransaction(transactionToDelete.value.id)
     toast.success('Berhasil!', 'Transaksi berhasil dihapus')
+    fetchData(currentPage.value)
   } catch (error) {
     console.error('Error deleting transaction:', error)
     toast.error('Gagal!', 'Gagal menghapus transaksi')
@@ -1021,6 +977,7 @@ const confirmBulkDelete = async () => {
     )
     selectedTransactions.value = []
     toast.success('Berhasil!', `${count} transaksi berhasil dihapus`)
+    fetchData(1)
   } catch (error) {
     console.error('Error deleting transactions:', error)
     toast.error('Gagal!', 'Gagal menghapus beberapa transaksi')
@@ -1037,6 +994,7 @@ const voidTransaction = async (transaction: any) => {
   try {
     await transactionsStore.voidTransaction(transaction.id)
     toast.success('Berhasil!', 'Transaksi berhasil dibatalkan')
+    fetchData(currentPage.value)
   } catch (error: any) {
     console.error('Error voiding transaction:', error)
     toast.error('Gagal!', error.message || 'Gagal membatalkan transaksi')
@@ -1051,6 +1009,69 @@ const handleMenuAction = ({ action, row }: { action: string; row: any }) => {
     case 'delete':
       deleteTransaction(row)
       break
+  }
+}
+
+/* ============================================================
+ * TEMPLATE IMPORT CSV
+ * ============================================================ */
+const IMPORT_TEMPLATE_HEADERS = [
+  'No. Transaksi',
+  'Tanggal',
+  'Nama Customer',
+  'Metode Bayar',
+  'Nama Produk',
+  'Qty',
+  'Harga Satuan',
+  'Jumlah Bayar',
+  'Diskon',
+  'Ongkir',
+  'Catatan',
+]
+
+const downloadImportTemplate = () => {
+  downloadCsv('template-import-transaksi.csv', [
+    IMPORT_TEMPLATE_HEADERS,
+    ['TRX-001', '01/09/2026', 'Toko Barokah', 'tunai', 'Beras Premium 5kg', '2', '75000', '150000', '0', '0', ''],
+    ['TRX-001', '01/09/2026', 'Toko Barokah', 'tunai', 'Minyak Goreng 2L', '3', '28000', '', '0', '0', ''],
+    ['TRX-002', '02/09/2026', 'Warung Pak Hasan', 'transfer', 'Gula Pasir 1kg', '5', '14000', '70000', '0', '5000', 'Kirim sore'],
+  ])
+  toast.success('Berhasil!', 'Template CSV transaksi berhasil diunduh')
+}
+
+/* ============================================================
+ * IMPORT CSV
+ * ============================================================ */
+const handleImportFile = async (file: File) => {
+  try {
+    const text = await readFileAsText(file)
+    const parsed = parseCsv(text)
+
+    if (!parsed.headers || parsed.headers.length === 0) {
+      importModalRef.value?.setResult({ created: 0, skipped: 0, errors: ['File CSV kosong atau format tidak valid'] })
+      return
+    }
+    if (parsed.rows.length === 0) {
+      importModalRef.value?.setResult({ created: 0, skipped: 0, errors: ['Tidak ada data di dalam file'] })
+      return
+    }
+
+    const result = await transactionsStore.importTransactions(parsed.rows, parsed.headers)
+
+    // Tampilkan hasil di modal
+    importModalRef.value?.setResult(result)
+
+    // Refresh daftar transaksi
+    await fetchData(1)
+
+    if (result.errors.length === 0) {
+      toast.success('Berhasil!', `${result.created} transaksi berhasil diimpor`)
+    } else {
+      toast.warning('Selesai dengan catatan', `${result.created} transaksi dibuat, ${result.skipped} dilewati`)
+    }
+  } catch (e: any) {
+    importModalRef.value?.setResult({ created: 0, skipped: 0, errors: [e.message || 'Gagal mengimpor file CSV'] })
+    toast.error('Gagal!', e.message || 'Gagal mengimpor file CSV')
   }
 }
 </script>

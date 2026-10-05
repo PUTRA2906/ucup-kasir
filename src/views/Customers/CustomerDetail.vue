@@ -2,7 +2,7 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Detail Customer" class="hidden md:block" />
 
-    <MobilePageHeader title="Detail Customer" subtitle="Informasi lengkap customer" back-to="/customers" />
+    <MobilePageHeader title="Detail Customer" subtitle="Informasi lengkap customer" />
 
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div class="text-center">

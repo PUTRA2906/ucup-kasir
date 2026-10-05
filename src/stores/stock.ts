@@ -153,6 +153,21 @@ export const useStockStore = defineStore('stock', () => {
     }
   }
 
+  const importStock = async (
+    rows: Record<string, string>[]
+  ): Promise<{ updated: number; skipped: number; errors: string[] }> => {
+    loading.value = true
+    error.value = null
+    try {
+      return await stockServiceAdapter.importStockFromCsv(rows)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   const recordStockMovement = async (movement: {
     product_id: string
     movement_type: 'in' | 'out' | 'return'
@@ -226,6 +241,7 @@ export const useStockStore = defineStore('stock', () => {
     createAdjustment,
     createOpname,
     setMinimumStock,
+    importStock,
     recordStockMovement
   }
 })

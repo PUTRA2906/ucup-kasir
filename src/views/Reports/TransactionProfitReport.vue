@@ -7,7 +7,7 @@
       <MobilePageHeader
         title="Laba Per Transaksi"
         :subtitle="formatDateRange(store.dateRange.start, store.dateRange.end)"
-        back-to="/quick-menu/penjualan"
+       
       >
         <template #actions>
           <button

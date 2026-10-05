@@ -2,7 +2,7 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Detail Kategori" class="hidden md:block" />
 
-    <MobilePageHeader title="Detail Kategori" back-to="/categories" />
+    <MobilePageHeader title="Detail Kategori" />
 
     <div v-if="loading" class="flex items-center justify-center py-12">
       <div class="text-center">

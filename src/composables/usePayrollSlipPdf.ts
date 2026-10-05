@@ -153,7 +153,6 @@ export function usePayrollSlipPdf() {
     }
 
     sectionHeader('PEMASUKAN')
-    row('Gaji Pokok', formatCurrency(data.baseSalary))
     
     // Detail breakdown insentif
     if (data.incentiveDetails && data.incentiveDetails.length > 0) {
@@ -161,7 +160,7 @@ export function usePayrollSlipPdf() {
       doc.setFontSize(8)
       doc.setFillColor(245, 245, 245)
       doc.rect(margin, yPos, contentWidth, 5, 'F')
-      doc.text('Detail Insentif:', margin + 4, yPos + 3.5)
+      doc.text('Detail Gaji:', margin + 4, yPos + 3.5)
       yPos += 5
       
       doc.setFont('helvetica', 'normal')
@@ -189,8 +188,8 @@ export function usePayrollSlipPdf() {
       yPos += 2
     }
     
-    row('Total Insentif', formatCurrency(data.incentive), true)
-    row('Total Pemasukan', formatCurrency((data.baseSalary || 0) + (data.incentive || 0)), true)
+    row('Gaji', formatCurrency(data.incentive), false)
+    row('Total Pemasukan', formatCurrency(data.incentive), true)
     yPos += 4
 
     sectionHeader('POTONGAN')

@@ -5,7 +5,7 @@
       <MobilePageHeader
         title="Variabel Global"
         subtitle="Limit kredit & upah bongkar muat"
-        back-to="/settings"
+       
       />
 
       <!-- Limit Kredit Customer -->

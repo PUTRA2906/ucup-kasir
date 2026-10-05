@@ -8,6 +8,13 @@ export const useTransactionsStore = defineStore('transactions', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
+  // State untuk server-side pagination
+  const paginatedTransactions = ref<Transaction[]>([])
+  const paginationTotal = ref(0)
+  const paginationPage = ref(1)
+  const paginationPerPage = ref(20)
+  const paginationLoading = ref(false)
+
   async function fetchTransactions() {
     loading.value = true
     error.value = null
@@ -18,6 +25,39 @@ export const useTransactionsStore = defineStore('transactions', () => {
       throw e
     } finally {
       loading.value = false
+    }
+  }
+
+  async function fetchTransactionsPaginated(
+    page: number,
+    perPage: number,
+    filters?: {
+      search?: string
+      paymentStatus?: string
+      transactionStatus?: string
+      recordStatus?: string
+      paymentMethod?: string
+      customer?: string
+      dateFrom?: string
+      dateTo?: string
+      minAmount?: number
+      maxAmount?: number
+      sortOrder?: string
+    }
+  ) {
+    paginationLoading.value = true
+    error.value = null
+    try {
+      const result = await transactionsServiceAdapter.getPaginated(page, perPage, filters)
+      paginatedTransactions.value = result.data
+      paginationTotal.value = result.count
+      paginationPage.value = page
+      paginationPerPage.value = perPage
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      paginationLoading.value = false
     }
   }
 
@@ -142,6 +182,22 @@ export const useTransactionsStore = defineStore('transactions', () => {
     }
   }
 
+  async function importTransactions(
+    rows: Record<string, string>[],
+    headers: string[]
+  ): Promise<{ created: number; skipped: number; errors: string[] }> {
+    loading.value = true
+    error.value = null
+    try {
+      return await transactionsServiceAdapter.importFromCsv(rows, headers)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   /** Ubah status transaksi (disiapkan/dikirim/selesai) & update local state. */
   async function updateTransactionStatus(transactionId: string, transactionStatus: TransactionStatus) {
     loading.value = true
@@ -165,7 +221,14 @@ export const useTransactionsStore = defineStore('transactions', () => {
     transactions,
     loading,
     error,
+    // Pagination state
+    paginatedTransactions,
+    paginationTotal,
+    paginationPage,
+    paginationPerPage,
+    paginationLoading,
     fetchTransactions,
+    fetchTransactionsPaginated,
     getTransaction,
     createTransaction,
     addPayment,
@@ -174,5 +237,6 @@ export const useTransactionsStore = defineStore('transactions', () => {
     updateTransactionStatus,
     searchTransactions,
     getTransactionsByCustomer,
+    importTransactions,
   }
 })

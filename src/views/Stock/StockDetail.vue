@@ -31,7 +31,7 @@
         <MobilePageHeader
           title="Detail Stok"
           :subtitle="product.category?.name || 'Tanpa Kategori'"
-          back-to="/stock"
+         
         >
           <template #actions>
             <button

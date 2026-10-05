@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Detail Surat Jalan" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Detail Surat Jalan" :subtitle="order?.do_number || 'Loading...'" back-to="/shipping/deliveries">
+    <MobilePageHeader title="Detail Surat Jalan" :subtitle="order?.do_number || 'Loading...'">
       <template #actions>
         <button @click="router.push(`/shipping/deliveries/print/${order?.id}`)" class="flex h-8 w-8 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" title="Cetak surat jalan">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zM7 5h10a2 2 0 002-2V1H5v2a2 2 0 002 2z" /></svg>

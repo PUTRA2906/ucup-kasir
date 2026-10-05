@@ -5,7 +5,7 @@
       <MobilePageHeader
         title="Notifikasi"
         :subtitle="unreadCount > 0 ? unreadCount + ' notifikasi baru' : 'Tidak ada notifikasi baru'"
-        back-to="/"
+       
       >
         <template #actions>
           <button

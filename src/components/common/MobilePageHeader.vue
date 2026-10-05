@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
 
 interface Props {
@@ -67,7 +67,15 @@ function handleBack() {
   if (props.backTo) {
     router.push(props.backTo)
   } else {
+    // Emit event dulu untuk custom handler
     emit('back')
+
+    // Jika tidak ada listener @back, gunakan router.back() sebagai fallback
+    // Vue akan mengabaikan emit jika tidak ada listener
+    const hasBackListener = !!getCurrentInstance()?.vnode.props?.onBack
+    if (!hasBackListener) {
+      router.back()
+    }
   }
 }
 </script>

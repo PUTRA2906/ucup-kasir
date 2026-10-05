@@ -15,7 +15,7 @@
     <!-- Mobile + Desktop View -->
     <template v-else-if="transaction">
     <!-- Mobile Header -->
-    <MobilePageHeader title="Detail Transaksi" :subtitle="transaction.transaction_number" back-to="/transactions">
+    <MobilePageHeader title="Detail Transaksi" :subtitle="transaction.transaction_number">
       <template #badge>
         <span
           :class="[
@@ -346,8 +346,18 @@
         </button>
       </div>
 
-      <!-- Baris 2: Aksi sekunder & bahaya — Retur, Cetak, Batal TRX -->
-      <div class="grid grid-cols-3 gap-2">
+      <!-- Baris 2: Aksi sekunder & bahaya — Laba, Retur, Cetak, Batal TRX -->
+      <div class="grid grid-cols-4 gap-2">
+        <button
+          @click="router.push(`/reports/transaction-profit/${transaction.id}`)"
+          class="bg-brand-500/10 hover:bg-brand-500/20 text-brand-600 font-semibold py-2 rounded-xl text-[11px] border border-brand-500/20 flex items-center justify-center gap-1 active:scale-95 transition dark:text-brand-400"
+        >
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Laba
+        </button>
+
         <button
           v-if="transaction.status === 'selesai'"
           @click="showReturnModal = true"

@@ -26,57 +26,12 @@
             />
           </div>
           <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Jenis Kelamin</label>
-            <SelectField
-              v-model="form.gender"
-              :options="[
-                { label: '- Pilih -', value: '' },
-                { label: 'Laki-laki', value: 'laki_laki' },
-                { label: 'Perempuan', value: 'perempuan' },
-              ]"
-              title="Jenis Kelamin"
-              placeholder="- Pilih -"
-              button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-            />
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal Lahir</label>
-            <DateField v-model="form.birth_date" title="Tanggal Lahir" button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Tempat Lahir</label>
-            <input v-model="form.birth_place" type="text" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="Kota kelahiran" />
-          </div>
-          <div>
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">No. Telepon</label>
             <input v-model="form.phone" type="tel" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="08xxxx" />
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Email</label>
-            <input v-model="form.email" type="email" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="email@contoh.com" />
           </div>
           <div class="sm:col-span-2">
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Alamat</label>
             <textarea v-model="form.address" rows="2" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="Alamat lengkap"></textarea>
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Jenis Identitas</label>
-            <SelectField
-              v-model="form.identity_type"
-              :options="[
-                { label: '- Pilih -', value: '' },
-                { label: 'KTP', value: 'ktp' },
-                { label: 'SIM', value: 'sim' },
-                { label: 'Paspor', value: 'passport' },
-              ]"
-              title="Jenis Identitas"
-              placeholder="- Pilih -"
-              button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-            />
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Nomor Identitas</label>
-            <input v-model="form.identity_number" type="text" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="NIK" />
           </div>
         </div>
       </div>
@@ -100,10 +55,6 @@
             />
           </div>
           <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal Bergabung</label>
-            <DateField v-model="form.join_date" title="Tanggal Bergabung" button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-          </div>
-          <div>
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Status Karyawan</label>
             <SelectField
               v-model="form.status"
@@ -117,45 +68,9 @@
               button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
             />
           </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Tipe Gaji</label>
-            <SelectField
-              v-model="form.salary_type"
-              :options="[
-                { label: 'Bulanan', value: 'bulanan' },
-                { label: 'Harian', value: 'harian' },
-                { label: 'Mingguan', value: 'mingguan' },
-              ]"
-              title="Tipe Gaji"
-              button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-            />
-          </div>
-          <div v-if="isEdit" class="sm:col-span-2">
+          <div v-if="isEdit" >
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal Keluar</label>
             <DateField v-model="form.resign_date" title="Tanggal Keluar" button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Info Bank & Lainnya -->
-      <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <h3 class="mb-3 text-sm font-bold text-gray-900 dark:text-white">Info Bank &amp; Lainnya</h3>
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Nama Bank</label>
-            <input v-model="form.bank_name" type="text" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="BCA, BRI, dst" />
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Nomor Rekening</label>
-            <input v-model="form.bank_account_number" type="text" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="Nomor rekening" />
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Nama Rekening</label>
-            <input v-model="form.bank_account_name" type="text" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="Sesuai rekening" />
-          </div>
-          <div>
-            <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">NPWP</label>
-            <input v-model="form.npwp" type="text" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="Nomor NPWP" />
           </div>
           <div class="sm:col-span-2">
             <label class="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Catatan</label>

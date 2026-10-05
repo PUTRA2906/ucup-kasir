@@ -2,7 +2,7 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Riwayat Mutasi Stok" class="hidden md:block" />
     
-    <MobilePageHeader title="Riwayat Mutasi Stok" :subtitle="stockStore.movements.length + ' Mutasi Stok'" back-to="/quick-menu/gudang-stok" />
+    <MobilePageHeader title="Riwayat Mutasi Stok" :subtitle="stockStore.movements.length + ' Mutasi Stok'" />
 
     <div class="space-y-6">
       <!-- Mobile View: Filter & Cards -->

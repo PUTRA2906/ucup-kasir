@@ -30,7 +30,7 @@
         <MobilePageHeader
           :title="tx.transaction_number"
           :subtitle="(tx.customer_name || 'Tanpa Customer') + ' • ' + formatFullDate(tx.created_at)"
-          back-to="/reports/transaction-profit"
+         
         >
           <template #badge>
             <span

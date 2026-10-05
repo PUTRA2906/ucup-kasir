@@ -1,7 +1,7 @@
 <template>
   <AdminLayout>
     <PageBreadcrumb pageTitle="Harga Tier" class="hidden md:block" />
-    <MobilePageHeader title="Harga Tier" :subtitle="paginationLabel" back-to="/price-matrix">
+    <MobilePageHeader title="Harga Tier" :subtitle="paginationLabel">
       <template #actions>
         <button
           type="button"

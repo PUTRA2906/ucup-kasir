@@ -5,7 +5,7 @@
       <MobilePageHeader
         title="Profil & Keamanan"
         subtitle="Data pribadi dan kata sandi akun"
-        back-to="/settings"
+       
       />
 
       <!-- Informasi Profil -->

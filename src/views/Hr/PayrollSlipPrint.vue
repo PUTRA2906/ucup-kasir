@@ -104,14 +104,9 @@
               <tr class="border-t-2 border-b border-black">
                 <td colspan="2" class="py-2 text-xs font-bold uppercase tracking-wide">Pemasukan</td>
               </tr>
-              <tr class="border-b border-gray-300">
-                <td class="py-2 pl-2">Gaji Pokok</td>
-                <td class="py-2 pr-4 text-right font-semibold">{{ formatCurrency(payroll.base_salary) }}</td>
-              </tr>
-              
               <!-- Detail Breakdown Insentif -->
               <tr v-if="payroll.incentive_details && payroll.incentive_details.length > 0" class="border-b border-gray-300 bg-gray-50">
-                <td colspan="2" class="py-2 pl-2 text-xs font-semibold text-gray-700">Detail Insentif:</td>
+                <td colspan="2" class="py-2 pl-2 text-xs font-semibold text-gray-700">Detail Gaji:</td>
               </tr>
               <template v-if="payroll.incentive_details && payroll.incentive_details.length > 0">
                 <tr v-for="(detail, idx) in payroll.incentive_details" :key="idx" class="border-b border-gray-200">
@@ -124,12 +119,12 @@
               </template>
               
               <tr class="border-b border-gray-300">
-                <td class="py-2 pl-2 font-semibold">Total Insentif</td>
+                <td class="py-2 pl-2 font-semibold">Gaji</td>
                 <td class="py-2 pr-4 text-right font-semibold">{{ formatCurrency(payroll.incentive_amount) }}</td>
               </tr>
               <tr class="border-b-2 border-black bg-gray-50">
                 <td class="py-2 pl-2 font-bold">Total Pemasukan</td>
-                <td class="py-2 pr-4 text-right font-bold">{{ formatCurrency(totalIncome) }}</td>
+                <td class="py-2 pr-4 text-right font-bold">{{ formatCurrency(payroll.incentive_amount) }}</td>
               </tr>
               <tr class="border-b border-black">
                 <td colspan="2" class="py-2 text-xs font-bold uppercase tracking-wide">Potongan</td>

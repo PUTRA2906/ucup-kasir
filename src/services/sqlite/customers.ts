@@ -171,6 +171,52 @@ export const sqliteCustomersService = {
     await addToSyncQueue('DELETE', 'customers', id, { id })
   },
 
+  async getPaginated(
+    page: number,
+    perPage: number,
+    filters?: {
+      search?: string
+      kecamatan?: string
+    }
+  ): Promise<{ data: Customer[]; count: number }> {
+    const userId = getCurrentUserId()
+    const offset = (page - 1) * perPage
+
+    const conditions: string[] = ['user_id = ?']
+    const params: any[] = [userId]
+
+    if (filters?.kecamatan) {
+      conditions.push(`kecamatan = ?`)
+      params.push(filters.kecamatan)
+    }
+
+    if (filters?.search) {
+      conditions.push(`(name LIKE ? OR store_name LIKE ? OR phone LIKE ? OR kecamatan LIKE ?)`)
+      params.push(
+        `%${filters.search}%`,
+        `%${filters.search}%`,
+        `%${filters.search}%`,
+        `%${filters.search}%`
+      )
+    }
+
+    const where = `WHERE ${conditions.join(' AND ')}`
+
+    const countRows = await query<{ total: number }>(
+      `SELECT COUNT(*) as total FROM customers ${where}`,
+      params
+    )
+    const count = countRows[0]?.total ?? 0
+
+    const rows = await query<any>(
+      `SELECT id, user_id, name, store_name, phone, kecamatan, address, notes, credit_limit, created_at, updated_at
+       FROM customers ${where} ORDER BY name ASC LIMIT ? OFFSET ?`,
+      [...params, perPage, offset]
+    )
+
+    return { data: rows.map((r) => this.mapRow(r)), count }
+  },
+
   async search(queryStr: string): Promise<Customer[]> {
     const userId = getCurrentUserId()
     const rows = await query<any>(

@@ -31,43 +31,20 @@
               </div>
 
               <div class="space-y-4">
-                <!-- Preset Dropdown -->
+                <!-- Range Date -->
                 <div>
                   <label class="mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300">
-                    Pilih Periode Cepat
+                    Periode
                   </label>
-                  <SelectField
-                    v-model="activePreset"
-                    :options="[{ label: 'Custom...', value: '' }, ...reportStore.datePresets.map((p) => ({ label: p.label, value: p.value }))]"
-                    title="Pilih Periode Cepat"
-                    placeholder="Custom..."
+                  <DateRangeField
+                    :start="tempStartDate"
+                    :end="tempEndDate"
+                    title="Pilih Periode"
+                    placeholder="Pilih rentang tanggal"
                     button-class="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                    @change="reportStore.applyPreset(activePreset)"
+                    @update:start="tempStartDate = $event"
+                    @update:end="tempEndDate = $event"
                   />
-                </div>
-
-                <!-- Custom Date Range -->
-                <div class="grid grid-cols-2 gap-3">
-                  <div>
-                    <label class="mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300">
-                      Dari Tanggal
-                    </label>
-                    <DateField
-                      v-model="reportStore.startDate"
-                      title="Dari Tanggal"
-                      button-class="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label class="mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300">
-                      Sampai Tanggal
-                    </label>
-                    <DateField
-                      v-model="reportStore.endDate"
-                      title="Sampai Tanggal"
-                      button-class="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                    />
-                  </div>
                 </div>
 
                 <!-- Status Pembayaran -->
@@ -240,7 +217,7 @@ import SalesSummaryCards from '@/components/reports/SalesSummaryCards.vue'
 import SalesSummaryDetail from '@/components/reports/SalesSummaryDetail.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import DateField from '@/components/common/DateField.vue'
-import SelectField from '@/components/common/SelectField.vue'
+import DateRangeField from '@/components/common/DateRangeField.vue'
 import { useSalesReportStore } from '@/stores/salesReport'
 import { useToast } from '@/composables/useToast'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
@@ -255,6 +232,8 @@ useAutoNavigationStack(showFilterModal, 'sales-report-filter-modal')
 
 // Status pembayaran (temp state untuk modal)
 const tempPaymentStatus = ref<'lunas' | 'belum_lunas' | 'all'>('all')
+const tempStartDate = ref('')
+const tempEndDate = ref('')
 const paymentStatusOptions = [
   { value: 'all', label: 'Semua' },
   { value: 'lunas', label: 'Lunas' },
@@ -307,11 +286,16 @@ const calculatePercentage = (value: number, total: number) => {
 
 const openFilterModal = () => {
   tempPaymentStatus.value = reportStore.paymentStatusFilter
+  tempStartDate.value = reportStore.startDate
+  tempEndDate.value = reportStore.endDate
   showFilterModal.value = true
 }
 
 const applyFilter = async () => {
+  if (tempStartDate.value) reportStore.startDate = tempStartDate.value
+  if (tempEndDate.value) reportStore.endDate = tempEndDate.value
   reportStore.setPaymentStatusFilter(tempPaymentStatus.value)
+  activePreset.value = ''
   showFilterModal.value = false
   await fetchReport()
 }

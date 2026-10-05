@@ -12,6 +12,40 @@ export const customersService = {
     return data || []
   },
 
+  async getPaginated(
+    page: number,
+    perPage: number,
+    filters?: {
+      search?: string
+      kecamatan?: string
+    }
+  ): Promise<{ data: Customer[]; count: number }> {
+    const from = (page - 1) * perPage
+    const to = from + perPage - 1
+
+    let query = supabase
+      .from('customers')
+      .select('*', { count: 'exact' })
+      .order('name')
+
+    if (filters?.kecamatan) {
+      query = query.eq('kecamatan', filters.kecamatan)
+    }
+
+    if (filters?.search) {
+      query = query.or(
+        `name.ilike.%${filters.search}%,store_name.ilike.%${filters.search}%,phone.ilike.%${filters.search}%,kecamatan.ilike.%${filters.search}%`
+      )
+    }
+
+    query = query.range(from, to)
+
+    const { data, error, count } = await query
+
+    if (error) throw error
+    return { data: data || [], count: count ?? 0 }
+  },
+
   async getById(id: string): Promise<Customer | null> {
     const { data, error } = await supabase
       .from('customers')

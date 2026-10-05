@@ -93,7 +93,7 @@ onMounted(() => {
     <PageBreadcrumb pageTitle="Tutup Buku" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Tutup Buku" subtitle="Kunci Periode Akuntansi" back-to="/finance">
+    <MobilePageHeader title="Tutup Buku" subtitle="Kunci Periode Akuntansi">
       <template #actions>
         <button
           @click="showClosePeriodModal = true"

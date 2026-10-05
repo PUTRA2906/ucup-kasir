@@ -2,7 +2,7 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Detail Produk" class="hidden md:block" />
 
-    <MobilePageHeader title="Detail Produk" subtitle="Informasi lengkap produk" back-to="/products" />
+    <MobilePageHeader title="Detail Produk" subtitle="Informasi lengkap produk" />
 
     <div v-if="loading" class="space-y-6">
       <LoadingSkeleton type="card" />

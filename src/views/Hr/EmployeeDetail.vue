@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Detail Karyawan" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Detail Karyawan" :subtitle="data?.employee_code || ''" back-to="/hr/employees">
+    <MobilePageHeader title="Detail Karyawan" :subtitle="data?.employee_code || ''">
       <template #actions>
         <button
           @click="$router.push(`/hr/employees/edit/${route.params.id}`)"

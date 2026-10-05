@@ -609,6 +609,295 @@ export const sqliteTransactionsService = {
   },
 
 
+  async getPaginated(
+    page: number,
+    perPage: number,
+    filters?: {
+      search?: string
+      paymentStatus?: string
+      transactionStatus?: string
+      recordStatus?: string
+      paymentMethod?: string
+      customer?: string
+      dateFrom?: string
+      dateTo?: string
+      minAmount?: number
+      maxAmount?: number
+      sortOrder?: string
+    }
+  ): Promise<{ data: Transaction[]; count: number }> {
+    const userId = getCurrentUserId()
+    const offset = (page - 1) * perPage
+
+    const conditions: string[] = ['t.user_id = ?']
+    const params: any[] = [userId]
+
+    if (filters?.recordStatus === 'aktif') {
+      conditions.push(`t.status NOT IN ('void', 'batal')`)
+    } else if (filters?.recordStatus === 'batal') {
+      conditions.push(`t.status IN ('void', 'batal')`)
+    }
+
+    if (filters?.transactionStatus && filters.transactionStatus !== 'semua') {
+      conditions.push(`t.transaction_status = ?`)
+      params.push(filters.transactionStatus)
+    }
+
+    if (filters?.paymentStatus && filters.paymentStatus !== 'semua') {
+      if (filters.paymentStatus === 'lunas') {
+        conditions.push(`t.payment_status = 'lunas'`)
+      } else {
+        conditions.push(`t.payment_status != 'lunas'`)
+      }
+    }
+
+    if (filters?.paymentMethod) {
+      conditions.push(`t.payment_method = ?`)
+      params.push(filters.paymentMethod)
+    }
+
+    if (filters?.customer === '__tanpa__') {
+      conditions.push(`t.customer_name IS NULL`)
+    } else if (filters?.customer) {
+      conditions.push(`t.customer_name = ?`)
+      params.push(filters.customer)
+    }
+
+    if (filters?.dateFrom) {
+      conditions.push(`t.created_at >= ?`)
+      params.push(filters.dateFrom + 'T00:00:00')
+    }
+    if (filters?.dateTo) {
+      conditions.push(`t.created_at <= ?`)
+      params.push(filters.dateTo + 'T23:59:59.999')
+    }
+
+    if (filters?.minAmount !== undefined) {
+      conditions.push(`t.total >= ?`)
+      params.push(filters.minAmount)
+    }
+    if (filters?.maxAmount !== undefined) {
+      conditions.push(`t.total <= ?`)
+      params.push(filters.maxAmount)
+    }
+
+    if (filters?.search) {
+      conditions.push(`(t.transaction_number LIKE ? OR t.customer_name LIKE ?)`)
+      params.push(`%${filters.search}%`, `%${filters.search}%`)
+    }
+
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
+
+    let orderBy = 'ORDER BY t.created_at DESC'
+    switch (filters?.sortOrder) {
+      case 'oldest':
+        orderBy = 'ORDER BY t.created_at ASC'
+        break
+      case 'highest':
+        orderBy = 'ORDER BY t.total DESC'
+        break
+      case 'lowest':
+        orderBy = 'ORDER BY t.total ASC'
+        break
+    }
+
+    const countRows = await query<{ total: number }>(
+      `SELECT COUNT(*) as total FROM transactions t ${where}`,
+      params
+    )
+    const count = countRows[0]?.total ?? 0
+
+    const rows = await query<any>(
+      `SELECT t.* FROM transactions t ${where} ${orderBy} LIMIT ? OFFSET ?`,
+      [...params, perPage, offset]
+    )
+
+    const data = await Promise.all(
+      rows.map(async (r) => {
+        const txn = this.mapRow(r)
+        txn.items = await this.getItems(txn.id)
+        return txn
+      })
+    )
+
+    return { data, count }
+  },
+
+  /**
+   * Import transaksi dari CSV (SQLite / offline).
+   * Logika identik dengan Supabase, tapi lookup produk dari SQLite lokal.
+   */
+  async importFromCsv(
+    rows: Record<string, string>[],
+    _headers: string[]
+  ): Promise<{ created: number; skipped: number; errors: string[] }> {
+    const userId = getCurrentUserId()
+
+    // ── 1. Load semua produk aktif ──────────────────────────────────
+    const allProducts = await query<any>(
+      `SELECT id, name, sku, price_sell FROM products WHERE user_id = ? AND is_active = 1`,
+      [userId]
+    )
+
+    const productByName = new Map<string, { id: string; price_sell: number }>()
+    const productBySku  = new Map<string, { id: string; price_sell: number }>()
+    for (const p of allProducts) {
+      productByName.set(p.name.toLowerCase().trim(), { id: p.id, price_sell: p.price_sell })
+      if (p.sku) productBySku.set(p.sku.toLowerCase().trim(), { id: p.id, price_sell: p.price_sell })
+    }
+
+    // ── 2. Helper ──────────────────────────────────────────────────
+    const findCol = (record: Record<string, string>, aliases: string[]): string => {
+      const norm = (s: string) => s.toLowerCase().replace(/[\s_\-./]/g, '')
+      for (const key of Object.keys(record)) {
+        if (aliases.includes(norm(key))) return record[key] ?? ''
+      }
+      return ''
+    }
+
+    const parseNum = (s: string): number => {
+      const clean = s.replace(/[^0-9.,\-]/g, '').replace(/\./g, '').replace(',', '.')
+      return parseFloat(clean) || 0
+    }
+
+    const parseDate = (s: string): string | null => {
+      if (!s.trim()) return null
+      const slash = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/)
+      if (slash) {
+        const [, d, m, y] = slash
+        const year = y.length === 2 ? `20${y}` : y
+        return `${year}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+      }
+      if (s.match(/^\d{4}-\d{1,2}-\d{1,2}/)) return s.slice(0, 10)
+      return null
+    }
+
+    // ── 3. Kelompokkan baris per transaksi ─────────────────────────
+    interface TxGroup {
+      groupKey: string
+      rowNumber: number
+      tanggal: string
+      customerName: string
+      paymentMethod: string
+      paidAmount: number
+      discount: number
+      shippingCost: number
+      notes: string
+      items: Array<{ product_id: string; quantity: number; price: number }>
+    }
+
+    const groups = new Map<string, TxGroup>()
+    const errors: string[] = []
+
+    for (let idx = 0; idx < rows.length; idx++) {
+      const row = rows[idx]
+      const rowNum = idx + 2
+
+      const noTxn      = findCol(row, ['notransaksi', 'notx', 'no', 'nomor'])
+      const tanggalRaw = findCol(row, ['tanggal', 'date', 'tgl'])
+      const namaProduk = findCol(row, ['namaproduk', 'produk', 'product', 'namabarang', 'barang', 'item', 'sku'])
+      const qtyRaw     = findCol(row, ['qty', 'jumlah', 'quantity', 'jml'])
+      const hargaRaw   = findCol(row, ['harga', 'hargasatuan', 'price', 'hargajual'])
+      const customer   = findCol(row, ['namacustomer', 'customer', 'pelanggan', 'nama'])
+      const bayarRaw   = findCol(row, ['metodebayar', 'metode', 'bayar', 'paymentmethod', 'payment'])
+      const paidRaw    = findCol(row, ['jumlahbayar', 'bayar', 'paid', 'dibayar', 'tunai'])
+      const diskonRaw  = findCol(row, ['diskon', 'discount', 'potongan'])
+      const ongkirRaw  = findCol(row, ['ongkir', 'shipping', 'ongkos', 'kirim'])
+      const notesVal   = findCol(row, ['catatan', 'notes', 'keterangan'])
+
+      if (!tanggalRaw.trim() && !noTxn.trim()) {
+        errors.push(`Baris ${rowNum}: Kolom Tanggal kosong, dilewati`)
+        continue
+      }
+      if (!namaProduk.trim()) {
+        errors.push(`Baris ${rowNum}: Kolom Nama Produk kosong, dilewati`)
+        continue
+      }
+
+      const tanggal = parseDate(tanggalRaw) || new Date().toISOString().slice(0, 10)
+      const qty = Math.max(parseNum(qtyRaw), 1)
+      const harga = parseNum(hargaRaw)
+
+      if (harga <= 0) {
+        errors.push(`Baris ${rowNum}: Harga satuan tidak valid ("${hargaRaw}"), dilewati`)
+        continue
+      }
+
+      const nameLower = namaProduk.toLowerCase().trim()
+      const produk = productByName.get(nameLower) || productBySku.get(nameLower)
+
+      if (!produk) {
+        errors.push(`Baris ${rowNum}: Produk "${namaProduk}" tidak ditemukan, dilewati`)
+        continue
+      }
+
+      const groupKey = noTxn.trim()
+        ? `txno:${noTxn.trim()}`
+        : `date:${tanggal}|cust:${customer.trim().toLowerCase()}`
+
+      if (!groups.has(groupKey)) {
+        const methodMap: Record<string, string> = {
+          tunai: 'tunai', cash: 'tunai',
+          transfer: 'transfer', tf: 'transfer', bank: 'transfer',
+          qris: 'qris', qr: 'qris',
+          tempo: 'tempo', kredit: 'tempo', credit: 'tempo',
+        }
+        const rawMethod = bayarRaw.toLowerCase().trim()
+        const method = methodMap[rawMethod] || (rawMethod || 'tunai')
+
+        groups.set(groupKey, {
+          groupKey,
+          rowNumber: rowNum,
+          tanggal,
+          customerName: customer.trim(),
+          paymentMethod: method,
+          paidAmount: parseNum(paidRaw),
+          discount: parseNum(diskonRaw),
+          shippingCost: parseNum(ongkirRaw),
+          notes: notesVal.trim(),
+          items: [],
+        })
+      }
+
+      groups.get(groupKey)!.items.push({
+        product_id: produk.id,
+        quantity: qty,
+        price: harga,
+      })
+    }
+
+    // ── 4. Buat transaksi via service.create() (auto-jurnal dari SQLite) ──
+    let created = 0
+    let skipped = 0
+
+    for (const [, grp] of groups) {
+      if (grp.items.length === 0) { skipped++; continue }
+
+      const subtotal = grp.items.reduce((s, i) => s + i.price * i.quantity, 0)
+      const total = Math.max(subtotal - grp.discount + grp.shippingCost, 0)
+      const paidAmount = grp.paidAmount > 0 ? grp.paidAmount : (grp.paymentMethod !== 'tempo' ? total : 0)
+
+      try {
+        await this.create({
+          customer_name: grp.customerName || undefined,
+          payment_method: grp.paymentMethod,
+          paid_amount: paidAmount,
+          discount: grp.discount,
+          shipping_cost: grp.shippingCost || undefined,
+          notes: grp.notes || undefined,
+          transaction_date: grp.tanggal + 'T00:00:00',
+          items: grp.items,
+        })
+        created++
+      } catch (e: any) {
+        skipped++
+        errors.push(`Grup ${grp.groupKey} (baris ${grp.rowNumber}): ${e.message}`)
+      }
+    }
+
+    return { created, skipped, errors }
+  },
+
   async search(queryStr: string): Promise<Transaction[]> {
     const userId = getCurrentUserId()
     const rows = await query<any>(

@@ -4,7 +4,7 @@
     <MobilePageHeader
       title="Matriks Harga"
       subtitle="Kelola harga tier & harga khusus"
-      back-to="/quick-menu/penjualan"
+     
     />
 
     <div class="mx-auto max-w-3xl space-y-4">

@@ -6,7 +6,7 @@
     <MobilePageHeader 
       title="Tambah Supplier" 
       subtitle="Tambah Data Pemasok Baru" 
-      back-to="/purchasing/suppliers"
+     
     />
 
     <!-- Form Card -->

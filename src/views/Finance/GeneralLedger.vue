@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Buku Besar" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Buku Besar" subtitle="Riwayat Saldo Per Akun" back-to="/quick-menu/keuangan">
+    <MobilePageHeader title="Buku Besar" subtitle="Riwayat Saldo Per Akun">
       <template #actions>
         <button
           v-if="selectedAccount"
@@ -92,14 +92,6 @@
             <p v-if="startDate" class="text-[9px] text-gray-400 dark:text-gray-500">
               Awal: {{ formatCurrency(ledgerStartDisplay) }}
             </p>
-            <span
-              class="mt-1.5 inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase"
-              :class="ledgerDkDiff === 0
-                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
-                : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'"
-            >
-              {{ ledgerDkDiff === 0 ? '✓ D = K' : `✗ Selisih D−K ${formatCurrency(Math.abs(ledgerDkDiff))}` }}
-            </span>
           </div>
         </div>
       </div>
@@ -222,16 +214,6 @@
                 {{ formatCurrency(ledgerEndingDisplay) }}
               </p>
             </div>
-            <div class="mt-2 flex items-center justify-center">
-              <span
-                class="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase"
-                :class="ledgerDkDiff === 0
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
-                  : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'"
-              >
-                {{ ledgerDkDiff === 0 ? '✓ D = K' : `✗ Selisih D−K ${formatCurrency(Math.abs(ledgerDkDiff))}` }}
-              </span>
-            </div>
           </div>
         </div>
 
@@ -292,16 +274,6 @@
                 </tfoot>
               </table>
             </div>
-          </div>
-          <div class="border-t border-gray-200 p-2.5 text-center dark:border-gray-700">
-            <span
-              class="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase"
-              :class="ledgerDkDiff === 0
-                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
-                : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'"
-            >
-              {{ ledgerDkDiff === 0 ? '✓ D = K' : `✗ Selisih D−K ${formatCurrency(Math.abs(ledgerDkDiff))}` }}
-            </span>
           </div>
         </div>
       </template>

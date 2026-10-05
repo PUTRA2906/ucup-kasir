@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Daftar Karyawan" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Karyawan" subtitle="Manajemen data karyawan" back-to="/quick-menu/karyawan">
+    <MobilePageHeader title="Karyawan" subtitle="Manajemen data karyawan">
       <template #actions>
         <button
           @click="$router.push('/hr/employees/add')"

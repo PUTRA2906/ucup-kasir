@@ -8,6 +8,13 @@ export const useCustomersStore = defineStore('customers', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
+  // State untuk server-side pagination
+  const paginatedCustomers = ref<Customer[]>([])
+  const paginationTotal = ref(0)
+  const paginationPage = ref(1)
+  const paginationPerPage = ref(20)
+  const paginationLoading = ref(false)
+
   async function fetchCustomers() {
     loading.value = true
     error.value = null
@@ -18,6 +25,30 @@ export const useCustomersStore = defineStore('customers', () => {
       throw e
     } finally {
       loading.value = false
+    }
+  }
+
+  async function fetchCustomersPaginated(
+    page: number,
+    perPage: number,
+    filters?: {
+      search?: string
+      kecamatan?: string
+    }
+  ) {
+    paginationLoading.value = true
+    error.value = null
+    try {
+      const result = await customersServiceAdapter.getPaginated(page, perPage, filters)
+      paginatedCustomers.value = result.data
+      paginationTotal.value = result.count
+      paginationPage.value = page
+      paginationPerPage.value = perPage
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      paginationLoading.value = false
     }
   }
 
@@ -128,7 +159,14 @@ export const useCustomersStore = defineStore('customers', () => {
     customers,
     loading,
     error,
+    // Pagination state
+    paginatedCustomers,
+    paginationTotal,
+    paginationPage,
+    paginationPerPage,
+    paginationLoading,
     fetchCustomers,
+    fetchCustomersPaginated,
     getCustomer,
     createCustomer,
     createCustomers,

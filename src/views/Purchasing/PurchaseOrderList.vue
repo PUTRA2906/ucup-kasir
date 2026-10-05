@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Purchase Order" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Purchase Order" subtitle="Pesanan Pembelian" back-to="/quick-menu/pembelian">
+    <MobilePageHeader title="Purchase Order" subtitle="Pesanan Pembelian">
       <template #actions>
         <button
           @click="$router.push('/purchasing/pos/add')"

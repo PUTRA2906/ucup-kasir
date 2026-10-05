@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Dashboard Keuangan" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Dashboard Keuangan" subtitle="Ringkasan Pembukuan &amp; Arus Kas" back-to="/quick-menu/keuangan">
+    <MobilePageHeader title="Dashboard Keuangan" subtitle="Ringkasan Pembukuan &amp; Arus Kas">
       <template #actions>
         <button
           @click="showFilterModal = true"

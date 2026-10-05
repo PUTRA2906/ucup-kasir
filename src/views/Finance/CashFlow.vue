@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Arus Kas" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Arus Kas" subtitle="Cash Flow" back-to="/quick-menu/keuangan">
+    <MobilePageHeader title="Arus Kas" subtitle="Cash Flow">
       <template #actions>
         <button
           @click="showFilterModal = true"

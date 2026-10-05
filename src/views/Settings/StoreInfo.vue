@@ -5,7 +5,7 @@
       <MobilePageHeader
         title="Informasi Toko"
         subtitle="Data ditampilkan pada invoice & struk"
-        back-to="/settings"
+       
       />
 
       <!-- Form -->

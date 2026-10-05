@@ -490,6 +490,12 @@ const router = createRouter({
       component: () => import('../views/Finance/ClosingPeriods.vue'),
       meta: { title: 'Tutup Buku' },
     },
+    {
+      path: '/laporan/mutasi-kas',
+      name: 'Daily Cash Report',
+      component: () => import('../views/Reports/DailyCashReport.vue'),
+      meta: { title: 'Mutasi Kas Hari Ini' },
+    },
     // ============================================================
     // Modul Pembelian Barang (Purchasing / Procurement)
     // ============================================================

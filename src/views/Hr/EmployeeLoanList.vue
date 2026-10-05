@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Kasbon Karyawan" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Kasbon Karyawan" subtitle="Pinjaman & Pemotongan Gaji" back-to="/quick-menu/karyawan">
+    <MobilePageHeader title="Kasbon Karyawan" subtitle="Pinjaman & Pemotongan Gaji">
       <template #actions>
         <button
           @click="openForm()"

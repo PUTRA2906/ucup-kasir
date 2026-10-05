@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Neraca Saldo" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Neraca Saldo" subtitle="Trial Balance" back-to="/quick-menu/keuangan">
+    <MobilePageHeader title="Neraca Saldo" subtitle="Trial Balance">
       <template #actions>
         <button
           v-if="rows.length > 0"

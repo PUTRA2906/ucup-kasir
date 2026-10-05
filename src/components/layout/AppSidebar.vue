@@ -310,19 +310,15 @@ const menuGroups = [
         name: "Karyawan & Payroll",
         icon: UserCircleIcon,
         subItems: [
-          { name: "Dashboard HR", path: "/hr", pro: false },
           { name: "Daftar Karyawan", path: "/hr/employees", pro: false },
-          { name: "Absensi", path: "/hr/attendance", pro: false },
           { name: "Kasbon", path: "/hr/loans", pro: false },
           { name: "Payroll", path: "/hr/payroll", pro: false },
-          { name: "Komponen Gaji", path: "/hr/payroll/components", pro: false },
         ],
       },
       {
         name: "Pengiriman",
         icon: TruckIcon,
         subItems: [
-          { name: "Dashboard", path: "/shipping", pro: false },
           { name: "Surat Jalan", path: "/shipping/deliveries", pro: false },
           { name: "Kendaraan", path: "/shipping/vehicles", pro: false },
         ],
@@ -343,11 +339,6 @@ const menuGroups = [
         icon: SettingsIcon,
         name: "Pengaturan",
         path: "/settings",
-      },
-      {
-        icon: UserCircleIcon,
-        name: "Profil",
-        path: "/profile",
       },
     ],
   },

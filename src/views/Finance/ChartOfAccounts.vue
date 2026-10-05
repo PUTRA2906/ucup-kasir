@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Chart of Accounts" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Chart of Accounts" subtitle="Daftar Akun Pembukuan" back-to="/quick-menu/keuangan">
+    <MobilePageHeader title="Chart of Accounts" subtitle="Daftar Akun Pembukuan">
       <template #actions>
         <button
           @click="openAdd"

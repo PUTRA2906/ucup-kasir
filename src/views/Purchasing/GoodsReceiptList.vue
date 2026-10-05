@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Goods Receipt" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Goods Receipt" subtitle="Penerimaan Barang" back-to="/quick-menu/pembelian">
+    <MobilePageHeader title="Goods Receipt" subtitle="Penerimaan Barang">
       <template #actions>
         <button
           @click="$router.push('/purchasing/grns/add')"

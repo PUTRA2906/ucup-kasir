@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Daftar Customer" class="hidden md:block" />
     <div class="space-y-6">
       <!-- Mobile Header -->
-      <MobilePageHeader title="Daftar Customer" :subtitle="customersStore.customers.length + ' Customer'" back-to="/quick-menu/penjualan">
+      <MobilePageHeader title="Daftar Customer" :subtitle="customersStore.paginationTotal + ' Customer'">
         <template #actions>
           <button
             @click="addCustomer"
@@ -61,7 +61,7 @@
         </div>
 
         <!-- Customer Cards -->
-        <div v-if="paginatedCustomers.length === 0" class="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-900/50">
+        <div v-if="displayCustomers.length === 0 && !isLoading" class="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-900/50">
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
@@ -75,7 +75,7 @@
 
         <div v-else class="space-y-3">
           <div
-            v-for="customer in paginatedCustomers"
+            v-for="customer in displayCustomers"
             :key="customer.id"
             @click="viewCustomer(customer)"
             class="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition active:scale-[0.98] dark:border-gray-800 dark:bg-white/[0.03]"
@@ -120,7 +120,7 @@
         </div>
 
         <!-- Pagination -->
-        <div v-if="filteredCustomers.length > 0" class="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-white/[0.03]">
+        <div v-if="customersStore.paginationTotal > 0" class="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-white/[0.03]">
           <div class="text-xs text-gray-600 dark:text-gray-400">
             {{ paginationInfo }}
           </div>
@@ -164,13 +164,13 @@
       <div class="hidden md:block">
         <DataTable
         :columns="columns"
-        :data="customersStore.customers"
-        :per-page="10"
+        :data="displayCustomers"
+        :per-page="PER_PAGE"
         :searchable="true"
         :show-add-button="true"
         add-button-text="Tambah Customer"
         title="Daftar Customer"
-        :subtitle="`${settingsStore.storeSubtitle} - ${customersStore.customers.length} Customer`"
+        :subtitle="`${settingsStore.storeSubtitle} - ${customersStore.paginationTotal} Customer`"
         :show-import-button="true"
         :show-export-button="true"
         @add-click="addCustomer"
@@ -497,7 +497,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watchEffect, onMounted } from 'vue'
+import { ref, computed, watchEffect, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from '@/components/tables/DataTable.vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
@@ -529,65 +529,54 @@ const showImportModal = ref(false)
 const customerToDelete = ref<any>(null)
 const searchQuery = ref('')
 
-// Auto register/unregister modals di navigation stack
 useAutoNavigationStack(showImportModal, 'customer-import-modal')
 const showMobileMenu = ref(false)
 const selectedMobileCustomer = ref<any>(null)
 
-// Pagination & Filter
+// Server-side pagination
+const PER_PAGE = 20
 const currentPage = ref(1)
-const itemsPerPage = ref(10)
 const showFilterModal = ref(false)
 
-// Auto register/unregister modals di navigation stack
 useAutoNavigationStack(showFilterModal, 'customer-list-filter-modal')
 const selectedKecamatan = ref<string | null>(null)
 
-// Available Kecamatans (unique list)
+// Bangun dan jalankan fetch server-side
+const fetchData = (page = 1) => {
+  currentPage.value = page
+  customersStore.fetchCustomersPaginated(page, PER_PAGE, {
+    search: searchQuery.value.trim() || undefined,
+    kecamatan: selectedKecamatan.value || undefined,
+  })
+}
+
+// Debounce search
+let searchDebounce: ReturnType<typeof setTimeout> | null = null
+const fetchDataDebounced = () => {
+  if (searchDebounce) clearTimeout(searchDebounce)
+  searchDebounce = setTimeout(() => fetchData(1), 400)
+}
+
+watch(searchQuery, fetchDataDebounced)
+watch(selectedKecamatan, () => fetchData(1))
+
+// Data dari store
+const displayCustomers = computed(() => customersStore.paginatedCustomers)
+const totalPages = computed(() => Math.ceil(customersStore.paginationTotal / PER_PAGE))
+const isLoading = computed(() => customersStore.paginationLoading)
+
+const paginationInfo = computed(() => {
+  const start = (currentPage.value - 1) * PER_PAGE + 1
+  const end = Math.min(currentPage.value * PER_PAGE, customersStore.paginationTotal)
+  return `${start}-${end} dari ${customersStore.paginationTotal}`
+})
+
+// Available kecamatans — ambil dari semua customers (pakai getAll sekali untuk dropdown filter)
 const availableKecamatans = computed(() => {
   const kecamatans = customersStore.customers
     .map((c) => c.kecamatan)
     .filter((k) => k && k.trim() !== '') as string[]
   return Array.from(new Set(kecamatans)).sort()
-})
-
-// Filter logic
-const filteredCustomers = computed(() => {
-  let result = customersStore.customers
-
-  // Filter by kecamatan
-  if (selectedKecamatan.value) {
-    result = result.filter((c) => c.kecamatan === selectedKecamatan.value)
-  }
-
-  // Filter by search query
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    result = result.filter(
-      (c) =>
-        c.name.toLowerCase().includes(query) ||
-        (c.store_name && c.store_name.toLowerCase().includes(query)) ||
-        (c.phone && c.phone.includes(query)) ||
-        (c.kecamatan && c.kecamatan.toLowerCase().includes(query))
-    )
-  }
-
-  return result
-})
-
-// Pagination logic
-const totalPages = computed(() => Math.ceil(filteredCustomers.value.length / itemsPerPage.value))
-
-const paginatedCustomers = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredCustomers.value.slice(start, end)
-})
-
-const paginationInfo = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value + 1
-  const end = Math.min(currentPage.value * itemsPerPage.value, filteredCustomers.value.length)
-  return `${start}-${end} dari ${filteredCustomers.value.length}`
 })
 
 const hasActiveFilter = computed(() => selectedKecamatan.value !== null)
@@ -597,22 +586,15 @@ const activeFilterLabel = computed(() => {
   return ''
 })
 
-// Watch for filter changes to reset page
-watchEffect(() => {
-  if (searchQuery.value || selectedKecamatan.value) {
-    currentPage.value = 1
-  }
-})
-
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
-    currentPage.value++
+    fetchData(currentPage.value + 1)
   }
 }
 
 const previousPage = () => {
   if (currentPage.value > 1) {
-    currentPage.value--
+    fetchData(currentPage.value - 1)
   }
 }
 
@@ -628,11 +610,11 @@ const showCustomerMenu = (customer: any, event: Event) => {
 }
 
 const allSelected = computed(() => {
-  return customersStore.customers.length > 0 && selectedCustomers.value.length === customersStore.customers.length
+  return displayCustomers.value.length > 0 && selectedCustomers.value.length === displayCustomers.value.length
 })
 
 const someSelected = computed(() => {
-  return selectedCustomers.value.length > 0 && selectedCustomers.value.length < customersStore.customers.length
+  return selectedCustomers.value.length > 0 && selectedCustomers.value.length < displayCustomers.value.length
 })
 
 watchEffect(() => {
@@ -645,7 +627,7 @@ const toggleSelectAll = () => {
   if (allSelected.value) {
     selectedCustomers.value = []
   } else {
-    selectedCustomers.value = customersStore.customers.map(c => c.id)
+    selectedCustomers.value = displayCustomers.value.map(c => c.id)
   }
 }
 
@@ -659,7 +641,6 @@ const columns = [
   { key: 'address', label: 'ALAMAT', sortable: true, width: 'w-3/12' },
 ]
 
-// Limit kredit efektif: limit khusus customer, fallback ke default global
 const effectiveCreditLimit = (row: Customer) =>
   row.credit_limit || settingsStore.settings.default_credit_limit || 0
 
@@ -673,7 +654,11 @@ const formatRupiah = (amount: number) =>
 
 onMounted(async () => {
   try {
-    await customersStore.fetchCustomers()
+    // Fetch paginated untuk tampilan, dan getAll untuk dropdown filter kecamatan
+    await Promise.all([
+      fetchData(1),
+      customersStore.fetchCustomers(),
+    ])
   } catch (error) {
     console.error('Error loading customers:', error)
     toast.info('Info', 'Gagal memuat data. Silakan refresh halaman.')
@@ -703,6 +688,7 @@ const confirmDelete = async () => {
   try {
     await customersStore.deleteCustomer(customerToDelete.value.id)
     toast.success('Berhasil!', 'Customer berhasil dihapus')
+    fetchData(currentPage.value)
   } catch (error) {
     console.error('Error deleting customer:', error)
     toast.error('Gagal!', 'Gagal menghapus customer')
@@ -723,6 +709,7 @@ const confirmBulkDelete = async () => {
     )
     selectedCustomers.value = []
     toast.success('Berhasil!', `${count} customer berhasil dihapus`)
+    fetchData(1)
   } catch (error) {
     console.error('Error deleting customers:', error)
     toast.error('Gagal!', 'Gagal menghapus beberapa customer')
@@ -835,7 +822,6 @@ const handleImportFile = async (file: File, updateExisting: boolean) => {
     const addressKey = ['alamat', 'address', 'addr']
     const notesKey = ['catatan', 'notes', 'keterangan', 'note']
 
-    // Map untuk deteksi duplikat: phone & (name + store)
     const existingByPhone = new Map<string, Customer>()
     const existingByKey = new Map<string, Customer>()
     customersStore.customers.forEach((c) => {
@@ -864,7 +850,6 @@ const handleImportFile = async (file: File, updateExisting: boolean) => {
       const phone = (findValue(row, phoneKey) ?? '').trim()
       const kecamatanValue = (findValue(row, kecamatanKey) ?? '').trim()
 
-      // Debug logging
       if (idx === 0) {
         console.log('🔍 Debug Import CSV - Baris pertama:')
         console.log('Headers normalized:', Object.keys(row))
@@ -882,7 +867,6 @@ const handleImportFile = async (file: File, updateExisting: boolean) => {
         credit_limit: 0,
       }
 
-      // Deteksi duplikat: prioritas phone, lalu kombinasi name|store
       const phoneLower = phone ? phone.toLowerCase() : null
       const key = `${name.toLowerCase()}|${(payload.store_name || '').toLowerCase()}`
 
@@ -909,7 +893,6 @@ const handleImportFile = async (file: File, updateExisting: boolean) => {
       }
     }
 
-    // Proses update
     for (const { id, data } of updates) {
       try {
         await customersStore.updateCustomer(id, data)
@@ -919,7 +902,6 @@ const handleImportFile = async (file: File, updateExisting: boolean) => {
       }
     }
 
-    // Proses insert (batch)
     if (importable.length > 0) {
       try {
         const createdBatch = await customersStore.createCustomers(importable)
@@ -930,7 +912,7 @@ const handleImportFile = async (file: File, updateExisting: boolean) => {
     }
 
     // Refresh data
-    await customersStore.fetchCustomers()
+    await Promise.all([fetchData(1), customersStore.fetchCustomers()])
 
     const summaryParts = [
       `${created} customer baru`,

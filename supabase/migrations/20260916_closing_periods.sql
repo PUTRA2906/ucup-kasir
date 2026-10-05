@@ -301,9 +301,9 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   -- Cek periode tertutup
-  IF check_period_closed(NEW.return_date::date, NEW.user_id) THEN
+  IF check_period_closed(NEW.created_at::date, NEW.user_id) THEN
     RAISE EXCEPTION 'Tidak dapat mengubah retur di periode yang sudah ditutup (%).',
-      NEW.return_date::date;
+      NEW.created_at::date;
   END IF;
 
   RETURN NEW;

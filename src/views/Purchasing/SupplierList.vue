@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Supplier" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Supplier" subtitle="Master Pemasok" back-to="/quick-menu/pembelian">
+    <MobilePageHeader title="Supplier" subtitle="Master Pemasok">
       <template #actions>
         <router-link
           to="/purchasing/suppliers/add"

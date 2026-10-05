@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Stok Gudang" class="hidden md:block" />
     <div class="space-y-6">
       <!-- ===== MOBILE: Header & Tombol Aksi ===== -->
-      <MobilePageHeader title="Stok Gudang" back-to="/quick-menu/gudang-stok">
+      <MobilePageHeader title="Stok Gudang">
         <template #actions>
           <button
             @click="openOpnameModal"
@@ -252,6 +252,16 @@
       >
         <template #header-actions>
           <div class="flex flex-col gap-2 sm:flex-row sm:gap-3">
+            <button
+              @click="showImportStockModal = true"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:px-4 dark:bg-white/[0.05] dark:text-gray-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.08]"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+              <span class="hidden sm:inline">Import Stok</span>
+              <span class="sm:hidden">Import</span>
+            </button>
             <button
               @click="openOpnameModal"
               class="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:px-4 dark:bg-white/[0.05] dark:text-gray-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.08]"
@@ -509,11 +519,13 @@ const toast = useToast()
 const showAdjustmentModal = ref(false)
 const showOpnameModal = ref(false)
 const showMinimumStockModal = ref(false)
+const showImportStockModal = ref(false)
 
 // Auto register/unregister modals di navigation stack
 useAutoNavigationStack(showAdjustmentModal, 'stock-adjustment-modal')
 useAutoNavigationStack(showOpnameModal, 'stock-opname-modal')
 useAutoNavigationStack(showMinimumStockModal, 'stock-minimum-modal')
+useAutoNavigationStack(showImportStockModal, 'stock-import-modal')
 const selectedProduct = ref<any>(null)
 const minimumStockValue = ref(10)
 const filters = ref({ category: '', status: '', stock: '' })

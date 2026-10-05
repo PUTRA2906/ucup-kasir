@@ -5,7 +5,7 @@
     <MobilePageHeader
       title="Log Event"
       :subtitle="`${entries.length} kejadian tercatat`"
-      back-to="/settings"
+     
     >
       <template #actions>
         <button

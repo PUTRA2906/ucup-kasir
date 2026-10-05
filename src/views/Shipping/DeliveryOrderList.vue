@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Surat Jalan" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Surat Jalan" subtitle="Daftar pengiriman" back-to="/quick-menu/pengiriman">
+    <MobilePageHeader title="Surat Jalan" subtitle="Daftar pengiriman">
       <template #actions>
         <button @click="router.push('/shipping/deliveries/add')" class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm hover:bg-blue-500 active:scale-95">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
