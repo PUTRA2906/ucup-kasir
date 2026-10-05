@@ -496,6 +496,12 @@ const router = createRouter({
       component: () => import('../views/Reports/DailyCashReport.vue'),
       meta: { title: 'Mutasi Kas Hari Ini' },
     },
+    {
+      path: '/laporan/mutasi-bank',
+      name: 'Daily Bank Report',
+      component: () => import('../views/Reports/DailyBankReport.vue'),
+      meta: { title: 'Mutasi Bank Hari Ini' },
+    },
     // ============================================================
     // Modul Pembelian Barang (Purchasing / Procurement)
     // ============================================================

@@ -1,9 +1,9 @@
 <template>
   <AdminLayout>
-    <PageBreadcrumb pageTitle="Mutasi Kas Hari Ini" class="hidden md:block" />
+    <PageBreadcrumb pageTitle="Mutasi Bank Hari Ini" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Mutasi Kas" :subtitle="formatDate(selectedDate)">
+    <MobilePageHeader title="Mutasi Bank" :subtitle="formatDate(selectedDate)">
       <template #actions>
         <button
           @click="showDatePicker = true"
@@ -59,14 +59,14 @@
         <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Saldo Kas Saat Ini</p>
+              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Saldo Bank Saat Ini</p>
               <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">
                 {{ formatCurrency(currentBalance) }}
               </p>
             </div>
-            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10">
-              <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/10">
+              <svg class="h-6 w-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
           </div>
@@ -128,8 +128,8 @@
                       {{ getTypeLabel(trx.type) }}
                     </span>
                     <span class="text-xs text-gray-400">•</span>
-                    <span class="text-xs" :class="trx.method === 'tunai' ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400'">
-                      {{ trx.method === 'tunai' ? 'Tunai' : 'Transfer' }}
+                    <span class="text-xs text-purple-600 dark:text-purple-400">
+                      Transfer
                     </span>
                   </div>
                   <p v-if="trx.reference" class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
@@ -193,8 +193,8 @@ import { ref, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
-import { dailyCashService } from '@/services/dailyCash'
-import type { CashTransaction, DailyCashSummary } from '@/services/dailyCash'
+import { dailyBankService } from '@/services/dailyBank'
+import type { BankTransaction, DailyBankSummary } from '@/services/dailyBank'
 import { useFinanceStore } from '@/stores/finance'
 
 const financeStore = useFinanceStore()
@@ -212,18 +212,14 @@ const presets = [
   { label: 'Bulan Ini', value: 'thisMonth' },
 ]
 
-const summary = ref<DailyCashSummary>({
+const summary = ref<DailyBankSummary>({
   total_in: 0,
   total_out: 0,
   net: 0,
-  tunai_in: 0,
-  tunai_out: 0,
-  transfer_in: 0,
-  transfer_out: 0,
   transactions_count: 0,
   payments_count: 0
 })
-const transactions = ref<CashTransaction[]>([])
+const transactions = ref<BankTransaction[]>([])
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('id-ID', {
@@ -239,14 +235,6 @@ const formatDate = (dateStr: string) => {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
-  }).format(date)
-}
-
-const formatTime = (dateStr: string) => {
-  const date = new Date(dateStr)
-  return new Intl.DateTimeFormat('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit'
   }).format(date)
 }
 
@@ -319,10 +307,10 @@ const applyDate = () => {
 const loadData = async () => {
   loading.value = true
   try {
-    // Load current cash balance
+    // Load current bank balance
     const balances = await financeStore.getAccountBalances()
-    const cashAccount = balances.find(b => b.account_code === '1-1001' || b.account_name.toLowerCase().includes('kas'))
-    currentBalance.value = cashAccount?.balance || 0
+    const bankAccount = balances.find(b => b.account_code === '1-1002' || b.account_name.toLowerCase().includes('bank'))
+    currentBalance.value = bankAccount?.balance || 0
 
     // Aggregate data dari range tanggal
     const days = []
@@ -335,11 +323,11 @@ const loadData = async () => {
 
     // Fetch data untuk semua tanggal dalam range
     const summaries = await Promise.all(
-      days.map(day => dailyCashService.getDailyCashSummary(day))
+      days.map(day => dailyBankService.getDailyBankSummary(day))
     )
 
     const transactionsList = await Promise.all(
-      days.map(day => dailyCashService.getDailyCashTransactions(day))
+      days.map(day => dailyBankService.getDailyBankTransactions(day))
     )
 
     // Aggregate summary
@@ -347,20 +335,12 @@ const loadData = async () => {
       total_in: acc.total_in + s.total_in,
       total_out: acc.total_out + s.total_out,
       net: acc.net + s.net,
-      tunai_in: acc.tunai_in + s.tunai_in,
-      tunai_out: acc.tunai_out + s.tunai_out,
-      transfer_in: acc.transfer_in + s.transfer_in,
-      transfer_out: acc.transfer_out + s.transfer_out,
       transactions_count: acc.transactions_count + s.transactions_count,
       payments_count: acc.payments_count + s.payments_count,
     }), {
       total_in: 0,
       total_out: 0,
       net: 0,
-      tunai_in: 0,
-      tunai_out: 0,
-      transfer_in: 0,
-      transfer_out: 0,
       transactions_count: 0,
       payments_count: 0,
     })
@@ -370,7 +350,7 @@ const loadData = async () => {
       (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
     )
   } catch (error) {
-    console.error('Error loading daily cash:', error)
+    console.error('Error loading daily bank:', error)
   } finally {
     loading.value = false
   }

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Background circles -->
+    <path
+        android:fillColor="#3B82F6"
+        android:fillAlpha="0.1"
+        android:pathData="M256,116C186.144,116 116,186.144 116,256C116,325.856 186.144,396 256,396C325.856,396 396,325.856 396,256C396,186.144 325.856,116 256,116Z"/>
+
+    <path
+        android:fillColor="#3B82F6"
+        android:fillAlpha="0.15"
+        android:pathData="M256,146C202.981,146 146,202.981 146,256C146,309.019 202.981,366 256,366C309.019,366 366,309.019 366,256C366,202.981 309.019,146 256,146Z"/>
+
+    <!-- Receipt Paper -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M226,196 L286,196 A4,4 0,0,1 290,200 L290,286 A4,4 0,0,1 286,290 L226,290 A4,4 0,0,1 222,286 L222,200 A4,4 0,0,1 226,196 Z"/>
+
+    <!-- Receipt Lines -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M236,211 L276,211"/>
+
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M236,226 L271,226"/>
+
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M236,241 L266,241"/>
+
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M236,256 L276,256"/>
+
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M236,271 L261,271"/>
+
+    <!-- Cash Symbol Circle -->
+    <circle
+        android:fillColor="#10B981"
+        android:cx="256"
+        android:cy="306"
+        android:r="20"/>
+
+    <!-- Rp Text -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 248,302 L 253,302 C 255,302 256,303 256,305 C 256,307 255,308 253,308 L 250,308 L 250,312 L 248,312 Z M 250,306 L 253,306 C 254,306 254,305.5 254,305 C 254,304.5 254,304 253,304 L 250,304 Z M 258,302 L 260,302 L 260,306 C 260,307.5 260.5,308 262,308 C 263.5,308 264,307.5 264,306 L 264,302 L 266,302 L 266,306 C 266,309 264.5,310 262,310 C 259.5,310 258,309 258,306 Z"/>
+</vector>

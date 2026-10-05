@@ -14,26 +14,27 @@
 
     <div v-else>
       <!-- Mobile Layout -->
-      <div class="mx-auto max-w-3xl space-y-4 pb-6 pr-2 md:hidden">
+      <div class="mx-auto max-w-3xl pb-6 md:hidden">
       <!-- Header Mobile -->
       <MobilePageHeader title="Pengaturan Toko" subtitle="Konfigurasi data usaha dan sistem" hide-back-button />
 
-      <!-- Informasi Toko — navigasi ke halaman terpisah -->
-      <section class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <!-- Settings List -->
+      <div class="divide-y divide-gray-200 bg-white dark:divide-gray-800 dark:bg-gray-900">
+        <!-- Informasi Toko -->
         <button
           @click="router.push('/settings/store-info')"
-          class="flex w-full items-center justify-between gap-3 p-4 text-left transition active:scale-[0.99]"
+          class="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition active:bg-gray-50 dark:active:bg-white/[0.02]"
         >
           <div class="flex items-center gap-3">
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
               <svg class="h-4 w-4 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
             <div>
-              <h2 class="text-sm font-bold text-gray-900 dark:text-white">Informasi Toko</h2>
-              <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
-                {{ settingsStore.settings.store_name || 'Nama toko, alamat, kontak, footer struk' }}
+              <h2 class="text-sm font-medium text-gray-900 dark:text-white">Informasi Toko</h2>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                {{ settingsStore.settings.store_name || 'Nama toko, alamat, kontak' }}
               </p>
             </div>
           </div>
@@ -41,262 +42,254 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
-      </section>
 
-      <!-- Variabel Global -->
-      <section class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <!-- Variabel Global -->
         <button
           @click="router.push('/settings/global-variables')"
-          class="flex w-full items-center justify-between gap-3 p-4 text-left transition active:scale-[0.99]"
+          class="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition active:bg-gray-50 dark:active:bg-white/[0.02]"
         >
           <div class="flex items-center gap-3">
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/10">
               <svg class="h-4 w-4 text-cyan-500 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
               </svg>
             </div>
             <div>
-              <h2 class="text-sm font-bold text-gray-900 dark:text-white">Variabel Global</h2>
-              <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">Limit kredit & upah bongkar muat</p>
+              <h2 class="text-sm font-medium text-gray-900 dark:text-white">Variabel Global</h2>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Limit kredit & upah bongkar muat</p>
             </div>
           </div>
           <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
-      </section>
 
-      <!-- Profil & Keamanan -->
-      <section class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <!-- Profil & Keamanan -->
         <button
           @click="router.push('/settings/profile')"
-          class="flex w-full items-center justify-between gap-3 p-4 text-left transition active:scale-[0.99]"
+          class="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition active:bg-gray-50 dark:active:bg-white/[0.02]"
         >
           <div class="flex items-center gap-3">
-            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10">
               <svg class="h-4 w-4 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
             <div>
-              <h2 class="text-sm font-bold text-gray-900 dark:text-white">Profil & Keamanan</h2>
-              <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">Data pribadi dan kata sandi akun</p>
+              <h2 class="text-sm font-medium text-gray-900 dark:text-white">Profil & Keamanan</h2>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Data pribadi dan kata sandi akun</p>
             </div>
           </div>
           <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
-      </section>
 
-      <!-- Tampilan Aplikasi -->
-      <section class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-        <button
-          @click="toggleSection('display')"
-          class="flex w-full items-center justify-between p-4 text-left transition active:scale-[0.99]"
-        >
-          <div class="flex items-center gap-1.5">
-            <svg class="h-4 w-4 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-            </svg>
-            <div>
-              <h2 class="font-outfit text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-200">
-                Tampilan Aplikasi
-              </h2>
-              <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">Penyesuaian tema visual layar</p>
-            </div>
-          </div>
-          <svg
-            :class="[
-              'h-5 w-5 text-gray-400 transition-transform duration-200',
-              expandedSections.display ? 'rotate-180' : ''
-            ]"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <!-- Tampilan Aplikasi -->
+        <div>
+          <button
+            @click="toggleSection('display')"
+            class="flex w-full items-center justify-between px-4 py-3.5 text-left transition active:bg-gray-50 dark:active:bg-white/[0.02]"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-
-        <div
-          v-show="expandedSections.display"
-          class="border-t border-gray-200 p-4 dark:border-gray-800"
-        >
-          <div class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-3 text-xs dark:border-gray-800 dark:bg-gray-900">
-            <div>
-              <p class="font-bold text-gray-900 dark:text-white">Mode Gelap (Dark Mode)</p>
-              <p class="text-[10px] text-gray-500 dark:text-gray-400">Kenyamanan mata saat di lapangan</p>
-            </div>
-            <button
-              @click="toggleTheme"
-              :class="[
-                'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
-                isDarkMode ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700',
-              ]"
-            >
-              <span
-                :class="[
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  isDarkMode ? 'translate-x-5' : 'translate-x-0',
-                ]"
-              />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Sinkronisasi Database -->
-      <section class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-        <button
-          @click="toggleSection('sync')"
-          class="flex w-full items-center justify-between p-4 text-left transition active:scale-[0.99]"
-        >
-          <div class="flex items-center gap-1.5">
-            <svg class="h-4 w-4 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <div>
-              <h2 class="font-outfit text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-200">
-                Sinkronisasi Database
-              </h2>
-              <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">Upload & download data dari server</p>
-            </div>
-          </div>
-          <svg
-            :class="[
-              'h-5 w-5 text-gray-400 transition-transform duration-200',
-              expandedSections.sync ? 'rotate-180' : ''
-            ]"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-
-        <div
-          v-show="expandedSections.sync"
-          class="space-y-2.5 border-t border-gray-200 p-4 dark:border-gray-800"
-        >
-          <!-- Status koneksi & pending -->
-          <div class="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-3 text-xs dark:border-gray-800 dark:bg-gray-900">
-            <div class="flex items-center gap-2">
-              <span
-                :class="[
-                  'inline-flex h-2.5 w-2.5 rounded-full',
-                  !isOnline ? 'bg-gray-400' : backupBusy ? 'bg-amber-500 animate-pulse' : 'bg-success-500',
-                ]"
-              ></span>
+            <div class="flex items-center gap-3">
+              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
+                <svg class="h-4 w-4 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                </svg>
+              </div>
               <div>
-                <p class="font-bold text-gray-900 dark:text-white">
-                  {{ !isOnline ? 'Offline' : backupBusy ? 'Sedang mengirim...' : hasPending ? 'Ada perubahan menunggu' : 'Tersinkron' }}
-                </p>
-                <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
-                  {{
-                    !isOnline
-                      ? 'Tidak terhubung ke internet'
-                      : hasPending && !backupBusy
-                        ? `${pendingCount} perubahan belum dikirim`
-                        : 'Semua perubahan sudah terkirim'
-                  }}
-                </p>
+                <h2 class="text-sm font-medium text-gray-900 dark:text-white">Tampilan Aplikasi</h2>
+                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Penyesuaian tema visual</p>
               </div>
             </div>
-            <BackupStatus />
-          </div>
+            <svg
+              :class="[
+                'h-5 w-5 text-gray-400 transition-transform duration-200',
+                expandedSections.display ? 'rotate-180' : ''
+              ]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
 
-          <!-- Info waktu sync terakhir -->
-          <div v-if="lastSyncInfo" class="rounded-lg bg-gray-50 p-2.5 text-[10px] dark:bg-gray-900/50">
+          <div
+            v-show="expandedSections.display"
+            class="border-t border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/50"
+          >
             <div class="flex items-center justify-between">
-              <span class="text-gray-500 dark:text-gray-400">Upload terakhir:</span>
-              <span class="font-medium text-gray-700 dark:text-gray-300">
-                {{ lastSyncInfo.lastSyncAt ? formatSyncDate(lastSyncInfo.lastSyncAt) : 'Belum pernah' }}
-              </span>
-            </div>
-            <div class="mt-1 flex items-center justify-between">
-              <span class="text-gray-500 dark:text-gray-400">Download terakhir:</span>
-              <span class="font-medium text-gray-700 dark:text-gray-300">
-                {{ lastSyncInfo.lastDownloadAt ? formatSyncDate(lastSyncInfo.lastDownloadAt) : 'Belum pernah' }}
-              </span>
+              <div>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">Mode Gelap</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Kenyamanan mata saat di lapangan</p>
+              </div>
+              <button
+                @click="toggleTheme"
+                :class="[
+                  'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
+                  isDarkMode ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700',
+                ]"
+              >
+                <span
+                  :class="[
+                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                    isDarkMode ? 'translate-x-5' : 'translate-x-0',
+                  ]"
+                />
+              </button>
             </div>
           </div>
-
-          <!-- Tombol Upload saja (cepat) -->
-          <button
-            @click="handleUploadChanges"
-            :disabled="!isOnline || backupBusy"
-            class="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 py-2.5 font-outfit text-xs font-bold text-white shadow-md transition active:scale-95 disabled:opacity-50"
-          >
-            <svg v-if="backupBusy" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
-            </svg>
-            {{ !isOnline ? 'Tidak Ada Internet' : backupBusy ? 'Mengirim...' : 'Upload Perubahan' }}
-          </button>
-
-          <!-- Tombol Sinkronisasi Penuh (upload + download) -->
-          <button
-            @click="handleFullSync"
-            :disabled="syncing || !isOnline"
-            class="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 py-2.5 font-outfit text-xs font-bold text-white shadow-md transition active:scale-95 disabled:opacity-50"
-          >
-            <svg v-if="syncing" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            {{ syncing ? syncProgress : 'Sinkronisasi Penuh (Upload + Download)' }}
-          </button>
-
-          <p v-if="syncError" class="text-[11px] font-medium text-red-500 dark:text-red-400">{{ syncError }}</p>
         </div>
-      </section>
 
-      <!-- Sinkronisasi Database -->
-      <section class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+        <!-- Sinkronisasi Database -->
+        <div>
+          <button
+            @click="toggleSection('sync')"
+            class="flex w-full items-center justify-between px-4 py-3.5 text-left transition active:bg-gray-50 dark:active:bg-white/[0.02]"
+          >
+            <div class="flex items-center gap-3">
+              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10">
+                <svg class="h-4 w-4 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-sm font-medium text-gray-900 dark:text-white">Sinkronisasi Database</h2>
+                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Upload & download data dari server</p>
+              </div>
+            </div>
+            <svg
+              :class="[
+                'h-5 w-5 text-gray-400 transition-transform duration-200',
+                expandedSections.sync ? 'rotate-180' : ''
+              ]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <div
+            v-show="expandedSections.sync"
+            class="space-y-3 border-t border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/50"
+          >
+            <!-- Status koneksi & pending -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span
+                  :class="[
+                    'inline-flex h-2 w-2 rounded-full',
+                    !isOnline ? 'bg-gray-400' : backupBusy ? 'bg-amber-500 animate-pulse' : 'bg-success-500',
+                  ]"
+                ></span>
+                <div>
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ !isOnline ? 'Offline' : backupBusy ? 'Sedang mengirim...' : hasPending ? 'Ada perubahan menunggu' : 'Tersinkron' }}
+                  </p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{
+                      !isOnline
+                        ? 'Tidak terhubung ke internet'
+                        : hasPending && !backupBusy
+                          ? `${pendingCount} perubahan belum dikirim`
+                          : 'Semua perubahan sudah terkirim'
+                    }}
+                  </p>
+                </div>
+              </div>
+              <BackupStatus />
+            </div>
+
+            <!-- Info waktu sync terakhir -->
+            <div v-if="lastSyncInfo" class="rounded-lg bg-white p-2.5 text-xs dark:bg-gray-900">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-500 dark:text-gray-400">Upload terakhir:</span>
+                <span class="font-medium text-gray-700 dark:text-gray-300">
+                  {{ lastSyncInfo.lastSyncAt ? formatSyncDate(lastSyncInfo.lastSyncAt) : 'Belum pernah' }}
+                </span>
+              </div>
+              <div class="mt-1 flex items-center justify-between">
+                <span class="text-gray-500 dark:text-gray-400">Download terakhir:</span>
+                <span class="font-medium text-gray-700 dark:text-gray-300">
+                  {{ lastSyncInfo.lastDownloadAt ? formatSyncDate(lastSyncInfo.lastDownloadAt) : 'Belum pernah' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Tombol Upload -->
+            <button
+              @click="handleUploadChanges"
+              :disabled="!isOnline || backupBusy"
+              class="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-500 py-2.5 text-sm font-medium text-white shadow-sm transition active:scale-95 disabled:opacity-50"
+            >
+              <svg v-if="backupBusy" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+              </svg>
+              {{ !isOnline ? 'Tidak Ada Internet' : backupBusy ? 'Mengirim...' : 'Upload Perubahan' }}
+            </button>
+
+            <!-- Tombol Sinkronisasi Penuh -->
+            <button
+              @click="handleFullSync"
+              :disabled="syncing || !isOnline"
+              class="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-500 py-2.5 text-sm font-medium text-white shadow-sm transition active:scale-95 disabled:opacity-50"
+            >
+              <svg v-if="syncing" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {{ syncing ? syncProgress : 'Sinkronisasi Penuh' }}
+            </button>
+
+            <p v-if="syncError" class="text-xs font-medium text-red-500 dark:text-red-400">{{ syncError }}</p>
+          </div>
+        </div>
+
+        <!-- Log Event -->
         <button
           @click="router.push('/settings/event-log')"
-          class="flex w-full items-center justify-between gap-3 p-4 text-left transition active:scale-[0.99]"
+          class="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition active:bg-gray-50 dark:active:bg-white/[0.02]"
         >
           <div class="flex items-center gap-3">
-            <svg class="h-5 w-5 text-rose-500 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M9 8h6M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
-            </svg>
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-500/10">
+              <svg class="h-4 w-4 text-rose-500 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M9 8h6M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+              </svg>
+            </div>
             <div>
-              <h2 class="font-outfit text-sm font-bold text-gray-900 dark:text-white">
-                Log Event
-              </h2>
-              <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">Riwayat error &amp; aktivitas (SQLite / Supabase / Sync)</p>
+              <h2 class="text-sm font-medium text-gray-900 dark:text-white">Log Event</h2>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Riwayat error & aktivitas</p>
             </div>
           </div>
           <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
-      </section>
 
-      <!-- Keluar -->
-      <section class="rounded-2xl border border-red-200 bg-white shadow-sm dark:border-red-900/30 dark:bg-white/[0.03]">
+        <!-- Keluar -->
         <button
           @click="showLogoutConfirm = true"
-          class="flex w-full items-center gap-3 p-4 text-left transition active:scale-[0.99]"
+          class="flex w-full items-center gap-3 border-t border-red-100 px-4 py-3.5 text-left transition active:bg-red-50 dark:border-red-900/30 dark:active:bg-red-500/5"
         >
-          <LogoutIcon class="h-5 w-5 text-red-500 dark:text-red-400" />
+          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10">
+            <LogoutIcon class="h-4 w-4 text-red-500 dark:text-red-400" />
+          </div>
           <div>
-            <h2 class="font-outfit text-sm font-bold text-red-600 dark:text-red-400">
-              Keluar
-            </h2>
-            <p class="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">Keluar dari akun aplikasi ini</p>
+            <h2 class="text-sm font-medium text-red-600 dark:text-red-400">Keluar</h2>
+            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Keluar dari akun aplikasi ini</p>
           </div>
         </button>
-      </section>
+      </div>
 
     </div>
 

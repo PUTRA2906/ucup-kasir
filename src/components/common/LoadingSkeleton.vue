@@ -11,6 +11,31 @@
     <div class="h-10 w-10 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
   </div>
 
+  <!-- Account Balance Carousel Skeleton -->
+  <div v-else-if="type === 'account-balance-carousel'" class="space-y-3 animate-pulse">
+    <div class="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+      <!-- Card Kas Skeleton -->
+      <div class="min-w-full snap-center rounded-2xl bg-gray-200 p-5 shadow-lg dark:bg-gray-800">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <div class="h-5 w-5 rounded bg-gray-300 dark:bg-gray-700"></div>
+            <div class="h-4 w-16 rounded bg-gray-300 dark:bg-gray-700"></div>
+          </div>
+          <div class="h-6 w-24 rounded-lg bg-gray-300 dark:bg-gray-700"></div>
+        </div>
+        <div>
+          <div class="h-7 w-36 rounded bg-gray-300 dark:bg-gray-700 mb-1"></div>
+          <div class="h-3 w-20 rounded bg-gray-300 dark:bg-gray-700 mb-4"></div>
+        </div>
+        <div class="h-10 w-full rounded-xl bg-gray-300 dark:bg-gray-700"></div>
+      </div>
+    </div>
+    <div class="flex justify-center gap-1.5">
+      <div class="h-1.5 w-6 bg-gray-300 rounded-full dark:bg-gray-700"></div>
+      <div class="h-1.5 w-1.5 bg-gray-300 rounded-full dark:bg-gray-700"></div>
+    </div>
+  </div>
+
   <!-- Mobile Grid Menu Skeleton -->
   <div
     v-else-if="type === 'mobile-menu'"
@@ -93,6 +118,7 @@
 defineProps<{
   type?:
     | 'mobile-greeting'
+    | 'account-balance-carousel'
     | 'mobile-menu'
     | 'card'
     | 'list-item'
