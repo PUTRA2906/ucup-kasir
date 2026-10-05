@@ -53,11 +53,9 @@
         android:pathData="M236,271 L261,271"/>
 
     <!-- Cash Symbol Circle -->
-    <circle
+    <path
         android:fillColor="#10B981"
-        android:cx="256"
-        android:cy="306"
-        android:r="20"/>
+        android:pathData="M256,286 C267.046,286 276,294.954 276,306 C276,317.046 267.046,326 256,326 C244.954,326 236,317.046 236,306 C236,294.954 244.954,286 256,286 Z"/>
 
     <!-- Rp Text -->
     <path
