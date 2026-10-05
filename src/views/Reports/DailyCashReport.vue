@@ -193,7 +193,7 @@ import { ref, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
-import { dailyCashService } from '@/services/dailyCash'
+import { dailyCashServiceAdapter as dailyCashService } from '@/services'
 import type { CashTransaction, DailyCashSummary } from '@/services/dailyCash'
 import { useFinanceStore } from '@/stores/finance'
 
