@@ -319,11 +319,9 @@ export const QUICK_MENU_GROUPS: (Omit<QuickMenuGroup, 'items'> & {
 
 /** Mapping id menu → judul grup */
 export const GROUP_MAP: Record<string, string> = {
-  // Gudang & Stok
-  stock: 'Gudang & Stok',
-  products: 'Gudang & Stok',
-  categories: 'Gudang & Stok',
-  'stock-movements': 'Gudang & Stok',
+  // Gudang
+  stock: 'Gudang',
+  'stock-movements': 'Gudang',
   // Penjualan
   'add-transaction': 'Penjualan',
   customers: 'Penjualan',
@@ -359,9 +357,7 @@ export const GROUP_MAP: Record<string, string> = {
 
 /** Mapping id menu → subgrup (dipakai di halaman "Lihat Semua") */
 export const SUBGROUP_MAP: Record<string, string> = {
-  // Gudang & Stok
-  products: 'Master Produk',
-  categories: 'Master Produk',
+  // Gudang
   stock: 'Gudang',
   'stock-movements': 'Gudang',
   // Penjualan
@@ -399,7 +395,7 @@ export const SUBGROUP_MAP: Record<string, string> = {
 /** Urutan tampil subgrup per grup di halaman "Lihat Semua" */
 export const SUBGROUP_ORDER: Record<string, string[]> = {
   penjualan: ['Transaksi', 'Pelanggan'],
-  'gudang-stok': ['Master Produk', 'Gudang'],
+  'gudang-stok': ['Gudang'],
   keuangan: ['Ringkasan', 'Pencatatan', 'Laporan Keuangan'],
   pembelian: ['Ringkasan', 'Master Supplier', 'Transaksi Pembelian'],
   pengiriman: ['Operasional'],

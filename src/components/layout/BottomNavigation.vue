@@ -54,7 +54,7 @@
 
     <!-- Laporan -->
     <router-link
-      to="/reports/sales"
+      to="/reports"
       class="nav-btn flex flex-1 flex-col items-center justify-center py-1 transition-colors"
       :class="isActive('/reports') ? 'font-semibold text-blue-500' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'"
     >
