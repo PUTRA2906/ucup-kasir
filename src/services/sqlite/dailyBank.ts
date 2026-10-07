@@ -83,7 +83,7 @@ export const sqliteDailyBankService = {
       }>(
         `SELECT jl.debit, jl.credit
          FROM journal_lines jl
-         INNER JOIN journal_entries je ON jl.journal_entry_id = je.id
+         INNER JOIN journal_entries je ON jl.journal_id = je.id
          WHERE jl.account_id IN (${placeholders})
            AND je.status = 'posted'
            AND DATE(je.entry_date) = DATE(?)`,
@@ -217,11 +217,11 @@ export const sqliteDailyBankService = {
         credit: number
         account_id: string
         created_at: string
-        journal_entry_id: string
+        journal_id: string
       }>(
-        `SELECT jl.id, jl.debit, jl.credit, jl.account_id, jl.created_at, jl.journal_entry_id
+        `SELECT jl.id, jl.debit, jl.credit, jl.account_id, jl.created_at, jl.journal_id
          FROM journal_lines jl
-         INNER JOIN journal_entries je ON jl.journal_entry_id = je.id
+         INNER JOIN journal_entries je ON jl.journal_id = je.id
          WHERE jl.account_id IN (${placeholders})
            AND je.status = 'posted'
            AND DATE(je.entry_date) = DATE(?)`,
@@ -243,7 +243,7 @@ export const sqliteDailyBankService = {
           `SELECT journal_number, description
            FROM journal_entries
            WHERE id = ?`,
-          [line.journal_entry_id]
+          [line.journal_id]
         )
 
         const journal = journalData[0]
