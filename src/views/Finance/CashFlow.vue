@@ -16,16 +16,8 @@
       </template>
     </MobilePageHeader>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center py-20">
-      <div class="text-center">
-        <div class="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Memuat arus kas...</p>
-      </div>
-    </div>
-
     <!-- Error -->
-    <div v-else-if="error" class="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-500/30 dark:bg-red-500/10">
+    <div v-if="error" class="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-500/30 dark:bg-red-500/10">
       <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
     </div>
 
@@ -44,8 +36,38 @@
         </button>
       </div>
 
+      <!-- Loading State (hanya untuk konten data) -->
+      <div v-if="loading" class="space-y-3">
+        <!-- Skeleton Stat Cards -->
+        <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div v-for="i in 4" :key="i" class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm animate-pulse dark:border-gray-800 dark:bg-gray-900">
+            <div class="mb-2 flex items-center justify-between">
+              <div class="h-3 w-16 bg-gray-200 rounded dark:bg-gray-700"></div>
+              <div class="h-6 w-6 bg-gray-200 rounded-lg dark:bg-gray-700"></div>
+            </div>
+            <div class="h-5 w-24 bg-gray-300 rounded dark:bg-gray-600 mb-1"></div>
+            <div class="h-2 w-20 bg-gray-200 rounded dark:bg-gray-700"></div>
+          </div>
+        </div>
+        <!-- Skeleton Breakdown -->
+        <div class="grid grid-cols-2 gap-3">
+          <div v-for="i in 2" :key="i" class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm animate-pulse dark:border-gray-800 dark:bg-gray-900">
+            <div class="h-3 w-16 bg-gray-200 rounded dark:bg-gray-700 mb-2"></div>
+            <div class="h-4 w-20 bg-gray-300 rounded dark:bg-gray-600 mb-1"></div>
+            <div class="h-2 w-32 bg-gray-200 rounded dark:bg-gray-700"></div>
+          </div>
+        </div>
+        <!-- Skeleton Rincian -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm animate-pulse dark:border-gray-800 dark:bg-gray-900">
+          <div class="h-4 w-32 bg-gray-300 rounded dark:bg-gray-600 mb-3"></div>
+          <div class="space-y-2">
+            <div v-for="i in 3" :key="i" class="h-16 bg-gray-100 rounded-xl dark:bg-gray-800"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Stat Cards (Mobile 2 Kolom) -->
-      <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div v-else class="grid grid-cols-2 gap-3 md:grid-cols-4">
         <!-- Kas Masuk -->
         <div class="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-3.5 shadow-sm dark:border-emerald-500/30 dark:from-emerald-500/10 dark:to-gray-900">
           <div class="mb-2 flex items-center justify-between">

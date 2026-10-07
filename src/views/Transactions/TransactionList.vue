@@ -18,46 +18,44 @@
 
     <!-- Mobile Search & Filter -->
     <div class="space-y-2 pt-2 pb-1 md:hidden">
-      <!-- Search Bar -->
-      <div class="relative">
-        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-          <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+      <!-- Search Bar + Filter Button -->
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1">
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Cari no. transaksi, customer, metode..."
+            class="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder-gray-400"
+          />
+          <button
+            v-if="searchQuery"
+            @click="searchQuery = ''"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Cari no. transaksi, customer, metode..."
-          class="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder-gray-400"
-        />
-        <button
-          v-if="searchQuery"
-          @click="searchQuery = ''"
-          class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
-        >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
 
-      <!-- Filter Buttons -->
-      <div class="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-        <!-- Buka modal filter lengkap -->
+        <!-- Tombol Filter -->
         <button
           @click="showFilterModal = true"
           :class="[
-            'relative flex flex-shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-colors',
+            'relative flex flex-shrink-0 items-center justify-center rounded-xl border p-2.5 transition-colors',
             mobileAdvancedFilterCount > 0
               ? 'border-brand-500 bg-brand-500 text-white'
               : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
           ]"
         >
-          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
-          Filter
           <span
             v-if="mobileAdvancedFilterCount > 0"
             class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-error-500 text-[9px] font-bold text-white"
@@ -65,22 +63,10 @@
             {{ mobileAdvancedFilterCount }}
           </span>
         </button>
+      </div>
 
-        <span class="h-4 w-px flex-shrink-0 bg-gray-200 dark:bg-gray-700"></span>
-
-        <!-- Status transaksi (dropdown) -->
-        <div class="flex-shrink-0 w-36">
-          <SelectField
-            v-model="transactionStatusFilter"
-            :options="transactionStatusOptions"
-            title="Pilih Status Transaksi"
-            placeholder="Semua Status"
-            button-class="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-[11px] font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-          />
-        </div>
-
-        <span class="h-4 w-px flex-shrink-0 bg-gray-200 dark:bg-gray-700"></span>
-
+      <!-- Filter Pills (Status pembayaran) -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
         <!-- Status pembayaran -->
         <button
           v-for="opt in paymentOptions"

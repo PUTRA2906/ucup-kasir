@@ -17,78 +17,58 @@
     </MobilePageHeader>
 
     <div class="space-y-4 px-4 md:px-0">
-      <!-- Loading Skeleton -->
-      <div v-if="loading" class="space-y-4">
-        <!-- Saldo Card Skeleton -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex-1">
-              <div class="h-3 w-24 bg-gray-200 rounded animate-pulse dark:bg-gray-700"></div>
-              <div class="mt-2 h-8 w-40 bg-gray-200 rounded animate-pulse dark:bg-gray-700"></div>
-            </div>
-            <div class="h-12 w-12 bg-gray-200 rounded-2xl animate-pulse dark:bg-gray-700"></div>
+      <!-- Saldo Card - Bank Style (Real-time, tidak terpengaruh filter) -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Saldo Kas Saat Ini</p>
+            <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">
+              {{ formatCurrency(currentBalance) }}
+            </p>
+          </div>
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10">
+            <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
           </div>
         </div>
+      </div>
 
-        <!-- Filter Chips Skeleton -->
-        <div class="flex items-center gap-2 overflow-x-auto pb-2">
-          <div v-for="i in 4" :key="i" class="h-8 w-24 bg-gray-200 rounded-xl animate-pulse dark:bg-gray-700"></div>
+      <!-- Filter Chips -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2">
+        <button
+          v-for="preset in presets"
+          :key="preset.value"
+          @click="applyPreset(preset.value)"
+          class="flex-shrink-0 rounded-xl px-3 py-1.5 text-xs font-medium transition active:scale-95"
+          :class="selectedPreset === preset.value
+            ? 'bg-brand-500 text-white'
+            : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-white/[0.05]'"
+        >
+          {{ preset.label }}
+        </button>
+      </div>
+
+      <!-- Loading Skeleton (hanya untuk Riwayat Mutasi) -->
+      <div v-if="loading" class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+          <div class="h-4 w-32 bg-gray-200 rounded animate-pulse dark:bg-gray-700"></div>
         </div>
-
-        <!-- Riwayat Mutasi Skeleton -->
-        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <div class="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
-            <div class="h-4 w-32 bg-gray-200 rounded animate-pulse dark:bg-gray-700"></div>
-          </div>
-          <div class="divide-y divide-gray-100 dark:divide-gray-800">
-            <div v-for="i in 5" :key="i" class="px-4 py-3">
-              <div class="flex items-start justify-between gap-3">
-                <div class="flex-1 min-w-0">
-                  <div class="h-4 w-3/4 bg-gray-200 rounded animate-pulse dark:bg-gray-700"></div>
-                  <div class="mt-2 h-3 w-1/2 bg-gray-200 rounded animate-pulse dark:bg-gray-700"></div>
-                </div>
-                <div class="h-4 w-24 bg-gray-200 rounded animate-pulse dark:bg-gray-700"></div>
+        <div class="divide-y divide-gray-100 dark:divide-gray-800">
+          <div v-for="i in 5" :key="i" class="px-4 py-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="h-4 w-3/4 bg-gray-200 rounded animate-pulse dark:bg-gray-700"></div>
+                <div class="mt-2 h-3 w-1/2 bg-gray-200 rounded animate-pulse dark:bg-gray-700"></div>
               </div>
+              <div class="h-4 w-24 bg-gray-200 rounded animate-pulse dark:bg-gray-700"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <template v-else>
-        <!-- Saldo Card - Bank Style (Real-time, tidak terpengaruh filter) -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Saldo Kas Saat Ini</p>
-              <p class="mt-1 text-3xl font-bold text-gray-900 dark:text-white">
-                {{ formatCurrency(currentBalance) }}
-              </p>
-            </div>
-            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10">
-              <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Filter Chips -->
-        <div class="flex items-center gap-2 overflow-x-auto pb-2">
-          <button
-            v-for="preset in presets"
-            :key="preset.value"
-            @click="applyPreset(preset.value)"
-            class="flex-shrink-0 rounded-xl px-3 py-1.5 text-xs font-medium transition active:scale-95"
-            :class="selectedPreset === preset.value
-              ? 'bg-brand-500 text-white'
-              : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-white/[0.05]'"
-          >
-            {{ preset.label }}
-          </button>
-        </div>
-
-        <!-- Riwayat Mutasi (Filtered) -->
-        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+      <!-- Riwayat Mutasi (Filtered) -->
+      <div v-else class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <div class="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
             <div class="flex items-center justify-between">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Riwayat Mutasi</h3>
@@ -150,7 +130,6 @@
             </div>
           </div>
         </div>
-      </template>
     </div>
 
     <!-- Date Picker Modal -->
@@ -319,18 +298,35 @@ const applyDate = () => {
 const loadData = async () => {
   loading.value = true
   try {
-    // Load current cash balance
+    // Load current cash balance (tanpa filter endDate agar ambil saldo real-time terkini)
     const balances = await financeStore.getAccountBalances()
-    const cashAccount = balances.find(b => b.account_code === '1-1001' || b.account_name.toLowerCase().includes('kas'))
-    currentBalance.value = cashAccount?.balance || 0
+    const cashAccount = balances.find(b => b.account_code === '1-1000')
+
+    // Normalisasi saldo: Kas adalah akun Aset dengan normal_balance = 'debit'
+    // Service mengembalikan basis debit mentah (debit - credit)
+    // Untuk akun debit, saldo positif = normal. Untuk akun kredit, perlu dibalik.
+    if (cashAccount) {
+      currentBalance.value = cashAccount.normal_balance === 'debit'
+        ? cashAccount.balance
+        : -cashAccount.balance
+    } else {
+      currentBalance.value = 0
+    }
+
+    // Debug: log untuk cek apakah balance terambil
+    console.log('Cash account:', cashAccount)
+    console.log('Normalized balance:', currentBalance.value)
 
     // Aggregate data dari range tanggal
     const days = []
-    const start = new Date(selectedDate.value)
-    const end = new Date(endDate.value)
+    const start = new Date(selectedDate.value + 'T00:00:00')
+    const end = new Date(endDate.value + 'T00:00:00')
 
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      days.push(d.toISOString().split('T')[0])
+    // Buat array tanggal dari start sampai end
+    const currentDate = new Date(start)
+    while (currentDate <= end) {
+      days.push(currentDate.toISOString().split('T')[0])
+      currentDate.setDate(currentDate.getDate() + 1)
     }
 
     // Fetch data untuk semua tanggal dalam range
