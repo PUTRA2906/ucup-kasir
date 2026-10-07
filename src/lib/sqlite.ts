@@ -288,7 +288,8 @@ async function migrateSchema(): Promise<void> {
     const hasPaymentDate = await db!.query(`PRAGMA table_info(transaction_payments)`)
     const paymentDateExists = (hasPaymentDate.values || []).some((r: any) => String(r.name) === 'payment_date')
     if (!paymentDateExists) {
-      await db!.execute(`ALTER TABLE transaction_payments ADD COLUMN payment_date TEXT NOT NULL DEFAULT (date('now'))`, false)
+      // Tambah kolom tanpa default dulu, lalu backfill
+      await db!.execute(`ALTER TABLE transaction_payments ADD COLUMN payment_date TEXT`, false)
       // Backfill existing records dengan DATE(created_at)
       await db!.execute(`UPDATE transaction_payments SET payment_date = date(created_at) WHERE payment_date IS NULL`, false)
     }
@@ -469,7 +470,16 @@ function splitStatements(sql: string): string[] {
     })
 }
 
-/** Dapatkan koneksi database (pastikan sudah diinisialisasi). */
+/** Jalankan migrasi manual (untuk force update database existing) */
+export async function runMigrations(): Promise<void> {
+  if (!db) {
+    await initSQLite()
+  }
+  if (!db) throw new Error('SQLite belum diinisialisasi')
+
+  await migrateSchema()
+  console.log('Migrasi SQLite selesai')
+}
 export async function getDb(): Promise<SQLiteDBConnection> {
   if (!db) {
     await initSQLite()

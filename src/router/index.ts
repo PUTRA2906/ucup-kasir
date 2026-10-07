@@ -81,6 +81,14 @@ const router = createRouter({
       },
     },
     {
+      path: '/dev-tools',
+      name: 'DevTools',
+      component: () => import('../views/DevTools.vue'),
+      meta: {
+        title: 'Developer Tools',
+      },
+    },
+    {
       path: '/notifications',
       name: 'Notifications',
       component: () => import('../views/Notifications.vue'),
