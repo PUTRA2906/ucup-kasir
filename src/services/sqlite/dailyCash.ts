@@ -51,9 +51,9 @@ export const sqliteDailyCashService = {
     }>(
       `SELECT amount, payment_method
        FROM transaction_payments
-       WHERE DATE(payment_date) = DATE(?)
+       WHERE (DATE(payment_date) = DATE(?) OR DATE(created_at) = DATE(?))
          AND user_id = ?`,
-      [date, userId]
+      [date, date, userId]
     )
 
     // Hitung total
@@ -196,10 +196,10 @@ export const sqliteDailyCashService = {
     }>(
       `SELECT id, amount, payment_method, created_at, payment_date, transaction_id
        FROM transaction_payments
-       WHERE DATE(payment_date) = DATE(?)
+       WHERE (DATE(payment_date) = DATE(?) OR DATE(created_at) = DATE(?))
          AND user_id = ?
        ORDER BY created_at DESC`,
-      [date, userId]
+      [date, date, userId]
     )
 
     for (const payment of payments) {

@@ -44,12 +44,11 @@ export const dailyCashService = {
 
     if (salesErr) throw salesErr
 
-    // 2. Cicilan hari ini
+    // 2. Cicilan hari ini (filter by payment_date)
     const { data: payments, error: paymentsErr } = await supabase
       .from('transaction_payments')
-      .select('amount, payment_method, created_at')
-      .gte('created_at', date + 'T00:00:00.000')
-      .lte('created_at', date + 'T23:59:59.999')
+      .select('amount, payment_method, created_at, payment_date')
+      .eq('payment_date', date)
       .eq('user_id', user.user.id)
 
     if (paymentsErr) throw paymentsErr
@@ -169,12 +168,11 @@ export const dailyCashService = {
       }
     }
 
-    // 2. Cicilan hari ini
+    // 2. Cicilan hari ini (filter by payment_date)
     const { data: payments, error: paymentsErr } = await supabase
       .from('transaction_payments')
-      .select('id, amount, payment_method, created_at, transaction:transactions!inner(transaction_number, customer_name)')
-      .gte('created_at', date + 'T00:00:00.000')
-      .lte('created_at', date + 'T23:59:59.999')
+      .select('id, amount, payment_method, created_at, payment_date, transaction:transactions!inner(transaction_number, customer_name)')
+      .eq('payment_date', date)
       .eq('user_id', user.user.id)
       .order('created_at', { ascending: false })
 
