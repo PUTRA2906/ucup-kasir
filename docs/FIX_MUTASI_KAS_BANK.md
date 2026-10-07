@@ -37,19 +37,34 @@ Saat menambahkan pembayaran cicilan di aplikasi Android, saldo kas/bank tidak te
 
 ## Files Changed
 
-1. `supabase/migrations/20261007_fix_payment_date_column.sql` - Tambah kolom payment_date dan perbaiki trigger
-2. `supabase/migrations/20261007_fix_init_default_coa_language.sql` - Perbaiki fungsi init COA
+1. **Database (Supabase):**
+   - `supabase/migrations/20261007_fix_payment_date_column.sql` - Tambah kolom payment_date dan perbaiki trigger
+   - `supabase/migrations/20261007_fix_init_default_coa_language.sql` - Perbaiki fungsi init COA
+
+2. **SQLite (Offline Mode Android):**
+   - `src/db/init.sql` - Tambah kolom payment_date di schema SQLite
+   - `src/lib/sqlite.ts` - Tambah migrasi untuk ALTER TABLE payment_date
+   - `src/services/sqlite/transactions.ts` - Update INSERT statement untuk include payment_date (2 lokasi)
+   - `src/services/sqlite/dailyCash.ts` - Update query untuk gunakan payment_date
+   - `src/services/sqlite/dailyBank.ts` - Update query untuk gunakan payment_date
 
 ## Testing
 
 Setelah migrasi diterapkan:
 
+**Database (Supabase):**
 1. ✅ Kolom `payment_date` berhasil ditambahkan dengan default `CURRENT_DATE`
 2. ✅ Fungsi `add_transaction_payment` diupdate dengan parameter `p_payment_date`
 3. ✅ Trigger `auto_journal_payment` diperbaiki untuk handle NULL payment_date
 4. ✅ Fungsi `init_default_coa_for_user` diperbaiki menggunakan bahasa Indonesia
 5. ✅ Semua user sudah memiliki COA minimal (6 akun)
 6. ✅ Pembayaran existing sudah memiliki jurnal yang dibuat
+
+**SQLite (Offline Mode Android):**
+1. ✅ Schema SQLite diupdate dengan kolom `payment_date`
+2. ✅ Migrasi auto ALTER TABLE untuk database existing
+3. ✅ INSERT statement di `transactions.ts` diupdate (create transaction & addPayment)
+4. ✅ Query di `dailyCash.ts` dan `dailyBank.ts` diupdate untuk gunakan `payment_date`
 
 ## Backward Compatibility
 

@@ -51,7 +51,7 @@ export const sqliteDailyCashService = {
     }>(
       `SELECT amount, payment_method
        FROM transaction_payments
-       WHERE DATE(created_at) = DATE(?)
+       WHERE DATE(payment_date) = DATE(?)
          AND user_id = ?`,
       [date, userId]
     )
@@ -191,11 +191,12 @@ export const sqliteDailyCashService = {
       amount: number
       payment_method: string
       created_at: string
+      payment_date: string
       transaction_id: string
     }>(
-      `SELECT id, amount, payment_method, created_at, transaction_id
+      `SELECT id, amount, payment_method, created_at, payment_date, transaction_id
        FROM transaction_payments
-       WHERE DATE(created_at) = DATE(?)
+       WHERE DATE(payment_date) = DATE(?)
          AND user_id = ?
        ORDER BY created_at DESC`,
       [date, userId]

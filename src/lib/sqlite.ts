@@ -283,6 +283,15 @@ async function migrateSchema(): Promise<void> {
     // punya kolom ini — tanpa ALTER, INSERT delivery_orders gagal dengan
     // "no such column: driver_fee" dan gaji supir tidak pernah tersimpan.
     await addColumnIfMissing('delivery_orders', 'driver_fee', 'REAL NOT NULL DEFAULT 0')
+    // Kolom payment_date untuk transaction_payments (diperlukan untuk auto-jurnal).
+    // DB lama tidak punya kolom ini — backfill dengan DATE(created_at).
+    const hasPaymentDate = await db!.query(`PRAGMA table_info(transaction_payments)`)
+    const paymentDateExists = (hasPaymentDate.values || []).some((r: any) => String(r.name) === 'payment_date')
+    if (!paymentDateExists) {
+      await db!.execute(`ALTER TABLE transaction_payments ADD COLUMN payment_date TEXT NOT NULL DEFAULT (date('now'))`, false)
+      // Backfill existing records dengan DATE(created_at)
+      await db!.execute(`UPDATE transaction_payments SET payment_date = date(created_at) WHERE payment_date IS NULL`, false)
+    }
   } catch (e) {
     console.warn('SQLite migrate: gagal menambah kolom limit kredit:', (e as Error).message)
   }

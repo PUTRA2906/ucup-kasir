@@ -284,9 +284,9 @@ export const sqliteTransactionsService = {
       if (paid > 0) {
         paymentId = uuid()
         await tx.run(
-          `INSERT INTO transaction_payments (id, user_id, transaction_id, amount, payment_method, notes, created_at, sync_status, updated_at_local)
-           VALUES (?, ?, ?, ?, ?, NULL, ?, 'pending', ?)`,
-          [paymentId, userId, txnId, paid, input.payment_method || 'tunai', transactionDate, now]
+          `INSERT INTO transaction_payments (id, user_id, transaction_id, amount, payment_method, notes, payment_date, created_at, sync_status, updated_at_local)
+           VALUES (?, ?, ?, ?, ?, NULL, ?, ?, 'pending', ?)`,
+          [paymentId, userId, txnId, paid, input.payment_method || 'tunai', transactionDate.split('T')[0], transactionDate, now]
         )
         
         // ✅ NEW: Auto-allocate payment ke items (FIFO)
@@ -372,9 +372,9 @@ export const sqliteTransactionsService = {
 
       // Catat pembayaran
       await tx.run(
-        `INSERT INTO transaction_payments (id, user_id, transaction_id, amount, payment_method, notes, created_at, sync_status, updated_at_local)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
-        [paymentId, userId, transactionId, amount, paymentMethod || 'tunai', notes ?? null, now, now]
+        `INSERT INTO transaction_payments (id, user_id, transaction_id, amount, payment_method, notes, payment_date, created_at, sync_status, updated_at_local)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
+        [paymentId, userId, transactionId, amount, paymentMethod || 'tunai', notes ?? null, now.split('T')[0], now, now]
       )
       
       // ✅ NEW: Auto-allocate payment ke items (FIFO)

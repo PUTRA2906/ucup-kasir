@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS transaction_payments (
   amount REAL NOT NULL DEFAULT 0,
   payment_method TEXT NOT NULL DEFAULT 'tunai',
   notes TEXT,
+  payment_date TEXT NOT NULL,
   created_at TEXT NOT NULL,
   sync_status TEXT NOT NULL DEFAULT 'synced',
   updated_at_local TEXT,
