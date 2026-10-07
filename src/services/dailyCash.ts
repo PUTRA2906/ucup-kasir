@@ -32,12 +32,16 @@ export const dailyCashService = {
     const { data: user } = await supabase.auth.getUser()
     if (!user.user) throw new Error('Not authenticated')
 
+    // Konversi tanggal ke UTC untuk filter yang konsisten
+    const startOfDay = new Date(date + 'T00:00:00')
+    const endOfDay = new Date(date + 'T23:59:59.999')
+
     // 1. Penjualan hari ini (paid_amount, bukan total)
     const { data: sales, error: salesErr } = await supabase
       .from('transactions')
       .select('paid_amount, payment_method, created_at')
-      .gte('created_at', date + 'T00:00:00.000')
-      .lte('created_at', date + 'T23:59:59.999')
+      .gte('created_at', startOfDay.toISOString())
+      .lte('created_at', endOfDay.toISOString())
       .neq('status', 'void')
       .neq('status', 'batal')
       .eq('user_id', user.user.id)
@@ -84,8 +88,8 @@ export const dailyCashService = {
         .select('debit, credit, account_id, journal:journal_entries!inner(entry_date, status)')
         .in('account_id', cashAccountIds)
         .eq('journal.status', 'posted')
-        .gte('journal.entry_date', date + 'T00:00:00.000')
-        .lte('journal.entry_date', date + 'T23:59:59.999')
+        .gte('journal.entry_date', startOfDay.toISOString())
+        .lte('journal.entry_date', endOfDay.toISOString())
 
       const lines = journalLines || []
 
@@ -139,12 +143,16 @@ export const dailyCashService = {
 
     const transactions: CashTransaction[] = []
 
+    // Konversi tanggal ke UTC untuk filter yang konsisten
+    const startOfDay = new Date(date + 'T00:00:00')
+    const endOfDay = new Date(date + 'T23:59:59.999')
+
     // 1. Penjualan hari ini
     const { data: sales, error: salesErr } = await supabase
       .from('transactions')
       .select('id, transaction_number, created_at, paid_amount, payment_method, customer_name')
-      .gte('created_at', date + 'T00:00:00.000')
-      .lte('created_at', date + 'T23:59:59.999')
+      .gte('created_at', startOfDay.toISOString())
+      .lte('created_at', endOfDay.toISOString())
       .neq('status', 'void')
       .neq('status', 'batal')
       .eq('user_id', user.user.id)
@@ -208,8 +216,8 @@ export const dailyCashService = {
         .select('id, debit, credit, account_id, created_at, journal:journal_entries!inner(journal_number, entry_date, description, status)')
         .in('account_id', cashAccountIds)
         .eq('journal.status', 'posted')
-        .gte('journal.entry_date', date + 'T00:00:00.000')
-        .lte('journal.entry_date', date + 'T23:59:59.999')
+        .gte('journal.entry_date', startOfDay.toISOString())
+        .lte('journal.entry_date', endOfDay.toISOString())
 
       for (const line of journalLines || []) {
         const journal = line.journal as any
