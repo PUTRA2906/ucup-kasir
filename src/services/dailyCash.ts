@@ -49,34 +49,18 @@ export const dailyCashService = {
 
     if (salesErr) throw salesErr
 
-    // 2. Cicilan hari ini (filter by payment_date dengan range)
-    const { data: payments, error: paymentsErr } = await supabase
-      .from('transaction_payments')
-      .select('amount, payment_method, created_at, payment_date')
-      .gte('payment_date', startOfDay.toISOString())
-      .lte('payment_date', endOfDay.toISOString())
-      .eq('user_id', user.user.id)
-
-    if (paymentsErr) throw paymentsErr
-
-    // Debug: log untuk cek payment_date
-    console.log('Filter date:', date)
-    console.log('Payments found:', payments?.length || 0)
-    if (payments && payments.length > 0) {
-      console.log('Payment dates:', payments.map(p => p.payment_date))
-    }
-
     const salesList = sales || []
-    const paymentsList = payments || []
 
-    // Hitung total
-    let tunai_in =
-      salesList.filter(s => s.payment_method === 'tunai').reduce((sum, s) => sum + (s.paid_amount || 0), 0) +
-      paymentsList.filter(p => p.payment_method === 'tunai').reduce((sum, p) => sum + (p.amount || 0), 0)
+    // Hitung total dari penjualan saja (initial payment)
+    // CATATAN: Pembayaran cicilan tidak dihitung di sini karena sudah tercatat
+    // otomatis di jurnal akuntansi via trigger auto_journal_payment
+    let tunai_in = salesList
+      .filter(s => s.payment_method === 'tunai')
+      .reduce((sum, s) => sum + (s.paid_amount || 0), 0)
 
-    let transfer_in =
-      salesList.filter(s => s.payment_method === 'transfer').reduce((sum, s) => sum + (s.paid_amount || 0), 0) +
-      paymentsList.filter(p => p.payment_method === 'transfer').reduce((sum, p) => sum + (p.amount || 0), 0)
+    let transfer_in = salesList
+      .filter(s => s.payment_method === 'transfer')
+      .reduce((sum, s) => sum + (s.paid_amount || 0), 0)
 
     // Untuk kas keluar, kita ambil dari jurnal (credit di akun kas/bank)
     const { data: cashAccounts } = await supabase
@@ -139,7 +123,7 @@ export const dailyCashService = {
       transfer_in,
       transfer_out,
       transactions_count: salesList.length,
-      payments_count: paymentsList.length
+      payments_count: 0
     }
   },
 
@@ -224,7 +208,7 @@ export const dailyCashService = {
     if (cashAccountIds.length > 0) {
       const { data: journalLines } = await supabase
         .from('journal_lines')
-        .select('id, debit, credit, account_id, created_at, journal:journal_entries!inner(journal_number, entry_date, description, status)')
+        .select('id, debit, credit, account_id, created_at, journal:journal_entries!inner(journal_number, entry_date, description, status, reference_type)')
         .in('account_id', cashAccountIds)
         .eq('journal.status', 'posted')
         .gte('journal.entry_date', startOfDay.toISOString())
@@ -235,6 +219,11 @@ export const dailyCashService = {
         const account = cashAccounts?.find(a => a.id === line.account_id)
         const debit = Number(line.debit || 0)
         const credit = Number(line.credit || 0)
+
+        // Skip jurnal dari pembayaran cicilan karena sudah ditampilkan di bagian payments
+        if (journal?.reference_type === 'payment') {
+          continue
+        }
 
         // Debit di kas/bank = pemasukan
         if (debit > 0) {

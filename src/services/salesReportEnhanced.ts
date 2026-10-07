@@ -120,9 +120,14 @@ export const salesReportEnhancedService = {
         payments:transaction_payments(*)
       `)
       .eq('status', 'selesai')
-      .gte('created_at', startDate)
-      .lte('created_at', endDate + 'T23:59:59')
       .order('created_at', { ascending: false })
+
+    if (startDate) {
+      query = query.gte('created_at', startDate)
+    }
+    if (endDate) {
+      query = query.lte('created_at', endDate + 'T23:59:59')
+    }
 
     // Filter status pembayaran
     if (paymentStatusFilter && paymentStatusFilter !== 'all') {
@@ -141,11 +146,18 @@ export const salesReportEnhancedService = {
     const txns = (transactions || []) as Transaction[]
 
     // Fetch data retur
-    const { data: returns, error: returnsError } = await supabase
+    let returnsQuery = supabase
       .from('returns')
       .select('*, items:return_items(*, product:products(id, name))')
-      .gte('created_at', startDate)
-      .lte('created_at', endDate + 'T23:59:59')
+
+    if (startDate) {
+      returnsQuery = returnsQuery.gte('created_at', startDate)
+    }
+    if (endDate) {
+      returnsQuery = returnsQuery.lte('created_at', endDate + 'T23:59:59')
+    }
+
+    const { data: returns, error: returnsError } = await returnsQuery
 
     if (returnsError) throw returnsError
 

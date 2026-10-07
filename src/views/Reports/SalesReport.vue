@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout>
+  <AdminLayout hide-bottom-nav>
     <PageBreadcrumb pageTitle="Laporan Penjualan" class="hidden md:block" />
 
     <div class="space-y-6 pb-24 md:pb-0">

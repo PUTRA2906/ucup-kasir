@@ -100,7 +100,18 @@ export const sqliteSalesReportEnhancedService = {
     const userId = getCurrentUserId()
 
     // --- 1. Fetch transactions + items + product + payments ---
-    const params: (string | number)[] = [userId, startDate, endDate + 'T23:59:59']
+    const params: (string | number)[] = [userId]
+    let dateFilter = ''
+
+    if (startDate) {
+      dateFilter += ' AND t.created_at >= ?'
+      params.push(startDate)
+    }
+    if (endDate) {
+      dateFilter += ' AND t.created_at <= ?'
+      params.push(endDate + 'T23:59:59')
+    }
+
     let filter = ''
 
     if (paymentStatusFilter && paymentStatusFilter !== 'all') {
@@ -116,8 +127,7 @@ export const sqliteSalesReportEnhancedService = {
 
     const txnRows = await query<any>(
       `SELECT t.* FROM transactions t
-       WHERE t.user_id = ? AND t.status = 'selesai'
-         AND t.created_at >= ? AND t.created_at <= ?${filter}
+       WHERE t.user_id = ? AND t.status = 'selesai'${dateFilter}${filter}
        ORDER BY t.created_at DESC`,
       params
     )
@@ -128,11 +138,16 @@ export const sqliteSalesReportEnhancedService = {
     }
 
     // --- 2. Fetch returns + items untuk periode yang sama ---
+    const returnParams: (string | number)[] = [userId]
+    let returnDateFilter = ''
+    if (startDate) { returnDateFilter += ' AND r.created_at >= ?'; returnParams.push(startDate) }
+    if (endDate) { returnDateFilter += ' AND r.created_at <= ?'; returnParams.push(endDate + 'T23:59:59') }
+
     const returnRows = await query<any>(
       `SELECT r.* FROM returns r
-       WHERE r.user_id = ? AND r.created_at >= ? AND r.created_at <= ?
+       WHERE r.user_id = ?${returnDateFilter}
        ORDER BY r.created_at DESC`,
-      [userId, startDate, endDate + 'T23:59:59']
+      returnParams
     )
 
     const returnData = await this.fetchReturnsWithItems(returnRows)

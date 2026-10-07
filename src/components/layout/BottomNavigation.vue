@@ -104,11 +104,20 @@ const isActive = (path: string) => {
   if (path === '/') {
     return route.path === '/'
   }
+  // Exact match untuk /reports agar sub-route tidak ikut aktif
+  if (path === '/reports') {
+    return route.path === '/reports'
+  }
   return route.path.startsWith(path)
 }
 
 const hasActiveMenu = computed(() => {
-  const menuPaths = ['/', '/customer-invoices', '/reports', '/settings', '/transactions/add-from-home']
-  return menuPaths.some(path => isActive(path))
+  // Hanya tampilkan bottom nav di halaman utama menu, bukan sub-halaman
+  const exactPaths = ['/', '/reports', '/settings']
+  const prefixPaths = ['/customer-invoices', '/transactions/add-from-home']
+  return (
+    exactPaths.includes(route.path) ||
+    prefixPaths.some(p => route.path.startsWith(p))
+  )
 })
 </script>

@@ -1,9 +1,9 @@
 <template>
-  <AdminLayout>
+  <AdminLayout hide-bottom-nav>
     <PageBreadcrumb pageTitle="Laporan Laba Rugi" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Laporan Laba Rugi" subtitle="Analisis Penjualan & Profitabilitas" hide-back-button>
+    <MobilePageHeader title="Laporan Laba Rugi" subtitle="Analisis Penjualan & Profitabilitas">
       <template #actions>
         <button
           @click="showFilterModal = true"
@@ -224,91 +224,6 @@
         </div>
       </div>
 
-      <!-- Tabel Rincian Transaksi -->
-      <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <div class="mb-3 flex items-center justify-between border-b border-gray-200 pb-2 dark:border-gray-700">
-          <div>
-            <h3 class="text-sm font-bold text-gray-900 dark:text-white">Rincian Transaksi</h3>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ filteredTransactions.length }} transaksi</p>
-          </div>
-        </div>
-
-        <!-- Quick Filter Status Pembayaran -->
-        <div class="mb-3 flex items-center gap-2 overflow-x-auto pb-1">
-          <button
-            v-for="opt in txStatusOptions"
-            :key="opt.value"
-            @click="txStatusFilter = opt.value"
-            :class="[
-              'flex-shrink-0 rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-colors',
-              txStatusFilter === opt.value
-                ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
-                : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
-            ]"
-          >
-            {{ opt.label }}
-          </button>
-        </div>
-
-        <!-- Empty State -->
-        <div v-if="filteredTransactions.length === 0" class="py-8 text-center">
-          <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ada transaksi</p>
-        </div>
-
-        <!-- Transaction List (Mobile) -->
-        <div v-else class="space-y-2.5">
-          <div
-            v-for="tx in filteredTransactions"
-            :key="tx.id"
-            @click="router.push(`/transactions/${tx.id}`)"
-            class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
-          >
-            <div class="mb-2 flex items-start justify-between">
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-gray-900 dark:text-white">{{ tx.customer_name || 'Customer' }}</p>
-                <p class="text-[10px] text-gray-500 dark:text-gray-400">{{ tx.transaction_number }}</p>
-                <p class="text-[9px] text-gray-400 dark:text-gray-500">{{ formatDateTime(tx.created_at) }}</p>
-              </div>
-              <span
-                class="rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase"
-                :class="getPaymentStatusBadge(tx.payment_status, tx.paid_amount)"
-              >
-                {{ getPaymentStatusText(tx.payment_status, tx.paid_amount) }}
-              </span>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 border-t border-gray-200 pt-2 text-[10px] dark:border-gray-700">
-              <div>
-                <span class="text-gray-500 dark:text-gray-400">Total Bersih</span>
-                <p class="font-bold text-gray-900 dark:text-white">{{ formatCurrency(tx.total) }}</p>
-              </div>
-              <div>
-                <span class="text-gray-500 dark:text-gray-400">Laba</span>
-                <p class="font-bold text-purple-600 dark:text-purple-400">{{ formatCurrency(tx.transaction_profit) }}</p>
-              </div>
-              <div>
-                <span class="text-gray-500 dark:text-gray-400">Kas Diterima</span>
-                <p class="font-bold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(tx.cash_received) }}</p>
-              </div>
-              <div>
-                <span class="text-gray-500 dark:text-gray-400">Piutang</span>
-                <p class="font-bold text-amber-600 dark:text-amber-400">{{ formatCurrency(tx.receivable) }}</p>
-              </div>
-            </div>
-
-            <div class="mt-2 flex items-center justify-between border-t border-gray-200 pt-2 dark:border-gray-700">
-              <div class="text-[9px]">
-                <span class="text-gray-500 dark:text-gray-400">Margin:</span>
-                <span class="font-bold text-purple-600 dark:text-purple-400">{{ tx.profit_margin.toFixed(1) }}%</span>
-              </div>
-              <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Top 5 Produk Terlaris -->
       <div
         v-if="store.topProducts.length > 0"
@@ -427,30 +342,26 @@
               >
                 Bulan Ini
               </button>
+              <button
+                @click="setQuickDateRange('allTime')"
+                class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                :class="isQuickDateRange('allTime') ? 'border-purple-500 bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400' : 'text-gray-700 dark:text-gray-300'"
+              >
+                Sepanjang Masa
+              </button>
             </div>
           </div>
 
           <!-- Custom Date Range -->
           <div>
             <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Custom Range</label>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="mb-1 block text-xs text-gray-500 dark:text-gray-400">Dari</label>
-                <DateField
-                  v-model="tempDateRange.start"
-                  title="Tanggal Mulai"
-                  button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                />
-              </div>
-              <div>
-                <label class="mb-1 block text-xs text-gray-500 dark:text-gray-400">Sampai</label>
-                <DateField
-                  v-model="tempDateRange.end"
-                  title="Tanggal Selesai"
-                  button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                />
-              </div>
-            </div>
+            <DateRangeField
+              v-model:start="tempDateRange.start"
+              v-model:end="tempDateRange.end"
+              title="Pilih Rentang Tanggal"
+              placeholder="Pilih periode custom"
+              button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+            />
           </div>
 
           <!-- Status Pembayaran -->
@@ -508,7 +419,7 @@ import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
-import DateField from '@/components/common/DateField.vue'
+import DateRangeField from '@/components/common/DateRangeField.vue'
 import { useSalesReportEnhancedStore } from '@/stores/salesReportEnhanced'
 import { useFinanceStore } from '@/stores/finance'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
@@ -541,22 +452,6 @@ const tempDateRange = ref({
   end: localTodayStr(),
 })
 const tempPaymentStatus = ref<'lunas' | 'belum_lunas' | 'all'>('all')
-
-// Quick filter status pembayaran pada daftar transaksi
-const txStatusFilter = ref<'semua' | 'lunas' | 'belum_lunas'>('semua')
-const txStatusOptions = [
-  { value: 'semua', label: 'Semua' },
-  { value: 'lunas', label: 'Lunas' },
-  { value: 'belum_lunas', label: 'Belum Lunas' },
-] as const
-
-const filteredTransactions = computed(() => {
-  if (txStatusFilter.value === 'semua') return store.transactions
-  return store.transactions.filter((tx) => {
-    const isLunas = tx.payment_status === 'lunas' || (tx.paid_amount || 0) > 0 && (tx.remaining_amount || 0) <= 0
-    return txStatusFilter.value === 'lunas' ? isLunas : !isLunas
-  })
-})
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('id-ID', {
@@ -594,26 +489,6 @@ const getPaymentStatusLabel = (status: string) => {
   return labels[status] || status
 }
 
-const getPaymentStatusBadge = (status: string, paidAmount: number) => {
-  if (status === 'lunas') {
-    return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
-  } else if (paidAmount === 0) {
-    return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
-  } else {
-    return 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400'
-  }
-}
-
-const getPaymentStatusText = (status: string, paidAmount: number) => {
-  if (status === 'lunas') {
-    return 'Lunas'
-  } else if (paidAmount === 0) {
-    return 'Tempo'
-  } else {
-    return 'Cicilan'
-  }
-}
-
 const setQuickDateRange = (range: string) => {
   const now = new Date()
   const endDate = localTodayStr()
@@ -640,6 +515,9 @@ const setQuickDateRange = (range: string) => {
         end: endDate,
       }
       break
+    case 'allTime':
+      tempDateRange.value = { start: '', end: '' }
+      break
   }
 }
 
@@ -660,6 +538,8 @@ const isQuickDateRange = (range: string) => {
         start === localDateStr(new Date(now.getFullYear(), now.getMonth(), 1)) &&
         end === today
       )
+    case 'allTime':
+      return start === '' && end === ''
     default:
       return false
   }
@@ -668,7 +548,6 @@ const isQuickDateRange = (range: string) => {
 const applyFilters = () => {
   store.setDateRange(tempDateRange.value.start, tempDateRange.value.end)
   store.setPaymentStatusFilter(tempPaymentStatus.value)
-  txStatusFilter.value = 'semua'
   store.fetchReport()
   loadExpenseBalances(tempDateRange.value.start, tempDateRange.value.end)
   showFilterModal.value = false
@@ -678,7 +557,6 @@ const resetFilters = () => {
   const today = localTodayStr()
   tempDateRange.value = { start: today, end: today }
   tempPaymentStatus.value = 'all'
-  txStatusFilter.value = 'semua'
 }
 
 onMounted(() => {
@@ -700,11 +578,14 @@ async function loadExpenseBalances(startDate: string, endDate: string) {
     }
 
     // Ambil saldo awal (sebelum startDate) dan saldo akhir (sampai endDate)
+    // Jika startDate kosong (allTime), ambil dari awal (undefined = semua)
     const balancesStart = await financeStore.getAccountBalances(
-      new Date(new Date(startDate + 'T00:00:00').getTime() - 86400000)
-        .toLocaleDateString('en-CA')
+      startDate
+        ? new Date(new Date(startDate + 'T00:00:00').getTime() - 86400000)
+            .toLocaleDateString('en-CA')
+        : undefined
     )
-    const balancesEnd = await financeStore.getAccountBalances(endDate)
+    const balancesEnd = await financeStore.getAccountBalances(endDate || undefined)
 
     // Hitung selisih saldo dalam periode (beban dalam periode = saldo akhir - saldo awal)
     expenseBalanceByAccount.value = {}

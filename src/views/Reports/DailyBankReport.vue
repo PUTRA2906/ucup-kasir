@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout>
+  <AdminLayout hide-bottom-nav>
     <PageBreadcrumb pageTitle="Mutasi Bank Hari Ini" class="hidden md:block" />
 
     <!-- Mobile Header -->

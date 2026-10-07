@@ -149,7 +149,7 @@ export const financeService = {
       .eq('journal.status', 'posted')  // Filter status di query, bukan di loop
       .order('created_at')
 
-    if (endDate) {
+    if (endDate && endDate.trim() !== '') {
       query = query.lte('journal.entry_date', new Date(endDate + 'T23:59:59.999').toISOString())
     }
 

@@ -53,25 +53,6 @@
           </div>
         </router-link>
 
-        <!-- Laba Per Transaksi -->
-        <router-link
-          to="/reports/transaction-profit"
-          class="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 transition hover:shadow-lg active:scale-95 md:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
-        >
-          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-purple-500 to-purple-600"></div>
-          <div class="flex flex-col items-start gap-3">
-            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 transition group-hover:scale-110 dark:bg-purple-500/10">
-              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-sm font-bold text-gray-900 md:text-base dark:text-white">Laba Per Transaksi</h3>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Detail laba per transaksi</p>
-            </div>
-          </div>
-        </router-link>
-
         <!-- Mutasi Kas Harian -->
         <router-link
           to="/laporan/mutasi-kas"
