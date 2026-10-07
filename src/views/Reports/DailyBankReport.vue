@@ -200,8 +200,17 @@ import { useFinanceStore } from '@/stores/finance'
 const financeStore = useFinanceStore()
 const loading = ref(true)
 const showDatePicker = ref(false)
-const selectedDate = ref(new Date().toISOString().split('T')[0])
-const endDate = ref(new Date().toISOString().split('T')[0])
+
+// Helper untuk mendapatkan tanggal lokal dalam format YYYY-MM-DD (menghindari UTC offset)
+const getLocalDateString = (date: Date = new Date()) => {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+const selectedDate = ref(getLocalDateString())
+const endDate = ref(getLocalDateString())
 const selectedPreset = ref('today')
 const currentBalance = ref(0)
 
@@ -265,14 +274,14 @@ const applyPreset = (preset: string) => {
 
   switch (preset) {
     case 'today':
-      selectedDate.value = now.toISOString().split('T')[0]
-      endDate.value = now.toISOString().split('T')[0]
+      selectedDate.value = getLocalDateString(now)
+      endDate.value = getLocalDateString(now)
       break
     case 'yesterday':
       const yesterday = new Date(now)
       yesterday.setDate(yesterday.getDate() - 1)
-      selectedDate.value = yesterday.toISOString().split('T')[0]
-      endDate.value = yesterday.toISOString().split('T')[0]
+      selectedDate.value = getLocalDateString(yesterday)
+      endDate.value = getLocalDateString(yesterday)
       break
     case 'thisWeek':
       // Mulai dari Senin minggu ini
@@ -280,13 +289,13 @@ const applyPreset = (preset: string) => {
       const day = startOfWeek.getDay()
       const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1)
       startOfWeek.setDate(diff)
-      selectedDate.value = startOfWeek.toISOString().split('T')[0]
-      endDate.value = now.toISOString().split('T')[0]
+      selectedDate.value = getLocalDateString(startOfWeek)
+      endDate.value = getLocalDateString(now)
       break
     case 'thisMonth':
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      selectedDate.value = startOfMonth.toISOString().split('T')[0]
-      endDate.value = now.toISOString().split('T')[0]
+      selectedDate.value = getLocalDateString(startOfMonth)
+      endDate.value = getLocalDateString(now)
       break
   }
 
@@ -309,16 +318,18 @@ const loadData = async () => {
   try {
     // Load current bank balance
     const balances = await financeStore.getAccountBalances()
-    const bankAccount = balances.find(b => b.account_code === '1-1002' || b.account_name.toLowerCase().includes('bank'))
+    const bankAccount = balances.find(b => b.account_code === '1-1010' || b.account_name.toLowerCase().includes('bank'))
     currentBalance.value = bankAccount?.balance || 0
 
     // Aggregate data dari range tanggal
-    const days = []
-    const start = new Date(selectedDate.value)
-    const end = new Date(endDate.value)
+    const days: string[] = []
+    const start = new Date(selectedDate.value + 'T00:00:00')
+    const end = new Date(endDate.value + 'T00:00:00')
 
+    // Gunakan format tanggal lokal (bukan toISOString yang UTC) untuk menghindari
+    // bug timezone WIB (UTC+7): toISOString() bisa menghasilkan tanggal kemarin
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      days.push(d.toISOString().split('T')[0])
+      days.push(getLocalDateString(d))
     }
 
     // Fetch data untuk semua tanggal dalam range

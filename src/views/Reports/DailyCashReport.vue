@@ -179,8 +179,18 @@ import { useFinanceStore } from '@/stores/finance'
 const financeStore = useFinanceStore()
 const loading = ref(true)
 const showDatePicker = ref(false)
-const selectedDate = ref(new Date().toISOString().split('T')[0])
-const endDate = ref(new Date().toISOString().split('T')[0])
+
+// Dapatkan tanggal lokal (WIB) tanpa timezone offset
+const getLocalDateString = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const selectedDate = ref(getLocalDateString())
+const endDate = ref(getLocalDateString())
 const selectedPreset = ref('today')
 const currentBalance = ref(0)
 
@@ -254,16 +264,24 @@ const applyPreset = (preset: string) => {
   selectedPreset.value = preset
   const now = new Date()
 
+  // Helper untuk mendapatkan tanggal lokal dalam format YYYY-MM-DD
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   switch (preset) {
     case 'today':
-      selectedDate.value = now.toISOString().split('T')[0]
-      endDate.value = now.toISOString().split('T')[0]
+      selectedDate.value = formatLocalDate(now)
+      endDate.value = formatLocalDate(now)
       break
     case 'yesterday':
       const yesterday = new Date(now)
       yesterday.setDate(yesterday.getDate() - 1)
-      selectedDate.value = yesterday.toISOString().split('T')[0]
-      endDate.value = yesterday.toISOString().split('T')[0]
+      selectedDate.value = formatLocalDate(yesterday)
+      endDate.value = formatLocalDate(yesterday)
       break
     case 'thisWeek':
       // Mulai dari Senin minggu ini
@@ -271,16 +289,17 @@ const applyPreset = (preset: string) => {
       const day = startOfWeek.getDay()
       const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1)
       startOfWeek.setDate(diff)
-      selectedDate.value = startOfWeek.toISOString().split('T')[0]
-      endDate.value = now.toISOString().split('T')[0]
+      selectedDate.value = formatLocalDate(startOfWeek)
+      endDate.value = formatLocalDate(now)
       break
     case 'thisMonth':
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      selectedDate.value = startOfMonth.toISOString().split('T')[0]
-      endDate.value = now.toISOString().split('T')[0]
+      selectedDate.value = formatLocalDate(startOfMonth)
+      endDate.value = formatLocalDate(now)
       break
   }
 
+  console.log('applyPreset:', preset, 'selectedDate:', selectedDate.value)
   loadData()
 }
 
@@ -323,9 +342,17 @@ const loadData = async () => {
     const end = new Date(endDate.value + 'T00:00:00')
 
     // Buat array tanggal dari start sampai end
+    // Gunakan format tanggal lokal (bukan toISOString yang UTC) untuk menghindari
+    // bug timezone WIB (UTC+7): toISOString() bisa menghasilkan tanggal kemarin
     const currentDate = new Date(start)
+    const formatLocalDate = (d: Date) => {
+      const y = d.getFullYear()
+      const m = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      return `${y}-${m}-${day}`
+    }
     while (currentDate <= end) {
-      days.push(currentDate.toISOString().split('T')[0])
+      days.push(formatLocalDate(currentDate))
       currentDate.setDate(currentDate.getDate() + 1)
     }
 

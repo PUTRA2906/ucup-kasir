@@ -33,8 +33,9 @@ export const dailyCashService = {
     if (!user.user) throw new Error('Not authenticated')
 
     // Konversi tanggal ke UTC untuk filter yang konsisten
-    const startOfDay = new Date(date + 'T00:00:00')
-    const endOfDay = new Date(date + 'T23:59:59.999')
+    // Tambahkan 'Z' agar Date object menggunakan UTC, bukan timezone lokal
+    const startOfDay = new Date(date + 'T00:00:00Z')
+    const endOfDay = new Date(date + 'T23:59:59.999Z')
 
     // 1. Penjualan hari ini (paid_amount, bukan total)
     const { data: sales, error: salesErr } = await supabase
@@ -48,14 +49,22 @@ export const dailyCashService = {
 
     if (salesErr) throw salesErr
 
-    // 2. Cicilan hari ini (filter by payment_date)
+    // 2. Cicilan hari ini (filter by payment_date dengan range)
     const { data: payments, error: paymentsErr } = await supabase
       .from('transaction_payments')
       .select('amount, payment_method, created_at, payment_date')
-      .eq('payment_date', date)
+      .gte('payment_date', startOfDay.toISOString())
+      .lte('payment_date', endOfDay.toISOString())
       .eq('user_id', user.user.id)
 
     if (paymentsErr) throw paymentsErr
+
+    // Debug: log untuk cek payment_date
+    console.log('Filter date:', date)
+    console.log('Payments found:', payments?.length || 0)
+    if (payments && payments.length > 0) {
+      console.log('Payment dates:', payments.map(p => p.payment_date))
+    }
 
     const salesList = sales || []
     const paymentsList = payments || []
@@ -144,8 +153,9 @@ export const dailyCashService = {
     const transactions: CashTransaction[] = []
 
     // Konversi tanggal ke UTC untuk filter yang konsisten
-    const startOfDay = new Date(date + 'T00:00:00')
-    const endOfDay = new Date(date + 'T23:59:59.999')
+    // Tambahkan 'Z' agar Date object menggunakan UTC, bukan timezone lokal
+    const startOfDay = new Date(date + 'T00:00:00Z')
+    const endOfDay = new Date(date + 'T23:59:59.999Z')
 
     // 1. Penjualan hari ini
     const { data: sales, error: salesErr } = await supabase
@@ -176,11 +186,12 @@ export const dailyCashService = {
       }
     }
 
-    // 2. Cicilan hari ini (filter by payment_date)
+    // 2. Cicilan hari ini (filter by payment_date dengan range)
     const { data: payments, error: paymentsErr } = await supabase
       .from('transaction_payments')
       .select('id, amount, payment_method, created_at, payment_date, transaction:transactions!inner(transaction_number, customer_name)')
-      .eq('payment_date', date)
+      .gte('payment_date', startOfDay.toISOString())
+      .lte('payment_date', endOfDay.toISOString())
       .eq('user_id', user.user.id)
       .order('created_at', { ascending: false })
 

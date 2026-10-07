@@ -228,8 +228,8 @@ const loadAccountBalances = async () => {
   try {
     const balances = await financeStore.getAccountBalances()
 
-    const cashAccount = balances.find(b => b.account_code === '1-1001' || b.account_name.toLowerCase().includes('kas'))
-    const bankAccount = balances.find(b => b.account_code === '1-1002' || b.account_name.toLowerCase().includes('bank'))
+    const cashAccount = balances.find(b => b.account_code === '1-1000' || b.account_name.toLowerCase().includes('kas'))
+    const bankAccount = balances.find(b => b.account_code === '1-1010' || b.account_name.toLowerCase().includes('bank'))
 
     cashBalance.value = cashAccount?.balance || 0
     bankBalance.value = bankAccount?.balance || 0

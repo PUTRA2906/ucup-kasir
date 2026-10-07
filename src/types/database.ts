@@ -68,6 +68,7 @@ export interface TransactionPayment {
   amount: number
   payment_method: string
   notes?: string
+  payment_date?: string
   created_at: string
 }
 

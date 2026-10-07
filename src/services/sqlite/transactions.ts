@@ -963,9 +963,11 @@ export const sqliteTransactionsService = {
         // Payments
         for (const p of t.payments || []) {
           await tx.run(
-            `INSERT OR REPLACE INTO transaction_payments (id, user_id, transaction_id, amount, payment_method, notes, created_at, sync_status, updated_at_local)
-             VALUES (?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-            [p.id, userId, t.id, p.amount, p.payment_method, p.notes ?? null, p.created_at, p.created_at]
+            `INSERT OR REPLACE INTO transaction_payments (id, user_id, transaction_id, amount, payment_method, notes, payment_date, created_at, sync_status, updated_at_local)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+            [p.id, userId, t.id, p.amount, p.payment_method, p.notes ?? null,
+             p.payment_date ?? p.created_at?.split('T')[0] ?? null,
+             p.created_at, p.created_at]
           )
         }
       }
