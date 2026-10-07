@@ -2,7 +2,7 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Laporan Penjualan" class="hidden md:block" />
 
-    <div class="space-y-6">
+    <div class="space-y-6 pb-24 md:pb-0">
       <MobilePageHeader
         title="Laporan Penjualan"
         :subtitle="formatDateRange(reportStore.startDate, reportStore.endDate)"
@@ -187,8 +187,8 @@
       </div>
 
       <template v-else>
-        <!-- Summary Cards -->
-        <SalesSummaryCards :summary="reportStore.summary" />
+        <!-- Summary Cards - Fokus Omzet & Performa Penjualan -->
+        <SalesPerformanceCards :summary="reportStore.summary" />
 
         <!-- Filter Button (Mobile) -->
         <button
@@ -213,7 +213,7 @@ import { ref, computed, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
-import SalesSummaryCards from '@/components/reports/SalesSummaryCards.vue'
+import SalesPerformanceCards from '@/components/reports/SalesPerformanceCards.vue'
 import SalesSummaryDetail from '@/components/reports/SalesSummaryDetail.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import DateField from '@/components/common/DateField.vue'

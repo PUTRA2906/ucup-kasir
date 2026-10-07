@@ -36,7 +36,7 @@
     </div>
 
     <!-- Content -->
-    <div v-else class="space-y-4 pb-6">
+    <div v-else class="space-y-4 pb-24 md:pb-6">
       <!-- Filter Pills (Mobile) -->
       <div class="flex items-center gap-2 overflow-x-auto pb-2 md:hidden">
         <button

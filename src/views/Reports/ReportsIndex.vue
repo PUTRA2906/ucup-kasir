@@ -2,7 +2,7 @@
   <AdminLayout>
     <PageBreadcrumb pageTitle="Laporan" class="hidden md:block" />
 
-    <div class="space-y-6">
+    <div class="space-y-6 pb-24 md:pb-0">
       <MobilePageHeader title="Laporan" subtitle="Pilih jenis laporan yang ingin dilihat" />
 
       <!-- Desktop Header -->
