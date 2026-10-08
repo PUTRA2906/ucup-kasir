@@ -312,6 +312,13 @@ export const sqliteSalesReportEnhancedService = {
       [transactionId, userId]
     )
 
+    // Jika tidak ada data alokasi per-item (transaksi lama sebelum fitur ini ada),
+    // fallback ke perhitungan proporsional berdasarkan paid_amount transaksi.
+    const hasItemPayments = itemPaymentRows.length > 0
+    if (!hasItemPayments) {
+      return this.calculateRealizedProfitFallback(transactionId, items, returns, userId)
+    }
+
     // Map: item_id -> total_paid
     const paidByItem = new Map<string, number>()
     itemPaymentRows.forEach((ip: any) => {
@@ -376,6 +383,59 @@ export const sqliteSalesReportEnhancedService = {
     return {
       realizedProfit: clampedRealized,
       unrealizedProfit,
+    }
+  },
+
+  /**
+   * Fallback: hitung laba terealisasi secara proporsional berdasarkan
+   * paid_amount/total transaksi (untuk transaksi lama yang belum punya
+   * data transaction_item_payments).
+   */
+  async calculateRealizedProfitFallback(
+    transactionId: string,
+    items: any[],
+    returns: any[],
+    userId: string
+  ): Promise<{ realizedProfit: number; unrealizedProfit: number }> {
+    // Ambil paid_amount dan total dari transaksi
+    const txRow = await queryOne<any>(
+      `SELECT paid_amount, total, discount FROM transactions WHERE id = ? AND user_id = ?`,
+      [transactionId, userId]
+    )
+
+    let txRevenue = 0
+    let txCogs = 0
+    let returnValue = 0
+    let returnCogs = 0
+
+    items.forEach((item: any) => {
+      txRevenue += item.subtotal || 0
+      txCogs += (item.product?.price_buy || 0) * (item.quantity || 0)
+    })
+
+    returns.forEach((r: any) => {
+      returnValue += parseFloat(r.total_refund || 0)
+      r.items?.forEach((ri: any) => {
+        returnCogs += (ri.price_buy || 0) * (ri.quantity || 0)
+      })
+    })
+
+    const discount = Number(txRow?.discount || 0)
+    const netRevenue = txRevenue - discount - returnValue
+    const netCogs = txCogs - returnCogs
+    const profit = netRevenue - netCogs
+
+    // Rasio realisasi = bayar / nilai bersih transaksi
+    const paidAmount = Number(txRow?.paid_amount || 0)
+    const realizationRatio = netRevenue > 0 ? Math.min(paidAmount / netRevenue, 1) : 0
+
+    const clampedRealized = profit >= 0
+      ? Math.min(Math.max(0, profit * realizationRatio), profit)
+      : Math.max(Math.min(0, profit * realizationRatio), profit)
+
+    return {
+      realizedProfit: clampedRealized,
+      unrealizedProfit: profit - clampedRealized,
     }
   },
 
