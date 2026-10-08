@@ -155,50 +155,50 @@ export async function downloadAllFromSupabase(): Promise<SyncResult> {
            vehicles, deliveryOrders, deliveryItems, deliveryTracking,
            doTransactions, deliveryLoaders, deliveryLoadItems,
            customerGroups, groupMembers, priceTiers, customerPrices] = await Promise.all([
-      fetchAllFromTable('categories'),
-      fetchAllFromTable('products'),
-      fetchAllFromTable('customers'),
-      fetchAllFromTable('transactions'),
-      fetchAllFromTable('transaction_items'),
-      fetchAllFromTable('transaction_payments'),
-      fetchAllFromTable('returns'),
-      fetchAllFromTable('return_items'),
-      fetchAllFromTable('store_settings'),
-      fetchAllFromTable('stock_movements'),
-      fetchAllFromTable('stock_adjustments'),
-      fetchAllFromTable('stock_opnames'),
-      fetchAllFromTable('stock_opname_items'),
-      fetchAllFromTable('stock_alerts'),
-      fetchAllFromTable('notifications'),
-      fetchAllFromTable('chart_of_accounts'),
-      fetchAllFromTable('journal_entries'),
-      fetchAllFromTable('journal_lines'),
-      fetchAllFromTable('suppliers'),
-      fetchAllFromTable('purchase_orders'),
-      fetchAllFromTable('po_items'),
-      fetchAllFromTable('goods_receipts'),
-      fetchAllFromTable('grn_items'),
-      fetchAllFromTable('purchase_invoices'),
-      fetchAllFromTable('pi_items'),
-      fetchAllFromTable('pi_payments'),
-      fetchAllFromTable('purchase_returns'),
-      fetchAllFromTable('purchase_return_items'),
-      fetchAllFromTable('employees'),
-      fetchAllFromTable('attendance'),
-      fetchAllFromTable('payrolls'),
-      fetchAllFromTable('employee_loans'),
-      fetchAllFromTable('employee_loan_payments'),
-      fetchAllFromTable('vehicles'),
-      fetchAllFromTable('delivery_orders'),
-      fetchAllFromTable('delivery_items'),
-      fetchAllFromTable('delivery_tracking'),
-      fetchAllFromTable('delivery_order_transactions'),
-      fetchAllFromTable('delivery_loaders'),
-      fetchAllFromTable('delivery_load_items'),
-      fetchAllFromTable('customer_groups'),
-      fetchAllFromTable('customer_group_members'),
-      fetchAllFromTable('price_tiers'),
-      fetchAllFromTable('customer_price_matrix'),
+      fetchAllFromTable('categories', user.id),
+      fetchAllFromTable('products', user.id),
+      fetchAllFromTable('customers', user.id),
+      fetchAllFromTable('transactions', user.id),
+      fetchAllFromTable('transaction_items', user.id),
+      fetchAllFromTable('transaction_payments', user.id),
+      fetchAllFromTable('returns', user.id),
+      fetchAllFromTable('return_items', user.id),
+      fetchAllFromTable('store_settings', user.id),
+      fetchAllFromTable('stock_movements', user.id),
+      fetchAllFromTable('stock_adjustments', user.id),
+      fetchAllFromTable('stock_opnames', user.id),
+      fetchAllFromTable('stock_opname_items', user.id),
+      fetchAllFromTable('stock_alerts', user.id),
+      fetchAllFromTable('notifications', user.id),
+      fetchAllFromTable('chart_of_accounts', user.id),
+      fetchAllFromTable('journal_entries', user.id),
+      fetchAllFromTable('journal_lines', user.id),
+      fetchAllFromTable('suppliers', user.id),
+      fetchAllFromTable('purchase_orders', user.id),
+      fetchAllFromTable('po_items', user.id),
+      fetchAllFromTable('goods_receipts', user.id),
+      fetchAllFromTable('grn_items', user.id),
+      fetchAllFromTable('purchase_invoices', user.id),
+      fetchAllFromTable('pi_items', user.id),
+      fetchAllFromTable('pi_payments', user.id),
+      fetchAllFromTable('purchase_returns', user.id),
+      fetchAllFromTable('purchase_return_items', user.id),
+      fetchAllFromTable('employees', user.id),
+      fetchAllFromTable('attendance', user.id),
+      fetchAllFromTable('payrolls', user.id),
+      fetchAllFromTable('employee_loans', user.id),
+      fetchAllFromTable('employee_loan_payments', user.id),
+      fetchAllFromTable('vehicles', user.id),
+      fetchAllFromTable('delivery_orders', user.id),
+      fetchAllFromTable('delivery_items', user.id),
+      fetchAllFromTable('delivery_tracking', user.id),
+      fetchAllFromTable('delivery_order_transactions', user.id),
+      fetchAllFromTable('delivery_loaders', user.id),
+      fetchAllFromTable('delivery_load_items', user.id),
+      fetchAllFromTable('customer_groups', user.id),
+      fetchAllFromTable('customer_group_members', user.id),
+      fetchAllFromTable('price_tiers', user.id),
+      fetchAllFromTable('customer_price_matrix', user.id),
     ])
 
     // --- 3. Tulis ke SQLite (truncate + insert fresh, dalam urutan dependensi FK) ---
@@ -368,8 +368,8 @@ export async function downloadAllFromSupabase(): Promise<SyncResult> {
   }
 }
 
-/** Fetch semua row dari satu tabel Supabase (tanpa relasi). */
-async function fetchAllFromTable(table: string): Promise<any[]> {
+/** Fetch semua row dari satu tabel Supabase (hanya milik user yang login). */
+async function fetchAllFromTable(table: string, userId: string): Promise<any[]> {
   const limit = 1000
   let all: any[] = []
   let from = 0
@@ -378,6 +378,7 @@ async function fetchAllFromTable(table: string): Promise<any[]> {
     const { data, error } = await supabase
       .from(table)
       .select('*')
+      .eq('user_id', userId)
       .range(from, from + limit - 1)
       .order('created_at')
 

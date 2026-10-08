@@ -128,10 +128,10 @@
           </button>
         </div>
 
-        <!-- Card 4: Laba Kotor -->
+        <!-- Card 4: Laba Terealisasi -->
         <div class="rounded-2xl border border-purple-200 bg-gradient-to-br from-purple-50 to-white p-3.5 shadow-sm dark:border-purple-500/30 dark:from-purple-500/10 dark:to-gray-900">
           <div class="mb-2 flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">Laba Kotor</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">Laba Terealisasi</span>
             <div class="flex h-6 w-6 items-center justify-center rounded-lg bg-purple-500/20">
               <svg class="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -139,14 +139,14 @@
             </div>
           </div>
           <p class="mb-0.5 text-lg font-black leading-none text-gray-900 dark:text-white">
-            {{ formatCurrency(store.summary.gross_profit) }}
+            {{ formatCurrency(store.summary.realized_profit) }}
           </p>
           <p class="text-[9px] text-purple-600 dark:text-purple-400">
             Margin: {{ store.summary.gross_profit_margin.toFixed(1) }}%
           </p>
           <div class="mt-1 space-y-0.5">
-            <p class="text-[9px] text-emerald-600 dark:text-emerald-400">
-              Terealisasi: {{ formatCurrency(store.summary.realized_profit) }}
+            <p class="text-[9px] text-gray-500 dark:text-gray-400">
+              Laba Kotor (akrual): {{ formatCurrency(store.summary.gross_profit) }}
             </p>
             <p class="text-[9px] text-amber-600 dark:text-amber-400">
               Tertahan: {{ formatCurrency(store.summary.unrealized_profit) }}
@@ -155,18 +155,22 @@
         </div>
       </div>
 
-      <!-- Laba Bersih (Setelah Beban Operasional) -->
+      <!-- Laba Bersih Terealisasi (Setelah Beban Operasional) -->
       <div class="rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-sm dark:border-emerald-500/40 dark:from-emerald-500/10 dark:to-gray-900">
         <div class="flex items-center justify-between">
           <div>
-            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Laba Bersih</span>
-            <p class="text-[10px] text-emerald-600/70 dark:text-emerald-500/70">Laba Kotor − Beban Operasional</p>
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Laba Bersih Terealisasi</span>
+            <p class="text-[10px] text-emerald-600/70 dark:text-emerald-500/70">Laba Terealisasi − Beban Operasional</p>
           </div>
-          <p class="text-lg font-black text-emerald-700 dark:text-emerald-400">{{ formatCurrency(netProfit) }}</p>
+          <p class="text-lg font-black text-emerald-700 dark:text-emerald-400">{{ formatCurrency(realizedNetProfit) }}</p>
         </div>
         <div class="mt-2 flex items-center justify-between border-t border-emerald-200/60 pt-2 text-[10px] dark:border-emerald-500/20">
           <span class="text-emerald-600/80 dark:text-emerald-500/70">Beban Operasional</span>
           <span class="font-bold text-red-600 dark:text-red-400">-{{ formatCurrency(totalExpenses) }}</span>
+        </div>
+        <div class="mt-1 flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400">
+          <span>Laba Bersih (Akrual):</span>
+          <span>{{ formatCurrency(netProfit) }}</span>
         </div>
       </div>
 
@@ -210,16 +214,28 @@
             <span class="font-medium text-red-600 dark:text-red-400">-{{ formatCurrency(store.summary.net_cogs) }}</span>
           </div>
           <div class="flex justify-between border-t border-gray-200 pt-2 text-xs font-bold dark:border-gray-700">
-            <span class="text-purple-600 dark:text-purple-400">Laba Kotor</span>
-            <span class="text-purple-600 dark:text-purple-400">{{ formatCurrency(store.summary.gross_profit) }}</span>
+            <span class="text-gray-600 dark:text-gray-400">Laba Kotor (akrual)</span>
+            <span class="text-gray-600 dark:text-gray-400">{{ formatCurrency(store.summary.gross_profit) }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-emerald-600 dark:text-emerald-400">  ↳ Terealisasi (sudah dibayar)</span>
+            <span class="font-medium text-emerald-600 dark:text-emerald-400">{{ formatCurrency(store.summary.realized_profit) }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-amber-600 dark:text-amber-400">  ↳ Tertahan (belum dibayar)</span>
+            <span class="font-medium text-amber-600 dark:text-amber-400">{{ formatCurrency(store.summary.unrealized_profit) }}</span>
           </div>
           <div class="flex justify-between text-xs">
             <span class="text-gray-600 dark:text-gray-400">- Beban Operasional (non-HPP)</span>
             <span class="font-medium text-red-600 dark:text-red-400">-{{ formatCurrency(totalExpenses) }}</span>
           </div>
           <div class="flex justify-between border-t border-gray-200 pt-2 text-xs font-bold dark:border-gray-700">
-            <span class="text-emerald-600 dark:text-emerald-400">Laba Bersih</span>
-            <span class="text-emerald-600 dark:text-emerald-400">{{ formatCurrency(netProfit) }}</span>
+            <span class="text-purple-600 dark:text-purple-400">Laba Bersih Terealisasi</span>
+            <span class="text-purple-600 dark:text-purple-400">{{ formatCurrency(realizedNetProfit) }}</span>
+          </div>
+          <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>Laba Bersih (Akrual)</span>
+            <span>{{ formatCurrency(netProfit) }}</span>
           </div>
         </div>
       </div>
@@ -445,6 +461,7 @@ const totalExpenses = computed(() => {
     .reduce((sum, acc) => sum + (expenseBalanceByAccount.value[acc.id] || 0), 0)
 })
 const netProfit = computed(() => store.summary.gross_profit - totalExpenses.value)
+const realizedNetProfit = computed(() => store.summary.realized_profit - totalExpenses.value)
 
 // Temp filter state — tanggal LOKAL (lihat @/utils/date), bukan UTC
 const tempDateRange = ref({
