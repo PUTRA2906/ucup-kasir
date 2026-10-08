@@ -1,175 +1,140 @@
 <template>
   <FullScreenLayout>
-    <div class="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
-      <div
-        class="relative flex flex-col justify-center w-full h-screen lg:flex-row dark:bg-gray-900"
-      >
-        <div class="flex flex-col flex-1 w-full lg:w-1/2">
-          <div class="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
-            <div>
-              <div class="mb-5 sm:mb-8">
-                <h1
-                  class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md"
-                >
-                  Masuk
-                </h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                  Masuk untuk mengelola produk dan kategori toko Anda.
-                </p>
-              </div>
+    <div class="flex min-h-screen flex-col bg-white dark:bg-gray-950">
 
-              <!-- Error Alert -->
-              <div
-                v-if="errorMessage"
-                class="mb-5 flex items-start gap-3 rounded-lg border border-error-200 bg-error-50 p-3 dark:border-error-500/20 dark:bg-error-500/10"
-              >
-                <svg
-                  class="h-5 w-5 flex-shrink-0 text-error-600 dark:text-error-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <p class="text-sm text-error-700 dark:text-error-300">
-                  {{ errorMessage }}
-                </p>
-              </div>
-
-              <form @submit.prevent="handleSubmit">
-                <div class="space-y-5">
-                  <!-- Email -->
-                  <div>
-                    <label
-                      for="email"
-                      class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-                    >
-                      Email<span class="text-error-500">*</span>
-                    </label>
-                    <input
-                      v-model="email"
-                      type="email"
-                      id="email"
-                      name="email"
-                      placeholder="nama@email.com"
-                      autocomplete="email"
-                      required
-                      class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                    />
-                  </div>
-                  <!-- Password -->
-                  <div>
-                    <label
-                      for="password"
-                      class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-                    >
-                      Kata Sandi<span class="text-error-500">*</span>
-                    </label>
-                    <div class="relative">
-                      <input
-                        v-model="password"
-                        :type="showPassword ? 'text' : 'password'"
-                        id="password"
-                        placeholder="Masukkan kata sandi"
-                        autocomplete="current-password"
-                        required
-                        class="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent py-2.5 pl-4 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                      />
-                      <span
-                        @click="togglePasswordVisibility"
-                        class="absolute z-30 text-gray-500 -translate-y-1/2 cursor-pointer right-4 top-1/2 dark:text-gray-400"
-                      >
-                        <svg
-                          v-if="!showPassword"
-                          class="fill-current"
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fill-rule="evenodd"
-                            clip-rule="evenodd"
-                            d="M10.0002 13.8619C7.23361 13.8619 4.86803 12.1372 3.92328 9.70241C4.86804 7.26761 7.23361 5.54297 10.0002 5.54297C12.7667 5.54297 15.1323 7.26762 16.0771 9.70243C15.1323 12.1372 12.7667 13.8619 10.0002 13.8619ZM10.0002 4.04297C6.48191 4.04297 3.49489 6.30917 2.4155 9.4593C2.3615 9.61687 2.3615 9.78794 2.41549 9.94552C3.49488 13.0957 6.48191 15.3619 10.0002 15.3619C13.5184 15.3619 16.5055 13.0957 17.5849 9.94555C17.6389 9.78797 17.6389 9.6169 17.5849 9.45932C16.5055 6.30919 13.5184 4.04297 10.0002 4.04297ZM9.99151 7.84413C8.96527 7.84413 8.13333 8.67606 8.13333 9.70231C8.13333 10.7286 8.96527 11.5605 9.99151 11.5605H10.0064C11.0326 11.5605 11.8646 10.7286 11.8646 9.70231C11.8646 8.67606 11.0326 7.84413 10.0064 7.84413H9.99151Z"
-                            fill="#98A2B3"
-                          />
-                        </svg>
-                        <svg
-                          v-else
-                          class="fill-current"
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fill-rule="evenodd"
-                            clip-rule="evenodd"
-                            d="M4.63803 3.57709C4.34513 3.2842 3.87026 3.2842 3.57737 3.57709C3.28447 3.86999 3.28447 4.34486 3.57737 4.63775L4.85323 5.91362C3.74609 6.84199 2.89363 8.06395 2.4155 9.45936C2.3615 9.61694 2.3615 9.78801 2.41549 9.94558C3.49488 13.0957 6.48191 15.3619 10.0002 15.3619C11.255 15.3619 12.4422 15.0737 13.4994 14.5598L15.3625 16.4229C15.6554 16.7158 16.1302 16.7158 16.4231 16.4229C16.716 16.13 16.716 15.6551 16.4231 15.3622L4.63803 3.57709ZM12.3608 13.4212L10.4475 11.5079C10.3061 11.5423 10.1584 11.5606 10.0064 11.5606H9.99151C8.96527 11.5606 8.13333 10.7286 8.13333 9.70237C8.13333 9.5461 8.15262 9.39434 8.18895 9.24933L5.91885 6.97923C5.03505 7.69015 4.34057 8.62704 3.92328 9.70247C4.86803 12.1373 7.23361 13.8619 10.0002 13.8619C10.8326 13.8619 11.6287 13.7058 12.3608 13.4212ZM16.0771 9.70249C15.7843 10.4569 15.3552 11.1432 14.8199 11.7311L15.8813 12.7925C16.6329 11.9813 17.2187 11.0143 17.5849 9.94561C17.6389 9.78803 17.6389 9.61696 17.5849 9.45938C16.5055 6.30925 13.5184 4.04303 10.0002 4.04303C9.13525 4.04303 8.30244 4.17999 7.52218 4.43338L8.75139 5.66259C9.1556 5.58413 9.57311 5.54303 10.0002 5.54303C12.7667 5.54303 15.1323 7.26768 16.0771 9.70249Z"
-                            fill="#98A2B3"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                  <!-- Button -->
-                  <div>
-                    <button
-                      type="submit"
-                      :disabled="authStore.loading"
-                      class="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      <svg
-                        v-if="authStore.loading"
-                        class="mr-2 h-4 w-4 animate-spin text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          class="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          stroke-width="4"
-                        ></circle>
-                        <path
-                          class="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      {{ authStore.loading ? 'Memproses...' : 'Masuk' }}
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
+      <!-- Bagian atas: ilustrasi / branding -->
+      <div class="flex flex-col items-center justify-center bg-brand-600 pb-10 pt-14 dark:bg-brand-700">
+        <!-- Logo / ikon aplikasi -->
+        <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-white shadow-lg">
+          <svg class="h-11 w-11 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M9 7H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1-4H9m0 0a2 2 0 000 4h6a2 2 0 000-4M9 3h6"
+            />
+          </svg>
         </div>
-        <div
-          class="relative items-center hidden w-full h-full lg:w-1/2 bg-brand-950 dark:bg-white/5 lg:grid"
-        >
-          <div class="flex items-center justify-center z-1">
-            <common-grid-shape />
-            <div class="flex flex-col items-center max-w-xs">
-              <router-link to="/" class="block mb-4">
-                <img width="{231}" height="{48}" src="/images/logo/auth-logo.svg" alt="Logo" />
-              </router-link>
-              <p class="text-center text-gray-400 dark:text-white/60">
-                Ucup Kasir - Aplikasi Kasir
-              </p>
-            </div>
-          </div>
-        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-white">Tagih Kios</h1>
+        <p class="mt-1 text-sm text-brand-200">Kelola toko, stok & piutang dengan mudah</p>
       </div>
+
+      <!-- Kartu form: melengkung ke atas menutupi bagian bawah header -->
+      <div class="-mt-5 flex flex-1 flex-col rounded-t-3xl bg-white px-6 pt-8 pb-6 dark:bg-gray-950">
+
+        <h2 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Masuk ke Akun</h2>
+        <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">Gunakan email dan kata sandi yang terdaftar</p>
+
+        <!-- Error Alert -->
+        <div
+          v-if="errorMessage"
+          class="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-500/20 dark:bg-red-500/10"
+        >
+          <svg class="mt-0.5 h-4 w-4 shrink-0 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="text-sm text-red-700 dark:text-red-300">{{ errorMessage }}</p>
+        </div>
+
+        <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
+          <!-- Email -->
+          <div>
+            <label for="email" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Email
+            </label>
+            <div class="relative">
+              <span class="pointer-events-none absolute inset-y-0 left-3.5 flex items-center">
+                <svg class="h-4.5 w-4.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </span>
+              <input
+                v-model="email"
+                type="email"
+                id="email"
+                name="email"
+                placeholder="nama@email.com"
+                autocomplete="email"
+                required
+                inputmode="email"
+                class="h-12 w-full rounded-xl border border-gray-300 bg-gray-50 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:bg-gray-800"
+              />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label for="password" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Kata Sandi
+            </label>
+            <div class="relative">
+              <span class="pointer-events-none absolute inset-y-0 left-3.5 flex items-center">
+                <svg class="h-4.5 w-4.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </span>
+              <input
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                id="password"
+                placeholder="Masukkan kata sandi"
+                autocomplete="current-password"
+                required
+                class="h-12 w-full rounded-xl border border-gray-300 bg-gray-50 pl-10 pr-12 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:bg-gray-800"
+              />
+              <button
+                type="button"
+                @click="togglePasswordVisibility"
+                class="absolute inset-y-0 right-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                tabindex="-1"
+              >
+                <!-- Eye off -->
+                <svg v-if="!showPassword" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                </svg>
+                <!-- Eye on -->
+                <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tombol Masuk -->
+          <button
+            type="submit"
+            :disabled="authStore.loading"
+            class="mt-2 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 text-base font-semibold text-white shadow-md shadow-brand-500/30 transition active:scale-[0.98] disabled:opacity-60 dark:bg-brand-500"
+          >
+            <svg
+              v-if="authStore.loading"
+              class="h-5 w-5 animate-spin"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            {{ authStore.loading ? 'Memproses...' : 'Masuk' }}
+          </button>
+        </form>
+
+        <!-- Spacer dorong footer ke bawah -->
+        <div class="flex-1"></div>
+
+        <!-- Footer -->
+        <p class="mt-8 text-center text-xs text-gray-400 dark:text-gray-600">
+          Tagih Kios &copy; {{ new Date().getFullYear() }}
+        </p>
+      </div>
+
     </div>
   </FullScreenLayout>
 </template>
@@ -177,7 +142,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import CommonGridShape from '@/components/common/CommonGridShape.vue'
 import FullScreenLayout from '@/components/layout/FullScreenLayout.vue'
 import { useAuthStore } from '@/stores/auth'
 import { isNativeApp } from '@/lib/platform'

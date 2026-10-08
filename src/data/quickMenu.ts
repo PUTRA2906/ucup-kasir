@@ -29,7 +29,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/products',
     label: 'Produk',
     description: 'Daftar produk, harga & stok',
-    iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
   },
   {
@@ -37,7 +37,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/categories',
     label: 'Kategori',
     description: 'Kelola kategori & pengelompokan produk',
-    iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z',
   },
   {
@@ -45,7 +45,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/stock',
     label: 'Stok',
     description: 'Kelola stok gudang & mutasi barang',
-    iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
   },
   {
@@ -69,7 +69,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/stock/movements',
     label: 'Mutasi',
     description: 'Riwayat perpindahan stok barang',
-    iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4',
   },
   {
@@ -110,7 +110,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance',
     label: 'Keuangan',
     description: 'Ringkasan keuangan & posisi kas',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M19 7V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-2m-6-10h6v6h-6a3 3 0 010-6zm0 0a3 3 0 00-3 3v6',
   },
   {
@@ -118,7 +118,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/accounts',
     label: 'Akun',
     description: 'Chart of accounts / daftar akun',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
   },
   {
@@ -126,7 +126,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/journal',
     label: 'Jurnal',
     description: 'Jurnal umum seluruh transaksi',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
   },
   {
@@ -134,7 +134,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/ledger',
     label: 'Buku Besar',
     description: 'Rekap transaksi per akun',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M9 17h6m-6-4h6m-6-4h6M5 7h.01M5 11h.01M5 15h.01M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z',
   },
   {
@@ -142,7 +142,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/trial-balance',
     label: 'Neraca Saldo',
     description: 'Keseimbangan debit & kredit',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3',
   },
   {
@@ -150,7 +150,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/balance-sheet',
     label: 'Neraca',
     description: 'Laporan posisi aset, utang & modal',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
   },
   {
@@ -158,7 +158,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/cash-flow',
     label: 'Arus Kas',
     description: 'Laporan pemasukan & pengeluaran kas',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z',
   },
   {
@@ -166,7 +166,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/finance/closing-periods',
     label: 'Tutup Buku',
     description: 'Kunci periode akuntansi',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
   },
   {
@@ -174,7 +174,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/purchasing',
     label: 'Pembelian',
     description: 'Dashboard pembelian & overview',
-    iconClass: 'border-orange-500/20 bg-orange-500/10 text-orange-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z',
   },
   {
@@ -182,7 +182,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/hr',
     label: 'Dashboard Karyawan',
     description: 'Ringkasan Data Karyawan',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
   },
   {
@@ -190,7 +190,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/purchasing/suppliers',
     label: 'Supplier',
     description: 'Data supplier & pemasok barang',
-    iconClass: 'border-orange-500/20 bg-orange-500/10 text-orange-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M3 5h18M3 5v14a1 1 0 001 1h16a1 1 0 001-1V5M3 5l2-2h14l2 2m-7 4h2m-2 4h2M8 7a2 2 0 014 0v6a2 2 0 01-4 0V7z',
   },
   {
@@ -198,7 +198,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/purchasing/pos',
     label: 'PO',
     description: 'Purchase order ke supplier',
-    iconClass: 'border-orange-500/20 bg-orange-500/10 text-orange-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
   },
   {
@@ -206,7 +206,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/purchasing/grns',
     label: 'Terima',
     description: 'Penerimaan barang dari supplier',
-    iconClass: 'border-orange-500/20 bg-orange-500/10 text-orange-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4m6-12l-4 4m-4-4l4 4',
   },
   {
@@ -214,7 +214,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/purchasing/pis',
     label: 'Faktur',
     description: 'Faktur pembelian dari supplier',
-    iconClass: 'border-orange-500/20 bg-orange-500/10 text-orange-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M9 14l6 0M9 10l6 0M9 18l6 0M12 3v4m0 0H8m4 0h4M5 5a2 2 0 012-2h7.586a1 1 0 01.707.293l4.414 4.414A1 1 0 0120 8.414V19a2 2 0 01-2 2H7a2 2 0 01-2-2V5z',
   },
   {
@@ -222,7 +222,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/purchasing/returns',
     label: 'Retur Beli',
     description: 'Retur pembelian ke supplier',
-    iconClass: 'border-orange-500/20 bg-orange-500/10 text-orange-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15',
   },
   {
@@ -230,7 +230,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/shipping/pending-shipments',
     label: 'Perlu Dikirim',
     description: 'Transaksi yang belum dibuat surat jalan',
-    iconClass: 'border-sky-500/20 bg-sky-500/10 text-sky-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4',
   },
   {
@@ -238,7 +238,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/shipping/deliveries',
     label: 'Surat Jalan',
     description: 'Pengelolaan surat jalan pengiriman',
-    iconClass: 'border-sky-500/20 bg-sky-500/10 text-sky-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M3 7h11v10H3V7zm0 0V5a2 2 0 012-2h4v4m4 8h2a3 3 0 003-3v-2h-5m-2 0V8a2 2 0 012-2h3l4 4v5a2 2 0 01-2 2h-3',
   },
   {
@@ -246,7 +246,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/shipping/vehicles',
     label: 'Kendaraan',
     description: 'Data kendaraan & armada pengiriman',
-    iconClass: 'border-sky-500/20 bg-sky-500/10 text-sky-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M9 17a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM3 3h3l2 6h9l3-5h2v5h-2m-12 0l2 6h9m0 0h1a2 2 0 012 2v4h-2',
   },
   {
@@ -254,7 +254,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/hr/employees',
     label: 'Master Karyawan',
     description: 'Data karyawan & profil karyawan',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
   },
   {
@@ -262,7 +262,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/hr/loans',
     label: 'Kasbon',
     description: 'Kasbon karyawan & pemotongan gaji',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z',
   },
   {
@@ -270,7 +270,7 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     to: '/hr/payroll',
     label: 'Payroll',
     description: 'Penggajian & slip gaji karyawan',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
   },
 ]
@@ -284,35 +284,35 @@ export const QUICK_MENU_GROUPS: (Omit<QuickMenuGroup, 'items'> & {
     title: 'Pengiriman',
     slug: 'pengiriman',
     color: 'bg-sky-400',
-    iconClass: 'border-sky-500/20 bg-sky-500/10 text-sky-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M3 7h11v10H3V7zm0 0V5a2 2 0 012-2h4v4m4 8h2a3 3 0 003-3v-2h-5m-2 0V8a2 2 0 012-2h3l4 4v5a2 2 0 01-2 2h-3',
   },
   {
     title: 'Keuangan',
     slug: 'keuangan',
     color: 'bg-emerald-400',
-    iconClass: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M19 7V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-2m-6-10h6v6h-6a3 3 0 010-6zm0 0a3 3 0 00-3 3v6',
   },
   {
     title: 'Karyawan & Payroll',
     slug: 'karyawan',
     color: 'bg-emerald-400',
-    iconClass: 'border-violet-500/20 bg-violet-500/10 text-violet-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
   },
   {
     title: 'Pembelian',
     slug: 'pembelian',
     color: 'bg-orange-400',
-    iconClass: 'border-orange-500/20 bg-orange-500/10 text-orange-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z',
   },
   {
     title: 'Gudang',
     slug: 'gudang-stok',
     color: 'bg-blue-400',
-    iconClass: 'border-blue-500/20 bg-blue-500/10 text-blue-500',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
   },
 ]

@@ -19,7 +19,7 @@
       <MobilePageHeader title="Pengaturan Toko" subtitle="Konfigurasi data usaha dan sistem" hide-back-button />
 
       <!-- Settings List -->
-      <div class="divide-y divide-gray-200 bg-white dark:divide-gray-800 dark:bg-gray-900">
+      <div class="bg-white dark:bg-gray-900">
         <!-- Informasi Toko -->
         <button
           @click="router.push('/settings/store-info')"
@@ -38,9 +38,6 @@
               </p>
             </div>
           </div>
-          <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
         </button>
 
         <!-- Variabel Global -->
@@ -59,9 +56,6 @@
               <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Limit kredit & upah bongkar muat</p>
             </div>
           </div>
-          <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
         </button>
 
         <!-- Profil & Keamanan -->
@@ -80,179 +74,64 @@
               <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Data pribadi dan kata sandi akun</p>
             </div>
           </div>
-          <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
         </button>
 
         <!-- Tampilan Aplikasi -->
-        <div>
-          <button
-            @click="toggleSection('display')"
-            class="flex w-full items-center justify-between px-4 py-3.5 text-left transition active:bg-gray-50 dark:active:bg-white/[0.02]"
-          >
-            <div class="flex items-center gap-3">
-              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
-                <svg class="h-4 w-4 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                </svg>
-              </div>
-              <div>
-                <h2 class="text-sm font-medium text-gray-900 dark:text-white">Tampilan Aplikasi</h2>
-                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Penyesuaian tema visual</p>
-              </div>
+        <div class="flex w-full items-center justify-between gap-3 px-4 py-3.5">
+          <div class="flex items-center gap-3">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
+              <svg class="h-4 w-4 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
             </div>
-            <svg
-              :class="[
-                'h-5 w-5 text-gray-400 transition-transform duration-200',
-                expandedSections.display ? 'rotate-180' : ''
-              ]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          <div
-            v-show="expandedSections.display"
-            class="border-t border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/50"
-          >
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-white">Mode Gelap</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Kenyamanan mata saat di lapangan</p>
-              </div>
-              <button
-                @click="toggleTheme"
-                :class="[
-                  'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
-                  isDarkMode ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700',
-                ]"
-              >
-                <span
-                  :class="[
-                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                    isDarkMode ? 'translate-x-5' : 'translate-x-0',
-                  ]"
-                />
-              </button>
+            <div>
+              <h2 class="text-sm font-medium text-gray-900 dark:text-white">Tema Gelap</h2>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Kenyamanan mata saat di lapangan</p>
             </div>
           </div>
+          <button
+            @click="toggleTheme"
+            :class="[
+              'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+              isDarkMode ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700',
+            ]"
+          >
+            <span
+              :class="[
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                isDarkMode ? 'translate-x-5' : 'translate-x-0',
+              ]"
+            />
+          </button>
         </div>
 
         <!-- Sinkronisasi Database -->
-        <div>
-          <button
-            @click="toggleSection('sync')"
-            class="flex w-full items-center justify-between px-4 py-3.5 text-left transition active:bg-gray-50 dark:active:bg-white/[0.02]"
-          >
-            <div class="flex items-center gap-3">
-              <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10">
-                <svg class="h-4 w-4 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </div>
-              <div>
-                <h2 class="text-sm font-medium text-gray-900 dark:text-white">Sinkronisasi Database</h2>
-                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Upload & download data dari server</p>
-              </div>
-            </div>
-            <svg
-              :class="[
-                'h-5 w-5 text-gray-400 transition-transform duration-200',
-                expandedSections.sync ? 'rotate-180' : ''
-              ]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          <div
-            v-show="expandedSections.sync"
-            class="space-y-3 border-t border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/50"
-          >
-            <!-- Status koneksi & pending -->
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span
-                  :class="[
-                    'inline-flex h-2 w-2 rounded-full',
-                    !isOnline ? 'bg-gray-400' : backupBusy ? 'bg-amber-500 animate-pulse' : 'bg-success-500',
-                  ]"
-                ></span>
-                <div>
-                  <p class="text-sm font-medium text-gray-900 dark:text-white">
-                    {{ !isOnline ? 'Offline' : backupBusy ? 'Sedang mengirim...' : hasPending ? 'Ada perubahan menunggu' : 'Tersinkron' }}
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{
-                      !isOnline
-                        ? 'Tidak terhubung ke internet'
-                        : hasPending && !backupBusy
-                          ? `${pendingCount} perubahan belum dikirim`
-                          : 'Semua perubahan sudah terkirim'
-                    }}
-                  </p>
-                </div>
-              </div>
-              <BackupStatus />
-            </div>
-
-            <!-- Info waktu sync terakhir -->
-            <div v-if="lastSyncInfo" class="rounded-lg bg-white p-2.5 text-xs dark:bg-gray-900">
-              <div class="flex items-center justify-between">
-                <span class="text-gray-500 dark:text-gray-400">Upload terakhir:</span>
-                <span class="font-medium text-gray-700 dark:text-gray-300">
-                  {{ lastSyncInfo.lastSyncAt ? formatSyncDate(lastSyncInfo.lastSyncAt) : 'Belum pernah' }}
-                </span>
-              </div>
-              <div class="mt-1 flex items-center justify-between">
-                <span class="text-gray-500 dark:text-gray-400">Download terakhir:</span>
-                <span class="font-medium text-gray-700 dark:text-gray-300">
-                  {{ lastSyncInfo.lastDownloadAt ? formatSyncDate(lastSyncInfo.lastDownloadAt) : 'Belum pernah' }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Tombol Upload -->
-            <button
-              @click="handleUploadChanges"
-              :disabled="!isOnline || backupBusy"
-              class="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-500 py-2.5 text-sm font-medium text-white shadow-sm transition active:scale-95 disabled:opacity-50"
-            >
-              <svg v-if="backupBusy" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
-              </svg>
-              {{ !isOnline ? 'Tidak Ada Internet' : backupBusy ? 'Mengirim...' : 'Upload Perubahan' }}
-            </button>
-
-            <!-- Tombol Sinkronisasi Penuh -->
-            <button
-              @click="handleFullSync"
-              :disabled="syncing || !isOnline"
-              class="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-500 py-2.5 text-sm font-medium text-white shadow-sm transition active:scale-95 disabled:opacity-50"
-            >
-              <svg v-if="syncing" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="flex w-full items-center justify-between gap-3 px-4 py-3.5">
+          <div class="flex items-center gap-3">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10">
+              <svg class="h-4 w-4 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              {{ syncing ? syncProgress : 'Sinkronisasi Penuh' }}
-            </button>
-
-            <p v-if="syncError" class="text-xs font-medium text-red-500 dark:text-red-400">{{ syncError }}</p>
+            </div>
+            <div>
+              <h2 class="text-sm font-medium text-gray-900 dark:text-white">Sinkronisasi Database</h2>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Upload & download data dari server</p>
+            </div>
           </div>
+          <button
+            @click="handleFullSync"
+            :disabled="syncing || !isOnline"
+            class="flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-indigo-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition active:scale-95 disabled:opacity-50"
+          >
+            <svg v-if="syncing" class="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <svg v-else class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {{ syncing ? 'Proses...' : 'Sinkronisasi' }}
+          </button>
         </div>
 
         <!-- Log Event -->
@@ -271,15 +150,12 @@
               <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Riwayat error & aktivitas</p>
             </div>
           </div>
-          <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
         </button>
 
         <!-- Keluar -->
         <button
           @click="showLogoutConfirm = true"
-          class="flex w-full items-center gap-3 border-t border-red-100 px-4 py-3.5 text-left transition active:bg-red-50 dark:border-red-900/30 dark:active:bg-red-500/5"
+          class="flex w-full items-center gap-3 px-4 py-3.5 text-left transition active:bg-red-50 dark:active:bg-red-500/5"
         >
           <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10">
             <LogoutIcon class="h-4 w-4 text-red-500 dark:text-red-400" />
@@ -529,6 +405,20 @@
       variant="danger"
       @confirm="handleLogout"
     />
+
+    <LoadingOverlay
+      :visible="logoutLoading"
+      :message="logoutMessage"
+      :sub-message="logoutSubMessage"
+    />
+
+    <SyncProgressModal
+      :visible="showSyncModal"
+      :current-step="syncCurrentStep"
+      :progress="syncProgressPercent"
+      :logs="syncLogs"
+      :status-message="syncStatusMessage"
+    />
   </AdminLayout>
 </template>
 
@@ -547,6 +437,9 @@ import { useTheme } from '@/components/layout/ThemeProvider.vue'
 import { useNetwork } from '@/lib/network'
 import BackupStatus from '@/views/Sync/BackupStatus.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
+import SyncProgressModal from '@/components/common/SyncProgressModal.vue'
+import type { SyncLog } from '@/components/common/SyncProgressModal.vue'
 import { LogoutIcon } from '@/icons'
 import { downloadAllFromSupabase, uploadChangesToSupabase, getLastSyncInfo } from '@/services/sync/syncEngine'
 import { isNativeApp } from '@/lib/platform'
@@ -564,6 +457,11 @@ const syncError = ref<string | null>(null)
 const lastSyncLabel = ref<string | null>(null)
 const showLogoutConfirm = ref(false)
 
+// Loading overlay saat proses logout berlangsung
+const logoutLoading = ref(false)
+const logoutMessage = ref('Keluar...')
+const logoutSubMessage = ref('')
+
 // Auto register/unregister layer di navigation stack
 useAutoNavigationStack(showLogoutConfirm, 'settings-logout-confirm-dialog')
 
@@ -571,6 +469,20 @@ useAutoNavigationStack(showLogoutConfirm, 'settings-logout-confirm-dialog')
 const syncing = ref(false)
 const syncProgress = ref('Memulai sinkronisasi...')
 const lastSyncInfo = ref<{ lastSyncAt: string | null; lastDownloadAt: string | null } | null>(null)
+
+// State untuk modal sync progress
+const showSyncModal = ref(false)
+const syncCurrentStep = ref('Memulai sinkronisasi...')
+const syncProgressPercent = ref(0)
+const syncLogs = ref<SyncLog[]>([])
+const syncStatusMessage = ref('')
+
+// Helper untuk menambah log
+function addSyncLog(type: 'info' | 'success' | 'error', message: string) {
+  const now = new Date()
+  const time = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  syncLogs.value.push({ type, message, time })
+}
 
 // Backup & Sinkronisasi — status dari sync store
 const backupBusy = computed(() => syncStore.uploading || syncStore.syncing)
@@ -609,47 +521,92 @@ async function handleFullSync() {
 
   if (syncing.value) return
 
+  // Reset state dan tampilkan modal
   syncing.value = true
-  syncProgress.value = 'Memulai sinkronisasi...'
+  showSyncModal.value = true
+  syncLogs.value = []
+  syncProgressPercent.value = 0
+  syncCurrentStep.value = 'Memulai sinkronisasi...'
+  syncStatusMessage.value = 'Mohon tunggu, jangan tutup aplikasi'
+
+  addSyncLog('info', 'Memulai proses sinkronisasi database')
 
   try {
-    // Step 1: Upload perubahan lokal ke server
-    syncProgress.value = 'Mengupload perubahan lokal...'
+    // Step 1: Upload perubahan lokal ke server (50% progress)
+    syncCurrentStep.value = 'Mengupload perubahan lokal...'
+    syncProgressPercent.value = 10
+    addSyncLog('info', 'Memeriksa perubahan lokal yang belum dikirim')
+
     const uploadResult = await uploadChangesToSupabase()
 
     if (!uploadResult.success && uploadResult.message) {
+      addSyncLog('error', `Upload gagal: ${uploadResult.message}`)
       throw new Error(`Upload gagal: ${uploadResult.message}`)
     }
 
     const uploadedCount = uploadResult.uploaded || 0
-    console.log(`Upload: ${uploadedCount} item berhasil`)
+    syncProgressPercent.value = 50
 
-    // Step 2: Download data terbaru dari server
-    syncProgress.value = 'Mendownload data terbaru...'
+    if (uploadedCount > 0) {
+      addSyncLog('success', `Berhasil upload ${uploadedCount} perubahan ke server`)
+    } else {
+      addSyncLog('info', 'Tidak ada perubahan lokal untuk diupload')
+    }
+
+    // Step 2: Download data terbaru dari server (100% progress)
+    syncCurrentStep.value = 'Mendownload data terbaru...'
+    syncProgressPercent.value = 60
+    addSyncLog('info', 'Mengunduh data terbaru dari server')
+
     const downloadResult = await downloadAllFromSupabase()
 
     if (!downloadResult.success) {
+      addSyncLog('error', `Download gagal: ${downloadResult.message}`)
       throw new Error(`Download gagal: ${downloadResult.message}`)
     }
 
     const downloadedCount = downloadResult.downloaded || 0
-    console.log(`Download: ${downloadedCount} data berhasil`)
+    syncProgressPercent.value = 90
+
+    if (downloadedCount > 0) {
+      addSyncLog('success', `Berhasil download ${downloadedCount} data dari server`)
+    } else {
+      addSyncLog('info', 'Data lokal sudah up-to-date')
+    }
 
     // Update info sync terakhir
+    syncProgressPercent.value = 95
+    addSyncLog('info', 'Memperbarui informasi sinkronisasi')
     await loadLastSyncInfo()
 
-    // Tampilkan notifikasi sukses
-    toast.success(
-      'Sinkronisasi Berhasil!',
-      `Upload: ${uploadedCount} perubahan, Download: ${downloadedCount} data`
-    )
+    // Selesai
+    syncProgressPercent.value = 100
+    syncCurrentStep.value = 'Sinkronisasi selesai!'
+    syncStatusMessage.value = `Upload: ${uploadedCount} perubahan, Download: ${downloadedCount} data`
+    addSyncLog('success', 'Sinkronisasi database berhasil diselesaikan')
+
+    // Tutup modal setelah 2 detik
+    setTimeout(() => {
+      showSyncModal.value = false
+      toast.success(
+        'Sinkronisasi Berhasil!',
+        `Upload: ${uploadedCount} perubahan, Download: ${downloadedCount} data`
+      )
+    }, 2000)
 
   } catch (e: any) {
     console.error('Gagal sinkronisasi:', e)
-    toast.error('Gagal Sinkronisasi!', e.message || 'Terjadi kesalahan saat sinkronisasi')
+    syncCurrentStep.value = 'Sinkronisasi gagal'
+    syncStatusMessage.value = e.message || 'Terjadi kesalahan'
+    addSyncLog('error', e.message || 'Terjadi kesalahan saat sinkronisasi')
+
+    // Tutup modal setelah 3 detik
+    setTimeout(() => {
+      showSyncModal.value = false
+      toast.error('Gagal Sinkronisasi!', e.message || 'Terjadi kesalahan saat sinkronisasi')
+    }, 3000)
   } finally {
     syncing.value = false
-    syncProgress.value = 'Memulai sinkronisasi...'
   }
 }
 
@@ -739,12 +696,33 @@ const formData = reactive({
 
 const handleLogout = async () => {
   showLogoutConfirm.value = false
+
+  // Tampilkan overlay — pesan awal berbeda antara native (ada sync) dan web
+  logoutLoading.value = true
+  if (isNativeApp()) {
+    logoutMessage.value = 'Menyinkronkan data...'
+    logoutSubMessage.value = 'Mengirim perubahan ke server sebelum keluar'
+  } else {
+    logoutMessage.value = 'Keluar...'
+    logoutSubMessage.value = ''
+  }
+
   try {
     const result = await authStore.signOut()
+
     // Batal oleh user (mis. gagal sinkron lalu pilih "Batal") → tetap di app.
-    if (result.cancelled) return
+    if (result.cancelled) {
+      logoutLoading.value = false
+      return
+    }
+
+    // Sinkronisasi selesai, tampilkan pesan keluar
+    logoutMessage.value = 'Keluar...'
+    logoutSubMessage.value = ''
+
     router.push('/signin')
   } catch (error: any) {
+    logoutLoading.value = false
     toast.error('Gagal!', error.message || 'Gagal keluar dari akun')
   }
 }

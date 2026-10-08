@@ -430,6 +430,7 @@ function formatCurrency(value: number): string {
 }
 
 function formatDate(date: string): string {
+  if (!date || date.trim() === '') return '-'
   return new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
     month: 'short',

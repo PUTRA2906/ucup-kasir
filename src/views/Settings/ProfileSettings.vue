@@ -1,7 +1,7 @@
 <template>
   <AdminLayout hide-bottom-nav>
     <PageBreadcrumb pageTitle="Profil & Keamanan" class="hidden md:block" />
-    <div class="mx-auto max-w-lg space-y-4 pb-8">
+    <div class="mx-auto max-w-lg space-y-0 pb-8 md:space-y-4">
       <MobilePageHeader
         title="Profil & Keamanan"
         subtitle="Data pribadi dan kata sandi akun"
@@ -9,7 +9,7 @@
       />
 
       <!-- Informasi Profil -->
-      <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+      <div class="border-b border-gray-100 pb-4 dark:border-gray-800 md:rounded-2xl md:border md:border-gray-200 md:bg-white md:p-4 md:shadow-sm md:dark:border-gray-800 md:dark:bg-gray-900">
         <h3 class="mb-3 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Informasi Profil</h3>
 
         <!-- Avatar -->
@@ -96,7 +96,7 @@
       </div>
 
       <!-- Keamanan Akun -->
-      <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+      <div class="py-4 md:rounded-2xl md:border md:border-gray-200 md:bg-white md:p-4 md:shadow-sm md:dark:border-gray-800 md:dark:bg-gray-900">
         <h3 class="mb-1 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Keamanan Akun</h3>
         <p class="mb-3 text-[10px] text-gray-400 dark:text-gray-500">Ubah kata sandi untuk menjaga keamanan akun Anda</p>
 

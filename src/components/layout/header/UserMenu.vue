@@ -58,6 +58,8 @@
     </div>
     <!-- Dropdown End -->
   </div>
+
+  <LoadingOverlay :visible="logoutLoading" :message="logoutMessage" />
 </template>
 
 <script setup lang="ts">
@@ -65,12 +67,17 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { UserCircleIcon, LogoutIcon, InfoCircleIcon } from '@/icons'
 import { useAuthStore } from '@/stores/auth'
+import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const dropdownOpen = ref(false)
 const dropdownRef = ref(null)
+
+// Loading overlay saat proses logout berlangsung
+const logoutLoading = ref(false)
+const logoutMessage = ref('Keluar...')
 
 const displayName = computed(() => {
   const user = authStore.user
@@ -103,10 +110,19 @@ const closeDropdown = () => {
 
 const handleSignOut = async () => {
   closeDropdown()
-  const result = await authStore.signOut()
-  // Batal oleh user (mis. gagal sinkron lalu pilih "Batal") → tetap di app.
-  if (result.cancelled) return
-  router.push('/signin')
+  logoutLoading.value = true
+  logoutMessage.value = 'Keluar...'
+  try {
+    const result = await authStore.signOut()
+    // Batal oleh user (mis. gagal sinkron lalu pilih "Batal") → tetap di app.
+    if (result.cancelled) {
+      logoutLoading.value = false
+      return
+    }
+    router.push('/signin')
+  } catch {
+    logoutLoading.value = false
+  }
 }
 
 const handleClickOutside = (event: MouseEvent) => {

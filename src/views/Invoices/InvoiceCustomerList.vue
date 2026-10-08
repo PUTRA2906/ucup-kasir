@@ -3,7 +3,7 @@
     <PageBreadcrumb pageTitle="Invoice Pelanggan" class="hidden md:block" />
     <div class="space-y-6">
       <!-- ============ MOBILE: Header ============ -->
-      <MobilePageHeader :title="'Customer di ' + kecamatan" subtitle="Pilih mitra untuk melihat riwayat invoice & piutang" />
+      <MobilePageHeader :title="'Customer di ' + kecamatan" subtitle="Pilih mitra untuk melihat riwayat invoice & piutang" back-to="/customer-invoices" />
 
       <!-- ============ DESKTOP: Header ============ -->
       <div class="hidden items-center gap-2 md:flex">

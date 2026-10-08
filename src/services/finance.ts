@@ -195,7 +195,7 @@ export const financeService = {
     // normal-kredit), sedangkan delta baris di bawah memakai basis debit-mentah (debit - credit).
     // Konversi balik ke basis debit supaya kedua basis sama.
     let before = 0
-    if (startDate) {
+    if (startDate && startDate.trim() !== '') {
       // 'YYYY-MM-DD' + 'T00:00:00' = tengah malam LOKAL (bukan UTC) -> minus 1 hari = akhir hari sebelumnya
       const prevDay = new Date(new Date(startDate + 'T00:00:00').getTime() - 86400000)
         .toLocaleDateString('en-CA') // en-CA == format 'YYYY-MM-DD'
@@ -211,10 +211,10 @@ export const financeService = {
       .eq('journal.status', 'posted')
       .order('entry_date', { foreignTable: 'journal', ascending: true })
 
-    if (startDate) {
+    if (startDate && startDate.trim() !== '') {
       query = query.gte('journal.entry_date', new Date(startDate + 'T00:00:00.000').toISOString())
     }
-    if (endDate) {
+    if (endDate && endDate.trim() !== '') {
       query = query.lte('journal.entry_date', new Date(endDate + 'T23:59:59.999').toISOString())
     }
 
@@ -271,8 +271,8 @@ export const financeService = {
       .eq('journal.status', 'posted')
       .order('entry_date', { foreignTable: 'journal', ascending: true })
 
-    if (startDate) query = query.gte('journal.entry_date', new Date(startDate + 'T00:00:00.000').toISOString())
-    if (endDate) query = query.lte('journal.entry_date', new Date(endDate + 'T23:59:59.999').toISOString())
+    if (startDate && startDate.trim() !== '') query = query.gte('journal.entry_date', new Date(startDate + 'T00:00:00.000').toISOString())
+    if (endDate && endDate.trim() !== '') query = query.lte('journal.entry_date', new Date(endDate + 'T23:59:59.999').toISOString())
 
     const { data, error } = await query
     if (error) throw error

@@ -1244,7 +1244,14 @@ const handleSubmit = async () => {
       discount: discount.value,
       return_amount: totalReturnAmount.value,
       notes: notes.value.trim() || undefined,
-      transaction_date: new Date(transactionDate.value).toISOString(),
+      transaction_date: (() => {
+        const today = formatDateTimeLocal(new Date())
+        // Jika user memilih hari ini, pakai timestamp aktual (bukan midnight UTC)
+        // supaya transaksi baru muncul paling atas saat diurutkan by created_at DESC
+        if (transactionDate.value === today) return new Date().toISOString()
+        // Tanggal historis: gunakan tengah hari (12:00 lokal) agar tidak kena shift timezone
+        return new Date(transactionDate.value + 'T12:00:00').toISOString()
+      })(),
       items: cartItems.map((item) => ({
         product_id: item.product_id,
         quantity: item.quantity,
