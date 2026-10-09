@@ -44,7 +44,8 @@ export const sqliteDailyCashService = {
       [date, userId]
     )
 
-    // 2. Cicilan hari ini
+    // 2. Cicilan hari ini - exclude pembayaran awal transaksi (notes = 'Pembayaran awal')
+    // karena pembayaran awal sudah dihitung dari paid_amount di tabel transactions
     const payments = await query<{
       amount: number
       payment_method: string
@@ -52,7 +53,8 @@ export const sqliteDailyCashService = {
       `SELECT amount, payment_method
        FROM transaction_payments
        WHERE (DATE(payment_date) = DATE(?) OR DATE(created_at) = DATE(?))
-         AND user_id = ?`,
+         AND user_id = ?
+         AND COALESCE(notes, '') != 'Pembayaran awal'`,
       [date, date, userId]
     )
 
@@ -88,6 +90,8 @@ export const sqliteDailyCashService = {
     if (cashAccountIds.length > 0) {
       const placeholders = cashAccountIds.map(() => '?').join(',')
 
+      // Skip jurnal dari penjualan (transaction) dan cicilan (payment) karena
+      // keduanya sudah dihitung langsung dari tabel transactions dan transaction_payments
       const journalLines = await query<{
         debit: number
         credit: number
@@ -98,7 +102,9 @@ export const sqliteDailyCashService = {
          INNER JOIN journal_entries je ON jl.journal_id = je.id
          WHERE jl.account_id IN (${placeholders})
            AND je.status = 'posted'
-           AND DATE(je.entry_date) = DATE(?)`,
+           AND DATE(je.entry_date) = DATE(?)
+           AND (je.reference_type IS NULL
+                OR je.reference_type NOT IN ('transaction', 'payment'))`,
         [...cashAccountIds, date]
       )
 
@@ -185,7 +191,8 @@ export const sqliteDailyCashService = {
       }
     }
 
-    // 2. Cicilan hari ini
+    // 2. Cicilan hari ini - exclude pembayaran awal transaksi (notes = 'Pembayaran awal')
+    // karena pembayaran awal sudah ditampilkan dari paid_amount di tabel transactions (type: 'sale')
     const payments = await query<{
       id: string
       amount: number
@@ -198,6 +205,7 @@ export const sqliteDailyCashService = {
        FROM transaction_payments
        WHERE (DATE(payment_date) = DATE(?) OR DATE(created_at) = DATE(?))
          AND user_id = ?
+         AND COALESCE(notes, '') != 'Pembayaran awal'
        ORDER BY created_at DESC`,
       [date, date, userId]
     )
@@ -247,6 +255,7 @@ export const sqliteDailyCashService = {
     if (cashAccountIds.length > 0) {
       const placeholders = cashAccountIds.map(() => '?').join(',')
 
+      // Sertakan reference_type dari journal_entries untuk filtering
       const journalLines = await query<{
         id: string
         debit: number
@@ -254,13 +263,17 @@ export const sqliteDailyCashService = {
         account_id: string
         created_at: string
         journal_id: string
+        reference_type: string | null
       }>(
-        `SELECT jl.id, jl.debit, jl.credit, jl.account_id, jl.created_at, jl.journal_id
+        `SELECT jl.id, jl.debit, jl.credit, jl.account_id, jl.created_at, jl.journal_id,
+                je.reference_type
          FROM journal_lines jl
          INNER JOIN journal_entries je ON jl.journal_id = je.id
          WHERE jl.account_id IN (${placeholders})
            AND je.status = 'posted'
-           AND DATE(je.entry_date) = DATE(?)`,
+           AND DATE(je.entry_date) = DATE(?)
+           AND (je.reference_type IS NULL
+                OR je.reference_type NOT IN ('transaction', 'payment'))`,
         [...cashAccountIds, date]
       )
 

@@ -51,9 +51,7 @@ export const dailyCashService = {
 
     const salesList = sales || []
 
-    // Hitung total dari penjualan saja (initial payment)
-    // CATATAN: Pembayaran cicilan tidak dihitung di sini karena sudah tercatat
-    // otomatis di jurnal akuntansi via trigger auto_journal_payment
+    // Hitung total dari penjualan (initial payment)
     let tunai_in = salesList
       .filter(s => s.payment_method === 'tunai')
       .reduce((sum, s) => sum + (s.paid_amount || 0), 0)
@@ -61,6 +59,20 @@ export const dailyCashService = {
     let transfer_in = salesList
       .filter(s => s.payment_method === 'transfer')
       .reduce((sum, s) => sum + (s.paid_amount || 0), 0)
+
+    // 2. Cicilan (exclude pembayaran awal yang notes = 'Pembayaran awal')
+    const { data: cicilan } = await supabase
+      .from('transaction_payments')
+      .select('amount, payment_method')
+      .gte('payment_date', startOfDay.toISOString())
+      .lte('payment_date', endOfDay.toISOString())
+      .eq('user_id', user.user.id)
+      .neq('notes', 'Pembayaran awal')
+
+    for (const p of cicilan || []) {
+      if (p.payment_method === 'tunai') tunai_in += p.amount || 0
+      else if (p.payment_method === 'transfer') transfer_in += p.amount || 0
+    }
 
     // Untuk kas keluar, kita ambil dari jurnal (credit di akun kas/bank)
     const { data: cashAccounts } = await supabase
@@ -76,13 +88,16 @@ export const dailyCashService = {
     let transfer_out = 0
 
     if (cashAccountIds.length > 0) {
+      // Skip jurnal dari penjualan (transaction) dan cicilan (payment) karena
+      // keduanya sudah dihitung langsung dari tabel transactions dan transaction_payments
       const { data: journalLines } = await supabase
         .from('journal_lines')
-        .select('debit, credit, account_id, journal:journal_entries!inner(entry_date, status)')
+        .select('debit, credit, account_id, journal:journal_entries!inner(entry_date, status, reference_type)')
         .in('account_id', cashAccountIds)
         .eq('journal.status', 'posted')
         .gte('journal.entry_date', startOfDay.toISOString())
         .lte('journal.entry_date', endOfDay.toISOString())
+        .not('journal.reference_type', 'in', '("transaction","payment")')
 
       const lines = journalLines || []
 
@@ -170,13 +185,15 @@ export const dailyCashService = {
       }
     }
 
-    // 2. Cicilan hari ini (filter by payment_date dengan range)
+    // 2. Cicilan hari ini - exclude pembayaran awal transaksi (notes = 'Pembayaran awal')
+    // karena pembayaran awal sudah ditampilkan dari paid_amount di tabel transactions (type: 'sale')
     const { data: payments, error: paymentsErr } = await supabase
       .from('transaction_payments')
       .select('id, amount, payment_method, created_at, payment_date, transaction:transactions!inner(transaction_number, customer_name)')
       .gte('payment_date', startOfDay.toISOString())
       .lte('payment_date', endOfDay.toISOString())
       .eq('user_id', user.user.id)
+      .neq('notes', 'Pembayaran awal')
       .order('created_at', { ascending: false })
 
     if (paymentsErr) throw paymentsErr
@@ -213,17 +230,13 @@ export const dailyCashService = {
         .eq('journal.status', 'posted')
         .gte('journal.entry_date', startOfDay.toISOString())
         .lte('journal.entry_date', endOfDay.toISOString())
+        .not('journal.reference_type', 'in', '("transaction","payment")')
 
       for (const line of journalLines || []) {
         const journal = line.journal as any
         const account = cashAccounts?.find(a => a.id === line.account_id)
         const debit = Number(line.debit || 0)
         const credit = Number(line.credit || 0)
-
-        // Skip jurnal dari pembayaran cicilan karena sudah ditampilkan di bagian payments
-        if (journal?.reference_type === 'payment') {
-          continue
-        }
 
         // Debit di kas/bank = pemasukan
         if (debit > 0) {

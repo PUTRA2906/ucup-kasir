@@ -43,7 +43,13 @@ export const useFinanceStore = defineStore('finance', () => {
     loading.value = true
     error.value = null
     try {
-      accounts.value = await financeServiceAdapter.getAccounts()
+      const result = await financeServiceAdapter.getAccounts()
+      // Auto-seed jika akun keuangan belum ada (akun baru / pertama kali)
+      if (result.length === 0) {
+        accounts.value = await financeServiceAdapter.seedDefaultAccounts()
+      } else {
+        accounts.value = result
+      }
       return accounts.value
     } catch (e: any) {
       error.value = e.message

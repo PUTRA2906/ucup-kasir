@@ -285,7 +285,7 @@ export const sqliteTransactionsService = {
         paymentId = uuid()
         await tx.run(
           `INSERT INTO transaction_payments (id, user_id, transaction_id, amount, payment_method, notes, payment_date, created_at, sync_status, updated_at_local)
-           VALUES (?, ?, ?, ?, ?, NULL, ?, ?, 'pending', ?)`,
+           VALUES (?, ?, ?, ?, ?, 'Pembayaran awal', ?, ?, 'pending', ?)`,
           [paymentId, userId, txnId, paid, input.payment_method || 'tunai', transactionDate.split('T')[0], transactionDate, now]
         )
         

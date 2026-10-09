@@ -352,7 +352,23 @@ export async function downloadAllFromSupabase(): Promise<SyncResult> {
     // queue tetap utuh agar perubahan lokal tidak hilang.
     await clearSyncQueue()
 
-    // --- 5. Simpan metadata ---
+    // --- 5. Auto-seed Chart of Accounts jika akun baru (COA masih kosong) ---
+    // Akun baru belum punya COA di Supabase — tanpa seed ini, setiap transaksi
+    // akan gagal dengan error "Akun Kas tidak ditemukan. Seed COA terlebih dahulu."
+    if (chartOfAccounts.length === 0) {
+      try {
+        logEvent({ level: 'info', source: 'sync', event: 'coa_seed_start', message: 'COA kosong — seed akun default...' })
+        const seeded = await sqliteFinanceService.seedDefaultAccounts()
+        // seedDefaultAccounts() sudah memanggil addToSyncQueue untuk setiap akun
+        // sehingga akan ter-upload ke Supabase pada sinkronisasi berikutnya
+        logEvent({ level: 'info', source: 'sync', event: 'coa_seed_ok', message: `${seeded.length} akun default berhasil dibuat` })
+      } catch (seedErr) {
+        // Non-critical: seed gagal tidak boleh memblokir login
+        logError('sync', 'coa_seed_failed', seedErr, 'Auto-seed COA gagal')
+      }
+    }
+
+    // --- 6. Simpan metadata ---
     await setMetadata('last_download_at', new Date().toISOString())
     await setMetadata('downloaded_user_id', user.id)
 

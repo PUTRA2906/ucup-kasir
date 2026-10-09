@@ -174,25 +174,11 @@
         </div>
       </div>
 
-      <!-- Breakdown Laba (Expandable) -->
+      <!-- Breakdown Laba (selalu tampil) -->
       <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <button
-          @click="showBreakdown = !showBreakdown"
-          class="flex w-full items-center justify-between"
-        >
-          <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Rincian Perhitungan Laba</span>
-          <svg
-            class="h-4 w-4 text-gray-400 transition-transform"
-            :class="{ 'rotate-180': showBreakdown }"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+        <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Rincian Perhitungan Laba</span>
 
-        <div v-if="showBreakdown" class="mt-3 space-y-2 border-t border-gray-200 pt-3 dark:border-gray-700">
+        <div class="mt-3 space-y-2 border-t border-gray-200 pt-3 dark:border-gray-700">
           <div class="flex justify-between text-xs">
             <span class="text-gray-600 dark:text-gray-400">Penjualan Kotor</span>
             <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(store.summary.gross_sales) }}</span>
@@ -446,7 +432,6 @@ const store = useSalesReportEnhancedStore()
 const financeStore = useFinanceStore()
 
 const showFilterModal = ref(false)
-const showBreakdown = ref(false)
 
 // Auto register/unregister modal di navigation stack
 useAutoNavigationStack(showFilterModal, 'profit-loss-filter-modal')

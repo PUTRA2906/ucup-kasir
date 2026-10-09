@@ -194,21 +194,21 @@
                         </span>
                       </label>
                       <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-sm">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-sm pointer-events-none">
                           Rp
                         </span>
                         <input
-                          v-model.number="allocations[index]"
-                          type="number"
-                          inputmode="decimal"
-                          :max="item.remaining_amount"
-                          min="0"
-                          step="1000"
+                          :value="formatNumber(allocations[index])"
+                          type="text"
+                          inputmode="numeric"
+                          placeholder="0"
                           class="w-full pl-10 pr-4 py-3 text-sm font-semibold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
                           :class="{
                             'border-red-300 dark:border-red-700 focus:ring-red-500': allocations[index] > item.remaining_amount
                           }"
-                          @input="validateAllocation(index)"
+                          @input="onAllocationInput($event, index)"
+                          @focus="onAllocationFocus($event, index)"
+                          @blur="validateAllocation(index)"
                         />
                       </div>
                       
@@ -362,6 +362,28 @@ function validateAllocation(index: number) {
   if (allocation < 0) {
     allocations.value[index] = 0
   }
+}
+
+function onAllocationInput(event: Event, index: number) {
+  const input = event.target as HTMLInputElement
+  // Hapus semua karakter selain digit
+  const raw = input.value.replace(/\D/g, '')
+  const numeric = parseInt(raw, 10) || 0
+  allocations.value[index] = numeric
+  // Tampilkan dengan format ribuan agar cursor tidak lompat
+  input.value = formatNumber(numeric)
+}
+
+function onAllocationFocus(event: Event, index: number) {
+  // Saat fokus, tampilkan angka tanpa format agar mudah diedit
+  const input = event.target as HTMLInputElement
+  const raw = allocations.value[index] || 0
+  input.value = raw > 0 ? String(raw) : ''
+}
+
+function formatNumber(value: number): string {
+  if (!value || value === 0) return ''
+  return new Intl.NumberFormat('id-ID').format(value)
 }
 
 function allocateMax(index: number) {
