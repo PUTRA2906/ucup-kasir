@@ -5,6 +5,11 @@
     <!-- Mobile Header -->
     <MobilePageHeader title="Surat Jalan" subtitle="Daftar pengiriman">
       <template #actions>
+        <button @click="router.push('/shipping/pending-shipments')" class="relative flex h-8 items-center gap-1 rounded-xl border border-gray-200 px-3 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/[0.05]">
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+          Perlu Dikirim
+          <span v-if="pendingCount > 0" class="ml-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">{{ pendingCount }}</span>
+        </button>
         <button @click="router.push('/shipping/deliveries/add')" class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm hover:bg-blue-500 active:scale-95">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
         </button>
@@ -14,10 +19,17 @@
     <!-- Desktop Header -->
     <div class="mb-4 hidden items-center justify-between md:flex">
       <h2 class="text-lg font-bold text-gray-900 dark:text-white">Daftar Surat Jalan</h2>
-      <button @click="router.push('/shipping/deliveries/add')" class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-500">
-        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-        Buat Surat Jalan
-      </button>
+      <div class="flex items-center gap-2">
+        <button @click="router.push('/shipping/pending-shipments')" class="relative flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/[0.05]">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+          Perlu Dikirim
+          <span v-if="pendingCount > 0" class="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">{{ pendingCount }}</span>
+        </button>
+        <button @click="router.push('/shipping/deliveries/add')" class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-500">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+          Buat Surat Jalan
+        </button>
+      </div>
     </div>
 
     <!-- Filters -->
@@ -111,11 +123,25 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useShippingStore } from '@/stores/shipping'
+import { useTransactionsStore } from '@/stores/transactions'
+import type { Transaction } from '@/types/database'
 
 const { confirm } = useConfirm()
 const toast = useToast()
 const router = useRouter()
 const store = useShippingStore()
+const txStore = useTransactionsStore()
+
+// Hitung jumlah transaksi yang belum masuk surat jalan
+const pendingCount = computed(() => {
+  const shippedIds = new Set<string>()
+  for (const d of store.deliveryOrders) {
+    for (const id of (d.transaction_ids || [])) shippedIds.add(id)
+  }
+  return (txStore.transactions || []).filter((t: Transaction) =>
+    t.status !== 'void' && t.status !== 'batal' && !shippedIds.has(t.id)
+  ).length
+})
 
 const search = ref('')
 const statusFilter = ref('all')
@@ -174,5 +200,8 @@ const handleDelete = async (id: string) => {
   try { await store.deleteDeliveryOrder(id) } catch (e: any) { toast.error('Gagal!', e.message) }
 }
 
-onMounted(() => store.fetchDeliveryOrders())
+onMounted(() => {
+  store.fetchDeliveryOrders()
+  txStore.fetchTransactions()
+})
 </script>

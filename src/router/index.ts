@@ -503,6 +503,12 @@ const router = createRouter({
       meta: { title: 'Mutasi Bank Hari Ini' },
     },
     {
+      path: '/laporan/mutasi-kas-bulanan',
+      name: 'Monthly Cash Report',
+      component: () => import('../views/Reports/MonthlyCashReport.vue'),
+      meta: { title: 'Mutasi Kas Bulanan' },
+    },
+    {
       path: '/reports/aging-receivables',
       name: 'Aging Receivables Report',
       component: () => import('../views/Reports/AgingReceivablesReport.vue'),

@@ -126,9 +126,33 @@
                   {{ group.title }}
                 </span>
               </button>
+
             </div>
 
             <div v-if="menuGroups.length > 2" class="min-w-full snap-center grid grid-cols-4 gap-y-4 gap-x-2 p-4" style="grid-template-rows: repeat(2, auto);">
+              <!-- Surat Jalan — shortcut langsung dengan badge perlu dikirim -->
+              <router-link
+                to="/shipping/deliveries"
+                class="group flex flex-col items-center transition active:scale-95"
+              >
+                <div class="relative">
+                  <div class="flex h-14 w-14 items-center justify-center rounded-2xl border border-sky-500/20 bg-sky-500/10 text-sky-500 transition-transform group-hover:scale-105">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h11v10H3V7zm0 0V5a2 2 0 012-2h4v4m4 8h2a3 3 0 003-3v-2h-5m-2 0V8a2 2 0 012-2h3l4 4v5a2 2 0 01-2 2h-3" />
+                    </svg>
+                  </div>
+                  <span
+                    v-if="pendingShipmentsCount > 0"
+                    class="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white shadow-sm"
+                  >
+                    {{ pendingShipmentsCount > 9 ? '9+' : pendingShipmentsCount }}
+                  </span>
+                </div>
+                <span class="mt-2 text-[11px] font-medium leading-tight text-center text-gray-700 dark:text-gray-300">
+                  Surat Jalan
+                </span>
+              </router-link>
+
               <button
                 v-for="group in menuGroups.slice(2)"
                 :key="group.slug"

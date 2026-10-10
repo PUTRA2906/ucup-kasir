@@ -312,59 +312,111 @@
         </div>
 
         <div class="space-y-4">
-          <!-- Quick Date Range -->
-          <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Rentang Waktu</label>
-            <div class="grid grid-cols-2 gap-2">
-              <button
-                @click="setQuickDateRange('today')"
-                class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                :class="isQuickDateRange('today') ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
-              >
-                Hari Ini
-              </button>
-              <button
-                @click="setQuickDateRange('7days')"
-                class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                :class="isQuickDateRange('7days') ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
-              >
-                7 Hari
-              </button>
-              <button
-                @click="setQuickDateRange('30days')"
-                class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                :class="isQuickDateRange('30days') ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
-              >
-                30 Hari
-              </button>
-              <button
-                @click="setQuickDateRange('thisMonth')"
-                class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                :class="isQuickDateRange('thisMonth') ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
-              >
-                Bulan Ini
-              </button>
-              <button
-                @click="setQuickDateRange('allTime')"
-                class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                :class="isQuickDateRange('allTime') ? 'border-purple-500 bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400' : 'text-gray-700 dark:text-gray-300'"
-              >
-                Sepanjang Masa
-              </button>
-            </div>
+          <!-- Mode Toggle: Per Periode vs Per Bulan -->
+          <div class="flex rounded-xl border border-gray-200 p-1 dark:border-gray-700">
+            <button
+              @click="filterMode = 'range'"
+              class="flex-1 rounded-lg py-2 text-sm font-medium transition"
+              :class="filterMode === 'range'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'"
+            >
+              Per Periode
+            </button>
+            <button
+              @click="filterMode = 'month'"
+              class="flex-1 rounded-lg py-2 text-sm font-medium transition"
+              :class="filterMode === 'month'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'"
+            >
+              Per Bulan
+            </button>
           </div>
 
-          <!-- Custom Date Range -->
-          <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Custom Range</label>
-            <DateRangeField
-              v-model:start="tempDateRange.start"
-              v-model:end="tempDateRange.end"
-              title="Pilih Rentang Tanggal"
-              placeholder="Pilih periode custom"
-              button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-            />
+          <!-- Mode Per Bulan -->
+          <div v-if="filterMode === 'month'" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Bulan</label>
+                <select
+                  v-model="tempMonth"
+                  class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                >
+                  <option v-for="m in monthOptions" :key="m.value" :value="m.value">{{ m.label }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Tahun</label>
+                <select
+                  v-model="tempYear"
+                  class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                >
+                  <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}</option>
+                </select>
+              </div>
+            </div>
+            <p v-if="isFuturePeriod(tempMonth, tempYear)" class="text-xs text-red-500 dark:text-red-400">
+              ⚠ Tidak dapat melihat laporan periode yang belum terjadi.
+            </p>
           </div>
+
+          <!-- Mode Per Periode (range) -->
+          <template v-else>
+            <!-- Quick Date Range -->
+            <div>
+              <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Rentang Waktu</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  @click="setQuickDateRange('today')"
+                  class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                  :class="isQuickDateRange('today') ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
+                >
+                  Hari Ini
+                </button>
+                <button
+                  @click="setQuickDateRange('7days')"
+                  class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                  :class="isQuickDateRange('7days') ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
+                >
+                  7 Hari
+                </button>
+                <button
+                  @click="setQuickDateRange('30days')"
+                  class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                  :class="isQuickDateRange('30days') ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
+                >
+                  30 Hari
+                </button>
+                <button
+                  @click="setQuickDateRange('thisMonth')"
+                  class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                  :class="isQuickDateRange('thisMonth') ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
+                >
+                  Bulan Ini
+                </button>
+                <button
+                  @click="setQuickDateRange('allTime')"
+                  class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                  :class="isQuickDateRange('allTime') ? 'border-purple-500 bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400' : 'text-gray-700 dark:text-gray-300'"
+                >
+                  Sepanjang Masa
+                </button>
+              </div>
+            </div>
+
+            <!-- Custom Date Range -->
+            <div>
+              <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Custom Range</label>
+              <DateRangeField
+                v-model:start="tempDateRange.start"
+                v-model:end="tempDateRange.end"
+                title="Pilih Rentang Tanggal"
+                placeholder="Pilih periode custom"
+                button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+              />
+            </div>
+          </template>
 
           <!-- Status Pembayaran -->
           <div>
@@ -435,6 +487,47 @@ const showFilterModal = ref(false)
 
 // Auto register/unregister modal di navigation stack
 useAutoNavigationStack(showFilterModal, 'profit-loss-filter-modal')
+
+// ── Filter mode: 'range' = per periode custom, 'month' = per bulan ────────────
+const filterMode = ref<'range' | 'month'>('range')
+
+// Tanggal sekarang (lokal)
+const nowDate = new Date()
+const currentMonthNum = nowDate.getMonth() + 1  // 1-12
+const currentYearNum = nowDate.getFullYear()
+
+// Picker bulan/tahun sementara
+const tempMonth = ref(currentMonthNum)
+const tempYear = ref(currentYearNum)
+
+const monthOptions = [
+  { value: 1, label: 'Januari' },
+  { value: 2, label: 'Februari' },
+  { value: 3, label: 'Maret' },
+  { value: 4, label: 'April' },
+  { value: 5, label: 'Mei' },
+  { value: 6, label: 'Juni' },
+  { value: 7, label: 'Juli' },
+  { value: 8, label: 'Agustus' },
+  { value: 9, label: 'September' },
+  { value: 10, label: 'Oktober' },
+  { value: 11, label: 'November' },
+  { value: 12, label: 'Desember' },
+]
+
+const yearOptions = computed(() => {
+  const years: number[] = []
+  for (let y = currentYearNum - 3; y <= currentYearNum; y++) {
+    years.push(y)
+  }
+  return years
+})
+
+const isFuturePeriod = (month: number, year: number): boolean => {
+  if (year > currentYearNum) return true
+  if (year === currentYearNum && month > currentMonthNum) return true
+  return false
+}
 
 // Saldo beban operasional per akun (dari jurnal, modul finance)
 const expenseBalanceByAccount = ref<Record<string, number>>({})
@@ -548,10 +641,30 @@ const isQuickDateRange = (range: string) => {
 }
 
 const applyFilters = () => {
-  store.setDateRange(tempDateRange.value.start, tempDateRange.value.end)
+  let startDate: string
+  let endDate: string
+
+  if (filterMode.value === 'month') {
+    if (isFuturePeriod(tempMonth.value, tempYear.value)) return
+    const mm = String(tempMonth.value).padStart(2, '0')
+    const lastDay = new Date(tempYear.value, tempMonth.value, 0).getDate()
+    // Jika bulan berjalan, batasi sampai hari ini
+    const maxDay =
+      tempYear.value === currentYearNum && tempMonth.value === currentMonthNum
+        ? nowDate.getDate()
+        : lastDay
+    const dd = String(maxDay).padStart(2, '0')
+    startDate = `${tempYear.value}-${mm}-01`
+    endDate = `${tempYear.value}-${mm}-${dd}`
+  } else {
+    startDate = tempDateRange.value.start
+    endDate = tempDateRange.value.end
+  }
+
+  store.setDateRange(startDate, endDate)
   store.setPaymentStatusFilter(tempPaymentStatus.value)
   store.fetchReport()
-  loadExpenseBalances(tempDateRange.value.start, tempDateRange.value.end)
+  loadExpenseBalances(startDate, endDate)
   showFilterModal.value = false
 }
 

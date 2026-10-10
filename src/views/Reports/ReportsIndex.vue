@@ -53,40 +53,21 @@
           </div>
         </router-link>
 
-        <!-- Mutasi Kas Harian -->
+        <!-- Mutasi Kas Bulanan -->
         <router-link
-          to="/laporan/mutasi-kas"
+          to="/laporan/mutasi-kas-bulanan"
           class="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 transition hover:shadow-lg active:scale-95 md:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
         >
-          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 to-amber-600"></div>
+          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 to-violet-600"></div>
           <div class="flex flex-col items-start gap-3">
-            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition group-hover:scale-110 dark:bg-amber-500/10">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-50 text-violet-600 transition group-hover:scale-110 dark:bg-violet-500/10">
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
             <div>
-              <h3 class="text-sm font-bold text-gray-900 md:text-base dark:text-white">Mutasi Kas</h3>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Kas masuk & keluar hari ini</p>
-            </div>
-          </div>
-        </router-link>
-
-        <!-- Mutasi Bank Harian -->
-        <router-link
-          to="/laporan/mutasi-bank"
-          class="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 transition hover:shadow-lg active:scale-95 md:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
-        >
-          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-500 to-cyan-600"></div>
-          <div class="flex flex-col items-start gap-3">
-            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-50 text-cyan-600 transition group-hover:scale-110 dark:bg-cyan-500/10">
-              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-sm font-bold text-gray-900 md:text-base dark:text-white">Mutasi Bank</h3>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Transaksi bank hari ini</p>
+              <h3 class="text-sm font-bold text-gray-900 md:text-base dark:text-white">Mutasi Kas Bulanan</h3>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Kas masuk & keluar per bulan</p>
             </div>
           </div>
         </router-link>

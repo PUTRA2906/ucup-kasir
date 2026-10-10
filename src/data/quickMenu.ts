@@ -281,13 +281,6 @@ export const QUICK_MENU_GROUPS: (Omit<QuickMenuGroup, 'items'> & {
   iconClass: string
 })[] = [
   {
-    title: 'Pengiriman',
-    slug: 'pengiriman',
-    color: 'bg-sky-400',
-    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
-    iconPath: 'M3 7h11v10H3V7zm0 0V5a2 2 0 012-2h4v4m4 8h2a3 3 0 003-3v-2h-5m-2 0V8a2 2 0 012-2h3l4 4v5a2 2 0 01-2 2h-3',
-  },
-  {
     title: 'Keuangan',
     slug: 'keuangan',
     color: 'bg-emerald-400',
@@ -314,6 +307,13 @@ export const QUICK_MENU_GROUPS: (Omit<QuickMenuGroup, 'items'> & {
     color: 'bg-blue-400',
     iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
     iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+  },
+  {
+    title: 'Pengiriman',
+    slug: 'pengiriman',
+    color: 'bg-sky-400',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
+    iconPath: 'M3 7h11v10H3V7zm0 0V5a2 2 0 012-2h4v4m4 8h2a3 3 0 003-3v-2h-5m-2 0V8a2 2 0 012-2h3l4 4v5a2 2 0 01-2 2h-3',
   },
 ]
 
