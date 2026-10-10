@@ -26,13 +26,23 @@ export const sqliteDailyBankService = {
   async getDailyBankSummary(date: string): Promise<DailyBankSummary> {
     const userId = getCurrentUserId()
 
-    // 1. Penjualan hari ini dengan payment_method = 'transfer'
-    const sales = await query<{
-      paid_amount: number
-      payment_method: string
-    }>(
-      `SELECT paid_amount, payment_method
-       FROM transactions
+    // ── Sumber tunggal: transaction_payments (hanya transfer) ────────────────
+    const payments = await query<{ amount: number }>(
+      `SELECT tp.amount
+       FROM transaction_payments tp
+       INNER JOIN transactions t ON t.id = tp.transaction_id
+       WHERE (DATE(tp.payment_date) = DATE(?) OR DATE(tp.created_at) = DATE(?))
+         AND tp.user_id = ?
+         AND tp.payment_method = 'transfer'
+         AND t.status NOT IN ('void', 'batal')`,
+      [date, date, userId]
+    )
+
+    let transfer_in = payments.reduce((sum, p) => sum + (p.amount || 0), 0)
+
+    // Jumlah transaksi bank hari ini
+    const salesCount = await query<{ cnt: number }>(
+      `SELECT COUNT(*) as cnt FROM transactions
        WHERE DATE(created_at) = DATE(?)
          AND payment_method = 'transfer'
          AND status NOT IN ('void', 'batal')
@@ -40,69 +50,44 @@ export const sqliteDailyBankService = {
       [date, userId]
     )
 
-    // 2. Cicilan hari ini dengan payment_method = 'transfer'
-    const payments = await query<{
-      amount: number
-      payment_method: string
-    }>(
-      `SELECT amount, payment_method
-       FROM transaction_payments
-       WHERE DATE(payment_date) = DATE(?)
-         AND payment_method = 'transfer'
-         AND user_id = ?`,
-      [date, userId]
-    )
-
-    let transfer_in =
-      sales.reduce((sum, s) => sum + (s.paid_amount || 0), 0) +
-      payments.reduce((sum, p) => sum + (p.amount || 0), 0)
-
-    // 3. Ambil akun bank
-    const bankAccounts = await query<{
-      id: string
-      code: string
-    }>(
-      `SELECT id, code
-       FROM chart_of_accounts
-       WHERE code IN ('1-1002', '1-1010')
-         AND user_id = ?`,
+    // ── Kas keluar dari jurnal manual (akun bank) ─────────────────────────────
+    const bankAccounts = await query<{ id: string; code: string }>(
+      `SELECT id, code FROM chart_of_accounts
+       WHERE code IN ('1-1010') AND user_id = ?`,
       [userId]
     )
 
     const bankAccountIds = bankAccounts.map(a => a.id)
-
     let bankOut = 0
 
     if (bankAccountIds.length > 0) {
       const placeholders = bankAccountIds.map(() => '?').join(',')
 
-      // Ambil semua jurnal lines untuk akun bank (baik debit maupun credit)
-      const journalLines = await query<{
-        debit: number
-        credit: number
-      }>(
+      const journalLines = await query<{ debit: number; credit: number }>(
         `SELECT jl.debit, jl.credit
          FROM journal_lines jl
          INNER JOIN journal_entries je ON jl.journal_id = je.id
          WHERE jl.account_id IN (${placeholders})
            AND je.status = 'posted'
-           AND DATE(je.entry_date) = DATE(?)`,
+           AND DATE(je.entry_date) = DATE(?)
+           AND (je.reference_type IS NULL
+                OR je.reference_type NOT IN ('transaction', 'payment'))`,
         [...bankAccountIds, date]
       )
 
-      // Debit di akun bank = pemasukan
-      const journalIn = journalLines.reduce((sum, line) => sum + Number(line.debit || 0), 0)
-      transfer_in += journalIn
-
-      // Credit di akun bank = pengeluaran
-      bankOut = journalLines.reduce((sum, line) => sum + Number(line.credit || 0), 0)
+      for (const line of journalLines) {
+        const debit = Number(line.debit || 0)
+        const credit = Number(line.credit || 0)
+        if (debit > 0) transfer_in += debit
+        if (credit > 0) bankOut += credit
+      }
     }
 
     return {
       total_in: transfer_in,
       total_out: bankOut,
       net: transfer_in - bankOut,
-      transactions_count: sales.length,
+      transactions_count: salesCount[0]?.cnt || 0,
       payments_count: payments.length
     }
   },
@@ -115,41 +100,7 @@ export const sqliteDailyBankService = {
 
     const transactions: BankTransaction[] = []
 
-    // 1. Penjualan hari ini dengan payment_method = 'transfer'
-    const sales = await query<{
-      id: string
-      transaction_number: string
-      created_at: string
-      paid_amount: number
-      payment_method: string
-      customer_name: string | null
-    }>(
-      `SELECT id, transaction_number, created_at, paid_amount, payment_method, customer_name
-       FROM transactions
-       WHERE DATE(created_at) = DATE(?)
-         AND payment_method = 'transfer'
-         AND status NOT IN ('void', 'batal')
-         AND user_id = ?
-       ORDER BY created_at DESC`,
-      [date, userId]
-    )
-
-    for (const sale of sales) {
-      if (sale.paid_amount > 0) {
-        transactions.push({
-          id: sale.id,
-          time: sale.created_at,
-          type: 'sale',
-          amount: sale.paid_amount,
-          customer_name: sale.customer_name || undefined,
-          reference: sale.transaction_number,
-          description: 'Penjualan',
-          is_in: true
-        })
-      }
-    }
-
-    // 2. Cicilan hari ini dengan payment_method = 'transfer'
+    // ── Sumber tunggal: transaction_payments (hanya transfer) ────────────────
     const payments = await query<{
       id: string
       amount: number
@@ -158,51 +109,48 @@ export const sqliteDailyBankService = {
       payment_date: string
       transaction_id: string
     }>(
-      `SELECT id, amount, payment_method, created_at, payment_date, transaction_id
-       FROM transaction_payments
-       WHERE DATE(payment_date) = DATE(?)
-         AND payment_method = 'transfer'
-         AND user_id = ?
-       ORDER BY created_at DESC`,
-      [date, userId]
+      `SELECT tp.id, tp.amount, tp.payment_method, tp.created_at, tp.payment_date, tp.transaction_id
+       FROM transaction_payments tp
+       INNER JOIN transactions t ON t.id = tp.transaction_id
+       WHERE (DATE(tp.payment_date) = DATE(?) OR DATE(tp.created_at) = DATE(?))
+         AND tp.user_id = ?
+         AND tp.payment_method = 'transfer'
+         AND t.status NOT IN ('void', 'batal')
+       ORDER BY tp.created_at DESC`,
+      [date, date, userId]
     )
 
     for (const payment of payments) {
-      // Ambil data transaksi untuk customer_name dan transaction_number
       const txData = await query<{
         transaction_number: string
         customer_name: string | null
+        created_at: string
       }>(
-        `SELECT transaction_number, customer_name
-         FROM transactions
-         WHERE id = ?`,
+        `SELECT transaction_number, customer_name, created_at FROM transactions WHERE id = ?`,
         [payment.transaction_id]
       )
 
       const tx = txData[0]
+      if (!tx) continue
 
+      // Payment pertama dari transaksi yang dibuat hari ini = label 'Penjualan'
+      const isInitial = payment.created_at === tx.created_at
       transactions.push({
         id: payment.id,
         time: payment.created_at,
-        type: 'payment',
+        type: isInitial ? 'sale' : 'payment',
         amount: payment.amount,
-        customer_name: tx?.customer_name || undefined,
-        reference: tx?.transaction_number || '-',
-        description: 'Pembayaran Cicilan',
+        customer_name: tx.customer_name || undefined,
+        reference: tx.transaction_number,
+        description: isInitial ? 'Penjualan' : 'Pembayaran Cicilan',
         is_in: true
       })
     }
 
-    // 3. Transaksi dari jurnal (baik masuk maupun keluar)
-    const bankAccounts = await query<{
-      id: string
-      code: string
-      name: string
-    }>(
-      `SELECT id, code, name
-       FROM chart_of_accounts
-       WHERE code IN ('1-1002', '1-1010')
-         AND user_id = ?`,
+    // ── Jurnal manual akun bank ────────────────────────────────────────────────
+    const bankAccounts = await query<{ id: string; code: string; name: string }>(
+      `SELECT id, code, name FROM chart_of_accounts
+       WHERE code IN ('1-1010') AND user_id = ?`,
       [userId]
     )
 
@@ -215,40 +163,32 @@ export const sqliteDailyBankService = {
         id: string
         debit: number
         credit: number
-        account_id: string
         created_at: string
         journal_id: string
+        reference_type: string | null
       }>(
-        `SELECT jl.id, jl.debit, jl.credit, jl.account_id, jl.created_at, jl.journal_id
+        `SELECT jl.id, jl.debit, jl.credit, jl.created_at, jl.journal_id, je.reference_type
          FROM journal_lines jl
          INNER JOIN journal_entries je ON jl.journal_id = je.id
          WHERE jl.account_id IN (${placeholders})
            AND je.status = 'posted'
-           AND DATE(je.entry_date) = DATE(?)`,
+           AND DATE(je.entry_date) = DATE(?)
+           AND (je.reference_type IS NULL
+                OR je.reference_type NOT IN ('transaction', 'payment'))`,
         [...bankAccountIds, date]
       )
 
       for (const line of journalLines) {
         const debit = Number(line.debit || 0)
         const credit = Number(line.credit || 0)
-
-        // Skip jika debit dan credit keduanya 0
         if (debit === 0 && credit === 0) continue
 
-        // Ambil data journal entry
-        const journalData = await query<{
-          journal_number: string
-          description: string | null
-        }>(
-          `SELECT journal_number, description
-           FROM journal_entries
-           WHERE id = ?`,
+        const journalData = await query<{ journal_number: string; description: string | null }>(
+          `SELECT journal_number, description FROM journal_entries WHERE id = ?`,
           [line.journal_id]
         )
-
         const journal = journalData[0]
 
-        // Debit di bank = pemasukan
         if (debit > 0) {
           transactions.push({
             id: line.id,
@@ -260,8 +200,6 @@ export const sqliteDailyBankService = {
             is_in: true
           })
         }
-
-        // Credit di bank = pengeluaran
         if (credit > 0) {
           transactions.push({
             id: line.id,
@@ -276,9 +214,7 @@ export const sqliteDailyBankService = {
       }
     }
 
-    // Sort by time DESC
     transactions.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-
     return transactions
   }
 }

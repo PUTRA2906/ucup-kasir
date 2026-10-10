@@ -32,49 +32,39 @@ export const dailyCashService = {
     const { data: user } = await supabase.auth.getUser()
     if (!user.user) throw new Error('Not authenticated')
 
-    // Konversi tanggal ke UTC untuk filter yang konsisten
-    // Tambahkan 'Z' agar Date object menggunakan UTC, bukan timezone lokal
     const startOfDay = new Date(date + 'T00:00:00Z')
     const endOfDay = new Date(date + 'T23:59:59.999Z')
 
-    // 1. Penjualan hari ini (paid_amount, bukan total)
-    const { data: sales, error: salesErr } = await supabase
+    // ── Sumber tunggal: transaction_payments ─────────────────────────────────
+    // Semua pemasukan kas ada di sini — pembayaran awal maupun cicilan.
+    const { data: payments, error: paymentsErr } = await supabase
+      .from('transaction_payments')
+      .select('amount, payment_method, transaction:transactions!inner(status)')
+      .gte('payment_date', startOfDay.toISOString())
+      .lte('payment_date', endOfDay.toISOString())
+      .eq('user_id', user.user.id)
+      .not('transaction.status', 'in', '("void","batal")')
+
+    if (paymentsErr) throw paymentsErr
+
+    let tunai_in = 0
+    let transfer_in = 0
+    for (const p of payments || []) {
+      if (p.payment_method === 'tunai') tunai_in += p.amount || 0
+      else if (p.payment_method === 'transfer') transfer_in += p.amount || 0
+    }
+
+    // Jumlah transaksi hari ini (untuk info)
+    const { count: salesCount } = await supabase
       .from('transactions')
-      .select('paid_amount, payment_method, created_at')
+      .select('id', { count: 'exact', head: true })
       .gte('created_at', startOfDay.toISOString())
       .lte('created_at', endOfDay.toISOString())
       .neq('status', 'void')
       .neq('status', 'batal')
       .eq('user_id', user.user.id)
 
-    if (salesErr) throw salesErr
-
-    const salesList = sales || []
-
-    // Hitung total dari penjualan (initial payment)
-    let tunai_in = salesList
-      .filter(s => s.payment_method === 'tunai')
-      .reduce((sum, s) => sum + (s.paid_amount || 0), 0)
-
-    let transfer_in = salesList
-      .filter(s => s.payment_method === 'transfer')
-      .reduce((sum, s) => sum + (s.paid_amount || 0), 0)
-
-    // 2. Cicilan (exclude pembayaran awal yang notes = 'Pembayaran awal')
-    const { data: cicilan } = await supabase
-      .from('transaction_payments')
-      .select('amount, payment_method')
-      .gte('payment_date', startOfDay.toISOString())
-      .lte('payment_date', endOfDay.toISOString())
-      .eq('user_id', user.user.id)
-      .neq('notes', 'Pembayaran awal')
-
-    for (const p of cicilan || []) {
-      if (p.payment_method === 'tunai') tunai_in += p.amount || 0
-      else if (p.payment_method === 'transfer') transfer_in += p.amount || 0
-    }
-
-    // Untuk kas keluar, kita ambil dari jurnal (credit di akun kas/bank)
+    // ── Kas keluar dari jurnal manual ─────────────────────────────────────────
     const { data: cashAccounts } = await supabase
       .from('chart_of_accounts')
       .select('id, code')
@@ -88,8 +78,6 @@ export const dailyCashService = {
     let transfer_out = 0
 
     if (cashAccountIds.length > 0) {
-      // Skip jurnal dari penjualan (transaction) dan cicilan (payment) karena
-      // keduanya sudah dihitung langsung dari tabel transactions dan transaction_payments
       const { data: journalLines } = await supabase
         .from('journal_lines')
         .select('debit, credit, account_id, journal:journal_entries!inner(entry_date, status, reference_type)')
@@ -99,46 +87,35 @@ export const dailyCashService = {
         .lte('journal.entry_date', endOfDay.toISOString())
         .not('journal.reference_type', 'in', '("transaction","payment")')
 
-      const lines = journalLines || []
-
-      for (const line of lines) {
+      for (const line of journalLines || []) {
         const debit = Number(line.debit || 0)
         const credit = Number(line.credit || 0)
         const account = cashAccounts?.find(a => a.id === line.account_id)
 
-        // Debit di kas/bank = pemasukan
         if (debit > 0) {
-          if (account?.code === '1-1000') {
-            tunai_in += debit
-          } else {
-            transfer_in += debit
-          }
+          if (account?.code === '1-1000') tunai_in += debit
+          else transfer_in += debit
         }
-
-        // Credit di kas/bank = pengeluaran
         if (credit > 0) {
           cashOut += credit
-          if (account?.code === '1-1000') {
-            tunai_out += credit
-          } else {
-            transfer_out += credit
-          }
+          if (account?.code === '1-1000') tunai_out += credit
+          else transfer_out += credit
         }
       }
     }
 
-    const total_in_final = tunai_in + transfer_in
+    const total_in = tunai_in + transfer_in
 
     return {
-      total_in: total_in_final,
+      total_in,
       total_out: cashOut,
-      net: total_in_final - cashOut,
+      net: total_in - cashOut,
       tunai_in,
       tunai_out,
       transfer_in,
       transfer_out,
-      transactions_count: salesList.length,
-      payments_count: 0
+      transactions_count: salesCount || 0,
+      payments_count: (payments || []).length
     }
   },
 
@@ -151,69 +128,43 @@ export const dailyCashService = {
 
     const transactions: CashTransaction[] = []
 
-    // Konversi tanggal ke UTC untuk filter yang konsisten
-    // Tambahkan 'Z' agar Date object menggunakan UTC, bukan timezone lokal
     const startOfDay = new Date(date + 'T00:00:00Z')
     const endOfDay = new Date(date + 'T23:59:59.999Z')
 
-    // 1. Penjualan hari ini
-    const { data: sales, error: salesErr } = await supabase
-      .from('transactions')
-      .select('id, transaction_number, created_at, paid_amount, payment_method, customer_name')
-      .gte('created_at', startOfDay.toISOString())
-      .lte('created_at', endOfDay.toISOString())
-      .neq('status', 'void')
-      .neq('status', 'batal')
-      .eq('user_id', user.user.id)
-      .order('created_at', { ascending: false })
-
-    if (salesErr) throw salesErr
-
-    for (const sale of sales || []) {
-      if (sale.paid_amount > 0) {
-        transactions.push({
-          id: sale.id,
-          time: sale.created_at,
-          type: 'sale',
-          amount: sale.paid_amount,
-          method: sale.payment_method as 'tunai' | 'transfer',
-          customer_name: sale.customer_name,
-          reference: sale.transaction_number,
-          description: 'Penjualan',
-          is_in: true
-        })
-      }
-    }
-
-    // 2. Cicilan hari ini - exclude pembayaran awal transaksi (notes = 'Pembayaran awal')
-    // karena pembayaran awal sudah ditampilkan dari paid_amount di tabel transactions (type: 'sale')
+    // ── Sumber tunggal: transaction_payments ─────────────────────────────────
     const { data: payments, error: paymentsErr } = await supabase
       .from('transaction_payments')
-      .select('id, amount, payment_method, created_at, payment_date, transaction:transactions!inner(transaction_number, customer_name)')
+      .select('id, amount, payment_method, created_at, transaction:transactions!inner(transaction_number, customer_name, created_at, status)')
       .gte('payment_date', startOfDay.toISOString())
       .lte('payment_date', endOfDay.toISOString())
       .eq('user_id', user.user.id)
-      .neq('notes', 'Pembayaran awal')
+      .not('transaction.status', 'in', '("void","batal")')
       .order('created_at', { ascending: false })
 
     if (paymentsErr) throw paymentsErr
 
     for (const payment of payments || []) {
       const tx = payment.transaction as any
+
+      // Payment pertama dari transaksi yang dibuat hari ini = label 'Penjualan'
+      const txCreatedAt: string = tx?.created_at || ''
+      const txSameDay = txCreatedAt >= startOfDay.toISOString() && txCreatedAt <= endOfDay.toISOString()
+      const isInitial = txSameDay && payment.created_at === txCreatedAt
+
       transactions.push({
         id: payment.id,
         time: payment.created_at,
-        type: 'payment',
+        type: isInitial ? 'sale' : 'payment',
         amount: payment.amount,
         method: payment.payment_method as 'tunai' | 'transfer',
         customer_name: tx?.customer_name,
         reference: tx?.transaction_number || '-',
-        description: 'Pembayaran Cicilan',
+        description: isInitial ? 'Penjualan' : 'Pembayaran Cicilan',
         is_in: true
       })
     }
 
-    // 3. Transaksi dari jurnal (baik masuk maupun keluar)
+    // ── Jurnal manual (kas masuk/keluar selain penjualan & cicilan) ───────────
     const { data: cashAccounts } = await supabase
       .from('chart_of_accounts')
       .select('id, code, name')
@@ -238,7 +189,6 @@ export const dailyCashService = {
         const debit = Number(line.debit || 0)
         const credit = Number(line.credit || 0)
 
-        // Debit di kas/bank = pemasukan
         if (debit > 0) {
           transactions.push({
             id: line.id,
@@ -252,7 +202,6 @@ export const dailyCashService = {
           })
         }
 
-        // Credit di kas/bank = pengeluaran
         if (credit > 0) {
           transactions.push({
             id: line.id,
@@ -268,7 +217,6 @@ export const dailyCashService = {
       }
     }
 
-    // Sort by time DESC
     transactions.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
 
     return transactions

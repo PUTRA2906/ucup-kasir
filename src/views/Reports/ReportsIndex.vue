@@ -90,6 +90,25 @@
             </div>
           </div>
         </router-link>
+
+        <!-- Piutang Menua -->
+        <router-link
+          to="/reports/aging-receivables"
+          class="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 transition hover:shadow-lg active:scale-95 md:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+        >
+          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
+          <div class="flex flex-col items-start gap-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-600 transition group-hover:scale-110 dark:bg-red-500/10">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-gray-900 md:text-base dark:text-white">Piutang Menua</h3>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Aging piutang per pelanggan</p>
+            </div>
+          </div>
+        </router-link>
       </div>
     </div>
   </AdminLayout>

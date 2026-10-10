@@ -502,6 +502,18 @@ const router = createRouter({
       component: () => import('../views/Reports/DailyBankReport.vue'),
       meta: { title: 'Mutasi Bank Hari Ini' },
     },
+    {
+      path: '/reports/aging-receivables',
+      name: 'Aging Receivables Report',
+      component: () => import('../views/Reports/AgingReceivablesReport.vue'),
+      meta: { title: 'Laporan Piutang Menua' },
+    },
+    {
+      path: '/reports/aging-receivables',
+      name: 'Aging Receivables Report',
+      component: () => import('../views/Reports/AgingReceivablesReport.vue'),
+      meta: { title: 'Laporan Piutang Menua' },
+    },
     // ============================================================
     // Modul Pembelian Barang (Purchasing / Procurement)
     // ============================================================

@@ -31,53 +31,41 @@ export const sqliteDailyCashService = {
   async getDailyCashSummary(date: string): Promise<DailyCashSummary> {
     const userId = getCurrentUserId()
 
-    // 1. Penjualan hari ini (paid_amount, bukan total)
-    const sales = await query<{
-      paid_amount: number
-      payment_method: string
-    }>(
-      `SELECT paid_amount, payment_method
-       FROM transactions
-       WHERE DATE(created_at) = DATE(?)
-         AND status NOT IN ('void', 'batal')
-         AND user_id = ?`,
-      [date, userId]
-    )
-
-    // 2. Cicilan hari ini - exclude pembayaran awal transaksi (notes = 'Pembayaran awal')
-    // karena pembayaran awal sudah dihitung dari paid_amount di tabel transactions
+    // ── Sumber tunggal: transaction_payments ─────────────────────────────────
+    // Semua pemasukan kas (penjualan + cicilan) selalu ada di transaction_payments.
+    // Tidak perlu split antara transactions dan transaction_payments.
     const payments = await query<{
       amount: number
       payment_method: string
     }>(
-      `SELECT amount, payment_method
-       FROM transaction_payments
-       WHERE (DATE(payment_date) = DATE(?) OR DATE(created_at) = DATE(?))
-         AND user_id = ?
-         AND COALESCE(notes, '') != 'Pembayaran awal'`,
+      `SELECT tp.amount, tp.payment_method
+       FROM transaction_payments tp
+       INNER JOIN transactions t ON t.id = tp.transaction_id
+       WHERE (DATE(tp.payment_date) = DATE(?) OR DATE(tp.created_at) = DATE(?))
+         AND tp.user_id = ?
+         AND t.status NOT IN ('void', 'batal')`,
       [date, date, userId]
     )
 
-    // Hitung total
-    let tunai_in =
-      sales.filter(s => s.payment_method === 'tunai').reduce((sum, s) => sum + (s.paid_amount || 0), 0) +
-      payments.filter(p => p.payment_method === 'tunai').reduce((sum, p) => sum + (p.amount || 0), 0)
+    let tunai_in = payments
+      .filter(p => p.payment_method === 'tunai')
+      .reduce((sum, p) => sum + (p.amount || 0), 0)
 
-    let transfer_in =
-      sales.filter(s => s.payment_method === 'transfer').reduce((sum, s) => sum + (s.paid_amount || 0), 0) +
-      payments.filter(p => p.payment_method === 'transfer').reduce((sum, p) => sum + (p.amount || 0), 0)
+    let transfer_in = payments
+      .filter(p => p.payment_method === 'transfer')
+      .reduce((sum, p) => sum + (p.amount || 0), 0)
 
-    const total_in = tunai_in + transfer_in
+    // Hitung jumlah transaksi (untuk info saja)
+    const salesCount = await query<{ cnt: number }>(
+      `SELECT COUNT(*) as cnt FROM transactions
+       WHERE DATE(created_at) = DATE(?) AND status NOT IN ('void', 'batal') AND user_id = ?`,
+      [date, userId]
+    )
 
-    // 3. Kas keluar dari jurnal (credit di akun kas/bank)
-    const cashAccounts = await query<{
-      id: string
-      code: string
-    }>(
-      `SELECT id, code
-       FROM chart_of_accounts
-       WHERE code IN ('1-1000', '1-1010')
-         AND user_id = ?`,
+    // ── Kas keluar dari jurnal manual (bukan dari penjualan/cicilan) ──────────
+    const cashAccounts = await query<{ id: string; code: string }>(
+      `SELECT id, code FROM chart_of_accounts
+       WHERE code IN ('1-1000', '1-1010') AND user_id = ?`,
       [userId]
     )
 
@@ -90,8 +78,6 @@ export const sqliteDailyCashService = {
     if (cashAccountIds.length > 0) {
       const placeholders = cashAccountIds.map(() => '?').join(',')
 
-      // Skip jurnal dari penjualan (transaction) dan cicilan (payment) karena
-      // keduanya sudah dihitung langsung dari tabel transactions dan transaction_payments
       const journalLines = await query<{
         debit: number
         credit: number
@@ -113,38 +99,29 @@ export const sqliteDailyCashService = {
         const credit = Number(line.credit || 0)
         const account = cashAccounts.find(a => a.id === line.account_id)
 
-        // Debit di kas/bank = pemasukan
         if (debit > 0) {
-          if (account?.code === '1-1000') {
-            tunai_in += debit
-          } else {
-            transfer_in += debit
-          }
+          if (account?.code === '1-1000') tunai_in += debit
+          else transfer_in += debit
         }
-
-        // Credit di kas/bank = pengeluaran
         if (credit > 0) {
           cashOut += credit
-          if (account?.code === '1-1000') {
-            tunai_out += credit
-          } else {
-            transfer_out += credit
-          }
+          if (account?.code === '1-1000') tunai_out += credit
+          else transfer_out += credit
         }
       }
     }
 
-    const total_in_final = tunai_in + transfer_in
+    const total_in = tunai_in + transfer_in
 
     return {
-      total_in: total_in_final,
+      total_in,
       total_out: cashOut,
-      net: total_in_final - cashOut,
+      net: total_in - cashOut,
       tunai_in,
       tunai_out,
       transfer_in,
       transfer_out,
-      transactions_count: sales.length,
+      transactions_count: salesCount[0]?.cnt || 0,
       payments_count: payments.length
     }
   },
@@ -157,42 +134,10 @@ export const sqliteDailyCashService = {
 
     const transactions: CashTransaction[] = []
 
-    // 1. Penjualan hari ini
-    const sales = await query<{
-      id: string
-      transaction_number: string
-      created_at: string
-      paid_amount: number
-      payment_method: string
-      customer_name: string | null
-    }>(
-      `SELECT id, transaction_number, created_at, paid_amount, payment_method, customer_name
-       FROM transactions
-       WHERE DATE(created_at) = DATE(?)
-         AND status NOT IN ('void', 'batal')
-         AND user_id = ?
-       ORDER BY created_at DESC`,
-      [date, userId]
-    )
-
-    for (const sale of sales) {
-      if (sale.paid_amount > 0) {
-        transactions.push({
-          id: sale.id,
-          time: sale.created_at,
-          type: 'sale',
-          amount: sale.paid_amount,
-          method: sale.payment_method as 'tunai' | 'transfer',
-          customer_name: sale.customer_name || undefined,
-          reference: sale.transaction_number,
-          description: 'Penjualan',
-          is_in: true
-        })
-      }
-    }
-
-    // 2. Cicilan hari ini - exclude pembayaran awal transaksi (notes = 'Pembayaran awal')
-    // karena pembayaran awal sudah ditampilkan dari paid_amount di tabel transactions (type: 'sale')
+    // ── Sumber 1: transaction_payments (SEMUA payment di hari ini) ──────────
+    // Ini adalah sumber tunggal untuk semua pemasukan kas dari penjualan & cicilan.
+    // Tidak perlu exclude — setiap baris di transaction_payments = 1 entry kas masuk.
+    // Pembayaran awal saat buat transaksi juga ada di sini, dengan label 'Penjualan'.
     const payments = await query<{
       id: string
       amount: number
@@ -205,39 +150,48 @@ export const sqliteDailyCashService = {
        FROM transaction_payments
        WHERE (DATE(payment_date) = DATE(?) OR DATE(created_at) = DATE(?))
          AND user_id = ?
-         AND COALESCE(notes, '') != 'Pembayaran awal'
        ORDER BY created_at DESC`,
       [date, date, userId]
     )
 
     for (const payment of payments) {
-      // Ambil data transaksi untuk customer_name dan transaction_number
+      // Ambil data transaksi induk
       const txData = await query<{
+        id: string
         transaction_number: string
         customer_name: string | null
+        created_at: string
       }>(
-        `SELECT transaction_number, customer_name
+        `SELECT id, transaction_number, customer_name, created_at
          FROM transactions
-         WHERE id = ?`,
+         WHERE id = ? AND status NOT IN ('void', 'batal')`,
         [payment.transaction_id]
       )
 
       const tx = txData[0]
+      if (!tx) continue // transaksi void/batal — skip
+
+      // Tentukan label: jika ini adalah payment pertama dari transaksi
+      // (created_at payment = created_at transaksi), tampilkan sebagai 'Penjualan'
+      // Jika tidak, tampilkan sebagai 'Pembayaran Cicilan'
+      const isInitial = payment.created_at === tx.created_at
+      const type: 'sale' | 'payment' = isInitial ? 'sale' : 'payment'
+      const description = isInitial ? 'Penjualan' : 'Pembayaran Cicilan'
 
       transactions.push({
         id: payment.id,
         time: payment.created_at,
-        type: 'payment',
+        type,
         amount: payment.amount,
         method: payment.payment_method as 'tunai' | 'transfer',
-        customer_name: tx?.customer_name || undefined,
-        reference: tx?.transaction_number || '-',
-        description: 'Pembayaran Cicilan',
+        customer_name: tx.customer_name || undefined,
+        reference: tx.transaction_number,
+        description,
         is_in: true
       })
     }
 
-    // 3. Transaksi dari jurnal (baik masuk maupun keluar)
+    // ── Sumber 2: jurnal manual (kas masuk/keluar selain penjualan & cicilan) ──
     const cashAccounts = await query<{
       id: string
       code: string
@@ -255,7 +209,6 @@ export const sqliteDailyCashService = {
     if (cashAccountIds.length > 0) {
       const placeholders = cashAccountIds.map(() => '?').join(',')
 
-      // Sertakan reference_type dari journal_entries untuk filtering
       const journalLines = await query<{
         id: string
         debit: number
@@ -280,25 +233,19 @@ export const sqliteDailyCashService = {
       for (const line of journalLines) {
         const debit = Number(line.debit || 0)
         const credit = Number(line.credit || 0)
-
-        // Skip jika debit dan credit keduanya 0
         if (debit === 0 && credit === 0) continue
 
-        // Ambil data journal entry
         const journalData = await query<{
           journal_number: string
           description: string | null
         }>(
-          `SELECT journal_number, description
-           FROM journal_entries
-           WHERE id = ?`,
+          `SELECT journal_number, description FROM journal_entries WHERE id = ?`,
           [line.journal_id]
         )
 
         const journal = journalData[0]
         const account = cashAccounts.find(a => a.id === line.account_id)
 
-        // Debit di kas/bank = pemasukan
         if (debit > 0) {
           transactions.push({
             id: line.id,
@@ -312,7 +259,6 @@ export const sqliteDailyCashService = {
           })
         }
 
-        // Credit di kas/bank = pengeluaran
         if (credit > 0) {
           transactions.push({
             id: line.id,

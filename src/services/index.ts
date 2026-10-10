@@ -35,6 +35,8 @@ import { dailyCashService } from './dailyCash'
 import { sqliteDailyCashService } from './sqlite/dailyCash'
 import { dailyBankService } from './dailyBank'
 import { sqliteDailyBankService } from './sqlite/dailyBank'
+import { agingReceivablesService } from './agingReceivables'
+import { sqliteAgingReceivablesService } from './sqlite/agingReceivables'
 
 // ============================================================
 // Service factory — pilih implementasi berdasarkan platform.
@@ -65,4 +67,5 @@ export const priceMatrixServiceAdapter = isNativeApp() ? sqlitePriceMatrixServic
 export const itemPaymentServiceAdapter = isNativeApp() ? sqliteItemPaymentService : itemPaymentService
 export const dailyCashServiceAdapter = isNativeApp() ? sqliteDailyCashService : dailyCashService
 export const dailyBankServiceAdapter = isNativeApp() ? sqliteDailyBankService : dailyBankService
+export const agingReceivablesServiceAdapter = isNativeApp() ? sqliteAgingReceivablesService : agingReceivablesService
 export type { StockMovement, StockAdjustment, StockOpname, StockAlert }
