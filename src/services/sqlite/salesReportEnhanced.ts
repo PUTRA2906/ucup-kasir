@@ -904,6 +904,7 @@ export const sqliteSalesReportEnhancedService = {
       transaction_id: r.transaction_id,
       amount: r.amount,
       payment_method: r.payment_method,
+      payment_date: r.payment_date,  // ✅ ADD: payment_date untuk filter periode
       notes: r.notes ?? undefined,
       created_at: r.created_at,
     }))
