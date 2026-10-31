@@ -91,16 +91,14 @@ export const dailyCashService = {
       for (const line of journalLines || []) {
         const debit = Number(line.debit || 0)
         const credit = Number(line.credit || 0)
-        const account = cashAccounts?.find(a => a.id === line.account_id)
 
+        // Semua transaksi dari akun 1-1000 (Kas) adalah tunai
         if (debit > 0) {
-          if (account?.code === '1-1000') tunai_in += debit
-          else transfer_in += debit
+          tunai_in += debit
         }
         if (credit > 0) {
           cashOut += credit
-          if (account?.code === '1-1000') tunai_out += credit
-          else transfer_out += credit
+          tunai_out += credit
         }
       }
     }
@@ -197,7 +195,7 @@ export const dailyCashService = {
             time: line.created_at,
             type: 'journal',
             amount: debit,
-            method: account?.code === '1-1000' ? 'tunai' : 'transfer',
+            method: 'tunai', // Semua transaksi dari akun 1-1000 (Kas) adalah tunai
             reference: journal?.journal_number || '-',
             description: journal?.description || 'Pemasukan',
             is_in: true
@@ -210,7 +208,7 @@ export const dailyCashService = {
             time: line.created_at,
             type: 'journal',
             amount: credit,
-            method: account?.code === '1-1000' ? 'tunai' : 'transfer',
+            method: 'tunai', // Semua transaksi dari akun 1-1000 (Kas) adalah tunai
             reference: journal?.journal_number || '-',
             description: journal?.description || 'Pengeluaran',
             is_in: false
