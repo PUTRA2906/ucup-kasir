@@ -81,6 +81,14 @@ const router = createRouter({
       },
     },
     {
+      path: '/settings/fix-payment-allocation',
+      name: 'Fix Payment Allocation',
+      component: () => import('../views/Settings/FixPaymentAllocation.vue'),
+      meta: {
+        title: 'Perbaikan Laba Terealisasi',
+      },
+    },
+    {
       path: '/dev-tools',
       name: 'DevTools',
       component: () => import('../views/DevTools.vue'),

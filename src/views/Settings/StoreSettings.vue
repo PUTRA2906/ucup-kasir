@@ -152,6 +152,24 @@
           </div>
         </button>
 
+        <!-- Perbaikan Laba Terealisasi -->
+        <button
+          @click="router.push('/settings/fix-payment-allocation')"
+          class="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition active:bg-gray-50 dark:active:bg-white/[0.02]"
+        >
+          <div class="flex items-center gap-3">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
+              <svg class="h-4 w-4 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-sm font-medium text-gray-900 dark:text-white">Perbaikan Laba Terealisasi</h2>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Fix alokasi pembayaran cicilan</p>
+            </div>
+          </div>
+        </button>
+
         <!-- Keluar -->
         <button
           @click="showLogoutConfirm = true"

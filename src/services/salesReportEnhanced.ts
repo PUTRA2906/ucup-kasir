@@ -101,6 +101,8 @@ export const salesReportEnhancedService = {
   /**
    * Mengambil laporan penjualan & laba rugi yang komprehensif
    * dengan pemisahan antara laba akrual dan laba terealisasi
+   *
+   * ✅ UPDATED: Include transaksi yang punya pembayaran dalam periode
    */
   async getEnhancedSalesReport(
     startDate: string,
@@ -108,8 +110,8 @@ export const salesReportEnhancedService = {
     paymentStatusFilter?: 'lunas' | 'belum_lunas' | 'all',
     customerIds?: string[]
   ): Promise<EnhancedReportData> {
-    // Fetch transactions dengan filter
-    let query = supabase
+    // 1. Ambil transaksi yang dibuat dalam periode (existing logic)
+    let queryCreated = supabase
       .from('transactions')
       .select(`
         *,
@@ -120,32 +122,82 @@ export const salesReportEnhancedService = {
         payments:transaction_payments(*)
       `)
       .eq('status', 'selesai')
-      .order('created_at', { ascending: false })
 
     if (startDate) {
-      query = query.gte('created_at', startDate)
+      queryCreated = queryCreated.gte('created_at', startDate)
     }
     if (endDate) {
-      query = query.lte('created_at', endDate + 'T23:59:59')
+      queryCreated = queryCreated.lte('created_at', endDate + 'T23:59:59')
     }
 
     // Filter status pembayaran
     if (paymentStatusFilter && paymentStatusFilter !== 'all') {
-      query = query.eq('payment_status', paymentStatusFilter)
+      queryCreated = queryCreated.eq('payment_status', paymentStatusFilter)
     }
 
     // Filter customer
     if (customerIds && customerIds.length > 0) {
-      query = query.in('customer_id', customerIds)
+      queryCreated = queryCreated.in('customer_id', customerIds)
     }
 
-    const { data: transactions, error } = await query
+    const { data: txnsCreated, error: errorCreated } = await queryCreated
 
-    if (error) throw error
+    if (errorCreated) throw errorCreated
 
-    const txns = (transactions || []) as Transaction[]
+    // 2. Ambil ID transaksi yang punya pembayaran dalam periode (NEW)
+    let paymentsQuery = supabase
+      .from('transaction_payments')
+      .select('transaction_id')
 
-    // Fetch data retur
+    if (startDate) {
+      paymentsQuery = paymentsQuery.gte('payment_date', startDate)
+    }
+    if (endDate) {
+      paymentsQuery = paymentsQuery.lte('payment_date', endDate + 'T23:59:59')
+    }
+
+    const { data: paymentsInPeriod, error: errorPayments } = await paymentsQuery
+
+    if (errorPayments) throw errorPayments
+
+    const txnIdsWithPayments = [...new Set((paymentsInPeriod || []).map(p => p.transaction_id))]
+
+    // 3. Ambil transaksi yang punya pembayaran dalam periode (tapi belum terambil di query pertama)
+    const existingTxnIds = new Set((txnsCreated || []).map(t => t.id))
+    const missingTxnIds = txnIdsWithPayments.filter(id => !existingTxnIds.has(id))
+
+    let txnsWithPayments: any[] = []
+    if (missingTxnIds.length > 0) {
+      let queryPayments = supabase
+        .from('transactions')
+        .select(`
+          *,
+          items:transaction_items(
+            *,
+            product:products(id, name, category_id, price_buy, price_sell)
+          ),
+          payments:transaction_payments(*)
+        `)
+        .eq('status', 'selesai')
+        .in('id', missingTxnIds)
+
+      // Apply same filters
+      if (paymentStatusFilter && paymentStatusFilter !== 'all') {
+        queryPayments = queryPayments.eq('payment_status', paymentStatusFilter)
+      }
+      if (customerIds && customerIds.length > 0) {
+        queryPayments = queryPayments.in('customer_id', customerIds)
+      }
+
+      const { data: txnsPaymentsData, error: errorTxnsPayments } = await queryPayments
+      if (errorTxnsPayments) throw errorTxnsPayments
+      txnsWithPayments = txnsPaymentsData || []
+    }
+
+    // 4. Merge dan deduplikasi transaksi
+    const txns = [...(txnsCreated || []), ...txnsWithPayments] as Transaction[]
+
+    // 5. Fetch data retur
     let returnsQuery = supabase
       .from('returns')
       .select('*, items:return_items(*, product:products(id, name))')
@@ -163,11 +215,11 @@ export const salesReportEnhancedService = {
 
     const returnData = (returns || []) as any[]
 
-    // Hitung summary dengan logika enhanced (await karena sekarang async)
-    const summary = await this.calculateEnhancedSummary(txns, returnData)
+    // 6. Hitung summary dengan logika enhanced (passing date filter untuk payment filtering)
+    const summary = await this.calculateEnhancedSummary(txns, returnData, startDate, endDate)
 
-    // Hitung detail per transaksi (await karena sekarang async)
-    const transactionDetails = await this.calculateTransactionDetails(txns, returnData)
+    // 7. Hitung detail per transaksi (passing date filter untuk payment filtering)
+    const transactionDetails = await this.calculateTransactionDetails(txns, returnData, startDate, endDate)
 
     // Hitung performa produk
     const topProducts = this.calculateProductPerformance(txns, returnData, 'top')
@@ -183,12 +235,15 @@ export const salesReportEnhancedService = {
 
   /**
    * Menghitung summary dengan pemisahan laba akrual vs terealisasi
-   * 
+   *
    * ✅ UPDATED: Laba terealisasi dihitung dari item_payments (bukan proporsional)
+   * ✅ UPDATED: Hanya hitung kas dari pembayaran dalam periode (startDate, endDate)
    */
   async calculateEnhancedSummary(
     transactions: Transaction[],
-    returns: any[]
+    returns: any[],
+    startDate?: string,
+    endDate?: string
   ): Promise<EnhancedSalesSummary> {
     let gross_sales = 0
     let total_discount = 0
@@ -239,17 +294,29 @@ export const salesReportEnhancedService = {
       raw_cogs += txCogs
       total_discount += t.discount || 0
 
-      // Kas masuk & piutang
+      // ✅ NEW: Filter pembayaran hanya yang dalam periode
+      let paymentsInPeriod: any[] = t.payments || []
+      if (startDate || endDate) {
+        paymentsInPeriod = (t.payments || []).filter((p: any) => {
+          const paymentDate = p.payment_date
+          if (!paymentDate) return false
+
+          // Compare date only (payment_date is DATE type, startDate/endDate is string YYYY-MM-DD)
+          if (startDate && paymentDate < startDate) return false
+          if (endDate && paymentDate > endDate) return false
+
+          return true
+        })
+      }
+
+      // Hitung kas masuk HANYA dari pembayaran dalam periode
+      const paidInPeriod = paymentsInPeriod.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+
+      // Total paid amount dari semua pembayaran (untuk status)
       const paidAmount = t.paid_amount || 0
       const remainingAmount = t.remaining_amount || 0
 
       // Kas efektif: dibatasi agar tidak melebihi nilai bersih transaksi
-      // (saat retur, paid_amount di DB tidak dikurangi padahal sebagian sudah direfund)
-      //
-      // Nilai kas efektif dihitung dulu di sini karena txNetSales butuh txReturnValue.
-      // txReturnValue akan kita akumulasikan ke total_returns di loop returns di bawah
-      // (satu sumber kebenaran), tapi untuk kebutuhan effectiveCash per-transaksi kita
-      // tetap hitung lokal di sini agar clamp akurat.
       const txReturns = returnsByTx.get(t.id) || []
       let txReturnValue = 0
       txReturns.forEach((r: any) => {
@@ -257,16 +324,18 @@ export const salesReportEnhancedService = {
       })
 
       const txNetSales = txGrossSales - (t.discount || 0) - txReturnValue
-      const effectiveCash = Math.max(0, Math.min(paidAmount, txNetSales))
+      const effectiveCash = Math.max(0, Math.min(paidInPeriod, txNetSales))
 
       total_cash_received += effectiveCash
       total_receivables += remainingAmount
 
-      // ✅ Hitung laba terealisasi dari item_payments (akurat per-item)
+      // ✅ Hitung laba terealisasi dari item_payments dalam periode
       const { realizedProfit, unrealizedProfit } = await this.calculateRealizedProfitFromItems(
         t.id,
         t.items || [],
-        txReturns
+        txReturns,
+        startDate,
+        endDate
       )
 
       realized_profit += realizedProfit
@@ -335,12 +404,15 @@ export const salesReportEnhancedService = {
 
   /**
    * Menghitung detail per transaksi dengan breakdown laba
-   * 
+   *
    * ✅ UPDATED: Laba terealisasi dihitung dari item_payments (bukan proporsional)
+   * ✅ UPDATED: Filter pembayaran berdasarkan periode (startDate, endDate)
    */
   async calculateTransactionDetails(
     transactions: Transaction[],
-    returns: any[]
+    returns: any[],
+    startDate?: string,
+    endDate?: string
   ): Promise<TransactionDetail[]> {
     const result: TransactionDetail[] = []
     
@@ -375,16 +447,35 @@ export const salesReportEnhancedService = {
       const profit = netRevenue - netCogs
       const profitMargin = netRevenue > 0 ? (profit / netRevenue) * 100 : 0
 
+      // ✅ NEW: Filter pembayaran hanya yang dalam periode
+      let paymentsInPeriod: any[] = t.payments || []
+      if (startDate || endDate) {
+        paymentsInPeriod = (t.payments || []).filter((p: any) => {
+          const paymentDate = p.payment_date
+          if (!paymentDate) return false
+
+          // Compare date only (payment_date is DATE type, startDate/endDate is string YYYY-MM-DD)
+          if (startDate && paymentDate < startDate) return false
+          if (endDate && paymentDate > endDate) return false
+
+          return true
+        })
+      }
+
+      // Hitung kas masuk HANYA dari pembayaran dalam periode
+      const paidInPeriod = paymentsInPeriod.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+
       // Kas efektif: dibatasi agar tidak melebihi nilai bersih transaksi
-      // (saat retur, paid_amount di DB tidak dikurangi padahal sebagian sudah direfund)
-      const cashReceived = Math.max(0, Math.min(t.paid_amount || 0, netRevenue))
+      const cashReceived = Math.max(0, Math.min(paidInPeriod, netRevenue))
       const receivable = t.remaining_amount || 0
 
-      // ✅ NEW: Hitung laba terealisasi dari item_payments (akurat per-item)
+      // ✅ NEW: Hitung laba terealisasi dari item_payments dalam periode (akurat per-item)
       const { realizedProfit, unrealizedProfit } = await this.calculateRealizedProfitFromItems(
         t.id,
         t.items || [],
-        relatedReturns
+        relatedReturns,
+        startDate,
+        endDate
       )
 
       result.push({
@@ -404,24 +495,38 @@ export const salesReportEnhancedService = {
 
   /**
    * ✅ NEW HELPER: Hitung laba terealisasi dari item_payments
-   * 
+   *
    * Formula AKURAT per-item:
    * - Laba terealisasi = sum(item_profit * (paid_amount / item_subtotal))
    * - Laba tertahan = total_profit - realized_profit
-   * 
+   *
    * Menggunakan data dari transaction_item_payments untuk track
    * pembayaran per item secara spesifik.
+   *
+   * ✅ UPDATED: Filter pembayaran hanya yang dalam periode (startDate, endDate)
    */
   async calculateRealizedProfitFromItems(
     transactionId: string,
     items: any[],
-    returns: any[]
+    returns: any[],
+    startDate?: string,
+    endDate?: string
   ): Promise<{ realizedProfit: number; unrealizedProfit: number }> {
     // Get item payment allocations
-    const { data: itemPayments, error } = await supabase
+    let query = supabase
       .from('transaction_item_payments')
-      .select('item_id, allocated_amount')
+      .select('item_id, allocated_amount, payment_date')
       .eq('transaction_id', transactionId)
+
+    // ✅ NEW: Filter pembayaran berdasarkan periode
+    if (startDate) {
+      query = query.gte('payment_date', startDate)
+    }
+    if (endDate) {
+      query = query.lte('payment_date', endDate + 'T23:59:59')
+    }
+
+    const { data: itemPayments, error } = await query
 
     if (error) {
       console.error('Error fetching item payments:', error)

@@ -70,12 +70,15 @@
                 v-for="(opt, index) in filteredOptions"
                 :key="String(opt.value ?? index)"
                 type="button"
-                @click="select(opt.value)"
+                :disabled="opt.disabled"
+                @click="!opt.disabled && select(opt.value)"
                 :class="[
                   'flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm transition',
-                  String(opt.value) === String(modelValue2)
-                    ? 'bg-brand-50 font-semibold text-brand-700 dark:bg-brand-500/10 dark:text-brand-300'
-                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/[0.05]'
+                  opt.disabled
+                    ? 'cursor-not-allowed opacity-35'
+                    : String(opt.value) === String(modelValue2)
+                      ? 'bg-brand-50 font-semibold text-brand-700 dark:bg-brand-500/10 dark:text-brand-300'
+                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/[0.05]'
                 ]"
               >
                 <span class="min-w-0 flex-1 truncate">{{ opt.label }}</span>
@@ -142,7 +145,7 @@ const searchInputRef = ref<HTMLInputElement | null>(null)
 
 const filteredOptions = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
-  const visible = props.options.filter((o) => !o.disabled)
+  const visible = props.options
   if (!q) return visible
   return visible.filter(
     (o) =>

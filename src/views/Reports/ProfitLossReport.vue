@@ -339,26 +339,27 @@
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Bulan</label>
-                <select
-                  v-model="tempMonth"
-                  class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                >
-                  <option v-for="m in monthOptions" :key="m.value" :value="m.value">{{ m.label }}</option>
-                </select>
+                <SelectField
+                  :model-value="tempMonth"
+                  :options="monthOptions"
+                  title="Pilih Bulan"
+                  placeholder="Pilih bulan"
+                  button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+                  @update:model-value="tempMonth = Number($event)"
+                />
               </div>
               <div>
                 <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Tahun</label>
-                <select
-                  v-model="tempYear"
-                  class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                >
-                  <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}</option>
-                </select>
+                <SelectField
+                  :model-value="tempYear"
+                  :options="yearOptions"
+                  title="Pilih Tahun"
+                  placeholder="Pilih tahun"
+                  button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+                  @update:model-value="tempYear = Number($event)"
+                />
               </div>
             </div>
-            <p v-if="isFuturePeriod(tempMonth, tempYear)" class="text-xs text-red-500 dark:text-red-400">
-              ⚠ Tidak dapat melihat laporan periode yang belum terjadi.
-            </p>
           </div>
 
           <!-- Mode Per Periode (range) -->
@@ -468,12 +469,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import DateRangeField from '@/components/common/DateRangeField.vue'
+import SelectField from '@/components/common/SelectField.vue'
 import { useSalesReportEnhancedStore } from '@/stores/salesReportEnhanced'
 import { useFinanceStore } from '@/stores/finance'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
@@ -500,25 +502,25 @@ const currentYearNum = nowDate.getFullYear()
 const tempMonth = ref(currentMonthNum)
 const tempYear = ref(currentYearNum)
 
-const monthOptions = [
-  { value: 1, label: 'Januari' },
-  { value: 2, label: 'Februari' },
-  { value: 3, label: 'Maret' },
-  { value: 4, label: 'April' },
-  { value: 5, label: 'Mei' },
-  { value: 6, label: 'Juni' },
-  { value: 7, label: 'Juli' },
-  { value: 8, label: 'Agustus' },
-  { value: 9, label: 'September' },
-  { value: 10, label: 'Oktober' },
-  { value: 11, label: 'November' },
-  { value: 12, label: 'Desember' },
-]
+const monthOptions = computed(() => [
+  { value: 1, label: 'Januari', disabled: isFuturePeriod(1, tempYear.value) },
+  { value: 2, label: 'Februari', disabled: isFuturePeriod(2, tempYear.value) },
+  { value: 3, label: 'Maret', disabled: isFuturePeriod(3, tempYear.value) },
+  { value: 4, label: 'April', disabled: isFuturePeriod(4, tempYear.value) },
+  { value: 5, label: 'Mei', disabled: isFuturePeriod(5, tempYear.value) },
+  { value: 6, label: 'Juni', disabled: isFuturePeriod(6, tempYear.value) },
+  { value: 7, label: 'Juli', disabled: isFuturePeriod(7, tempYear.value) },
+  { value: 8, label: 'Agustus', disabled: isFuturePeriod(8, tempYear.value) },
+  { value: 9, label: 'September', disabled: isFuturePeriod(9, tempYear.value) },
+  { value: 10, label: 'Oktober', disabled: isFuturePeriod(10, tempYear.value) },
+  { value: 11, label: 'November', disabled: isFuturePeriod(11, tempYear.value) },
+  { value: 12, label: 'Desember', disabled: isFuturePeriod(12, tempYear.value) },
+])
 
 const yearOptions = computed(() => {
-  const years: number[] = []
+  const years: { value: number; label: string; disabled: boolean }[] = []
   for (let y = currentYearNum - 3; y <= currentYearNum; y++) {
-    years.push(y)
+    years.push({ value: y, label: String(y), disabled: y > currentYearNum })
   }
   return years
 })
@@ -528,6 +530,13 @@ const isFuturePeriod = (month: number, year: number): boolean => {
   if (year === currentYearNum && month > currentMonthNum) return true
   return false
 }
+
+// Jika user ganti tahun dan bulan terpilih jadi masa depan, reset ke bulan terakhir yang valid
+watch(tempYear, (newYear) => {
+  if (isFuturePeriod(tempMonth.value, newYear)) {
+    tempMonth.value = newYear === currentYearNum ? currentMonthNum : 12
+  }
+})
 
 // Saldo beban operasional per akun (dari jurnal, modul finance)
 const expenseBalanceByAccount = ref<Record<string, number>>({})
