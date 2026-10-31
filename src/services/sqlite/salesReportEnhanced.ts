@@ -90,6 +90,7 @@ export const sqliteSalesReportEnhancedService = {
   /**
    * Mengambil laporan penjualan & laba rugi yang komprehensif
    * dari SQLite lokal (mirror getEnhancedSalesReport versi Supabase)
+   * ✅ UPDATED: Include transaksi yang punya pembayaran dalam periode
    */
   async getEnhancedSalesReport(
     startDate: string,
@@ -99,7 +100,7 @@ export const sqliteSalesReportEnhancedService = {
   ): Promise<EnhancedReportData> {
     const userId = getCurrentUserId()
 
-    // --- 1. Fetch transactions + items + product + payments ---
+    // --- 1. Ambil transaksi yang dibuat dalam periode (existing logic) ---
     const params: (string | number)[] = [userId]
     let dateFilter = ''
 
@@ -132,8 +133,49 @@ export const sqliteSalesReportEnhancedService = {
       params
     )
 
+    // --- 2. Ambil ID transaksi yang punya pembayaran dalam periode (NEW) ---
+    const paymentParams: (string | number)[] = [userId]
+    let paymentDateFilter = ''
+
+    if (startDate) {
+      paymentDateFilter += ' AND payment_date >= ?'
+      paymentParams.push(startDate)
+    }
+    if (endDate) {
+      paymentDateFilter += ' AND payment_date <= ?'
+      paymentParams.push(endDate + 'T23:59:59')
+    }
+
+    const paymentRows = await query<any>(
+      `SELECT DISTINCT transaction_id FROM transaction_payments
+       WHERE user_id = ?${paymentDateFilter}`,
+      paymentParams
+    )
+
+    const txnIdsWithPayments = paymentRows.map(p => p.transaction_id)
+
+    // --- 3. Ambil transaksi yang missing (punya pembayaran dalam periode tapi belum terambil) ---
+    const existingTxnIds = new Set(txnRows.map(t => t.id))
+    const missingTxnIds = txnIdsWithPayments.filter(id => !existingTxnIds.has(id))
+
+    let missingTxnRows: any[] = []
+    if (missingTxnIds.length > 0) {
+      const placeholders = missingTxnIds.map(() => '?').join(', ')
+      const missingParams = [userId, ...missingTxnIds]
+
+      missingTxnRows = await query<any>(
+        `SELECT t.* FROM transactions t
+         WHERE t.user_id = ? AND t.status = 'selesai'
+         AND t.id IN (${placeholders})${filter}
+         ORDER BY t.created_at DESC`,
+        missingParams
+      )
+    }
+
+    // --- 4. Merge dan deduplikasi transaksi ---
+    const allTxnRows = [...txnRows, ...missingTxnRows]
     const txns: Transaction[] = []
-    for (const t of txnRows) {
+    for (const t of allTxnRows) {
       txns.push(await this.fetchTransactionDetail(t))
     }
 
@@ -152,9 +194,10 @@ export const sqliteSalesReportEnhancedService = {
 
     const returnData = await this.fetchReturnsWithItems(returnRows)
 
-    // --- 3. Kalkulasi (reuse logika identik) ---
-    const summary = await this.calculateEnhancedSummary(txns, returnData)
-    const transactionDetails = await this.calculateTransactionDetails(txns, returnData)
+    // --- 5. Kalkulasi (reuse logika identik) ---
+    // ✅ Pass startDate & endDate untuk filter pembayaran dalam periode
+    const summary = await this.calculateEnhancedSummary(txns, returnData, startDate, endDate)
+    const transactionDetails = await this.calculateTransactionDetails(txns, returnData, startDate, endDate)
     const topProducts = this.calculateProductPerformance(txns, returnData, 'top')
     const topReturns = this.calculateProductPerformance(txns, returnData, 'returns')
 
@@ -291,7 +334,8 @@ export const sqliteSalesReportEnhancedService = {
   async calculateRealizedProfitFromItems(
     transactionId: string,
     items: any[],
-    returns: any[]
+    returns: any[],
+    paidInPeriod?: number  // ✅ NEW: Optional parameter untuk pembayaran dalam periode
   ): Promise<{ realizedProfit: number; unrealizedProfit: number }> {
     const userId = getCurrentUserId()
 
@@ -316,7 +360,7 @@ export const sqliteSalesReportEnhancedService = {
     // fallback ke perhitungan proporsional berdasarkan paid_amount transaksi.
     const hasItemPayments = itemPaymentRows.length > 0
     if (!hasItemPayments) {
-      return this.calculateRealizedProfitFallback(transactionId, items, returns, userId)
+      return this.calculateRealizedProfitFallback(transactionId, items, returns, userId, paidInPeriod)
     }
 
     // Map: item_id -> total_paid
@@ -395,7 +439,8 @@ export const sqliteSalesReportEnhancedService = {
     transactionId: string,
     items: any[],
     returns: any[],
-    userId: string
+    userId: string,
+    paidInPeriod?: number  // ✅ NEW: Optional parameter untuk pembayaran dalam periode
   ): Promise<{ realizedProfit: number; unrealizedProfit: number }> {
     // Ambil paid_amount dan total dari transaksi
     const txRow = await queryOne<any>(
@@ -426,7 +471,8 @@ export const sqliteSalesReportEnhancedService = {
     const profit = netRevenue - netCogs
 
     // Rasio realisasi = bayar / nilai bersih transaksi
-    const paidAmount = Number(txRow?.paid_amount || 0)
+    // ✅ UPDATED: Gunakan paidInPeriod jika diberikan, fallback ke paid_amount
+    const paidAmount = paidInPeriod !== undefined ? paidInPeriod : Number(txRow?.paid_amount || 0)
     const realizationRatio = netRevenue > 0 ? Math.min(paidAmount / netRevenue, 1) : 0
 
     const clampedRealized = profit >= 0
@@ -445,7 +491,9 @@ export const sqliteSalesReportEnhancedService = {
    */
   async calculateEnhancedSummary(
     transactions: Transaction[],
-    returns: any[]
+    returns: any[],
+    startDate?: string,
+    endDate?: string
   ): Promise<EnhancedSalesSummary> {
     let gross_sales = 0
     let total_discount = 0
@@ -495,7 +543,25 @@ export const sqliteSalesReportEnhancedService = {
       raw_cogs += txCogs
       total_discount += t.discount || 0
 
-      // Kas masuk & piutang
+      // ✅ NEW: Filter pembayaran hanya yang dalam periode
+      let paymentsInPeriod: any[] = t.payments || []
+      if (startDate || endDate) {
+        paymentsInPeriod = (t.payments || []).filter((p: any) => {
+          const paymentDate = p.payment_date
+          if (!paymentDate) return false
+
+          // Compare date only (payment_date is DATE type, startDate/endDate is string YYYY-MM-DD)
+          if (startDate && paymentDate < startDate) return false
+          if (endDate && paymentDate > endDate) return false
+
+          return true
+        })
+      }
+
+      // Hitung kas masuk HANYA dari pembayaran dalam periode
+      const paidInPeriod = paymentsInPeriod.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+
+      // Total paid amount dari semua pembayaran (untuk status)
       const paidAmount = t.paid_amount || 0
       const remainingAmount = t.remaining_amount || 0
 
@@ -509,18 +575,21 @@ export const sqliteSalesReportEnhancedService = {
       // Penjualan bersih per transaksi (untuk clamp kas)
       const txNetSales = txGrossSales - (t.discount || 0) - txReturnValue
 
-      // Kas efektif
-      const effectiveCash = Math.max(0, Math.min(paidAmount, txNetSales))
+      // Kas efektif: dibatasi agar tidak melebihi nilai bersih transaksi
+      // ✅ UPDATED: Gunakan paidInPeriod (pembayaran dalam periode), bukan paidAmount
+      const effectiveCash = Math.max(0, Math.min(paidInPeriod, txNetSales))
 
       total_cash_received += effectiveCash
       total_receivables += remainingAmount
 
       // ✅ Gunakan perhitungan per-item untuk realized profit (sama seperti di web)
-      const { realizedProfit: txRealized, unrealizedProfit: txUnrealized } = 
+      // ✅ UPDATED: Pass paymentsInPeriod untuk hitung realized profit dari pembayaran dalam periode saja
+      const { realizedProfit: txRealized, unrealizedProfit: txUnrealized } =
         await this.calculateRealizedProfitFromItems(
           t.id,
           t.items || [],
-          txReturns
+          txReturns,
+          paidInPeriod  // ✅ NEW: Pass paid amount in period
         )
       
       realized_profit += txRealized
@@ -591,7 +660,9 @@ export const sqliteSalesReportEnhancedService = {
    */
   async calculateTransactionDetails(
     transactions: Transaction[],
-    returns: any[]
+    returns: any[],
+    startDate?: string,
+    endDate?: string
   ): Promise<TransactionDetail[]> {
     // Kelompokkan retur per transaksi
     const returnsByTx = new Map<string, any[]>()
@@ -633,15 +704,30 @@ export const sqliteSalesReportEnhancedService = {
       const profit = netRevenue - netCogs
       const profitMargin = netRevenue > 0 ? (profit / netRevenue) * 100 : 0
 
-      // Kas efektif
-      const cashReceived = Math.max(0, Math.min(t.paid_amount || 0, netRevenue))
+      // ✅ NEW: Filter pembayaran hanya yang dalam periode
+      let paymentsInPeriod: any[] = t.payments || []
+      if (startDate || endDate) {
+        paymentsInPeriod = (t.payments || []).filter((p: any) => {
+          const paymentDate = p.payment_date
+          if (!paymentDate) return false
+          if (startDate && paymentDate < startDate) return false
+          if (endDate && paymentDate > endDate) return false
+          return true
+        })
+      }
+
+      const paidInPeriod = paymentsInPeriod.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+
+      // Kas efektif: dibatasi agar tidak melebihi nilai bersih transaksi
+      const cashReceived = Math.max(0, Math.min(paidInPeriod, netRevenue))
       const receivable = t.remaining_amount || 0
 
       // ✅ Gunakan perhitungan per-item untuk realized profit (sama seperti di summary & detail)
       const { realizedProfit, unrealizedProfit } = await this.calculateRealizedProfitFromItems(
         t.id,
         t.items || [],
-        relatedReturns
+        relatedReturns,
+        paidInPeriod  // ✅ Pass paid amount in period
       )
 
       details.push({
