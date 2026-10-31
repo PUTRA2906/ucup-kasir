@@ -35,14 +35,15 @@ export const dailyCashService = {
     const startOfDay = new Date(date + 'T00:00:00Z')
     const endOfDay = new Date(date + 'T23:59:59.999Z')
 
-    // ── Sumber tunggal: transaction_payments ─────────────────────────────────
-    // Semua pemasukan kas ada di sini — pembayaran awal maupun cicilan.
+    // ── Sumber tunggal: transaction_payments (HANYA TUNAI) ───────────────────
+    // Hanya ambil pembayaran tunai untuk laporan Mutasi Kas
     const { data: payments, error: paymentsErr } = await supabase
       .from('transaction_payments')
       .select('amount, payment_method, transaction:transactions!inner(status)')
       .gte('payment_date', startOfDay.toISOString())
       .lte('payment_date', endOfDay.toISOString())
       .eq('user_id', user.user.id)
+      .eq('payment_method', 'tunai')
       .not('transaction.status', 'in', '("void","batal")')
 
     if (paymentsErr) throw paymentsErr
@@ -68,7 +69,7 @@ export const dailyCashService = {
     const { data: cashAccounts } = await supabase
       .from('chart_of_accounts')
       .select('id, code')
-      .in('code', ['1-1000', '1-1010'])
+      .eq('code', '1-1000')
       .eq('user_id', user.user.id)
 
     const cashAccountIds = (cashAccounts || []).map(a => a.id)
@@ -131,13 +132,14 @@ export const dailyCashService = {
     const startOfDay = new Date(date + 'T00:00:00Z')
     const endOfDay = new Date(date + 'T23:59:59.999Z')
 
-    // ── Sumber tunggal: transaction_payments ─────────────────────────────────
+    // ── Sumber tunggal: transaction_payments (HANYA TUNAI) ───────────────────
     const { data: payments, error: paymentsErr } = await supabase
       .from('transaction_payments')
       .select('id, amount, payment_method, created_at, transaction:transactions!inner(transaction_number, customer_name, created_at, status)')
       .gte('payment_date', startOfDay.toISOString())
       .lte('payment_date', endOfDay.toISOString())
       .eq('user_id', user.user.id)
+      .eq('payment_method', 'tunai')
       .not('transaction.status', 'in', '("void","batal")')
       .order('created_at', { ascending: false })
 
@@ -168,7 +170,7 @@ export const dailyCashService = {
     const { data: cashAccounts } = await supabase
       .from('chart_of_accounts')
       .select('id, code, name')
-      .in('code', ['1-1000', '1-1010'])
+      .eq('code', '1-1000')
       .eq('user_id', user.user.id)
 
     const cashAccountIds = (cashAccounts || []).map(a => a.id)

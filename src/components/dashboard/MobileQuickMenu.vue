@@ -25,7 +25,7 @@
                   </svg>
                 </div>
                 <span class="mt-2 text-[11px] font-medium leading-tight text-center text-gray-700 dark:text-gray-300">
-                  Buat Faktur
+                  Transaksi Baru
                 </span>
               </router-link>
 
@@ -39,7 +39,7 @@
                   </svg>
                 </div>
                 <span class="mt-2 text-[11px] font-medium leading-tight text-center text-gray-700 dark:text-gray-300">
-                  Daftar Faktur
+                  Daftar Transaksi
                 </span>
               </router-link>
 

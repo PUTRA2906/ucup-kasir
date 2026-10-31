@@ -226,34 +226,109 @@
         </div>
       </div>
 
-      <!-- Top 5 Produk Terlaris -->
-      <div
-        v-if="store.topProducts.length > 0"
-        class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900"
-      >
-        <h3 class="mb-3 border-b border-gray-200 pb-2 text-sm font-bold text-gray-900 dark:border-gray-700 dark:text-white">
-          Top 5 Produk Terlaris
-        </h3>
-        <div class="space-y-2">
-          <div
-            v-for="(product, index) in store.topProducts"
-            :key="product.product_id"
-            class="flex items-center gap-2.5"
+      <!-- Daftar Transaksi -->
+      <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="mb-3 flex items-center justify-between border-b border-gray-200 pb-2 dark:border-gray-700">
+          <h3 class="text-sm font-bold text-gray-900 dark:text-white">
+            Daftar Transaksi
+          </h3>
+          <span class="text-xs text-gray-500 dark:text-gray-400">
+            {{ store.transactions.length }} transaksi
+          </span>
+        </div>
+
+        <!-- List Transaksi -->
+        <div v-if="paginatedTransactions.length > 0" class="space-y-2">
+          <router-link
+            v-for="transaction in paginatedTransactions"
+            :key="transaction.id"
+            :to="`/transactions/${transaction.id}`"
+            class="flex items-start gap-2.5 rounded-lg border border-gray-100 p-2 transition hover:border-brand-500 hover:bg-brand-50/50 dark:border-gray-800 dark:hover:border-brand-500 dark:hover:bg-brand-900/10"
           >
-            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-xs font-bold text-blue-600 dark:text-blue-400">
-              {{ index + 1 }}
+            <!-- Badge Icon -->
+            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-brand-500/10 text-xs font-bold text-brand-600 dark:text-brand-400">
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
             </div>
+
+            <!-- Info Transaksi -->
             <div class="flex-1 min-w-0">
-              <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ product.product_name }}</p>
+              <!-- Nomor Faktur & Tanggal -->
+              <p class="text-xs font-medium text-gray-900 dark:text-white truncate">
+                {{ transaction.transaction_number }}
+              </p>
               <p class="text-[9px] text-gray-500 dark:text-gray-400">
-                {{ product.net_quantity }} terjual · Laba {{ formatCurrency(product.profit) }}
+                {{ formatDateTime(transaction.created_at) }} · {{ transaction.customer_name || 'Umum' }}
+              </p>
+
+              <!-- Status & Kas Masuk -->
+              <div class="mt-1 flex items-center gap-2 flex-wrap">
+                <span
+                  class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[8px] font-medium"
+                  :class="transaction.payment_status === 'lunas'
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'"
+                >
+                  {{ transaction.payment_status === 'lunas' ? 'Lunas' : 'Belum Lunas' }}
+                </span>
+                <span class="text-[9px] text-blue-600 dark:text-blue-400 font-medium">
+                  Kas: {{ formatCurrency(transaction.cash_received) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Total -->
+            <div class="text-right">
+              <p class="text-xs font-bold text-gray-900 dark:text-white">
+                {{ formatCurrency(transaction.total) }}
+              </p>
+              <p class="text-[9px] text-gray-500 dark:text-gray-400">
+                Total
               </p>
             </div>
-            <div class="text-right">
-              <p class="text-xs font-bold text-gray-900 dark:text-white">{{ formatCurrency(product.revenue) }}</p>
-              <p class="text-[9px] text-purple-600 dark:text-purple-400">{{ product.profit_margin.toFixed(1) }}%</p>
-            </div>
-          </div>
+          </router-link>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else class="py-8 text-center">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            Tidak ada transaksi dalam periode ini
+          </p>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div v-if="totalPages > 1" class="mt-3 flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700">
+          <button
+            type="button"
+            :disabled="currentTransactionPage === 1"
+            class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800"
+            @click="currentTransactionPage--"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Prev
+          </button>
+
+          <span class="text-xs text-gray-600 dark:text-gray-400">
+            Hal {{ currentTransactionPage }} dari {{ totalPages }}
+          </span>
+
+          <button
+            type="button"
+            :disabled="currentTransactionPage === totalPages"
+            class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-800"
+            @click="currentTransactionPage++"
+          >
+            Next
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -556,6 +631,25 @@ const tempDateRange = ref({
   end: localTodayStr(),
 })
 const tempPaymentStatus = ref<'lunas' | 'belum_lunas' | 'all'>('all')
+
+// ── Pagination untuk Daftar Transaksi ────────────────────────────────────────
+const currentTransactionPage = ref(1)
+const itemsPerPage = 5
+
+const paginatedTransactions = computed(() => {
+  const start = (currentTransactionPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return store.transactions.slice(start, end)
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(store.transactions.length / itemsPerPage)
+})
+
+// Reset pagination saat data berubah
+watch(() => store.transactions.length, () => {
+  currentTransactionPage.value = 1
+})
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('id-ID', {
