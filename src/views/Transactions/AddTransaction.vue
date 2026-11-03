@@ -362,6 +362,25 @@
               </div>
             </div>
           </div>
+
+          <!-- Checkbox Barang Sudah Dikirim -->
+          <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-800">
+            <label class="flex items-center gap-2.5 cursor-pointer">
+              <input
+                v-model="isDelivered"
+                type="checkbox"
+                class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
+              />
+              <div>
+                <span class="text-xs font-semibold text-gray-900 dark:text-white">
+                  Barang Sudah Dikirim
+                </span>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400">
+                  Centang jika pesanan sudah dikirim/diserahkan
+                </p>
+              </div>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -726,6 +745,25 @@
                 ></textarea>
               </div>
 
+              <!-- Checkbox Barang Sudah Dikirim (Desktop) -->
+              <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input
+                    v-model="isDelivered"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800"
+                  />
+                  <div>
+                    <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                      Barang Sudah Dikirim
+                    </span>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                      Centang jika pesanan sudah dikirim/diserahkan ke customer
+                    </p>
+                  </div>
+                </label>
+              </div>
+
               <button
                 type="submit"
                 :disabled="isSubmitting || !selectedCustomerId || cartItems.length === 0"
@@ -814,6 +852,7 @@ const selectedCustomerId = ref((route.query.customer as string) || '')
 const discountInput = ref('')
 const notes = ref('')
 const isSubmitting = ref(false)
+const isDelivered = ref(false) // Checkbox barang sudah dikirim
 const showProductPicker = ref(false)
 const showPaymentModal = ref(false)
 const showCustomerPicker = ref(false)
@@ -1020,6 +1059,7 @@ const resetForm = async () => {
     notes.value = ''
     payment.value = null
     returnItems.value = []
+    isDelivered.value = false // Reset checkbox
     transactionDate.value = formatDateTimeLocal(new Date())
   }
 }
@@ -1236,6 +1276,11 @@ const handleSubmit = async () => {
       (c) => c.id === selectedCustomerId.value
     )
 
+    // Debug: Log nilai checkbox dan status yang akan dikirim
+    console.log('🔍 Debug Create Transaction:')
+    console.log('- isDelivered checkbox:', isDelivered.value)
+    console.log('- transaction_status akan di-set:', isDelivered.value ? 'selesai' : 'disiapkan')
+
     const transactionId = await transactionsStore.createTransaction({
       customer_id: selectedCustomer?.id || undefined,
       customer_name: selectedCustomer?.name,
@@ -1244,6 +1289,7 @@ const handleSubmit = async () => {
       discount: discount.value,
       return_amount: totalReturnAmount.value,
       notes: notes.value.trim() || undefined,
+      transaction_status: isDelivered.value ? 'selesai' : 'disiapkan', // Set status berdasarkan checkbox
       transaction_date: (() => {
         const today = formatDateTimeLocal(new Date())
         // Jika user memilih hari ini, pakai timestamp aktual (bukan midnight UTC)

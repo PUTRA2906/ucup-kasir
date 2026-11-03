@@ -156,6 +156,33 @@ export const sqliteCategoriesService = {
     })
   },
 
+  /** Merge data dari Supabase (UPSERT only, tidak DELETE) untuk incremental sync. */
+  async mergeAll(records: Category[]): Promise<void> {
+    if (records.length === 0) return
+    const userId = getCurrentUserId()
+    await transaction(async (tx) => {
+      for (const r of records) {
+        // Check apakah ada pending changes di lokal
+        const existing = await tx.query<{ sync_status: string }>(
+          'SELECT sync_status FROM categories WHERE id = ?',
+          [r.id]
+        )
+
+        // Skip jika ada perubahan lokal yang belum sync
+        if (existing.length > 0 && existing[0].sync_status !== 'synced') {
+          continue
+        }
+
+        // Upsert dari server
+        await tx.run(
+          `INSERT OR REPLACE INTO categories (id, user_id, name, description, created_at, updated_at, sync_status, updated_at_local)
+           VALUES (?, ?, ?, ?, ?, ?, 'synced', ?)`,
+          [r.id, r.user_id ?? userId, r.name, r.description ?? null, r.created_at, r.updated_at, r.updated_at]
+        )
+      }
+    })
+  },
+
   mapRow(r: any): Category {
     return {
       id: r.id,

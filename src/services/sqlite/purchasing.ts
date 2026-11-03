@@ -939,6 +939,33 @@ export const sqlitePurchasingService = {
     }
   },
 
+  async mergeSuppliers(records: Supplier[]): Promise<void> {
+    if (records.length === 0) return
+    const userId = getCurrentUserId()
+    await transaction(async (tx) => {
+      for (const s of records) {
+        const existing = await tx.query<{ sync_status: string }>(
+          'SELECT sync_status FROM suppliers WHERE id = ?',
+          [s.id]
+        )
+
+        if (existing.length > 0 && existing[0].sync_status !== 'synced') {
+          continue
+        }
+
+        await tx.run(
+          `INSERT OR REPLACE INTO suppliers (id, user_id, name, contact_person, phone, email, address,
+                                             supplier_type, payment_term, credit_limit, notes, is_active,
+                                             created_at, updated_at, sync_status, updated_at_local)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+          [s.id, s.user_id || userId, s.name, s.contact_person ?? null, s.phone ?? null,
+           s.email ?? null, s.address ?? null, s.supplier_type, s.payment_term, s.credit_limit,
+           s.notes ?? null, s.is_active ? 1 : 0, s.created_at, s.updated_at, s.updated_at]
+        )
+      }
+    })
+  },
+
   async replaceAllPurchaseOrders(records: Array<PurchaseOrder & { items?: PurchaseOrderItem[] }>): Promise<void> {
     const userId = getCurrentUserId()
     await run('DELETE FROM purchase_orders WHERE user_id = ?', [userId])

@@ -338,6 +338,42 @@ export const sqliteCustomersService = {
     })
   },
 
+  async mergeAll(records: Customer[]): Promise<void> {
+    if (records.length === 0) return
+    const userId = getCurrentUserId()
+    await transaction(async (tx) => {
+      for (const r of records) {
+        const existing = await tx.query<{ sync_status: string }>(
+          'SELECT sync_status FROM customers WHERE id = ?',
+          [r.id]
+        )
+
+        if (existing.length > 0 && existing[0].sync_status !== 'synced') {
+          continue
+        }
+
+        await tx.run(
+          `INSERT OR REPLACE INTO customers (id, user_id, name, store_name, phone, kecamatan, address, notes, credit_limit, created_at, updated_at, sync_status, updated_at_local)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+          [
+            r.id,
+            r.user_id ?? userId,
+            r.name,
+            r.store_name ?? null,
+            r.phone ?? null,
+            r.kecamatan ?? null,
+            r.address ?? null,
+            r.notes ?? null,
+            r.credit_limit ?? 0,
+            r.created_at,
+            r.updated_at,
+            r.updated_at,
+          ]
+        )
+      }
+    })
+  },
+
   mapRow(r: any): Customer {
     return {
       id: r.id,

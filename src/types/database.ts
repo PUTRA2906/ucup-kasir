@@ -125,6 +125,7 @@ export interface TransactionInput {
   return_amount?: number
   notes?: string
   transaction_date?: string
+  transaction_status?: 'disiapkan' | 'dikirim' | 'selesai'
   items: TransactionItemInput[]
 }
 

@@ -164,7 +164,15 @@ export const transactionsService = {
     })
 
     if (error) throw error
-    return data as string
+
+    const transactionId = data as string
+
+    // Update transaction_status jika disediakan (default 'disiapkan' sudah di database)
+    if (input.transaction_status && input.transaction_status !== 'disiapkan') {
+      await this.updateStatus(transactionId, input.transaction_status)
+    }
+
+    return transactionId
   },
 
   async delete(id: string): Promise<void> {

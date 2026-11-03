@@ -787,6 +787,38 @@ export const sqliteHrService = {
     }
   },
 
+  async mergeEmployees(records: Employee[]): Promise<void> {
+    if (records.length === 0) return
+    const userId = getCurrentUserId()
+    const now = nowIso()
+    await transaction(async (tx) => {
+      for (const r of records) {
+        const existing = await tx.query<{ sync_status: string }>(
+          'SELECT sync_status FROM employees WHERE id = ?',
+          [r.id]
+        )
+
+        if (existing.length > 0 && existing[0].sync_status !== 'synced') {
+          continue
+        }
+
+        await tx.run(
+          `INSERT OR REPLACE INTO employees (id, user_id, employee_code, name, gender, birth_place, birth_date,
+            phone, email, address, identity_type, identity_number, position,
+            join_date, resign_date, status, salary_type, base_salary, bank_name, bank_account_number,
+            bank_account_name, npwp, notes, is_active, created_at, updated_at, sync_status, updated_at_local)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+          [r.id, r.user_id || userId, r.employee_code, r.name, r.gender || null, r.birth_place || null, r.birth_date || null,
+           r.phone || null, r.email || null, r.address || null, 'KTP', r.identity_number || null,
+           r.position || null, r.join_date || null, r.resign_date || null,
+           r.status, r.salary_type, r.base_salary, r.bank_name || null, r.bank_account_number || null,
+           r.bank_account_name || null, r.npwp || null, r.notes || null, r.is_active ? 1 : 0,
+           r.created_at, r.updated_at, r.updated_at || now]
+        )
+      }
+    })
+  },
+
   async replaceAllAttendance(records: Attendance[]): Promise<void> {
     const userId = getCurrentUserId()
     await run('DELETE FROM attendance WHERE user_id = ?', [userId])

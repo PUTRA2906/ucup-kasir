@@ -492,6 +492,29 @@ export const sqlitePriceMatrixService = {
     })
   },
 
+  async mergeGroups(records: any[]): Promise<void> {
+    if (records.length === 0) return
+    const userId = getCurrentUserId()
+    await transaction(async (tx) => {
+      for (const r of records) {
+        const existing = await tx.query<{ sync_status: string }>(
+          'SELECT sync_status FROM customer_groups WHERE id = ?',
+          [r.id]
+        )
+
+        if (existing.length > 0 && existing[0].sync_status !== 'synced') {
+          continue
+        }
+
+        await tx.run(
+          `INSERT OR REPLACE INTO customer_groups (id, user_id, name, notes, is_active, created_at, updated_at, sync_status, updated_at_local)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+          [r.id, r.user_id ?? userId, r.name, r.notes ?? null, boolToInt(r.is_active), r.created_at, r.updated_at, r.updated_at]
+        )
+      }
+    })
+  },
+
   async replaceAllGroupMembers(records: any[]): Promise<void> {
     const userId = getCurrentUserId()
     await transaction(async (tx) => {

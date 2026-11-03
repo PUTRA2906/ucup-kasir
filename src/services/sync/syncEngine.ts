@@ -103,6 +103,89 @@ export interface SyncResult {
 // DOWNLOAD: Supabase → SQLite (saat login / manual refresh)
 // ============================================================
 
+/**
+ * Download incremental: hanya fetch data yang berubah sejak last sync.
+ * Fallback ke full download jika belum pernah sync (first sync).
+ */
+export async function downloadIncrementalSync(): Promise<SyncResult> {
+  if (!isNativeApp()) {
+    throw new Error('Mode web tidak memerlukan sinkronisasi offline')
+  }
+
+  await initSQLite()
+
+  if (!isOnlineNow()) {
+    throw new Error('Tidak ada koneksi internet')
+  }
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Tidak ada user yang login')
+
+  // Guard: pastikan tidak ada pending changes
+  try {
+    const pending = await getSyncQueue()
+    if (pending.length > 0) {
+      throw new Error(
+        `${pending.length} perubahan lokal belum tersinkron. Upload terlebih dahulu sebelum download.`
+      )
+    }
+  } catch (e: any) {
+    const msg = String(e?.message || '')
+    if (/belum tersinkron/.test(msg)) throw e
+    logError('sync', 'queue_guard_check_failed', e, 'Gagal cek sync_queue sebelum download')
+  }
+
+  // Cek apakah sudah pernah sync
+  const lastSync = await getMetadata('last_download_at')
+
+  if (!lastSync) {
+    // First sync → fallback ke full download
+    logEvent({
+      level: 'info',
+      source: 'sync',
+      event: 'first_sync',
+      message: 'First sync detected, performing full download',
+    })
+    return await downloadAllFromSupabase()
+  }
+
+  // Incremental sync: download hanya yang berubah
+  try {
+    let totalDownloaded = 0
+
+    // Simple tables (tidak ada relasi child yang perlu grouping)
+    const simpleTables = ['categories', 'products', 'customers', 'store_settings', 'notifications']
+
+    for (const table of simpleTables) {
+      try {
+        const changed = await fetchChangedRows(table, user.id, lastSync)
+        if (changed.length > 0) {
+          await mergeIntoLocalTable(table, changed)
+          totalDownloaded += changed.length
+        }
+      } catch (e: any) {
+        logError('sync', 'incremental_table_failed', e, `Table ${table}`)
+        // Continue dengan table lain
+      }
+    }
+
+    // Update timestamp
+    await setMetadata('last_download_at', new Date().toISOString())
+
+    logEvent({
+      level: 'info',
+      source: 'sync',
+      event: 'incremental_download_ok',
+      message: `Download incremental selesai: ${totalDownloaded} rows diperbarui`,
+    })
+
+    return { success: true, downloaded: totalDownloaded }
+  } catch (e: any) {
+    logError('sync', 'incremental_download_failed', e, 'Gagal download incremental')
+    return { success: false, message: e.message || 'Gagal download incremental' }
+  }
+}
+
 /** Ambil semua data user dari Supabase dan isi ke SQLite (truncate dulu). */
 export async function downloadAllFromSupabase(): Promise<SyncResult> {
   // Di web tidak ada SQLite — data dibaca langsung dari Supabase.
@@ -409,6 +492,125 @@ async function fetchAllFromTable(table: string, userId: string): Promise<any[]> 
   return all
 }
 
+/** Fetch hanya row yang berubah sejak timestamp tertentu (untuk incremental sync). */
+async function fetchChangedRows(
+  table: string,
+  userId: string,
+  since: string
+): Promise<any[]> {
+  const limit = 1000
+  let all: any[] = []
+  let from = 0
+
+  while (true) {
+    const { data, error } = await supabase
+      .from(table)
+      .select('*')
+      .eq('user_id', userId)
+      .gt('updated_at', since)
+      .range(from, from + limit - 1)
+      .order('updated_at')
+
+    if (error) throw error
+    if (!data || data.length === 0) break
+
+    all = all.concat(data)
+    if (data.length < limit) break
+    from += limit
+  }
+
+  return all
+}
+
+/** Merge data dari server ke tabel lokal (untuk incremental sync). */
+async function mergeIntoLocalTable(table: string, rows: any[]): Promise<void> {
+  if (rows.length === 0) return
+
+  // Dispatch ke service yang sesuai
+  switch (table) {
+    case 'categories':
+      await sqliteCategoriesService.mergeAll(rows)
+      break
+    case 'products':
+      await sqliteProductsService.mergeAll(rows)
+      break
+    case 'customers':
+      await sqliteCustomersService.mergeAll(rows)
+      break
+    case 'store_settings':
+      await sqliteStoreSettingsService.mergeAll(rows)
+      break
+    case 'notifications':
+      await sqliteNotificationsService.mergeAll(rows)
+      break
+    case 'chart_of_accounts':
+      await sqliteFinanceService.mergeAccounts(rows)
+      break
+    case 'suppliers':
+      await sqlitePurchasingService.mergeSuppliers(rows)
+      break
+    case 'employees':
+      await sqliteHrService.mergeEmployees(rows)
+      break
+    case 'vehicles':
+      await sqliteShippingService.mergeVehicles(rows)
+      break
+    case 'customer_groups':
+      await sqlitePriceMatrixService.mergeGroups(rows)
+      break
+    // Tabel dengan relasi parent-child butuh grouping (handled di incremental sync)
+    case 'transactions':
+    case 'transaction_items':
+    case 'transaction_payments':
+    case 'returns':
+    case 'return_items':
+    case 'stock_movements':
+    case 'stock_adjustments':
+    case 'stock_opnames':
+    case 'stock_opname_items':
+    case 'stock_alerts':
+    case 'journal_entries':
+    case 'journal_lines':
+    case 'purchase_orders':
+    case 'po_items':
+    case 'goods_receipts':
+    case 'grn_items':
+    case 'purchase_invoices':
+    case 'pi_items':
+    case 'pi_payments':
+    case 'purchase_returns':
+    case 'purchase_return_items':
+    case 'attendance':
+    case 'payrolls':
+    case 'employee_loans':
+    case 'employee_loan_payments':
+    case 'delivery_orders':
+    case 'delivery_items':
+    case 'delivery_tracking':
+    case 'delivery_order_transactions':
+    case 'delivery_loaders':
+    case 'delivery_load_items':
+    case 'customer_group_members':
+    case 'price_tiers':
+    case 'customer_price_matrix':
+      // Skip untuk sekarang - akan di-handle dengan grouping khusus
+      logEvent({
+        level: 'warn',
+        source: 'sync',
+        event: 'merge_skip_relational',
+        message: `Table ${table} skipped in incremental sync (use full sync for relational tables)`,
+      })
+      break
+    default:
+      logEvent({
+        level: 'warn',
+        source: 'sync',
+        event: 'merge_unknown_table',
+        message: `Unknown table for merge: ${table}`,
+      })
+  }
+}
+
 /** Hapus semua isi sync_queue (dipakai setelah download penuh). */
 async function clearSyncQueue(): Promise<void> {
   await run('DELETE FROM sync_queue')
@@ -476,7 +678,7 @@ export async function clearLocalDatabase(): Promise<boolean> {
 // ============================================================
 
 /**
- * Proses semua item di sync_queue ke Supabase.
+ * Proses semua item di sync_queue ke Supabase dengan batch processing.
  * Setiap item: INSERT/UPDATE/DELETE sesuai operation.
  * Sukses → hapus dari queue. Gagal → retry_count++ + last_error.
  */
@@ -505,34 +707,59 @@ export async function uploadChangesToSupabase(): Promise<SyncResult> {
   let maxSeenId = queue.reduce((m, i) => Math.max(m, i.id), 0)
   let round = 0
   const MAX_DEFER_ROUNDS = 3
+  const BATCH_SIZE = 50 // Process 50 items in parallel
 
   while (pending.length > 0 && round <= MAX_DEFER_ROUNDS) {
     const deferredNextRound: SyncQueueItem[] = []
-    for (const item of pending) {
-      try {
-        await processQueueItem(item)
-        await removeFromSyncQueue(item.id)
-        uploaded++
-        await markLocalRowSynced(item.table_name, item.record_id)
-        // Self-heal: parent naik — queue anak yang menumpang di payload
-        // (mis. jurnal lama yang menyimpan `lines`, dsb.) agar ikut ke Supabase.
-        try {
-          await queueEmbeddedChildren(item, JSON.parse(item.payload))
-        } catch {
-          /* payload rusak sudah ditangani di processQueueItem */
+
+    // Process in batches for better performance
+    for (let i = 0; i < pending.length; i += BATCH_SIZE) {
+      const batch = pending.slice(i, i + BATCH_SIZE)
+
+      // Process batch in parallel with Promise.allSettled
+      const results = await Promise.allSettled(
+        batch.map(async (item) => {
+          try {
+            await processQueueItem(item)
+            await removeFromSyncQueue(item.id)
+            await markLocalRowSynced(item.table_name, item.record_id)
+
+            // Self-heal: parent naik — queue anak yang menumpang di payload
+            try {
+              await queueEmbeddedChildren(item, JSON.parse(item.payload))
+            } catch {
+              /* payload rusak sudah ditangani di processQueueItem */
+            }
+
+            return { success: true, item }
+          } catch (e: any) {
+            return { success: false, item, error: e }
+          }
+        })
+      )
+
+      // Process results
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          const { success, item, error } = result.value
+
+          if (success) {
+            uploaded++
+          } else {
+            const handled = await handleQueueFailure(item, error, deferredNextRound)
+            if (handled === 'deferred' || handled === 'dropped') {
+              if (handled === 'dropped') dropped++
+              continue
+            }
+            failed++
+            if (!firstError) firstError = error?.message
+            await markSyncQueueFailed(item.id, error?.message || 'Gagal upload')
+            logError('sync', 'queue_item_failed', error, `${item.operation} ${item.table_name} (${item.record_id})`)
+          }
         }
-      } catch (e: any) {
-        const handled = await handleQueueFailure(item, e, deferredNextRound)
-        if (handled === 'deferred' || handled === 'dropped') {
-          if (handled === 'dropped') dropped++
-          continue
-        }
-        failed++
-        if (!firstError) firstError = e?.message
-        await markSyncQueueFailed(item.id, e?.message || 'Gagal upload')
-        logError('sync', 'queue_item_failed', e, `${item.operation} ${item.table_name} (${item.record_id})`)
       }
     }
+
     // Ambil item yang baru masuk queue selama ronde ini (di luar snapshot awal).
     let fresh: SyncQueueItem[] = []
     try {
@@ -1083,7 +1310,7 @@ function sanitizeForSupabase(data: Record<string, any>): Record<string, any> {
 // ============================================================
 
 /**
- * Backup full: upload semua data dari SQLite ke Supabase.
+ * Backup full: upload semua data dari SQLite ke Supabase dengan chunking.
  * Dipakai untuk tombol "Backup Sekarang" di pengaturan.
  * Memakai INSERT ... ON CONFLICT (id) DO UPDATE agar idempotent.
  */
@@ -1115,16 +1342,33 @@ export async function uploadAllToSupabase(): Promise<SyncResult> {
     'customer_groups', 'customer_group_members', 'price_tiers', 'customer_price_matrix',
   ]
 
+  const CHUNK_SIZE = 500 // Supabase recommended batch size
   let uploaded = 0
+
   try {
     for (const table of tables) {
       const rows = await query<any>(`SELECT * FROM ${table} WHERE user_id = ?`, [userId])
       if (rows.length === 0) continue
 
       const clean = rows.map(sanitizeForSupabase)
-      const { error } = await supabase.from(table).upsert(clean, { onConflict: 'id' })
-      if (error) throw error
-      uploaded += clean.length
+
+      // Upload in chunks untuk menghindari timeout dan payload terlalu besar
+      for (let i = 0; i < clean.length; i += CHUNK_SIZE) {
+        const chunk = clean.slice(i, i + CHUNK_SIZE)
+        const { error } = await supabase.from(table).upsert(chunk, { onConflict: 'id' })
+        if (error) throw error
+        uploaded += chunk.length
+
+        // Log progress untuk table besar
+        if (clean.length > CHUNK_SIZE && i + CHUNK_SIZE < clean.length) {
+          logEvent({
+            level: 'info',
+            source: 'sync',
+            event: 'backup_progress',
+            message: `Backup ${table}: ${i + CHUNK_SIZE}/${clean.length} rows`,
+          })
+        }
+      }
     }
 
     // Tandai semua data sebagai synced

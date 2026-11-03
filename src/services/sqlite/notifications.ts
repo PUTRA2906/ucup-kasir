@@ -145,6 +145,31 @@ export const sqliteNotificationsService = {
     })
   },
 
+  async mergeAll(records: SqliteNotification[]): Promise<void> {
+    if (records.length === 0) return
+    const userId = getCurrentUserId()
+    await transaction(async (tx) => {
+      for (const r of records) {
+        const existing = await tx.query<{ sync_status: string }>(
+          'SELECT sync_status FROM notifications WHERE id = ?',
+          [r.id]
+        )
+
+        if (existing.length > 0 && existing[0].sync_status !== 'synced') {
+          continue
+        }
+
+        await tx.run(
+          `INSERT OR REPLACE INTO notifications (id, user_id, type, title, message, data, is_read, created_at, read_at, sync_status, updated_at_local)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+          [r.id, userId, r.type, r.title, r.message,
+           r.data ? JSON.stringify(r.data) : null,
+           r.is_read ? 1 : 0, r.created_at, r.read_at ?? null, r.created_at]
+        )
+      }
+    })
+  },
+
   mapRow(r: any): SqliteNotification {
     let data: any
     if (r.data) {

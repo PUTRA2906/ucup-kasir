@@ -888,6 +888,32 @@ export const sqliteFinanceService = {
     }
   },
 
+  async mergeAccounts(records: Account[]): Promise<void> {
+    if (records.length === 0) return
+    const userId = getCurrentUserId()
+    const now = nowIso()
+    await transaction(async (tx) => {
+      for (const a of records) {
+        const existing = await tx.query<{ sync_status: string }>(
+          'SELECT sync_status FROM chart_of_accounts WHERE id = ?',
+          [a.id]
+        )
+
+        if (existing.length > 0 && existing[0].sync_status !== 'synced') {
+          continue
+        }
+
+        await tx.run(
+          `INSERT OR REPLACE INTO chart_of_accounts (id, user_id, code, name, type, normal_balance, is_active, is_system, parent_id, created_at, updated_at, sync_status, updated_at_local)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+          [a.id, a.user_id || userId, a.code, a.name, a.type, a.normal_balance,
+           a.is_active ? 1 : 0, a.is_system ? 1 : 0, a.parent_id || null,
+           a.created_at, a.updated_at, a.updated_at || now]
+        )
+      }
+    })
+  },
+
   async replaceAllJournals(entries: Array<JournalEntry & { lines?: JournalLine[] }>): Promise<void> {
     const userId = getCurrentUserId()
     await run('DELETE FROM journal_entries WHERE user_id = ?', [userId])

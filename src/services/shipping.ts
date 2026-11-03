@@ -176,6 +176,29 @@ export const shippingService = {
         note: note || null,
       })
 
+    // Update status transaksi yang terkait dengan delivery order ini
+    // Mapping: delivery_order.status -> transaction.transaction_status
+    // - 'disiapkan' -> 'disiapkan'
+    // - 'dikirim' -> 'dikirim'
+    // - 'selesai' -> 'selesai'
+    if (status === 'disiapkan' || status === 'dikirim' || status === 'selesai') {
+      // Ambil daftar transaction_id yang terkait dengan DO ini
+      const { data: links } = await supabase
+        .from('delivery_order_transactions')
+        .select('transaction_id')
+        .eq('delivery_order_id', id)
+
+      const transactionIds = (links || []).map(l => l.transaction_id)
+
+      if (transactionIds.length > 0) {
+        // Update transaction_status untuk semua transaksi terkait
+        await supabase
+          .from('transactions')
+          .update({ transaction_status: status })
+          .in('id', transactionIds)
+      }
+    }
+
     return data as DeliveryOrder
   },
 

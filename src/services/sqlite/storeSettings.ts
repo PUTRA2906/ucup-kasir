@@ -150,6 +150,48 @@ export const sqliteStoreSettingsService = {
     })
   },
 
+  async mergeAll(records: StoreSettings[]): Promise<void> {
+    if (records.length === 0) return
+    const userId = getCurrentUserId()
+    await transaction(async (tx) => {
+      for (const r of records) {
+        const existing = await tx.query<{ sync_status: string }>(
+          'SELECT sync_status FROM store_settings WHERE id = ?',
+          [r.id]
+        )
+
+        if (existing.length > 0 && existing[0].sync_status !== 'synced') {
+          continue
+        }
+
+        await tx.run(
+          `INSERT OR REPLACE INTO store_settings (id, user_id, store_name, store_subtitle,
+                   store_address, store_phone, store_email, tax_enabled, tax_rate, currency,
+                   receipt_footer, default_credit_limit, loading_rate_per_sack, created_at, updated_at, sync_status, updated_at_local)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+          [
+            r.id,
+            r.user_id ?? userId,
+            r.store_name,
+            r.store_subtitle ?? null,
+            r.store_address ?? null,
+            r.store_phone ?? null,
+            r.store_email ?? null,
+            r.tax_enabled ? 1 : 0,
+            r.tax_rate ?? 0,
+            r.currency ?? 'IDR',
+            r.receipt_footer ?? null,
+            r.default_credit_limit ?? 0,
+            r.loading_rate_per_sack ?? 0,
+            r.created_at,
+            r.updated_at,
+            r.updated_at,
+          ]
+        )
+      }
+    })
+  },
+
   mapRow(r: any): StoreSettings {
     return {
       id: r.id,

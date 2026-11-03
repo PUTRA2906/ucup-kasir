@@ -58,6 +58,92 @@ if (credit > 0) {
 }
 ```
 
+## Solusi
+
+**Prinsip:** Jika sudah filter di query, tidak perlu conditional lagi di logic.
+
+Karena kita sudah filter **hanya akun `1-1000`**, maka:
+- Semua transaksi yang diambil **pasti** dari akun Kas
+- Semua transaksi Kas **pasti** menggunakan method 'tunai'
+- Tidak perlu lagi cek `account?.code === '1-1000'`
+- Langsung set `method: 'tunai'`
+
+## Perbaikan yang Dilakukan (31 Oktober 2026)
+
+**File:** `src/services/dailyCash.ts`
+
+### 1. Fungsi `getDailyCashTransactions()` (Baris 194-218)
+
+**Sebelum:**
+```typescript
+if (debit > 0) {
+  transactions.push({
+    method: account?.code === '1-1000' ? 'tunai' : 'transfer',  // ❌ Salah
+    ...
+  })
+}
+
+if (credit > 0) {
+  transactions.push({
+    method: account?.code === '1-1000' ? 'tunai' : 'transfer',  // ❌ Salah
+    ...
+  })
+}
+```
+
+**Sesudah:**
+```typescript
+if (debit > 0) {
+  transactions.push({
+    method: 'tunai',  // ✅ Benar: semua dari akun 1-1000 adalah tunai
+    ...
+  })
+}
+
+if (credit > 0) {
+  transactions.push({
+    method: 'tunai',  // ✅ Benar: semua dari akun 1-1000 adalah tunai
+    ...
+  })
+}
+```
+
+### 2. Fungsi `getDailyCashSummary()` (Baris 91-105)
+
+**Sebelum:**
+```typescript
+for (const line of journalLines || []) {
+  const account = cashAccounts?.find(a => a.id === line.account_id)
+  
+  if (debit > 0) {
+    if (account?.code === '1-1000') tunai_in += debit
+    else transfer_in += debit  // ❌ Tidak mungkin terjadi
+  }
+  if (credit > 0) {
+    cashOut += credit
+    if (account?.code === '1-1000') tunai_out += credit
+    else transfer_out += credit  // ❌ Tidak mungkin terjadi
+  }
+}
+```
+
+**Sesudah:**
+```typescript
+for (const line of journalLines || []) {
+  const debit = Number(line.debit || 0)
+  const credit = Number(line.credit || 0)
+  
+  // Semua transaksi dari akun 1-1000 (Kas) adalah tunai
+  if (debit > 0) {
+    tunai_in += debit  // ✅ Langsung tunai
+  }
+  if (credit > 0) {
+    cashOut += credit
+    tunai_out += credit  // ✅ Langsung tunai
+  }
+}
+```
+
 ## Perbedaan Akun
 
 | Kode Akun | Nama Akun | Metode Pembayaran | Laporan Terkait |
@@ -65,35 +151,57 @@ if (credit > 0) {
 | `1-1000`  | Kas       | Tunai             | Mutasi Kas      |
 | `1-1010`  | Bank      | Transfer          | Mutasi Bank     |
 
-## Perbaikan yang Dilakukan
+## Dampak Perbaikan
 
-1. **File diubah**: `src/services/dailyCash.ts`
-   - Fungsi `getDailyCashSummary()`: Mengganti `.in('code', ['1-1000', '1-1010'])` → `.eq('code', '1-1000')`
-   - Fungsi `getDailyCashTransactions()`: Mengganti `.in('code', ['1-1000', '1-1010'])` → `.eq('code', '1-1000')`
-
-2. **Dampak**:
-   - ✅ Laporan Mutasi Kas sekarang hanya menampilkan transaksi tunai
-   - ✅ Transaksi transfer hanya muncul di Mutasi Bank (jika ada)
-   - ✅ Logika method detection (`account?.code === '1-1000' ? 'tunai' : 'transfer'`) tetap berfungsi dengan benar
+- ✅ Laporan Mutasi Kas sekarang **hanya** menampilkan transaksi tunai
+- ✅ Tidak ada lagi transaksi "Transfer" di laporan Kas
+- ✅ Konsisten di web dan Android
+- ✅ Summary (tunai_in, tunai_out) akurat
+- ✅ Transfer tetap muncul di Mutasi Bank (seperti seharusnya)
 
 ## Testing Checklist
 
 - [x] Type check berhasil
-- [ ] Laporan Mutasi Kas hanya menampilkan transaksi tunai
-- [ ] Transaksi transfer tidak muncul di Mutasi Kas
-- [ ] Summary (tunai_in, tunai_out) akurat tanpa transfer
-- [ ] Tidak ada regresi di fitur lain
+- [x] Perbaikan logika method detection
+- [x] Perbaikan summary calculation
+- [ ] Test manual di Android: Mutasi Kas hanya tampil tunai
+- [ ] Test manual di web: Mutasi Kas hanya tampil tunai
+- [ ] Verifikasi Mutasi Bank masih berfungsi normal
 
 ## File Terkait
 
-- Service: `src/services/dailyCash.ts`
-- View: `src/views/Reports/DailyCashReport.vue`
-- Chart of Accounts: `1-1000` (Kas), `1-1010` (Bank)
+- `src/services/dailyCash.ts` - Service utama yang diperbaiki
+- `src/views/Reports/DailyCashReport.vue` - View laporan mutasi kas
+- `src/views/Reports/DailyBankReport.vue` - View laporan mutasi bank (referensi)
 
-## Catatan
+## Catatan Penting
 
-Jika di masa depan perlu laporan yang menggabungkan Kas dan Bank, buat service/report terpisah dengan nama yang jelas seperti "Mutasi Kas & Bank" atau "Arus Kas Gabungan" agar tidak membingungkan user.
+### Mengapa Bug Ini Terjadi?
+
+1. **Copy-paste dari laporan bank** yang memang perlu conditional
+2. **Defensive coding berlebihan** - tidak trust filter sendiri
+3. **Edge case handling** yang salah - mencoba handle kondisi yang tidak mungkin
+
+### Pelajaran
+
+- ✅ **Trust your filter** - Jika sudah filter di query, tidak perlu conditional lagi
+- ✅ **KISS principle** - Jangan over-engineering dengan conditional yang tidak perlu
+- ✅ **Code smell** - Conditional yang tidak pernah ter-trigger adalah red flag
+- ✅ **Konsistensi** - Pastikan logic sesuai dengan filter yang digunakan
+
+### Catatan untuk Developer
+
+Jika di masa depan perlu laporan yang menggabungkan Kas dan Bank:
+1. Buat service/report terpisah dengan nama jelas ("Mutasi Kas & Bank")
+2. Gunakan filter `.in('code', ['1-1000', '1-1010'])` 
+3. **Baru** gunakan conditional untuk detect method
+4. Jangan modifikasi laporan existing yang sudah jelas scope-nya
+
+## Riwayat Perbaikan
+
+- **Perbaikan Pertama** (tanggal tidak diketahui): Filter akun dari `.in(['1-1000', '1-1010'])` → `.eq('1-1000')`
+- **Perbaikan Kedua** (31 Oktober 2026): Logic method detection dari conditional → hardcoded 'tunai'
 
 ## Tanggal Perbaikan
 
-31 Oktober 2026
+31 Oktober 2026 - Perbaikan final logic method detection

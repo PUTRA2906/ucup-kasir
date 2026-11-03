@@ -276,6 +276,30 @@ export const sqliteShippingService = {
           [row.vehicle_id, vPayload, now]
         )
       }
+
+      // Update status transaksi yang terkait dengan delivery order ini
+      // Mapping: delivery_order.status -> transaction.transaction_status
+      if (status === 'disiapkan' || status === 'dikirim' || status === 'selesai') {
+        const txRows = await tx.query<any>(
+          `SELECT transaction_id FROM delivery_order_transactions WHERE delivery_order_id = ?`,
+          [id]
+        )
+
+        for (const txRow of txRows) {
+          await tx.run(
+            `UPDATE transactions SET transaction_status = ?, updated_at = ?, sync_status = 'pending', updated_at_local = ?
+             WHERE id = ? AND user_id = ?`,
+            [status, now, now, txRow.transaction_id, userId]
+          )
+
+          const txPayload = JSON.stringify({ id: txRow.transaction_id, transaction_status: status, updated_at: now })
+          await tx.run(
+            `INSERT INTO sync_queue (operation, table_name, record_id, payload, created_at)
+             VALUES ('UPDATE', 'transactions', ?, ?, ?)`,
+            [txRow.transaction_id, txPayload, now]
+          )
+        }
+      }
     })
 
     const order = await this.getDeliveryOrder(id)
@@ -503,6 +527,31 @@ export const sqliteShippingService = {
          r.capacity_kg, r.status, r.is_active ? 1 : 0, r.created_at, r.updated_at, r.updated_at || now]
       )
     }
+  },
+
+  async mergeVehicles(records: Vehicle[]): Promise<void> {
+    if (records.length === 0) return
+    const userId = getCurrentUserId()
+    const now = nowIso()
+    await transaction(async (tx) => {
+      for (const r of records) {
+        const existing = await tx.query<{ sync_status: string }>(
+          'SELECT sync_status FROM vehicles WHERE id = ?',
+          [r.id]
+        )
+
+        if (existing.length > 0 && existing[0].sync_status !== 'synced') {
+          continue
+        }
+
+        await tx.run(
+          `INSERT OR REPLACE INTO vehicles (id, user_id, plate_number, vehicle_type, brand, capacity_kg, status, is_active, created_at, updated_at, sync_status, updated_at_local)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+          [r.id, r.user_id || userId, r.plate_number, r.vehicle_type, r.brand || null,
+           r.capacity_kg, r.status, r.is_active ? 1 : 0, r.created_at, r.updated_at, r.updated_at || now]
+        )
+      }
+    })
   },
 
   async replaceAllDeliveryOrders(records: Array<DeliveryOrder & { items?: DeliveryItem[]; tracking?: DeliveryTracking[] }>): Promise<void> {
