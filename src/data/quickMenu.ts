@@ -73,6 +73,14 @@ export const DEFAULT_QUICK_MENU: QuickMenuItem[] = [
     iconPath: 'M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4',
   },
   {
+    id: 'daily-profit',
+    to: '/reports/daily-profit',
+    label: 'Keuntungan Harian',
+    description: 'Laporan laba bersih harian yang bisa diambil',
+    iconClass: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-500',
+    iconPath: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+  },
+  {
     id: 'transaction-profit',
     to: '/reports/transaction-profit',
     label: 'Laba/Tx',
@@ -328,6 +336,7 @@ export const GROUP_MAP: Record<string, string> = {
   'price-matrix': 'Penjualan',
   transactions: 'Penjualan',
   returns: 'Penjualan',
+  'daily-profit': 'Penjualan',
   'transaction-profit': 'Penjualan',
   // Keuangan
   'finance-dashboard': 'Keuangan',
@@ -366,6 +375,7 @@ export const SUBGROUP_MAP: Record<string, string> = {
   'price-matrix': 'Pelanggan',
   transactions: 'Transaksi',
   returns: 'Transaksi',
+  'daily-profit': 'Transaksi',
   'transaction-profit': 'Transaksi',
   // Keuangan
   'finance-dashboard': 'Ringkasan',

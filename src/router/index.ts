@@ -339,6 +339,14 @@ const router = createRouter({
       },
     },
     {
+      path: '/reports',
+      name: 'Reports Menu',
+      component: () => import('../views/Reports/ReportsIndex.vue'),
+      meta: {
+        title: 'Laporan',
+      },
+    },
+    {
       path: '/reports/sales',
       name: 'Sales Report',
       component: () => import('../views/Reports/SalesReport.vue'),
@@ -352,6 +360,14 @@ const router = createRouter({
       component: () => import('../views/Reports/ProfitLossReport.vue'),
       meta: {
         title: 'Laporan Laba Rugi',
+      },
+    },
+    {
+      path: '/reports/daily-profit',
+      name: 'Daily Profit Report',
+      component: () => import('../views/Reports/DailyProfitReport.vue'),
+      meta: {
+        title: 'Laporan Keuntungan Harian',
       },
     },
     {

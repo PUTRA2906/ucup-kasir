@@ -512,21 +512,31 @@ export const salesReportEnhancedService = {
     startDate?: string,
     endDate?: string
   ): Promise<{ realizedProfit: number; unrealizedProfit: number }> {
-    // Get item payment allocations
+    // Get transaction data untuk ambil diskon
+    const { data: txn, error: txError } = await supabase
+      .from('transactions')
+      .select('discount')
+      .eq('id', transactionId)
+      .single()
+
+    if (txError) {
+      console.error('Error fetching transaction:', txError)
+      return this.calculateRealizedProfitFallback(items, returns)
+    }
+
+    const transactionDiscount = txn?.discount || 0
+
+    // Get item payment allocations with payment date from transaction_payments
     let query = supabase
       .from('transaction_item_payments')
-      .select('item_id, allocated_amount, payment_date')
+      .select(`
+        item_id,
+        allocated_amount,
+        payment:transaction_payments!inner(payment_date)
+      `)
       .eq('transaction_id', transactionId)
 
-    // ✅ NEW: Filter pembayaran berdasarkan periode
-    if (startDate) {
-      query = query.gte('payment_date', startDate)
-    }
-    if (endDate) {
-      query = query.lte('payment_date', endDate + 'T23:59:59')
-    }
-
-    const { data: itemPayments, error } = await query
+    const { data: itemPaymentsRaw, error } = await query
 
     if (error) {
       console.error('Error fetching item payments:', error)
@@ -534,14 +544,28 @@ export const salesReportEnhancedService = {
       return this.calculateRealizedProfitFallback(items, returns)
     }
 
+    // Filter berdasarkan payment_date (dari join)
+    let itemPayments = itemPaymentsRaw || []
+    if (startDate || endDate) {
+      itemPayments = itemPayments.filter((ip: any) => {
+        const paymentDate = ip.payment?.payment_date
+        if (!paymentDate) return false
+
+        if (startDate && paymentDate < startDate) return false
+        if (endDate && paymentDate > endDate) return false
+
+        return true
+      })
+    }
+
     // Map: item_id -> total_paid
     const paidByItem = new Map<string, number>()
-    ;(itemPayments || []).forEach((ip) => {
+    itemPayments.forEach((ip: any) => {
       const existing = paidByItem.get(ip.item_id) || 0
       paidByItem.set(ip.item_id, existing + Number(ip.allocated_amount))
     })
 
-    // Map: product_id -> returned_qty & returned_cogs
+    // Map: product_id -> total returned (untuk distribusi retur)
     const returnsByProduct = new Map<string, { qty: number; cogs: number; value: number }>()
     returns.forEach((r: any) => {
       r.items?.forEach((item: any) => {
@@ -557,6 +581,9 @@ export const salesReportEnhancedService = {
     let totalProfit = 0
     let realizedProfit = 0
 
+    // Hitung total subtotal untuk alokasi diskon proporsional
+    const totalSubtotal = items.reduce((sum, item) => sum + (item.subtotal || 0), 0)
+
     // Hitung per item
     items.forEach((item: any) => {
       const itemId = item.id
@@ -565,13 +592,29 @@ export const salesReportEnhancedService = {
       const qty = item.quantity || 0
       const subtotal = item.subtotal || 0
 
-      // COGS & return untuk item ini
+      // COGS item ini
       const itemCogs = priceBuy * qty
-      const returnData = returnsByProduct.get(productId) || { qty: 0, cogs: 0, value: 0 }
-      const netSubtotal = subtotal - returnData.value
-      const netCogs = itemCogs - returnData.cogs
 
-      // Laba item (setelah dikurangi retur)
+      // Alokasi diskon proporsional dari transaksi
+      const itemDiscount = totalSubtotal > 0 ? (subtotal / totalSubtotal) * transactionDiscount : 0
+
+      // Alokasi retur proporsional - berdasarkan product_id
+      const returnData = returnsByProduct.get(productId) || { qty: 0, cogs: 0, value: 0 }
+
+      // Hitung proporsi retur untuk item ini (jika ada beberapa item dengan product sama)
+      // Asumsi: retur dibagi rata ke semua item dengan product_id yang sama
+      const sameProductItems = items.filter(i => i.product_id === productId)
+      const totalQtySameProduct = sameProductItems.reduce((sum, i) => sum + (i.quantity || 0), 0)
+      const itemReturnRatio = totalQtySameProduct > 0 ? qty / totalQtySameProduct : 0
+
+      const itemReturnValue = returnData.value * itemReturnRatio
+      const itemReturnCogs = returnData.cogs * itemReturnRatio
+
+      // Revenue bersih item = subtotal - diskon proporsional - retur proporsional
+      const netSubtotal = subtotal - itemDiscount - itemReturnValue
+      const netCogs = itemCogs - itemReturnCogs
+
+      // Laba item (setelah dikurangi diskon & retur)
       const itemProfit = netSubtotal - netCogs
       totalProfit += itemProfit
 
@@ -579,7 +622,6 @@ export const salesReportEnhancedService = {
       const paidAmount = paidByItem.get(itemId) || 0
 
       // Laba terealisasi item = profit * (paid / subtotal bersih)
-      // Gunakan netSubtotal agar denominator konsisten dengan laba
       const realizationRatio = netSubtotal > 0 ? Math.min(paidAmount / netSubtotal, 1) : 0
       const itemRealizedProfit = itemProfit * realizationRatio
 

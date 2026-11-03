@@ -276,6 +276,7 @@ const menuGroups = [
         name: "Laporan",
         icon: PieChartIcon,
         subItems: [
+          { name: "Keuntungan Harian", path: "/reports/daily-profit", pro: false },
           { name: "Laporan Penjualan", path: "/reports/sales", pro: false },
           { name: "Laporan Laba Rugi", path: "/reports/profit-loss", pro: false },
           { name: "Laba Per Transaksi", path: "/reports/transaction-profit", pro: false },

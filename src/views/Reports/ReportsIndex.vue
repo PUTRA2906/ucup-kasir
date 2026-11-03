@@ -15,6 +15,25 @@
 
       <!-- Report Cards Grid -->
       <div class="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-6">
+        <!-- Keuntungan Harian -->
+        <router-link
+          to="/reports/daily-profit"
+          class="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 transition hover:shadow-lg active:scale-95 md:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+        >
+          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 to-amber-600"></div>
+          <div class="flex flex-col items-start gap-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition group-hover:scale-110 dark:bg-amber-500/10">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-gray-900 md:text-base dark:text-white">Keuntungan Harian</h3>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Laba bersih per hari yang bisa diambil</p>
+            </div>
+          </div>
+        </router-link>
+
         <!-- Laporan Penjualan -->
         <router-link
           to="/reports/sales"
