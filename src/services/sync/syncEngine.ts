@@ -846,11 +846,12 @@ const CHILD_FK_RELS: Record<string, Array<{ col: string; parent: string }>> = {
   ],
 }
 
-function classifyQueueError(e: any): 'notnull' | 'foreignkey' | 'unknown' | 'other' {
+function classifyQueueError(e: any): 'notnull' | 'foreignkey' | 'uniqueconstraint' | 'unknown' | 'other' {
   const code = String(e?.code || '')
   const msg = String(e?.message || '')
   if (code === '23502' || /null value in column/i.test(msg)) return 'notnull'
   if (code === '23503' || /foreign key/i.test(msg)) return 'foreignkey'
+  if (code === '23505' || /unique constraint|duplicate key/i.test(msg)) return 'uniqueconstraint'
   // Payload tidak bisa di-parse / tabel tak dikenal → mustahil pernah sukses.
   if (e instanceof SyntaxError || /Tabel tidak dikenal|Unexpected (token|end)|JSON/i.test(msg)) return 'unknown'
   return 'other'
@@ -959,6 +960,59 @@ async function handleQueueFailure(
       await dropQueueItem(item, `${e?.message || 'not-null'} — data lokal tidak ditemukan`)
       return 'dropped'
     }
+    return 'dropped'
+  }
+
+  if (kind === 'uniqueconstraint') {
+    // Unique constraint violation (sku, barcode, email, dll)
+    // Kemungkinan: duplikat data di lokal atau race condition
+    const msg = String(e?.message || '')
+    logEvent({
+      level: 'warn',
+      source: 'sync',
+      event: 'unique_constraint_violation',
+      message: `${item.table_name} ${item.record_id}: ${msg}`,
+    })
+
+    // Untuk operasi DELETE, tidak mungkin terjadi unique constraint
+    if (item.operation === 'DELETE') {
+      await dropQueueItem(item, `unique constraint (unexpected for DELETE): ${msg}`)
+      return 'dropped'
+    }
+
+    // Recovery: clear field yang conflict (set null) lalu retry
+    try {
+      const rows = await query<Record<string, any>>(
+        `SELECT * FROM "${item.table_name}" WHERE id = ?`,
+        [item.record_id]
+      )
+      if (rows.length > 0) {
+        const row = rows[0]
+        // Clear potential unique fields yang conflict
+        if (item.table_name === 'products') {
+          row.sku = null
+          row.barcode = null
+        } else if (item.table_name === 'customers') {
+          row.phone = null
+          row.email = null
+        }
+        // Re-queue dengan field yang di-clear
+        await removeFromSyncQueue(item.id)
+        await addToSyncQueue('INSERT', item.table_name, item.record_id, row)
+        logEvent({
+          level: 'info',
+          source: 'sync',
+          event: 'unique_constraint_cleared',
+          message: `${item.table_name} ${item.record_id}: unique fields cleared, re-queued`,
+        })
+        return 'dropped' // Will be picked up as fresh item
+      }
+    } catch {
+      /* recovery gagal, drop saja */
+    }
+
+    // Jika recovery gagal, drop item
+    await dropQueueItem(item, `unique constraint: ${msg}`)
     return 'dropped'
   }
 
