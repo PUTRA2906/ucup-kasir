@@ -27,15 +27,14 @@ export const dailyBankService = {
     const { data: user } = await supabase.auth.getUser()
     if (!user.user) throw new Error('Not authenticated')
 
-    const startOfDay = new Date(date + 'T00:00:00Z')
-    const endOfDay = new Date(date + 'T23:59:59.999Z')
+    // ✅ FIX: Filter by DATE column only (payment_date adalah DATE type)
 
     // ── Sumber tunggal: transaction_payments (hanya transfer) ────────────────
     const { data: payments, error: paymentsErr } = await supabase
       .from('transaction_payments')
       .select('amount, transaction:transactions!inner(status)')
-      .gte('payment_date', startOfDay.toISOString())
-      .lte('payment_date', endOfDay.toISOString())
+      .gte('payment_date', date)
+      .lte('payment_date', date)
       .eq('user_id', user.user.id)
       .eq('payment_method', 'transfer')
       .not('transaction.status', 'in', '("void","batal")')
@@ -48,8 +47,8 @@ export const dailyBankService = {
     const { count: salesCount } = await supabase
       .from('transactions')
       .select('id', { count: 'exact', head: true })
-      .gte('created_at', startOfDay.toISOString())
-      .lte('created_at', endOfDay.toISOString())
+      .gte('created_at', date + 'T00:00:00')
+      .lte('created_at', date + 'T23:59:59.999')
       .eq('payment_method', 'transfer')
       .neq('status', 'void')
       .neq('status', 'batal')
@@ -71,8 +70,8 @@ export const dailyBankService = {
         .select('debit, credit, journal:journal_entries!inner(entry_date, status, reference_type)')
         .in('account_id', bankAccountIds)
         .eq('journal.status', 'posted')
-        .gte('journal.entry_date', startOfDay.toISOString())
-        .lte('journal.entry_date', endOfDay.toISOString())
+        .gte('journal.entry_date', date)
+        .lte('journal.entry_date', date)
         .not('journal.reference_type', 'in', '("transaction","payment")')
 
       for (const line of journalLines || []) {
@@ -101,15 +100,16 @@ export const dailyBankService = {
 
     const transactions: BankTransaction[] = []
 
-    const startOfDay = new Date(date + 'T00:00:00Z')
-    const endOfDay = new Date(date + 'T23:59:59.999Z')
+    // ✅ FIX: Filter by DATE column only (payment_date adalah DATE type)
+    const startOfDayCheck = date + 'T00:00:00'
+    const endOfDayCheck = date + 'T23:59:59.999'
 
     // ── Sumber tunggal: transaction_payments (hanya transfer) ────────────────
     const { data: payments, error: paymentsErr } = await supabase
       .from('transaction_payments')
       .select('id, amount, created_at, transaction:transactions!inner(transaction_number, customer_name, created_at, status)')
-      .gte('payment_date', startOfDay.toISOString())
-      .lte('payment_date', endOfDay.toISOString())
+      .gte('payment_date', date)
+      .lte('payment_date', date)
       .eq('user_id', user.user.id)
       .eq('payment_method', 'transfer')
       .not('transaction.status', 'in', '("void","batal")')
@@ -120,7 +120,7 @@ export const dailyBankService = {
     for (const payment of payments || []) {
       const tx = payment.transaction as any
       const txCreatedAt: string = tx?.created_at || ''
-      const txSameDay = txCreatedAt >= startOfDay.toISOString() && txCreatedAt <= endOfDay.toISOString()
+      const txSameDay = txCreatedAt >= startOfDayCheck && txCreatedAt <= endOfDayCheck
       const isInitial = txSameDay && payment.created_at === txCreatedAt
 
       transactions.push({
@@ -150,8 +150,8 @@ export const dailyBankService = {
         .select('id, debit, credit, created_at, journal:journal_entries!inner(journal_number, entry_date, description, status, reference_type)')
         .in('account_id', bankAccountIds)
         .eq('journal.status', 'posted')
-        .gte('journal.entry_date', startOfDay.toISOString())
-        .lte('journal.entry_date', endOfDay.toISOString())
+        .gte('journal.entry_date', date)
+        .lte('journal.entry_date', date)
         .not('journal.reference_type', 'in', '("transaction","payment")')
 
       for (const line of journalLines || []) {

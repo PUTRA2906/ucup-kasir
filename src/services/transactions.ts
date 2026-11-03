@@ -140,6 +140,11 @@ export const transactionsService = {
     notes?: string,
     paymentDate?: string
   ): Promise<string> {
+    // Jika paymentDate tidak diberikan, gunakan tanggal lokal hari ini (bukan server UTC)
+    const effectivePaymentDate = paymentDate && paymentDate.trim() !== ''
+      ? paymentDate
+      : new Date().toLocaleDateString('en-CA') // Format YYYY-MM-DD di timezone lokal
+
     // Debug: log parameter yang dikirim
     console.log('addPayment called with:', {
       transactionId,
@@ -147,7 +152,7 @@ export const transactionsService = {
       paymentMethod,
       notes,
       paymentDate,
-      p_payment_date: paymentDate && paymentDate.trim() !== '' ? paymentDate : null
+      effectivePaymentDate,
     })
 
     const { data, error } = await supabase.rpc('add_transaction_payment', {
@@ -155,7 +160,7 @@ export const transactionsService = {
       p_amount: amount,
       p_payment_method: paymentMethod,
       p_notes: notes || null,
-      p_payment_date: paymentDate && paymentDate.trim() !== '' ? paymentDate : null,
+      p_payment_date: effectivePaymentDate,
     })
 
     if (error) throw error
@@ -163,6 +168,11 @@ export const transactionsService = {
   },
 
   async create(input: TransactionInput): Promise<string> {
+    // Jika transaction_date tidak diberikan, gunakan tanggal lokal hari ini (bukan server UTC)
+    const effectiveTransactionDate = input.transaction_date && input.transaction_date.trim() !== ''
+      ? input.transaction_date
+      : new Date().toLocaleDateString('en-CA') // Format YYYY-MM-DD di timezone lokal
+
     const { data, error } = await supabase.rpc('create_transaction', {
       p_customer_id: input.customer_id || null,
       p_customer_name: input.customer_name || null,
@@ -172,7 +182,7 @@ export const transactionsService = {
       p_notes: input.notes || null,
       p_items: input.items,
       p_return_amount: input.return_amount || 0,
-      p_transaction_date: input.transaction_date || new Date().toISOString(),
+      p_transaction_date: effectiveTransactionDate,
     })
 
     if (error) throw error

@@ -172,7 +172,7 @@ const emit = defineEmits<{
 }>()
 
 const isOpen = ref(props.modelValue)
-const paymentDate = ref(new Date().toISOString().split('T')[0])
+const paymentDate = ref(new Date().toLocaleDateString('en-CA')) // Format YYYY-MM-DD di timezone lokal
 const amountInput = ref('')
 const paymentMethod = ref('tunai')
 const notes = ref('')
@@ -222,7 +222,7 @@ watch(
   (newValue) => {
     isOpen.value = newValue
     if (newValue) {
-      paymentDate.value = new Date().toISOString().split('T')[0]
+      paymentDate.value = new Date().toLocaleDateString('en-CA') // Format YYYY-MM-DD di timezone lokal
       amountInput.value = ''
       paymentMethod.value = 'tunai'
       notes.value = ''

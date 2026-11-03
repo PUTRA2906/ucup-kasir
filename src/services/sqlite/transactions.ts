@@ -356,7 +356,8 @@ export const sqliteTransactionsService = {
     const userId = getCurrentUserId()
     const paymentId = uuid()
     const now = nowIso()
-    const pDate = paymentDate || now.split('T')[0]
+    // ✅ FIX: Gunakan tanggal lokal, bukan UTC
+    const pDate = paymentDate || new Date().toLocaleDateString('en-CA')
     let autoJournalId: string | null = null
 
     await transaction(async (tx) => {

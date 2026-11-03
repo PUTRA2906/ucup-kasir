@@ -32,16 +32,17 @@ export const dailyCashService = {
     const { data: user } = await supabase.auth.getUser()
     if (!user.user) throw new Error('Not authenticated')
 
-    const startOfDay = new Date(date + 'T00:00:00Z')
-    const endOfDay = new Date(date + 'T23:59:59.999Z')
+    // ✅ FIX: Filter by DATE column only (tidak pakai timestamp dengan timezone)
+    // payment_date adalah DATE type, bukan TIMESTAMP
+    // Query: WHERE payment_date >= '2026-11-04' AND payment_date <= '2026-11-04'
 
     // ── Sumber tunggal: transaction_payments (HANYA TUNAI) ───────────────────
     // Hanya ambil pembayaran tunai untuk laporan Mutasi Kas
     const { data: payments, error: paymentsErr } = await supabase
       .from('transaction_payments')
       .select('amount, payment_method, transaction:transactions!inner(status)')
-      .gte('payment_date', startOfDay.toISOString())
-      .lte('payment_date', endOfDay.toISOString())
+      .gte('payment_date', date)
+      .lte('payment_date', date)
       .eq('user_id', user.user.id)
       .eq('payment_method', 'tunai')
       .not('transaction.status', 'in', '("void","batal")')
@@ -59,8 +60,8 @@ export const dailyCashService = {
     const { count: salesCount } = await supabase
       .from('transactions')
       .select('id', { count: 'exact', head: true })
-      .gte('created_at', startOfDay.toISOString())
-      .lte('created_at', endOfDay.toISOString())
+      .gte('created_at', date + 'T00:00:00')
+      .lte('created_at', date + 'T23:59:59.999')
       .neq('status', 'void')
       .neq('status', 'batal')
       .eq('user_id', user.user.id)
@@ -84,8 +85,8 @@ export const dailyCashService = {
         .select('debit, credit, account_id, journal:journal_entries!inner(entry_date, status, reference_type)')
         .in('account_id', cashAccountIds)
         .eq('journal.status', 'posted')
-        .gte('journal.entry_date', startOfDay.toISOString())
-        .lte('journal.entry_date', endOfDay.toISOString())
+        .gte('journal.entry_date', date)
+        .lte('journal.entry_date', date)
         .not('journal.reference_type', 'in', '("transaction","payment")')
 
       for (const line of journalLines || []) {
@@ -127,15 +128,15 @@ export const dailyCashService = {
 
     const transactions: CashTransaction[] = []
 
-    const startOfDay = new Date(date + 'T00:00:00Z')
-    const endOfDay = new Date(date + 'T23:59:59.999Z')
+    // ✅ FIX: Filter by DATE column only (payment_date adalah DATE type)
+    // ✅ FIX: Untuk created_at (timestamp), gunakan date string tanpa 'Z' agar tidak force UTC
 
     // ── Sumber tunggal: transaction_payments (HANYA TUNAI) ───────────────────
     const { data: payments, error: paymentsErr } = await supabase
       .from('transaction_payments')
       .select('id, amount, payment_method, created_at, transaction:transactions!inner(transaction_number, customer_name, created_at, status)')
-      .gte('payment_date', startOfDay.toISOString())
-      .lte('payment_date', endOfDay.toISOString())
+      .gte('payment_date', date)
+      .lte('payment_date', date)
       .eq('user_id', user.user.id)
       .eq('payment_method', 'tunai')
       .not('transaction.status', 'in', '("void","batal")')
@@ -143,12 +144,16 @@ export const dailyCashService = {
 
     if (paymentsErr) throw paymentsErr
 
+    // Untuk check apakah transaksi dibuat hari yang sama
+    const startOfDayCheck = date + 'T00:00:00'
+    const endOfDayCheck = date + 'T23:59:59.999'
+
     for (const payment of payments || []) {
       const tx = payment.transaction as any
 
       // Payment pertama dari transaksi yang dibuat hari ini = label 'Penjualan'
       const txCreatedAt: string = tx?.created_at || ''
-      const txSameDay = txCreatedAt >= startOfDay.toISOString() && txCreatedAt <= endOfDay.toISOString()
+      const txSameDay = txCreatedAt >= startOfDayCheck && txCreatedAt <= endOfDayCheck
       const isInitial = txSameDay && payment.created_at === txCreatedAt
 
       transactions.push({
@@ -179,8 +184,8 @@ export const dailyCashService = {
         .select('id, debit, credit, account_id, created_at, journal:journal_entries!inner(journal_number, entry_date, description, status, reference_type)')
         .in('account_id', cashAccountIds)
         .eq('journal.status', 'posted')
-        .gte('journal.entry_date', startOfDay.toISOString())
-        .lte('journal.entry_date', endOfDay.toISOString())
+        .gte('journal.entry_date', date)
+        .lte('journal.entry_date', date)
         .not('journal.reference_type', 'in', '("transaction","payment")')
 
       for (const line of journalLines || []) {

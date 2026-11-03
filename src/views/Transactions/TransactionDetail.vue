@@ -1015,6 +1015,24 @@ const formatPaymentMethod = (value: string) => {
 }
 
 const formatDate = (dateString: string) => {
+  // ✅ FIX: Handle DATE type (YYYY-MM-DD) tanpa timezone conversion
+  // Untuk timestamp (ISO dengan waktu), parse normal
+  // Untuk date-only (YYYY-MM-DD), parse sebagai local date bukan UTC
+
+  if (!dateString) return '-'
+
+  // Check if it's a date-only string (YYYY-MM-DD) without time
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    // Parse sebagai local date (tambahkan T00:00:00 tanpa Z)
+    const date = new Date(dateString + 'T00:00:00')
+    return date.toLocaleDateString('id-ID', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
+  // Timestamp normal (dengan waktu)
   const date = new Date(dateString)
   return date.toLocaleDateString('id-ID', {
     year: 'numeric',
@@ -1024,6 +1042,22 @@ const formatDate = (dateString: string) => {
 }
 
 const formatDateShort = (dateString: string) => {
+  // ✅ FIX: Handle DATE type (YYYY-MM-DD) tanpa timezone conversion
+
+  if (!dateString) return '-'
+
+  // Check if it's a date-only string (YYYY-MM-DD) without time
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    // Parse sebagai local date (tambahkan T00:00:00 tanpa Z)
+    const date = new Date(dateString + 'T00:00:00')
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
+  }
+
+  // Timestamp normal (dengan waktu)
   const date = new Date(dateString)
   return date.toLocaleDateString('id-ID', {
     day: '2-digit',
