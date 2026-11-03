@@ -339,6 +339,13 @@ export const sqliteSalesReportEnhancedService = {
   ): Promise<{ realizedProfit: number; unrealizedProfit: number }> {
     const userId = getCurrentUserId()
 
+    // ✅ FIX: Jika paidInPeriod diberikan (untuk laporan periode tertentu),
+    // langsung gunakan fallback proporsional karena query transaction_item_payments
+    // tidak bisa difilter per-periode (data agregat semua pembayaran).
+    if (paidInPeriod !== undefined) {
+      return this.calculateRealizedProfitFallback(transactionId, items, returns, userId, paidInPeriod)
+    }
+
     // Ambil data transaksi untuk mendapatkan total diskon
     const txRow = await queryOne<any>(
       `SELECT discount FROM transactions WHERE id = ? AND user_id = ?`,
@@ -351,7 +358,7 @@ export const sqliteSalesReportEnhancedService = {
 
     // Ambil alokasi pembayaran per item
     const itemPaymentRows = await query<any>(
-      `SELECT item_id, allocated_amount FROM transaction_item_payments 
+      `SELECT item_id, allocated_amount FROM transaction_item_payments
        WHERE transaction_id = ? AND user_id = ?`,
       [transactionId, userId]
     )
@@ -360,7 +367,7 @@ export const sqliteSalesReportEnhancedService = {
     // fallback ke perhitungan proporsional berdasarkan paid_amount transaksi.
     const hasItemPayments = itemPaymentRows.length > 0
     if (!hasItemPayments) {
-      return this.calculateRealizedProfitFallback(transactionId, items, returns, userId, paidInPeriod)
+      return this.calculateRealizedProfitFallback(transactionId, items, returns, userId, undefined)
     }
 
     // Map: item_id -> total_paid
