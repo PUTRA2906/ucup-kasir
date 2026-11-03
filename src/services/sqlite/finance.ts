@@ -245,11 +245,15 @@ export const sqliteFinanceService = {
         throw new Error(`Total debit (${totalDebit}) tidak sama dengan total kredit (${totalCredit})`)
       }
 
+      // Buat entry_date dengan waktu sekarang (bukan midnight)
+      // Format: "YYYY-MM-DD HH:MM:SS" agar jurnal manual muncul paling atas
+      const entryDateTime = `${input.entry_date} ${new Date().toTimeString().slice(0, 8)}`
+
       // Simpan header
       await tx.run(
         `INSERT INTO journal_entries (id, user_id, journal_number, entry_date, description, reference_type, status, created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, 'manual', 'posted', ?, ?, 'pending', ?)`,
-        [journalId, userId, journalNumber, input.entry_date, input.description, now, now, now]
+        [journalId, userId, journalNumber, entryDateTime, input.description, now, now, now]
       )
 
       // Simpan baris

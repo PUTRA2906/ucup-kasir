@@ -97,7 +97,8 @@ export const useTransactionsStore = defineStore('transactions', () => {
     transactionId: string,
     amount: number,
     paymentMethod: string,
-    notes?: string
+    notes?: string,
+    paymentDate?: string
   ) {
     loading.value = true
     error.value = null
@@ -106,7 +107,8 @@ export const useTransactionsStore = defineStore('transactions', () => {
         transactionId,
         amount,
         paymentMethod,
-        notes
+        notes,
+        paymentDate
       )
       // Update local state: refresh transaksi terkait
       const index = transactions.value.findIndex((t) => t.id === transactionId)

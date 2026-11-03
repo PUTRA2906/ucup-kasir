@@ -180,22 +180,22 @@ const formError = ref<string | null>(null)
 
 interface Line {
   account_id: string
-  debit: number
-  credit: number
+  debit: number | null
+  credit: number | null
 }
 
 const form = ref<{ entry_date: string; description: string; lines: Line[] }>({
   // Tanggal lokal — jangan toISOString() (UTC = kemarin sebelum jam 07:00 WIB)
   entry_date: localTodayStr(),
   description: '',
-  lines: [{ account_id: '', debit: 0, credit: 0 }],
+  lines: [{ account_id: '', debit: null, credit: null }],
 })
 
 const totalDebit = computed(() => form.value.lines.reduce((s, l) => s + (l.debit || 0), 0))
 const totalCredit = computed(() => form.value.lines.reduce((s, l) => s + (l.credit || 0), 0))
 
 const addLine = () => {
-  form.value.lines.push({ account_id: '', debit: 0, credit: 0 })
+  form.value.lines.push({ account_id: '', debit: null, credit: null })
 }
 
 const removeLine = (index: number) => {
@@ -253,15 +253,16 @@ const handleSubmit = async () => {
 
   saving.value = true
   try {
-    const entryDate = new Date(form.value.entry_date + 'T00:00:00').toISOString()
+    // Kirim tanggal saja (DATE string YYYY-MM-DD) tanpa konversi timezone
+    // Postgres akan treat sebagai midnight di server timezone
     const id = await store.createJournal({
-      entry_date: entryDate,
+      entry_date: form.value.entry_date,
       description: form.value.description.trim(),
       lines: lines.map((l) => ({ account_id: l.account_id, debit: l.debit || 0, credit: l.credit || 0 })),
     })
     // Jurnal sudah tersimpan — refresh daftar boleh gagal tanpa mengorbankan navigasi
     await store.fetchJournals().catch(() => {})
-    router.push(`/finance/journal/${id}`)
+    router.replace(`/finance/journal/${id}`)
   } catch (e: any) {
     formError.value = e.message
   } finally {

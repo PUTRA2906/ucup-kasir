@@ -6,7 +6,7 @@
     <MobilePageHeader title="Laporan Laba Rugi" subtitle="Analisis Penjualan & Profitabilitas">
       <template #actions>
         <button
-          @click="showFilterModal = true"
+          @click="openDatePicker"
           class="flex h-8 w-8 items-center justify-center rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.03]"
         >
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,26 +37,16 @@
 
     <!-- Content -->
     <div v-else class="space-y-4 pb-24 md:pb-6">
-      <!-- Filter Pills (Mobile) -->
+      <!-- Filter Pill (Mobile) -->
       <div class="flex items-center gap-2 overflow-x-auto pb-2 md:hidden">
         <button
-          @click="showFilterModal = true"
+          @click="openDatePicker"
           class="flex items-center gap-1.5 rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 whitespace-nowrap dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
         >
           <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           {{ formatDateRange() }}
-        </button>
-        <button
-          v-if="store.paymentStatusFilter !== 'all'"
-          @click="store.setPaymentStatusFilter('all'); store.fetchReport()"
-          class="flex items-center gap-1.5 rounded-xl border border-blue-500 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-600 whitespace-nowrap dark:bg-blue-500/10 dark:text-blue-400"
-        >
-          {{ getPaymentStatusLabel(store.paymentStatusFilter) }}
-          <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
         </button>
       </div>
 
@@ -364,182 +354,15 @@
       </div>
     </div>
 
-    <!-- Filter Modal -->
-    <div
-      v-if="showFilterModal"
-      class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 md:items-center"
-      @click.self="showFilterModal = false"
-    >
-      <div
-        class="w-full max-w-md rounded-t-3xl bg-white p-6 md:rounded-2xl dark:bg-gray-900"
-        @click.stop
-      >
-        <div class="mb-4 flex items-center justify-between">
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Filter Laporan</h3>
-          <button
-            @click="showFilterModal = false"
-            class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div class="space-y-4">
-          <!-- Mode Toggle: Per Periode vs Per Bulan -->
-          <div class="flex rounded-xl border border-gray-200 p-1 dark:border-gray-700">
-            <button
-              @click="filterMode = 'range'"
-              class="flex-1 rounded-lg py-2 text-sm font-medium transition"
-              :class="filterMode === 'range'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'"
-            >
-              Per Periode
-            </button>
-            <button
-              @click="filterMode = 'month'"
-              class="flex-1 rounded-lg py-2 text-sm font-medium transition"
-              :class="filterMode === 'month'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'"
-            >
-              Per Bulan
-            </button>
-          </div>
-
-          <!-- Mode Per Bulan -->
-          <div v-if="filterMode === 'month'" class="space-y-3">
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Bulan</label>
-                <SelectField
-                  :model-value="tempMonth"
-                  :options="monthOptions"
-                  title="Pilih Bulan"
-                  placeholder="Pilih bulan"
-                  button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-                  @update:model-value="tempMonth = Number($event)"
-                />
-              </div>
-              <div>
-                <label class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Tahun</label>
-                <SelectField
-                  :model-value="tempYear"
-                  :options="yearOptions"
-                  title="Pilih Tahun"
-                  placeholder="Pilih tahun"
-                  button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-                  @update:model-value="tempYear = Number($event)"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Mode Per Periode (range) -->
-          <template v-else>
-            <!-- Quick Date Range -->
-            <div>
-              <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Rentang Waktu</label>
-              <div class="grid grid-cols-2 gap-2">
-                <button
-                  @click="setQuickDateRange('today')"
-                  class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                  :class="isQuickDateRange('today') ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
-                >
-                  Hari Ini
-                </button>
-                <button
-                  @click="setQuickDateRange('7days')"
-                  class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                  :class="isQuickDateRange('7days') ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
-                >
-                  7 Hari
-                </button>
-                <button
-                  @click="setQuickDateRange('30days')"
-                  class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                  :class="isQuickDateRange('30days') ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
-                >
-                  30 Hari
-                </button>
-                <button
-                  @click="setQuickDateRange('thisMonth')"
-                  class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                  :class="isQuickDateRange('thisMonth') ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
-                >
-                  Bulan Ini
-                </button>
-                <button
-                  @click="setQuickDateRange('allTime')"
-                  class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                  :class="isQuickDateRange('allTime') ? 'border-purple-500 bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400' : 'text-gray-700 dark:text-gray-300'"
-                >
-                  Sepanjang Masa
-                </button>
-              </div>
-            </div>
-
-            <!-- Custom Date Range -->
-            <div>
-              <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Custom Range</label>
-              <DateRangeField
-                v-model:start="tempDateRange.start"
-                v-model:end="tempDateRange.end"
-                title="Pilih Rentang Tanggal"
-                placeholder="Pilih periode custom"
-                button-class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-              />
-            </div>
-          </template>
-
-          <!-- Status Pembayaran -->
-          <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Status Pembayaran</label>
-            <div class="grid grid-cols-2 gap-2">
-              <button
-                @click="tempPaymentStatus = 'all'"
-                class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                :class="tempPaymentStatus === 'all' ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'"
-              >
-                Semua
-              </button>
-              <button
-                @click="tempPaymentStatus = 'lunas'"
-                class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                :class="tempPaymentStatus === 'lunas' ? 'border-emerald-500 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'text-gray-700 dark:text-gray-300'"
-              >
-                Lunas
-              </button>
-              <button
-                @click="tempPaymentStatus = 'belum_lunas'"
-                class="rounded-xl border border-gray-300 px-3 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-                :class="tempPaymentStatus === 'belum_lunas' ? 'border-amber-500 bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' : 'text-gray-700 dark:text-gray-300'"
-              >
-                Tempo/Piutang
-              </button>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex gap-2 pt-2">
-            <button
-              @click="resetFilters"
-              class="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-            >
-              Reset
-            </button>
-            <button
-              @click="applyFilters"
-              class="flex-1 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-500"
-            >
-              Terapkan Filter
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Hidden DateRangeField (Triggered Programmatically) -->
+    <DateRangeField
+      v-model:start="tempDateRange.start"
+      v-model:end="tempDateRange.end"
+      title="Pilih Rentang Tanggal"
+      placeholder="Semua tanggal"
+      ref="dateRangeRef"
+      button-class="hidden"
+    />
   </AdminLayout>
 </template>
 
@@ -550,68 +373,30 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import DateRangeField from '@/components/common/DateRangeField.vue'
-import SelectField from '@/components/common/SelectField.vue'
 import { useSalesReportEnhancedStore } from '@/stores/salesReportEnhanced'
 import { useFinanceStore } from '@/stores/finance'
-import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
-import { localDateStr, localTodayStr, localDateOffsetStr } from '@/utils/date'
+import { localDateStr, localTodayStr } from '@/utils/date'
 
 const router = useRouter()
 const store = useSalesReportEnhancedStore()
 const financeStore = useFinanceStore()
 
-const showFilterModal = ref(false)
+const dateRangeRef = ref()
 
-// Auto register/unregister modal di navigation stack
-useAutoNavigationStack(showFilterModal, 'profit-loss-filter-modal')
-
-// ── Filter mode: 'range' = per periode custom, 'month' = per bulan ────────────
-const filterMode = ref<'range' | 'month'>('range')
-
-// Tanggal sekarang (lokal)
-const nowDate = new Date()
-const currentMonthNum = nowDate.getMonth() + 1  // 1-12
-const currentYearNum = nowDate.getFullYear()
-
-// Picker bulan/tahun sementara
-const tempMonth = ref(currentMonthNum)
-const tempYear = ref(currentYearNum)
-
-const monthOptions = computed(() => [
-  { value: 1, label: 'Januari', disabled: isFuturePeriod(1, tempYear.value) },
-  { value: 2, label: 'Februari', disabled: isFuturePeriod(2, tempYear.value) },
-  { value: 3, label: 'Maret', disabled: isFuturePeriod(3, tempYear.value) },
-  { value: 4, label: 'April', disabled: isFuturePeriod(4, tempYear.value) },
-  { value: 5, label: 'Mei', disabled: isFuturePeriod(5, tempYear.value) },
-  { value: 6, label: 'Juni', disabled: isFuturePeriod(6, tempYear.value) },
-  { value: 7, label: 'Juli', disabled: isFuturePeriod(7, tempYear.value) },
-  { value: 8, label: 'Agustus', disabled: isFuturePeriod(8, tempYear.value) },
-  { value: 9, label: 'September', disabled: isFuturePeriod(9, tempYear.value) },
-  { value: 10, label: 'Oktober', disabled: isFuturePeriod(10, tempYear.value) },
-  { value: 11, label: 'November', disabled: isFuturePeriod(11, tempYear.value) },
-  { value: 12, label: 'Desember', disabled: isFuturePeriod(12, tempYear.value) },
-])
-
-const yearOptions = computed(() => {
-  const years: { value: number; label: string; disabled: boolean }[] = []
-  for (let y = currentYearNum - 3; y <= currentYearNum; y++) {
-    years.push({ value: y, label: String(y), disabled: y > currentYearNum })
-  }
-  return years
+// Temp filter state — tanggal LOKAL (lihat @/utils/date), bukan UTC
+const tempDateRange = ref({
+  start: localTodayStr(),
+  end: localTodayStr(),
 })
 
-const isFuturePeriod = (month: number, year: number): boolean => {
-  if (year > currentYearNum) return true
-  if (year === currentYearNum && month > currentMonthNum) return true
-  return false
+// Fungsi untuk membuka date picker
+const openDatePicker = () => {
+  // Trigger click pada button tersembunyi di DateRangeField
+  const button = dateRangeRef.value?.$el?.querySelector('button')
+  if (button) {
+    button.click()
+  }
 }
-
-// Jika user ganti tahun dan bulan terpilih jadi masa depan, reset ke bulan terakhir yang valid
-watch(tempYear, (newYear) => {
-  if (isFuturePeriod(tempMonth.value, newYear)) {
-    tempMonth.value = newYear === currentYearNum ? currentMonthNum : 12
-  }
-})
 
 // Saldo beban operasional per akun (dari jurnal, modul finance)
 const expenseBalanceByAccount = ref<Record<string, number>>({})
@@ -624,13 +409,6 @@ const totalExpenses = computed(() => {
 })
 const netProfit = computed(() => store.summary.gross_profit - totalExpenses.value)
 const realizedNetProfit = computed(() => store.summary.realized_profit - totalExpenses.value)
-
-// Temp filter state — tanggal LOKAL (lihat @/utils/date), bukan UTC
-const tempDateRange = ref({
-  start: localTodayStr(),
-  end: localTodayStr(),
-})
-const tempPaymentStatus = ref<'lunas' | 'belum_lunas' | 'all'>('all')
 
 // ── Pagination untuk Daftar Transaksi ────────────────────────────────────────
 const currentTransactionPage = ref(1)
@@ -678,104 +456,13 @@ const formatDateRange = () => {
   return `${start.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} - ${end.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`
 }
 
-const getPaymentStatusLabel = (status: string) => {
-  const labels: Record<string, string> = {
-    lunas: 'Lunas',
-    belum_lunas: 'Tempo/Piutang',
-    all: 'Semua',
-  }
-  return labels[status] || status
-}
-
-const setQuickDateRange = (range: string) => {
-  const now = new Date()
-  const endDate = localTodayStr()
-
-  switch (range) {
-    case 'today':
-      tempDateRange.value = { start: endDate, end: endDate }
-      break
-    case '7days':
-      tempDateRange.value = {
-        start: localDateOffsetStr(-6),
-        end: endDate,
-      }
-      break
-    case '30days':
-      tempDateRange.value = {
-        start: localDateOffsetStr(-29),
-        end: endDate,
-      }
-      break
-    case 'thisMonth':
-      tempDateRange.value = {
-        start: localDateStr(new Date(now.getFullYear(), now.getMonth(), 1)),
-        end: endDate,
-      }
-      break
-    case 'allTime':
-      tempDateRange.value = { start: '', end: '' }
-      break
-  }
-}
-
-const isQuickDateRange = (range: string) => {
-  const today = localTodayStr()
-  const now = new Date()
-  const { start, end } = tempDateRange.value
-
-  switch (range) {
-    case 'today':
-      return start === today && end === today
-    case '7days':
-      return start === localDateOffsetStr(-6) && end === today
-    case '30days':
-      return start === localDateOffsetStr(-29) && end === today
-    case 'thisMonth':
-      return (
-        start === localDateStr(new Date(now.getFullYear(), now.getMonth(), 1)) &&
-        end === today
-      )
-    case 'allTime':
-      return start === '' && end === ''
-    default:
-      return false
-  }
-}
-
-const applyFilters = () => {
-  let startDate: string
-  let endDate: string
-
-  if (filterMode.value === 'month') {
-    if (isFuturePeriod(tempMonth.value, tempYear.value)) return
-    const mm = String(tempMonth.value).padStart(2, '0')
-    const lastDay = new Date(tempYear.value, tempMonth.value, 0).getDate()
-    // Jika bulan berjalan, batasi sampai hari ini
-    const maxDay =
-      tempYear.value === currentYearNum && tempMonth.value === currentMonthNum
-        ? nowDate.getDate()
-        : lastDay
-    const dd = String(maxDay).padStart(2, '0')
-    startDate = `${tempYear.value}-${mm}-01`
-    endDate = `${tempYear.value}-${mm}-${dd}`
-  } else {
-    startDate = tempDateRange.value.start
-    endDate = tempDateRange.value.end
-  }
-
-  store.setDateRange(startDate, endDate)
-  store.setPaymentStatusFilter(tempPaymentStatus.value)
+// Auto-apply filter saat tanggal berubah
+watch(tempDateRange, (newRange) => {
+  store.setDateRange(newRange.start, newRange.end)
+  store.setPaymentStatusFilter('all')
   store.fetchReport()
-  loadExpenseBalances(startDate, endDate)
-  showFilterModal.value = false
-}
-
-const resetFilters = () => {
-  const today = localTodayStr()
-  tempDateRange.value = { start: today, end: today }
-  tempPaymentStatus.value = 'all'
-}
+  loadExpenseBalances(newRange.start, newRange.end)
+}, { deep: true })
 
 onMounted(() => {
   // Set default ke hari ini

@@ -481,7 +481,7 @@ const handleSave = async (status: 'draft' | 'disiapkan') => {
       targetId,
       validLoad.map((li) => ({ product_name: li.product_name.trim(), quantity: li.quantity, unit_price: li.unit_price || 0 }))
     )
-    router.push(`/shipping/deliveries/${targetId}`)
+    router.replace(`/shipping/deliveries/${targetId}`)
   } catch (e: any) {
     toast.error('Gagal!', e.message)
   }

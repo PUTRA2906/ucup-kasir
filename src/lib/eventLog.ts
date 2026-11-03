@@ -20,7 +20,7 @@ import { isNativeApp } from '@/lib/platform'
 
 export type EventLevel = 'info' | 'warn' | 'error'
 
-export type EventSource = 'sqlite' | 'supabase' | 'sync' | 'auth' | 'network' | 'app'
+export type EventSource = 'sqlite' | 'supabase' | 'sync' | 'auth' | 'network' | 'app' | 'scheduled_sync'
 
 export interface EventLogEntry {
   uid: string

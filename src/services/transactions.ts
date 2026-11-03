@@ -137,13 +137,25 @@ export const transactionsService = {
     transactionId: string,
     amount: number,
     paymentMethod: string,
-    notes?: string
+    notes?: string,
+    paymentDate?: string
   ): Promise<string> {
+    // Debug: log parameter yang dikirim
+    console.log('addPayment called with:', {
+      transactionId,
+      amount,
+      paymentMethod,
+      notes,
+      paymentDate,
+      p_payment_date: paymentDate && paymentDate.trim() !== '' ? paymentDate : null
+    })
+
     const { data, error } = await supabase.rpc('add_transaction_payment', {
       p_transaction_id: transactionId,
       p_amount: amount,
       p_payment_method: paymentMethod,
       p_notes: notes || null,
+      p_payment_date: paymentDate && paymentDate.trim() !== '' ? paymentDate : null,
     })
 
     if (error) throw error

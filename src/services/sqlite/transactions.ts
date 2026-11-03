@@ -84,6 +84,7 @@ export const sqliteTransactionsService = {
       amount: r.amount,
       payment_method: r.payment_method,
       notes: r.notes ?? undefined,
+      payment_date: r.payment_date ?? undefined,
       created_at: r.created_at,
     }))
   },
@@ -349,11 +350,13 @@ export const sqliteTransactionsService = {
     transactionId: string,
     amount: number,
     paymentMethod: string,
-    notes?: string
+    notes?: string,
+    paymentDate?: string
   ): Promise<string> {
     const userId = getCurrentUserId()
     const paymentId = uuid()
     const now = nowIso()
+    const pDate = paymentDate || now.split('T')[0]
     let autoJournalId: string | null = null
 
     await transaction(async (tx) => {
@@ -370,11 +373,11 @@ export const sqliteTransactionsService = {
         throw new Error(`Pembayaran melebihi sisa cicilan (sisa ${txn.remaining_amount})`)
       }
 
-      // Catat pembayaran
+      // Catat pembayaran dengan tanggal kustom
       await tx.run(
         `INSERT INTO transaction_payments (id, user_id, transaction_id, amount, payment_method, notes, payment_date, created_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
-        [paymentId, userId, transactionId, amount, paymentMethod || 'tunai', notes ?? null, now.split('T')[0], now, now]
+        [paymentId, userId, transactionId, amount, paymentMethod || 'tunai', notes ?? null, pDate, now, now]
       )
       
       // ✅ NEW: Auto-allocate payment ke items (FIFO)

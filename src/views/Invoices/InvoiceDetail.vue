@@ -161,7 +161,7 @@
                   <div>
                     <p class="font-semibold text-gray-700 leading-tight dark:text-gray-200">Pembayaran {{ activity.sequence }}</p>
                     <p class="text-[10px] text-gray-500 dark:text-gray-400">
-                      {{ formatDateShort(activity.created_at) }} &bull; {{ formatPaymentMethod(activity.payment_method) }}
+                      {{ formatDateShort(activity.payment_date || activity.created_at) }} &bull; {{ formatPaymentMethod(activity.payment_method) }}
                     </p>
                   </div>
                   <span class="font-extrabold font-outfit text-success-500 dark:text-success-400">
@@ -498,7 +498,7 @@
                 <div class="flex items-center justify-between gap-2">
                   <div class="min-w-0">
                     <p class="truncate text-sm text-gray-700 dark:text-gray-300">
-                      {{ formatDate(payment.created_at) }}
+                      {{ formatDate(payment.payment_date || payment.created_at) }}
                     </p>
                     <p class="text-xs text-gray-400 dark:text-gray-500">
                       {{ formatPaymentMethod(payment.payment_method) }}
@@ -979,13 +979,15 @@ const handleAddPayment = async (payload: {
   amount: number
   payment_method: string
   notes?: string
+  payment_date: string
 }) => {
   try {
     await transactionsStore.addPayment(
       invoiceId,
       payload.amount,
       payload.payment_method,
-      payload.notes
+      payload.notes,
+      payload.payment_date
     )
     toast.success('Berhasil!', 'Pembayaran berhasil dicatat')
     transaction.value = await transactionsStore.getTransaction(invoiceId)

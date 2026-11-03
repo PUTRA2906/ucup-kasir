@@ -59,7 +59,57 @@
               </div>
 
               <!-- Body -->
-              <div class="p-4">
+              <div class="relative p-4">
+                <!-- Month/Year Picker Overlay (Centered) -->
+                <div
+                  v-if="showMonthYearPicker"
+                  class="absolute inset-0 z-20 flex items-center justify-center bg-black/50 backdrop-blur-md dark:bg-black/60"
+                  @click.self="showMonthYearPicker = false"
+                >
+                  <div class="w-full max-w-xs rounded-xl border border-gray-200 bg-white p-4 shadow-xl dark:border-gray-700 dark:bg-gray-900">
+                    <!-- Year Navigation -->
+                    <div class="mb-4 flex items-center justify-between">
+                      <button
+                        type="button"
+                        @click="prevYear"
+                        class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+                      >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <span class="text-base font-bold text-gray-900 dark:text-white">{{ viewYear }}</span>
+                      <button
+                        type="button"
+                        @click="nextYear"
+                        class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+                      >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <!-- Month Grid (3 kolom) -->
+                    <div class="grid grid-cols-3 gap-2">
+                      <button
+                        v-for="(month, index) in monthNames"
+                        :key="index"
+                        type="button"
+                        @click="selectMonth(index)"
+                        :class="[
+                          'rounded-lg px-3 py-2.5 text-sm font-medium transition',
+                          viewMonth === index
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                        ]"
+                      >
+                        {{ month }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Preset cepat -->
                 <div class="mb-4 flex gap-1.5 overflow-x-auto pb-1">
                   <button
@@ -92,9 +142,13 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                       </svg>
                     </button>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">
+                    <button
+                      type="button"
+                      @click="showMonthYearPicker = true"
+                      class="rounded-lg px-3 py-1 text-sm font-bold text-gray-900 transition hover:bg-gray-100 dark:text-white dark:hover:bg-white/[0.05]"
+                    >
                       {{ monthNames[viewMonth] }} {{ viewYear }}
-                    </span>
+                    </button>
                     <button
                       type="button"
                       @click="nextMonth"
@@ -196,6 +250,7 @@ const emit = defineEmits<{
 }>()
 
 const open = ref(false)
+const showMonthYearPicker = ref(false)
 
 const now = new Date()
 const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
@@ -290,6 +345,23 @@ const nextMonth = () => {
   }
 }
 
+const prevYear = () => {
+  viewYear.value--
+}
+
+const nextYear = () => {
+  viewYear.value++
+}
+
+const selectMonth = (month: number) => {
+  viewMonth.value = month
+  showMonthYearPicker.value = false
+}
+
+const selectYear = (year: number) => {
+  viewYear.value = year
+}
+
 const goToView = (d: Date) => {
   viewYear.value = d.getFullYear()
   viewMonth.value = d.getMonth()
@@ -370,7 +442,10 @@ const cancel = () => {
 
 // Sinkronkan draft + tampilan bulan setiap kali modal dibuka
 watch(open, (isOpen) => {
-  if (!isOpen) return
+  if (!isOpen) {
+    showMonthYearPicker.value = false
+    return
+  }
   draftStart.value = parseYMD(props.start)
   draftEnd.value = parseYMD(props.end)
   const anchor = draftStart.value || now

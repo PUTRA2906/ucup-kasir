@@ -44,6 +44,20 @@
             </div>
 
             <form @submit.prevent="submit" class="space-y-5">
+              <!-- Payment Date -->
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                  Tanggal Pembayaran <span class="text-error-500">*</span>
+                </label>
+                <DateField
+                  v-model="paymentDate"
+                  title="Pilih Tanggal Pembayaran"
+                  placeholder="Pilih tanggal"
+                  :hide-chevron="true"
+                  button-class="date-field-button h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                />
+              </div>
+
               <!-- Amount -->
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -123,7 +137,7 @@
                 </button>
                 <button
                   type="submit"
-                  :disabled="isSubmitting || amount <= 0 || amount > remaining"
+                  :disabled="isSubmitting || amount <= 0 || amount > remaining || !paymentDate"
                   class="flex-1 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 focus:outline-hidden focus:ring-3 focus:ring-brand-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {{ isSubmitting ? 'Menyimpan...' : 'Simpan Pembayaran' }}
@@ -139,6 +153,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
+import DateField from './DateField.vue'
 
 interface Props {
   modelValue: boolean
@@ -153,10 +168,11 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  submit: [payload: { amount: number; payment_method: string; notes?: string }]
+  submit: [payload: { amount: number; payment_method: string; notes?: string; payment_date: string }]
 }>()
 
 const isOpen = ref(props.modelValue)
+const paymentDate = ref(new Date().toISOString().split('T')[0])
 const amountInput = ref('')
 const paymentMethod = ref('tunai')
 const notes = ref('')
@@ -206,6 +222,7 @@ watch(
   (newValue) => {
     isOpen.value = newValue
     if (newValue) {
+      paymentDate.value = new Date().toISOString().split('T')[0]
       amountInput.value = ''
       paymentMethod.value = 'tunai'
       notes.value = ''
@@ -226,12 +243,13 @@ const close = () => {
 }
 
 const submit = () => {
-  if (isSubmitting.value || amount.value <= 0 || amount.value > props.remaining) return
+  if (isSubmitting.value || amount.value <= 0 || amount.value > props.remaining || !paymentDate.value) return
   isSubmitting.value = true
   emit('submit', {
     amount: amount.value,
     payment_method: paymentMethod.value,
     notes: notes.value.trim() || undefined,
+    payment_date: paymentDate.value,
   })
 }
 </script>

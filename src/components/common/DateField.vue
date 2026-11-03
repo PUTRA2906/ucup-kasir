@@ -11,7 +11,7 @@
         </svg>
         <span class="truncate">{{ display }}</span>
       </span>
-      <svg class="h-4 w-4 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg v-if="!hideChevron" class="h-4 w-4 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
       </svg>
     </button>
@@ -41,6 +41,8 @@ interface Props {
   placeholder?: string
   /** Kelas tambahan untuk tombol (mis. padding/width sesuai konteks) */
   buttonClass?: string
+  /** Sembunyikan icon chevron/arrow (default false) */
+  hideChevron?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -49,6 +51,7 @@ const props = withDefaults(defineProps<Props>(), {
   showTime: false,
   placeholder: 'Pilih tanggal',
   buttonClass: '',
+  hideChevron: false,
 })
 
 const emit = defineEmits<{

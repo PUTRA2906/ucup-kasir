@@ -351,11 +351,20 @@ const filteredJournals = computed(() => {
     })
   }
 
-  // Urutkan dari tanggal terbaru
+  // Urutkan dari tanggal terbaru, lalu waktu pembuatan terbaru
   return [...journals].sort((a, b) => {
     const dateA = new Date(a.entry_date).getTime()
     const dateB = new Date(b.entry_date).getTime()
-    return dateB - dateA
+
+    // Primary sort: entry_date (terbaru dulu)
+    if (dateB !== dateA) {
+      return dateB - dateA
+    }
+
+    // Secondary sort: created_at (terbaru dulu) untuk jurnal dengan tanggal sama
+    const createdA = new Date(a.created_at).getTime()
+    const createdB = new Date(b.created_at).getTime()
+    return createdB - createdA
   })
 })
 

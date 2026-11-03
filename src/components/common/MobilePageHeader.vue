@@ -46,6 +46,7 @@ interface Props {
   title: string
   subtitle?: string
   backTo?: string
+  fallbackRoute?: string
   iconType?: 'arrow' | 'close'
   hideBackButton?: boolean
 }
@@ -53,6 +54,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   subtitle: '',
   backTo: '',
+  fallbackRoute: '',
   iconType: 'arrow',
   hideBackButton: false,
 })
@@ -64,17 +66,35 @@ const emit = defineEmits<{
 const router = useRouter()
 
 function handleBack() {
+  // 1. Jika ada backTo eksplisit, gunakan itu
   if (props.backTo) {
     router.push(props.backTo)
-  } else {
-    // Emit event dulu untuk custom handler
-    emit('back')
+    return
+  }
 
-    // Jika tidak ada listener @back, gunakan router.back() sebagai fallback
-    // Vue akan mengabaikan emit jika tidak ada listener
-    const hasBackListener = !!getCurrentInstance()?.vnode.props?.onBack
-    if (!hasBackListener) {
-      router.back()
+  // 2. Emit event dulu untuk custom handler
+  emit('back')
+
+  // 3. Cek apakah ada listener @back
+  const hasBackListener = !!getCurrentInstance()?.vnode.props?.onBack
+  if (hasBackListener) {
+    return // Custom handler akan menangani
+  }
+
+  // 4. Smart back: cek apakah ada history yang valid
+  // Jika history length > 1, gunakan router.back()
+  // Jika tidak ada atau terlalu pendek, gunakan fallbackRoute atau parent route
+  if (window.history.length > 2) {
+    router.back()
+  } else {
+    // Fallback ke route parent atau fallbackRoute
+    if (props.fallbackRoute) {
+      router.push(props.fallbackRoute)
+    } else {
+      // Ekstrak parent route dari current path
+      const currentPath = router.currentRoute.value.path
+      const parentPath = currentPath.split('/').slice(0, -1).join('/') || '/'
+      router.push(parentPath)
     }
   }
 }

@@ -18,45 +18,60 @@
       </MobilePageHeader>
 
       <!-- ===== MOBILE VIEW ===== -->
-      <div class="md:hidden space-y-4 pb-28">
+      <div class="md:hidden space-y-3 pb-28">
 
-        <!-- Search -->
-        <div class="relative">
-          <svg class="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            v-model="mobileSearch"
-            type="text"
-            placeholder="Cari nama produk, SKU..."
-            class="w-full rounded-2xl border border-gray-200 bg-white pl-10 pr-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none dark:border-gray-800 dark:bg-white/[0.03] dark:text-white dark:placeholder-gray-500"
-          />
+        <!-- Search Bar -->
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-white/[0.03] dark:border-gray-800">
+          <div class="relative">
+            <svg class="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              v-model="mobileSearch"
+              type="text"
+              placeholder="Cari nama produk atau SKU..."
+              class="w-full bg-transparent pl-11 pr-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none dark:text-white dark:placeholder-gray-500"
+            />
+          </div>
         </div>
 
         <!-- Filter Chips -->
-        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs pb-0.5">
-          <button
-            v-for="chip in mobileFilterChips"
-            :key="chip.value"
-            @click="mobileStockFilter = chip.value"
-            class="whitespace-nowrap rounded-xl px-3.5 py-1.5 font-semibold transition"
-            :class="mobileStockFilter === chip.value
-              ? 'bg-brand-600 text-white shadow-sm'
-              : 'border border-gray-200 bg-white text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400'"
-          >
-            {{ chip.label }} ({{ chip.count }})
-          </button>
+        <div class="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm dark:bg-white/[0.03] dark:border-gray-800">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="h-4 w-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Filter Status</span>
+          </div>
+          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <button
+              v-for="chip in mobileFilterChips"
+              :key="chip.value"
+              @click="mobileStockFilter = chip.value"
+              class="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
+              :class="mobileStockFilter === chip.value
+                ? 'bg-brand-500 text-white shadow-sm'
+                : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'"
+            >
+              {{ chip.label }}
+              <span class="ml-1 opacity-70">({{ chip.count }})</span>
+            </button>
+          </div>
         </div>
 
         <!-- Loading skeleton -->
-        <div v-if="mobileLoading" class="space-y-2.5 animate-pulse">
-          <div v-for="i in 6" :key="i" class="rounded-2xl border border-gray-200 bg-white p-3.5 dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="flex items-center justify-between">
-              <div class="space-y-1.5 flex-1">
-                <div class="h-3.5 w-3/5 rounded bg-gray-200 dark:bg-gray-800"></div>
-                <div class="h-2.5 w-2/5 rounded bg-gray-200 dark:bg-gray-800"></div>
+        <div v-if="mobileLoading" class="space-y-3 animate-pulse">
+          <div v-for="i in 6" :key="i" class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="flex items-start gap-3">
+              <div class="h-16 w-16 rounded-xl bg-gray-200 dark:bg-gray-800"></div>
+              <div class="flex-1 space-y-2">
+                <div class="h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-800"></div>
+                <div class="h-3 w-1/2 rounded bg-gray-200 dark:bg-gray-800"></div>
+                <div class="flex gap-2">
+                  <div class="h-6 w-20 rounded-lg bg-gray-200 dark:bg-gray-800"></div>
+                  <div class="h-6 w-20 rounded-lg bg-gray-200 dark:bg-gray-800"></div>
+                </div>
               </div>
-              <div class="h-6 w-14 rounded-lg bg-gray-200 dark:bg-gray-800"></div>
             </div>
           </div>
         </div>
@@ -64,71 +79,79 @@
         <!-- Empty state -->
         <div
           v-else-if="mobileFilteredProducts.length === 0"
-          class="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center dark:border-gray-700 dark:bg-white/[0.03]"
+          class="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center dark:border-gray-700 dark:bg-white/[0.03]"
         >
-          <svg class="mx-auto h-8 w-8 text-gray-300 dark:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-          <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">Tidak ada produk ditemukan</p>
+          <div class="mx-auto h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center dark:bg-gray-800">
+            <svg class="h-8 w-8 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          </div>
+          <p class="mt-4 text-sm font-medium text-gray-900 dark:text-white">Tidak ada produk</p>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Coba ubah filter atau kata kunci pencarian</p>
         </div>
 
         <!-- Product cards -->
-        <div v-else class="space-y-2.5">
+        <div v-else class="space-y-3">
           <div
             v-for="product in mobilePaginatedProducts"
             :key="product.id"
-            class="rounded-2xl border border-gray-200 bg-white shadow-sm transition active:scale-[0.99] dark:border-gray-800 dark:bg-white/[0.03]"
-            :class="product.stock === 0 ? 'border-error-300 dark:border-error-500/30' : product.stock <= (product.minimum_stock || 10) ? 'border-warning-300 dark:border-warning-500/30' : ''"
+            class="rounded-2xl border bg-white shadow-sm transition-all dark:bg-white/[0.03]"
+            :class="product.stock === 0
+              ? 'border-error-200 dark:border-error-500/30'
+              : product.stock <= (product.minimum_stock || 10)
+              ? 'border-warning-200 dark:border-warning-500/30'
+              : 'border-gray-200 dark:border-gray-800'"
           >
-            <!-- Main row -->
-            <div class="flex items-center justify-between p-3.5" @click="viewProduct(product)">
-              <div class="min-w-0 flex-1">
-                <h2 class="truncate text-xs font-bold leading-snug text-gray-900 dark:text-white">{{ product.name }}</h2>
-                <p class="mt-0.5 text-[10px] text-gray-400 dark:text-gray-500">
-                  {{ product.category?.name || '-' }}
-                  <span v-if="product.sku"> · {{ product.sku }}</span>
-                </p>
-              </div>
-              <div class="ml-3 flex flex-shrink-0 items-center gap-2">
-                <div class="text-right">
+            <!-- Product Info -->
+            <div class="p-4">
+              <!-- Header: Nama & Kategori -->
+              <div class="mb-3">
+                <div class="flex items-start justify-between gap-3 mb-1.5">
+                  <h3 class="text-sm font-bold text-gray-900 dark:text-white leading-tight">
+                    {{ product.name }}
+                  </h3>
                   <span
-                    class="block text-xs font-extrabold"
-                    :class="stockTextClass(product)"
-                  >{{ product.stock }} pcs</span>
-                  <span
-                    class="mt-0.5 inline-block rounded border px-1.5 py-0.5 text-[9px] font-semibold"
+                    class="flex-shrink-0 rounded-lg px-2 py-1 text-[10px] font-bold border"
                     :class="stockBadgeClass(product)"
-                  >{{ stockBadgeLabel(product) }}</span>
-                </div>
-                <button
-                  @click.stop="toggleMobileExpand(product.id)"
-                  class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <svg
-                    class="h-3.5 w-3.5 transition-transform"
-                    :class="{ 'rotate-180': mobileExpanded.includes(product.id) }"
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
                   >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- Expanded detail -->
-            <div
-              v-if="mobileExpanded.includes(product.id)"
-              class="border-t border-gray-100 px-3.5 pb-3.5 pt-3 dark:border-gray-800"
-            >
-              <!-- Harga -->
-              <div class="mb-3 grid grid-cols-2 gap-2">
-                <div class="rounded-xl bg-gray-50 px-3 py-2 dark:bg-gray-900/50">
-                  <span class="block text-[10px] text-gray-400 dark:text-gray-500">Harga Beli</span>
-                  <span class="mt-0.5 block text-xs font-bold text-gray-900 dark:text-white">{{ formatCurrency(product.price_buy) }}</span>
+                    {{ stockBadgeLabel(product) }}
+                  </span>
                 </div>
-                <div class="rounded-xl bg-gray-50 px-3 py-2 dark:bg-gray-900/50">
-                  <span class="block text-[10px] text-gray-400 dark:text-gray-500">Harga Jual</span>
-                  <span class="mt-0.5 block text-xs font-bold text-brand-600 dark:text-brand-400">{{ formatCurrency(product.price_sell) }}</span>
+                <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  <span>{{ product.category?.name || 'Tanpa Kategori' }}</span>
+                  <span v-if="product.sku" class="text-gray-300 dark:text-gray-700">•</span>
+                  <span v-if="product.sku" class="font-mono">{{ product.sku }}</span>
+                </div>
+              </div>
+
+              <!-- Stats Grid -->
+              <div class="grid grid-cols-3 gap-2 mb-3">
+                <!-- Stok -->
+                <div class="rounded-xl bg-gray-50 px-3 py-2 text-center dark:bg-gray-900/50">
+                  <div class="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-0.5">Stok</div>
+                  <div class="text-base font-extrabold" :class="stockTextClass(product)">
+                    {{ product.stock }}
+                  </div>
+                  <div class="text-[9px] text-gray-400 dark:text-gray-500">pcs</div>
+                </div>
+
+                <!-- Harga Beli -->
+                <div class="rounded-xl bg-gray-50 px-3 py-2 text-center dark:bg-gray-900/50">
+                  <div class="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-0.5">Beli</div>
+                  <div class="text-xs font-bold text-gray-900 dark:text-white">
+                    {{ formatCurrencyShort(product.price_buy) }}
+                  </div>
+                </div>
+
+                <!-- Harga Jual -->
+                <div class="rounded-xl bg-brand-50 px-3 py-2 text-center dark:bg-brand-500/10">
+                  <div class="text-[10px] font-medium text-brand-600 dark:text-brand-400 mb-0.5">Jual</div>
+                  <div class="text-xs font-bold text-brand-700 dark:text-brand-300">
+                    {{ formatCurrencyShort(product.price_sell) }}
+                  </div>
                 </div>
               </div>
 
@@ -136,25 +159,26 @@
               <div class="flex items-center gap-2">
                 <button
                   @click="viewProduct(product)"
-                  class="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white py-2 text-[11px] font-semibold text-gray-700 transition active:scale-95 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300"
+                  class="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white py-2.5 text-xs font-semibold text-gray-700 transition active:scale-95 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                 >
-                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                   Detail
                 </button>
                 <button
                   @click="editProduct(product)"
-                  class="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-brand-200 bg-brand-50 py-2 text-[11px] font-semibold text-brand-700 transition active:scale-95 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-400"
+                  class="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-brand-500 py-2.5 text-xs font-semibold text-white transition active:scale-95"
                 >
-                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                   Edit
                 </button>
                 <button
                   @click="deleteProduct(product)"
-                  class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-error-200 bg-error-50 text-error-600 transition active:scale-95 dark:border-error-500/20 dark:bg-error-500/10 dark:text-error-400"
+                  class="flex-shrink-0 flex h-10 w-10 items-center justify-center rounded-xl border border-error-200 bg-error-50 text-error-600 transition active:scale-95 dark:border-error-500/20 dark:bg-error-500/10 dark:text-error-400"
                 >
                   <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -168,24 +192,41 @@
         <!-- Paginasi Mobile -->
         <div
           v-if="mobileFilteredProducts.length > mobilePerPage"
-          class="flex items-center justify-between pt-1 text-xs"
+          class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm dark:bg-white/[0.03] dark:border-gray-800"
         >
-          <span class="text-[11px] text-gray-500 dark:text-gray-400">
-            Hal. <span class="font-bold text-gray-900 dark:text-white">{{ mobilePage }}</span> dari {{ mobileTotalPages }}
-          </span>
-          <div class="flex gap-1.5">
-            <button
-              :disabled="mobilePage <= 1"
-              :class="mobilePage <= 1 ? 'cursor-not-allowed opacity-40' : ''"
-              class="rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-gray-600 transition active:scale-95 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
-              @click="mobilePage--"
-            >« Prev</button>
-            <button
-              :disabled="mobilePage >= mobileTotalPages"
-              :class="mobilePage >= mobileTotalPages ? 'cursor-not-allowed opacity-40' : ''"
-              class="rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-gray-600 transition active:scale-95 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
-              @click="mobilePage++"
-            >Next »</button>
+          <div class="flex items-center justify-between">
+            <div class="text-xs text-gray-500 dark:text-gray-400">
+              Halaman <span class="font-bold text-gray-900 dark:text-white">{{ mobilePage }}</span> dari <span class="font-semibold">{{ mobileTotalPages }}</span>
+              <div class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+                {{ mobileFilteredProducts.length }} produk total
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button
+                :disabled="mobilePage <= 1"
+                @click="mobilePage--"
+                class="rounded-xl border px-4 py-2 text-xs font-semibold transition active:scale-95"
+                :class="mobilePage <= 1
+                  ? 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-900'
+                  : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300'"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                :disabled="mobilePage >= mobileTotalPages"
+                @click="mobilePage++"
+                class="rounded-xl border px-4 py-2 text-xs font-semibold transition active:scale-95"
+                :class="mobilePage >= mobileTotalPages
+                  ? 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-900'
+                  : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300'"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -488,6 +529,17 @@ const stockBadgeLabel = (product: any) => {
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value || 0)
+
+const formatCurrencyShort = (value: number) => {
+  if (!value) return 'Rp 0'
+  if (value >= 1000000) {
+    return `${(value / 1000000).toFixed(1)}jt`.replace('.0', '')
+  }
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(0)}rb`
+  }
+  return `Rp ${value}`
+}
 
 // Category options for desktop dropdown
 const categoryOptions = computed(() => [
