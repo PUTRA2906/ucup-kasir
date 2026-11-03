@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import {
-  downloadAllFromSupabase,
+  downloadIncrementalSync,
   uploadChangesToSupabase,
   uploadAllToSupabase,
   getLastSyncInfo,
@@ -35,7 +35,10 @@ export const useSyncStore = defineStore('sync', () => {
     }
   }
 
-  /** Download semua data dari Supabase ke SQLite (saat login).
+  /** Download data dari Supabase ke SQLite (incremental sync).
+   *
+   * Menggunakan incremental sync yang hanya download data yang berubah.
+   * Fallback otomatis ke full download untuk first sync.
    *
    * (Isu #2) Upload perubahan lokal DULU sebelum download: download
    * men-truncate seluruh SQLite + mengosongkan sync_queue — perubahan yang
@@ -51,15 +54,15 @@ export const useSyncStore = defineStore('sync', () => {
         error.value = msg
         throw new Error(msg)
       }
-      message.value = 'Mengunduh data dari server...'
-      const result = await downloadAllFromSupabase()
+      message.value = 'Mengunduh data dari server (incremental)...'
+      const result = await downloadIncrementalSync()
       if (!result.success) {
         error.value = result.message || 'Gagal mengunduh data'
         throw new Error(error.value)
       }
       message.value = result.downloaded
         ? `${result.downloaded} data berhasil diunduh`
-        : 'Tidak ada data untuk diunduh'
+        : 'Tidak ada perubahan data'
       await loadInfo()
       return result
     } catch (e: any) {

@@ -459,7 +459,7 @@ import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
 import SyncProgressModal from '@/components/common/SyncProgressModal.vue'
 import type { SyncLog } from '@/components/common/SyncProgressModal.vue'
 import { LogoutIcon } from '@/icons'
-import { downloadAllFromSupabase, uploadChangesToSupabase, getLastSyncInfo } from '@/services/sync/syncEngine'
+import { downloadIncrementalSync, uploadChangesToSupabase, getLastSyncInfo } from '@/services/sync/syncEngine'
 import { isNativeApp } from '@/lib/platform'
 
 const settingsStore = useStoreSettingsStore()
@@ -574,9 +574,9 @@ async function handleFullSync() {
     // Step 2: Download data terbaru dari server (100% progress)
     syncCurrentStep.value = 'Mendownload data terbaru...'
     syncProgressPercent.value = 60
-    addSyncLog('info', 'Mengunduh data terbaru dari server')
+    addSyncLog('info', 'Mengunduh data terbaru dari server (incremental sync)')
 
-    const downloadResult = await downloadAllFromSupabase()
+    const downloadResult = await downloadIncrementalSync()
 
     if (!downloadResult.success) {
       addSyncLog('error', `Download gagal: ${downloadResult.message}`)
