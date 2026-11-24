@@ -170,6 +170,25 @@
         </div>
       </div>
 
+      <!-- Quick Action: Laporan Keuangan Lengkap -->
+      <button
+        @click="router.push('/finance/statements')"
+        class="flex w-full items-center gap-3 rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-white p-3.5 text-left shadow-sm transition hover:shadow-md active:scale-[0.99] dark:border-blue-500/30 dark:from-blue-500/10 dark:to-gray-900"
+      >
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6m4 6V7m4 10v-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-bold text-gray-900 dark:text-white">Laporan Keuangan Lengkap</p>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400">Laba rugi · perubahan ekuitas · posisi keuangan</p>
+        </div>
+        <svg class="h-4 w-4 shrink-0 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
       <!-- Akun dengan Saldo Terbesar -->
       <div class="rounded-2xl border border-gray-200 bg-white p-3.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <div class="mb-3 flex items-center justify-between border-b border-gray-200 pb-2 dark:border-gray-700">
@@ -354,7 +373,7 @@ import { useFinanceStore } from '@/stores/finance'
 import { useNavigationStack } from '@/composables/useNavigationStack'
 import { useToast } from '@/composables/useToast'
 import { localTodayStr, localDateOffsetStr, localDateStr } from '@/utils/date'
-import { financeService } from '@/services/finance'
+import { financeServiceAdapter as financeService } from '@/services'
 import type { ClosingPeriod } from '@/types/database'
 
 const router = useRouter()
@@ -388,6 +407,8 @@ const loading = computed(() => store.loading)
 
 const balances = ref<any[]>([])
 const cashFlow = ref<any>({ cashIn: 0, cashOut: 0, netCash: 0, lines: [] })
+// Aktivitas pendapatan/beban periode (tanpa jurnal penutup/penyesuaian)
+const periodActivity = ref<{ totalPendapatan: number; totalBeban: number; labaBersih: number } | null>(null)
 
 const cashBalance = computed(() => {
   const kas = balances.value.find((b) => b.account_code === '1-1000')
@@ -410,16 +431,10 @@ const totalAssets = computed(() =>
   assetBalances.value.reduce((sum, b) => sum + b.balance, 0)
 )
 
-// Laba bersih = pendapatan − beban (dari saldo akun)
-const netProfit = computed(() => {
-  const pendapatan = balances.value
-    .filter((b) => b.account_type === 'pendapatan')
-    .reduce((sum, b) => sum + b.balance, 0)
-  const beban = balances.value
-    .filter((b) => b.account_type === 'beban')
-    .reduce((sum, b) => sum + b.balance, 0)
-  return pendapatan - beban
-})
+// Laba bersih = aktivitas pendapatan − beban periode.
+// PENTING: tidak dihitung dari saldo akun karena jurnal penutup men-nol-kan
+// akun pendapatan/beban (laba akan tampak 0 setelah tutup buku).
+const netProfit = computed(() => periodActivity.value?.labaBersih || 0)
 
 const setPeriod = (start: string, end: string) => {
   startDate.value = start
@@ -433,13 +448,17 @@ const fetchData = async () => {
   const seq = ++fetchSeq
   loadError.value = null
   try {
-    const [bal, cf] = await Promise.all([
+    const [bal, cf, activity] = await Promise.all([
       store.getAccountBalances(endDate.value || undefined),
       store.getCashFlow(startDate.value || undefined, endDate.value || undefined),
+      startDate.value && endDate.value
+        ? store.getPeriodActivity(startDate.value, endDate.value)
+        : Promise.resolve(null),
     ])
     if (seq !== fetchSeq) return
     balances.value = bal
     cashFlow.value = cf
+    periodActivity.value = activity
   } catch (e: any) {
     if (seq !== fetchSeq) return
     loadError.value = e.message || 'Gagal memuat data keuangan'

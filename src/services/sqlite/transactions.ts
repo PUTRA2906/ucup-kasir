@@ -359,6 +359,7 @@ export const sqliteTransactionsService = {
     // ✅ FIX: Gunakan tanggal lokal, bukan UTC
     const pDate = paymentDate || new Date().toLocaleDateString('en-CA')
     let autoJournalId: string | null = null
+    let reclassifyJournalId: string | null = null
 
     await transaction(async (tx) => {
       // Ambil transaksi
@@ -420,6 +421,16 @@ export const sqliteTransactionsService = {
         now,
         paymentMethod
       )
+
+      // Replikasi trigger auto_update_realized_profit (Supabase):
+      // jika periode transaksi sudah ditutup, pindahkan laba 3-3100 → 3-3200.
+      reclassifyJournalId = await sqliteFinanceService.reclassifyRetainedEarnings(
+        tx,
+        userId,
+        amount,
+        transactionId,
+        now
+      )
     })
 
     await addToSyncQueue('INSERT', 'transaction_payments', paymentId, { id: paymentId, transaction_id: transactionId, amount, payment_method: paymentMethod })
@@ -435,7 +446,83 @@ export const sqliteTransactionsService = {
       }
     }
 
+    // Queue jurnal reklasifikasi laba (jika periode transaksi sudah ditutup)
+    if (reclassifyJournalId) {
+      const journal = await sqliteFinanceService.getJournal(reclassifyJournalId)
+      if (journal) {
+        await addToSyncQueue('INSERT', 'journal_entries', reclassifyJournalId, journal)
+      }
+    }
+
     return paymentId
+  },
+
+  /**
+   * Hapus pembayaran cicilan.
+   * 1. Hapus alokasi pembayaran ke items
+   * 2. Hapus pembayaran
+   * 3. Update paid_amount, remaining_amount, payment_status di transaksi
+   * 4. Void jurnal pembayaran
+   */
+  async deletePayment(paymentId: string): Promise<void> {
+    const userId = getCurrentUserId()
+    const now = nowIso()
+
+    await transaction(async (tx) => {
+      // Ambil data pembayaran
+      const paymentRows = await tx.query<any>(
+        `SELECT transaction_id, amount FROM transaction_payments
+         WHERE id = ? AND user_id = ?`,
+        [paymentId, userId]
+      )
+      const payment = paymentRows[0]
+      if (!payment) throw new Error('Pembayaran tidak ditemukan')
+
+      // Ambil transaksi
+      const txnRows = await tx.query<any>(
+        `SELECT id, paid_amount, remaining_amount, total FROM transactions
+         WHERE id = ? AND user_id = ?`,
+        [payment.transaction_id, userId]
+      )
+      const txn = txnRows[0]
+      if (!txn) throw new Error('Transaksi tidak ditemukan')
+
+      // Hapus alokasi pembayaran ke items
+      await tx.run(
+        `DELETE FROM transaction_item_payments WHERE payment_id = ?`,
+        [paymentId]
+      )
+
+      // Hapus pembayaran
+      await tx.run(
+        `DELETE FROM transaction_payments WHERE id = ? AND user_id = ?`,
+        [paymentId, userId]
+      )
+
+      // Update transaksi: kurangi paid_amount, tambah remaining_amount
+      const newPaid = Math.max(0, txn.paid_amount - payment.amount)
+      const newRemaining = txn.total - newPaid
+      const newStatus = newRemaining > 0 ? 'belum_lunas' : 'lunas'
+
+      await tx.run(
+        `UPDATE transactions
+         SET paid_amount = ?, remaining_amount = ?, payment_status = ?, updated_at = ?,
+             sync_status = 'pending', updated_at_local = ?
+         WHERE id = ? AND user_id = ?`,
+        [newPaid, newRemaining, newStatus, now, now, payment.transaction_id, userId]
+      )
+
+      // Void jurnal pembayaran (jika ada)
+      await tx.run(
+        `UPDATE journal_entries
+         SET status = 'void', updated_at = ?, sync_status = 'pending', updated_at_local = ?
+         WHERE reference_type = 'payment' AND reference_id = ? AND user_id = ?`,
+        [now, now, payment.transaction_id, userId]
+      )
+    })
+
+    // Queue delete ke sync
+    await addToSyncQueue('DELETE', 'transaction_payments', paymentId, { id: paymentId })
   },
 
   /**

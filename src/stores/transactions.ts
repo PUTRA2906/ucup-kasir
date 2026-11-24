@@ -125,6 +125,25 @@ export const useTransactionsStore = defineStore('transactions', () => {
     }
   }
 
+  async function deletePayment(paymentId: string, transactionId: string) {
+    loading.value = true
+    error.value = null
+    try {
+      await transactionsServiceAdapter.deletePayment(paymentId)
+      // Update local state: refresh transaksi terkait
+      const index = transactions.value.findIndex((t) => t.id === transactionId)
+      if (index !== -1) {
+        const updated = await transactionsServiceAdapter.getById(transactionId)
+        if (updated) transactions.value[index] = updated
+      }
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function deleteTransaction(id: string) {
     loading.value = true
     error.value = null
@@ -234,6 +253,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
     getTransaction,
     createTransaction,
     addPayment,
+    deletePayment,
     deleteTransaction,
     voidTransaction,
     updateTransactionStatus,

@@ -510,27 +510,22 @@ const fetchReport = async () => {
   }
 }
 
+/**
+ * Beban non-HPP periode dari getPeriodActivity() (bukan selisih saldo —
+ * jurnal penutup men-nol-kan akun beban sehingga selisih saldo salah).
+ */
 const loadExpenseBalances = async (startDate: string, endDate: string) => {
   try {
-    if (financeStore.accounts.length === 0) {
-      await financeStore.fetchAccounts()
+    if (!startDate || !endDate) {
+      totalExpenses.value = 0
+      return
     }
 
-    const balancesStart = await financeStore.getAccountBalances(
-      startDate
-        ? new Date(new Date(startDate + 'T00:00:00').getTime() - 86400000)
-            .toLocaleDateString('en-CA')
-        : undefined
-    )
-    const balancesEnd = await financeStore.getAccountBalances(endDate || undefined)
-
+    const activity = await financeStore.getPeriodActivity(startDate, endDate)
     let expenseTotal = 0
-    for (const accEnd of balancesEnd) {
-      if (accEnd.account_type === 'beban' && accEnd.account_code !== '5-5000') {
-        const accStart = balancesStart.find(b => b.account_id === accEnd.account_id)
-        const balanceStart = accStart?.balance || 0
-        const expenseInPeriod = accEnd.balance - balanceStart
-        expenseTotal += expenseInPeriod
+    for (const acc of activity.byAccount) {
+      if (acc.account_type === 'beban' && acc.account_code !== '5-5000') {
+        expenseTotal += acc.amount
       }
     }
 
@@ -564,18 +559,13 @@ const loadTrendData = async () => {
         'all'
       )
 
-      // Load expenses untuk hari ini
-      const balancesStart = await financeStore.getAccountBalances(
-        new Date(current.getTime() - 86400000).toLocaleDateString('en-CA')
-      )
-      const balancesEnd = await financeStore.getAccountBalances(dateStr)
+      // Load expenses untuk hari ini (aktivitas periode, tanpa jurnal penutup)
+      const activity = await financeStore.getPeriodActivity(dateStr, dateStr)
 
       let expenseTotal = 0
-      for (const accEnd of balancesEnd) {
-        if (accEnd.account_type === 'beban' && accEnd.account_code !== '5-5000') {
-          const accStart = balancesStart.find(b => b.account_id === accEnd.account_id)
-          const balanceStart = accStart?.balance || 0
-          expenseTotal += accEnd.balance - balanceStart
+      for (const acc of activity.byAccount) {
+        if (acc.account_type === 'beban' && acc.account_code !== '5-5000') {
+          expenseTotal += acc.amount
         }
       }
 

@@ -375,7 +375,7 @@ CREATE TABLE IF NOT EXISTS journal_entries (
   journal_number TEXT NOT NULL,
   entry_date TEXT NOT NULL,
   description TEXT NOT NULL,
-  reference_type TEXT CHECK (reference_type IN ('manual', 'transaction', 'return', 'payment', 'void', 'purchase', 'purchase_payment', 'purchase_return', 'payroll')),
+  reference_type TEXT CHECK (reference_type IN ('manual', 'transaction', 'return', 'payment', 'void', 'purchase', 'purchase_payment', 'purchase_return', 'payroll', 'closing', 'reclassify', 'stock_adjustment', 'adjusting')),
   reference_id TEXT,
   status TEXT NOT NULL DEFAULT 'posted' CHECK (status IN ('draft', 'posted', 'void')),
   created_at TEXT NOT NULL,
@@ -994,3 +994,35 @@ DROP TABLE IF EXISTS trips;
 -- PRAGMA foreign_keys OFF dulu agar DROP tidak cascade ke
 -- attendance/payroll/employee_loans.
 -- ============================================================
+
+-- ============================================================
+-- 32) Closing Periods (Tutup Buku)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS closing_periods (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+
+  -- Periode waktu
+  period_start TEXT NOT NULL,
+  period_end TEXT NOT NULL,
+
+  -- Metadata penutupan
+  closed_at TEXT NOT NULL,
+  closed_by TEXT NOT NULL,
+  notes TEXT,
+  status TEXT NOT NULL DEFAULT 'closed' CHECK (status IN ('closed', 'reopened')),
+
+  -- Snapshot saldo akun saat ditutup (JSON string)
+  snapshot_balances TEXT,
+
+  -- Timestamps
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  sync_status TEXT NOT NULL DEFAULT 'synced',
+  updated_at_local TEXT,
+
+  -- Constraints
+  CHECK (period_end >= period_start)
+);
+CREATE INDEX IF NOT EXISTS idx_closing_periods_user ON closing_periods (user_id, period_end DESC);
+CREATE INDEX IF NOT EXISTS idx_closing_periods_status ON closing_periods (status);

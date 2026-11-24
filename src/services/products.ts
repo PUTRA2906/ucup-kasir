@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { Product, ProductInsert, ProductUpdate, ProductWithCategory } from '@/types/database'
+import { financeService } from './finance'
 
 export const productsService = {
   async getAll(includeInactive = false): Promise<ProductWithCategory[]> {
@@ -77,6 +78,17 @@ export const productsService = {
       .single()
 
     if (error) throw error
+
+    // Buat jurnal stok awal jika stok > 0
+    if (data && product.stock && product.stock > 0 && product.price_buy) {
+      await financeService.postInitialStockJournal(
+        data.id,
+        data.name,
+        product.stock,
+        product.price_buy
+      )
+    }
+
     return this.withCategory(data)
   },
 

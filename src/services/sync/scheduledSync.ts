@@ -35,10 +35,14 @@ export async function getScheduledSyncConfig(): Promise<ScheduledSyncConfig> {
   if (!isNativeApp()) return DEFAULT_CONFIG
 
   try {
-    const { Preferences } = await import('@capacitor/preferences')
-    const { value } = await Preferences.get({ key: STORAGE_KEY })
-    if (!value) return DEFAULT_CONFIG
-    return { ...DEFAULT_CONFIG, ...JSON.parse(value) }
+    // Dynamic import only available in native app
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      const { Preferences } = await import('@capacitor/preferences')
+      const { value } = await Preferences.get({ key: STORAGE_KEY })
+      if (!value) return DEFAULT_CONFIG
+      return { ...DEFAULT_CONFIG, ...JSON.parse(value) }
+    }
+    return DEFAULT_CONFIG
   } catch (e) {
     logError('scheduled_sync', 'config_load_failed', e, 'Gagal load config')
     return DEFAULT_CONFIG
@@ -53,11 +57,14 @@ export async function saveScheduledSyncConfig(config: ScheduledSyncConfig): Prom
   }
 
   try {
-    const { Preferences } = await import('@capacitor/preferences')
-    await Preferences.set({
-      key: STORAGE_KEY,
-      value: JSON.stringify(config),
-    })
+    // Dynamic import only available in native app
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      const { Preferences } = await import('@capacitor/preferences')
+      await Preferences.set({
+        key: STORAGE_KEY,
+        value: JSON.stringify(config),
+      })
+    }
   } catch (e) {
     logError('scheduled_sync', 'config_save_failed', e, 'Gagal save config')
     throw e

@@ -155,16 +155,16 @@ async function initSchema(): Promise<void> {
 async function migrateSchema(): Promise<void> {
   if (!db) throw new Error('SQLite belum diinisialisasi')
 
-  // Migrasi khusus: tabel journal_entries lama dibuat tanpa 'payroll' di CHECK
-  // reference_type. CREATE TABLE IF NOT EXISTS tidak mengubah tabel yang sudah
-  // ada, jadi rebuild tabel bila CHECK-nya belum mencakup 'payroll'
-  // (post_payroll_journal gagal insert tanpa ini).
+  // Migrasi khusus: tabel journal_entries lama dibuat tanpa 'payroll'/'adjusting'
+  // di CHECK reference_type. CREATE TABLE IF NOT EXISTS tidak mengubah tabel
+  // yang sudah ada, jadi rebuild tabel bila CHECK-nya belum mencakup keduanya
+  // (post_payroll_journal / post_adjusting_journal gagal insert tanpa ini).
   try {
     const res = await db.query(
       "SELECT sql FROM sqlite_master WHERE type='table' AND name='journal_entries'"
     )
     const tblSql = String(res.values?.[0]?.sql || '')
-    if (tblSql && !tblSql.includes("'payroll'")) {
+    if (tblSql && (!tblSql.includes("'payroll'") || !tblSql.includes("'adjusting'"))) {
       await db.execute(
         `CREATE TABLE journal_entries__new (
           id TEXT PRIMARY KEY,
@@ -172,7 +172,7 @@ async function migrateSchema(): Promise<void> {
           journal_number TEXT NOT NULL,
           entry_date TEXT NOT NULL,
           description TEXT NOT NULL,
-          reference_type TEXT CHECK (reference_type IN ('manual', 'transaction', 'return', 'payment', 'void', 'purchase', 'purchase_payment', 'purchase_return', 'payroll')),
+          reference_type TEXT CHECK (reference_type IN ('manual', 'transaction', 'return', 'payment', 'void', 'purchase', 'purchase_payment', 'purchase_return', 'payroll', 'closing', 'reclassify', 'stock_adjustment', 'adjusting')),
           reference_id TEXT,
           status TEXT NOT NULL DEFAULT 'posted' CHECK (status IN ('draft', 'posted', 'void')),
           created_at TEXT NOT NULL,

@@ -1,6 +1,7 @@
 import { query, queryOne, run, addToSyncQueue, transaction } from './db'
 import { getCurrentUserId, uuid, nowIso } from './db'
 import type { Product, ProductInsert, ProductUpdate, ProductWithCategory } from '@/types/database'
+import { sqliteFinanceService } from './finance'
 
 // ============================================================
 // SQLite Service: Products
@@ -134,6 +135,17 @@ export const sqliteProductsService = {
     }
 
     await addToSyncQueue('INSERT', 'products', id, created)
+
+    // Buat jurnal stok awal jika stok > 0
+    if (product.stock && product.stock > 0 && product.price_buy) {
+      await sqliteFinanceService.postInitialStockJournal(
+        id,
+        product.name,
+        product.stock,
+        product.price_buy
+      )
+    }
+
     return created as ProductWithCategory
   },
 

@@ -290,9 +290,11 @@ const menuGroups = [
           { name: "Chart of Accounts", path: "/finance/accounts", pro: false },
           { name: "Jurnal Umum", path: "/finance/journal", pro: false },
           { name: "Buku Besar", path: "/finance/ledger", pro: false },
-          { name: "Neraca Saldo", path: "/finance/trial-balance", pro: false },
+          { name: "Neraca Saldo & Penyesuaian", path: "/finance/trial-balance", pro: false },
           { name: "Neraca", path: "/finance/balance-sheet", pro: false },
+          { name: "Laporan Keuangan", path: "/finance/statements", pro: false },
           { name: "Arus Kas", path: "/finance/cash-flow", pro: false },
+          { name: "Tutup Buku", path: "/finance/closing-periods", pro: false },
         ],
       },
       {

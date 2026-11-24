@@ -9,6 +9,9 @@ import type {
   JournalEntry,
   JournalInput,
   LedgerEntry,
+  TrialBalanceWorksheet,
+  ClosingPeriod,
+  ClosePeriodInput,
 } from '@/types/database'
 
 export const useFinanceStore = defineStore('finance', () => {
@@ -198,6 +201,37 @@ export const useFinanceStore = defineStore('finance', () => {
     }
   }
 
+  /** Kertas kerja Neraca Saldo & Penyesuaian. */
+  async function getTrialBalanceWorksheet(
+    periodStart?: string,
+    periodEnd?: string
+  ): Promise<TrialBalanceWorksheet> {
+    loading.value = true
+    error.value = null
+    try {
+      return await financeServiceAdapter.getTrialBalanceWorksheet(periodStart, periodEnd)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /** Posting jurnal penyesuaian. */
+  async function postAdjustingJournal(input: JournalInput): Promise<string> {
+    loading.value = true
+    error.value = null
+    try {
+      return await financeServiceAdapter.postAdjustingJournal(input)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   /** Riwayat buku besar satu akun. */
   async function getLedger(
     accountId: string,
@@ -230,6 +264,161 @@ export const useFinanceStore = defineStore('finance', () => {
     }
   }
 
+  /** Laba Terealisasi (cash-based profit). */
+  async function getRealisedProfit(startDate?: string, endDate?: string) {
+    loading.value = true
+    error.value = null
+    try {
+      return await financeServiceAdapter.getRealisedProfit(startDate, endDate)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /** Ringkasan laba aktual & direalisasi. */
+  async function getProfitSummary(startDate?: string, endDate?: string) {
+    loading.value = true
+    error.value = null
+    try {
+      return await financeServiceAdapter.getProfitSummary(startDate, endDate)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Aktivitas pendapatan & beban periode (tanpa jurnal penutup/penyesuaian).
+   * Dipakai laporan Laba Rugi & dashboard.
+   */
+  async function getPeriodActivity(startDate: string, endDate: string) {
+    loading.value = true
+    error.value = null
+    try {
+      return await financeServiceAdapter.getPeriodActivity(startDate, endDate)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Paket laporan keuangan lengkap: Laba Rugi, Perubahan Ekuitas,
+   * dan Posisi Keuangan (Neraca) untuk satu periode.
+   */
+  async function getFinancialStatements(startDate: string, endDate: string) {
+    loading.value = true
+    error.value = null
+    try {
+      return await financeServiceAdapter.getFinancialStatements(startDate, endDate)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /** Total pendapatan/beban periode (untuk preview tutup buku). */
+  async function getPeriodProfitLoss(startDate: string, endDate: string) {
+    loading.value = true
+    error.value = null
+    try {
+      return await financeServiceAdapter.getPeriodProfitLoss(startDate, endDate)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ============================================================
+  // Tutup Buku (Closing Period)
+  // ============================================================
+
+  async function getClosingPeriods(): Promise<ClosingPeriod[]> {
+    loading.value = true
+    error.value = null
+    try {
+      return await financeServiceAdapter.getClosingPeriods()
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function getClosingPeriod(id: string): Promise<ClosingPeriod | null> {
+    loading.value = true
+    error.value = null
+    try {
+      return await financeServiceAdapter.getClosingPeriod(id)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function closePeriod(input: ClosePeriodInput): Promise<string> {
+    loading.value = true
+    error.value = null
+    try {
+      return await financeServiceAdapter.closePeriod(input)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function reopenPeriod(closingId: string): Promise<void> {
+    loading.value = true
+    error.value = null
+    try {
+      await financeServiceAdapter.reopenPeriod(closingId)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function deletePeriod(closingId: string): Promise<void> {
+    loading.value = true
+    error.value = null
+    try {
+      await financeServiceAdapter.deletePeriod(closingId)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /** Apakah tanggal berada di periode yang sudah ditutup. */
+  async function checkPeriodClosed(date: string): Promise<boolean> {
+    try {
+      return await financeServiceAdapter.checkPeriodClosed(date)
+    } catch (e: any) {
+      error.value = e.message
+      throw e
+    }
+  }
+
   return {
     accounts,
     journals,
@@ -245,7 +434,20 @@ export const useFinanceStore = defineStore('finance', () => {
     createJournal,
     deleteJournal,
     getAccountBalances,
+    getTrialBalanceWorksheet,
+    postAdjustingJournal,
     getLedger,
     getCashFlow,
+    getRealisedProfit,
+    getProfitSummary,
+    getPeriodActivity,
+    getFinancialStatements,
+    getPeriodProfitLoss,
+    getClosingPeriods,
+    getClosingPeriod,
+    closePeriod,
+    reopenPeriod,
+    deletePeriod,
+    checkPeriodClosed,
   }
 })

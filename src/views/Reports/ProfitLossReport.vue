@@ -398,14 +398,13 @@ const openDatePicker = () => {
   }
 }
 
-// Saldo beban operasional per akun (dari jurnal, modul finance)
+// Beban operasional per akun (dari jurnal, modul finance) — sudah difilter
+// non-HPP oleh loadExpenseBalances(), jadi cukup jumlahkan nilainya.
 const expenseBalanceByAccount = ref<Record<string, number>>({})
 
 // Beban operasional dari jurnal (modul finance) — akun beban selain HPP
 const totalExpenses = computed(() => {
-  return financeStore.accounts
-    .filter((a) => a.type === 'beban' && a.code !== '5-5000')
-    .reduce((sum, acc) => sum + (expenseBalanceByAccount.value[acc.id] || 0), 0)
+  return Object.values(expenseBalanceByAccount.value).reduce((sum, v) => sum + v, 0)
 })
 const netProfit = computed(() => store.summary.gross_profit - totalExpenses.value)
 const realizedNetProfit = computed(() => store.summary.realized_profit - totalExpenses.value)
@@ -475,36 +474,29 @@ onMounted(() => {
   loadExpenseBalances(today, today)
 })
 
-/** Muat saldo akun beban (non-HPP) dari modul finance dalam rentang periode. */
+/**
+ * Muat aktivitas beban (non-HPP) dari modul finance dalam rentang periode.
+ *
+ * Memakai getPeriodActivity() — BUKAN selisih getAccountBalances() — karena
+ * jurnal penutup men-nol-kan akun beban sehingga selisih saldo akan salah
+ * (bahkan negatif) setelah periode ditutup.
+ */
 async function loadExpenseBalances(startDate: string, endDate: string) {
   try {
-    if (financeStore.accounts.length === 0) {
-      await financeStore.fetchAccounts()
+    if (!startDate || !endDate) {
+      expenseBalanceByAccount.value = {}
+      return
     }
 
-    // Ambil saldo awal (sebelum startDate) dan saldo akhir (sampai endDate)
-    // Jika startDate kosong (allTime), ambil dari awal (undefined = semua)
-    const balancesStart = await financeStore.getAccountBalances(
-      startDate
-        ? new Date(new Date(startDate + 'T00:00:00').getTime() - 86400000)
-            .toLocaleDateString('en-CA')
-        : undefined
-    )
-    const balancesEnd = await financeStore.getAccountBalances(endDate || undefined)
+    const activity = await financeStore.getPeriodActivity(startDate, endDate)
 
-    // Hitung selisih saldo dalam periode (beban dalam periode = saldo akhir - saldo awal)
-    expenseBalanceByAccount.value = {}
-    for (const accEnd of balancesEnd) {
-      if (accEnd.account_type === 'beban') {
-        const accStart = balancesStart.find(b => b.account_id === accEnd.account_id)
-        const balanceStart = accStart?.balance || 0
-        const expenseInPeriod = accEnd.balance - balanceStart
-
-        if (expenseInPeriod !== 0) {
-          expenseBalanceByAccount.value[accEnd.account_id] = expenseInPeriod
-        }
+    const next: Record<string, number> = {}
+    for (const acc of activity.byAccount) {
+      if (acc.account_type === 'beban' && acc.account_code !== '5-5000' && acc.amount !== 0) {
+        next[acc.account_id] = acc.amount
       }
     }
+    expenseBalanceByAccount.value = next
   } catch (error) {
     console.error('Error loading expense balances:', error)
     // silently fail — beban tetap 0

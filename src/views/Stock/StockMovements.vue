@@ -556,6 +556,7 @@ const getReferenceLabel = (type: string) => {
     transaction: 'Transaksi',
     return: 'Retur',
     adjustment: 'Penyesuaian',
+    stock_adjustment: 'Penyesuaian',
     opname: 'Opname',
     purchase: 'Pembelian'
   }

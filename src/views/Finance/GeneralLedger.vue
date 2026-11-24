@@ -285,9 +285,13 @@
       class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 md:items-center"
       @click.self="showAccountModal = false"
     >
-      <div class="w-full max-w-md rounded-t-3xl bg-white p-6 md:rounded-2xl dark:bg-gray-900" @click.stop>
-        <div class="mb-4 flex items-center justify-between">
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Pilih Akun</h3>
+      <div class="w-full max-w-md rounded-t-3xl bg-white md:rounded-2xl dark:bg-gray-900" @click.stop>
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+          <div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Pilih Akun</h3>
+            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ store.accounts.length }} akun tersedia</p>
+          </div>
           <button
             @click="showAccountModal = false"
             class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -298,24 +302,69 @@
           </button>
         </div>
 
-        <div class="max-h-[60vh] space-y-1.5 overflow-y-auto">
-          <button
-            v-for="acc in store.accounts"
-            :key="acc.id"
-            @click="handleAccountSelect(acc.id)"
-            class="flex w-full items-center justify-between rounded-xl border border-gray-200 px-3 py-2.5 text-left hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
-            :class="acc.id === selectedAccount?.id ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10' : ''"
-          >
-            <div class="flex items-center gap-2.5">
-              <span class="rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase" :class="getTypeBadge(acc.type)">
-                {{ getTypeLabel(acc.type) }}
-              </span>
-              <div>
-                <p class="text-xs font-medium text-gray-900 dark:text-white">{{ acc.name }}</p>
-                <p class="font-mono text-[10px] text-blue-600 dark:text-blue-400">{{ acc.code }}</p>
+        <!-- Search -->
+        <div class="border-b border-gray-200 px-6 py-3 dark:border-gray-800">
+          <div class="relative">
+            <input
+              v-model="accountSearch"
+              type="text"
+              placeholder="Cari akun..."
+              class="w-full rounded-xl border border-gray-300 bg-white pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+            />
+            <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Accounts List (Grouped) -->
+        <div class="max-h-[50vh] overflow-y-auto px-6 py-4">
+          <div v-for="group in groupedAccounts" :key="group.type" class="mb-4 last:mb-0">
+            <!-- Group Header -->
+            <div class="mb-2 flex items-center gap-2">
+              <div class="flex h-6 w-6 items-center justify-center rounded-lg" :class="getTypeBg(group.type)">
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
               </div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                {{ getTypeLabel(group.type) }}
+              </h4>
+              <span class="text-[10px] text-gray-400 dark:text-gray-500">({{ group.accounts.length }})</span>
             </div>
-          </button>
+
+            <!-- Accounts in Group -->
+            <div class="space-y-1.5">
+              <button
+                v-for="acc in group.accounts"
+                :key="acc.id"
+                @click="handleAccountSelect(acc.id)"
+                class="flex w-full items-start gap-2.5 rounded-xl border px-3 py-2.5 text-left transition"
+                :class="acc.id === selectedAccount?.id
+                  ? 'border-blue-500 bg-blue-50 dark:border-blue-500 dark:bg-blue-500/10'
+                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-800 dark:hover:border-gray-700 dark:hover:bg-gray-800'"
+              >
+                <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-xs font-black" :class="getTypeBg(acc.type)">
+                  {{ acc.code.split('-')[1] }}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ acc.name }}</p>
+                  <p class="mt-0.5 font-mono text-[10px] text-gray-500 dark:text-gray-400">{{ acc.code }}</p>
+                </div>
+                <svg v-if="acc.id === selectedAccount?.id" class="h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div v-if="groupedAccounts.length === 0" class="py-8 text-center">
+            <svg class="mx-auto mb-3 h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ada akun ditemukan</p>
+          </div>
         </div>
       </div>
     </div>
@@ -401,6 +450,7 @@ const ledger = ref<any>({ balance: 0, entries: [] })
 
 const showAccountModal = ref(false)
 const showFilterModal = ref(false)
+const accountSearch = ref('')
 
 // Auto register/unregister modals di navigation stack
 useAutoNavigationStack(showAccountModal, 'general-ledger-account-modal')
@@ -456,6 +506,43 @@ const ledgerStartDisplay = computed(() => normalizeBalance(ledger.value.balance 
 // adalah nol hanya jika rentang mencakup seluruh riwayat akun).
 const ledgerDkDiff = computed(() => ledgerTotalDebit.value - ledgerTotalCredit.value)
 
+// Grouped accounts by type with search filter
+const groupedAccounts = computed(() => {
+  const search = accountSearch.value.toLowerCase().trim()
+  let filtered = store.accounts
+
+  // Filter by search
+  if (search) {
+    filtered = filtered.filter(acc =>
+      acc.name.toLowerCase().includes(search) ||
+      acc.code.toLowerCase().includes(search)
+    )
+  }
+
+  // Group by type
+  const groups: Record<string, Account[]> = {
+    aset: [],
+    kewajiban: [],
+    ekuitas: [],
+    pendapatan: [],
+    beban: [],
+  }
+
+  filtered.forEach(acc => {
+    if (groups[acc.type]) {
+      groups[acc.type].push(acc)
+    }
+  })
+
+  // Convert to array and filter empty groups
+  return Object.entries(groups)
+    .filter(([_, accounts]) => accounts.length > 0)
+    .map(([type, accounts]) => ({
+      type,
+      accounts: accounts.sort((a, b) => a.code.localeCompare(b.code))
+    }))
+})
+
 const getTypeLabel = (type: string) => {
   const labels: Record<string, string> = {
     aset: 'Aset', kewajiban: 'Kewajiban', ekuitas: 'Ekuitas',
@@ -489,7 +576,10 @@ const getTypeBg = (type: string) => {
 const getRefLabel = (ref: string) => {
   const labels: Record<string, string> = {
     manual: 'Manual', transaction: 'Penjualan', return: 'Retur',
-    payment: 'Pembayaran',
+    payment: 'Pembayaran', void: 'Void', purchase: 'Pembelian',
+    purchase_payment: 'Bayar Utang', purchase_return: 'Retur Beli',
+    payroll: 'Gaji', closing: 'Tutup Buku', reclassify: 'Reklasifikasi',
+    stock_adjustment: 'Adj. Stok',
   }
   return labels[ref] || ref
 }
@@ -500,6 +590,14 @@ const getRefBadge = (ref: string) => {
     transaction: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400',
     return: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400',
     payment: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400',
+    void: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400',
+    purchase: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400',
+    purchase_payment: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400',
+    purchase_return: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400',
+    payroll: 'bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400',
+    closing: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400',
+    reclassify: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400',
+    stock_adjustment: 'bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400',
   }
   return badges[ref] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
 }

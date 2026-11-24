@@ -119,14 +119,14 @@
               <th class="px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Referensi</th>
               <th class="px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Total</th>
               <th class="px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
+              <th class="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
             <tr
-              v-for="j in filteredJournals"
+              v-for="j in paginatedJournals"
               :key="j.id"
-              @click="router.push(`/finance/journal/${j.id}`)"
-              class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+              class="hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               <td class="px-4 py-3 font-mono text-xs font-bold text-blue-600 dark:text-blue-400">{{ j.journal_number }}</td>
               <td class="px-4 py-3 text-xs text-gray-600 dark:text-gray-400">{{ formatDate(j.entry_date) }}</td>
@@ -143,6 +143,21 @@
                   {{ getStatusLabel(j.status) }}
                 </span>
               </td>
+              <td class="px-4 py-3 text-right">
+                <button
+                  @click="handleDelete(j)"
+                  :disabled="deletingId === j.id"
+                  class="rounded-lg p-2 text-red-600 transition hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-500/15"
+                  title="Hapus jurnal"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+            <tr v-if="paginatedJournals.length === 0">
+              <td colspan="7" class="px-4 py-8 text-center text-xs text-gray-500 dark:text-gray-400">Tidak ada jurnal pada filter ini</td>
             </tr>
           </tbody>
         </table>
@@ -151,29 +166,134 @@
       <!-- Mobile Cards -->
       <div class="grid grid-cols-1 gap-2.5 md:hidden">
         <div
-          v-for="j in filteredJournals"
+          v-for="j in paginatedJournals"
           :key="j.id"
-          @click="router.push(`/finance/journal/${j.id}`)"
-          class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+          class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
         >
-          <div class="mb-2 flex items-start justify-between">
+          <!-- Header -->
+          <div class="flex items-start justify-between gap-2 px-3 pt-3 pb-2">
             <div class="flex-1 min-w-0">
-              <p class="text-xs font-bold text-gray-900 dark:text-white">{{ j.description }}</p>
-              <p class="font-mono text-[10px] text-blue-600 dark:text-blue-400">{{ j.journal_number }}</p>
+              <p class="text-xs font-bold leading-snug text-gray-900 dark:text-white line-clamp-2">{{ j.description }}</p>
+              <p class="mt-0.5 font-mono text-[10px] text-blue-600 dark:text-blue-400">{{ j.journal_number }}</p>
               <p class="text-[9px] text-gray-500 dark:text-gray-400">{{ formatDate(j.entry_date) }}</p>
             </div>
-            <span class="rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase" :class="getStatusBadge(j.status)">
+            <span class="flex-shrink-0 rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase" :class="getStatusBadge(j.status)">
               {{ getStatusLabel(j.status) }}
             </span>
           </div>
-          <div class="flex items-center justify-between border-t border-gray-200 pt-2 dark:border-gray-700">
-            <div>
-              <span v-if="j.reference_type" class="rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase" :class="getRefBadge(j.reference_type)">
-                {{ getRefLabel(j.reference_type) }}
-              </span>
-            </div>
-            <p class="text-xs font-bold text-gray-900 dark:text-white">{{ formatCurrency(journalTotal(j)) }}</p>
+
+          <!-- Baris akun: akun + debit + kredit -->
+          <div class="border-t border-gray-200 dark:border-gray-700">
+            <table class="w-full table-fixed">
+              <colgroup>
+                <col />
+                <col class="w-[78px]" />
+                <col class="w-[78px]" />
+              </colgroup>
+              <thead>
+                <tr class="bg-gray-50 dark:bg-gray-800/60">
+                  <th class="px-3 py-1.5 text-left text-[9px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Akun</th>
+                  <th class="px-2 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Debit</th>
+                  <th class="px-3 py-1.5 text-right text-[9px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Kredit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="l in journalLines(j)"
+                  :key="l.id"
+                  class="border-t border-gray-100 dark:border-gray-800"
+                >
+                  <td class="px-3 py-1.5 align-top">
+                    <p class="text-[10px] font-medium leading-tight text-gray-900 dark:text-white line-clamp-2">{{ l.account_name }}</p>
+                    <p class="font-mono text-[9px] leading-tight text-blue-600 dark:text-blue-400">{{ l.account_code }}</p>
+                  </td>
+                  <td
+                    class="px-2 py-1.5 text-right align-top text-[10px] font-bold leading-tight tabular-nums"
+                    :class="l.debit ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-300 dark:text-gray-600'"
+                  >
+                    {{ l.debit ? formatNumber(l.debit) : '—' }}
+                  </td>
+                  <td
+                    class="px-3 py-1.5 text-right align-top text-[10px] font-bold leading-tight tabular-nums"
+                    :class="l.credit ? 'text-red-600 dark:text-red-400' : 'text-gray-300 dark:text-gray-600'"
+                  >
+                    {{ l.credit ? formatNumber(l.credit) : '—' }}
+                  </td>
+                </tr>
+                <tr v-if="journalLines(j).length === 0">
+                  <td colspan="3" class="px-3 py-2 text-[10px] text-gray-400 dark:text-gray-500">Tidak ada baris jurnal</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="border-t border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/60">
+                  <td class="px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Total (Rp)</td>
+                  <td class="px-2 py-1.5 text-right text-[10px] font-bold tabular-nums text-emerald-700 dark:text-emerald-400">{{ formatNumber(journalTotalDebit(j)) }}</td>
+                  <td class="px-3 py-1.5 text-right text-[10px] font-bold tabular-nums text-red-700 dark:text-red-400">{{ formatNumber(journalTotalCredit(j)) }}</td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-between border-t border-gray-200 px-3 py-2 dark:border-gray-700">
+            <span v-if="j.reference_type" class="rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase" :class="getRefBadge(j.reference_type)">
+              {{ getRefLabel(j.reference_type) }}
+            </span>
+            <span v-else class="text-[9px] text-gray-400 dark:text-gray-500">—</span>
+            <button
+              @click.stop="handleDelete(j)"
+              :disabled="deletingId === j.id"
+              class="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold text-red-600 transition active:scale-95 hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-500/15"
+            >
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              {{ deletingId === j.id ? 'Menghapus...' : 'Hapus' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div
+        v-if="filteredJournals.length > 0"
+        class="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900"
+      >
+        <div class="text-xs text-gray-600 dark:text-gray-400">
+          {{ paginationInfo }}
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            @click="previousPage"
+            :disabled="currentPage === 1"
+            :class="[
+              'flex h-8 w-8 items-center justify-center rounded-lg border transition active:scale-95',
+              currentPage === 1
+                ? 'border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-800 dark:bg-gray-800'
+                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+            ]"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <span class="text-sm font-medium text-gray-900 dark:text-white">
+            {{ currentPage }} / {{ totalPages }}
+          </span>
+          <button
+            @click="nextPage"
+            :disabled="currentPage === totalPages"
+            :class="[
+              'flex h-8 w-8 items-center justify-center rounded-lg border transition active:scale-95',
+              currentPage === totalPages
+                ? 'border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-800 dark:bg-gray-800'
+                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+            ]"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
@@ -236,7 +356,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onActivated } from 'vue'
+import { ref, computed, onMounted, onActivated, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
@@ -244,11 +364,54 @@ import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import DateField from '@/components/common/DateField.vue'
 import { useFinanceStore } from '@/stores/finance'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
+import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
 import { localDateFromIso } from '@/utils/date'
 import type { JournalEntry } from '@/types/database'
 
 const router = useRouter()
 const store = useFinanceStore()
+const { confirm } = useConfirm()
+const toast = useToast()
+
+const deletingId = ref<string | null>(null)
+
+const handleDelete = async (j: JournalEntry) => {
+  if (deletingId.value) return
+
+  // Jurnal di periode tertutup tidak boleh dihapus
+  try {
+    const date = String(j.entry_date || '').slice(0, 10)
+    if (date && (await store.checkPeriodClosed(date))) {
+      toast.error(
+        'Periode Tertutup',
+        `Jurnal ini berada di periode yang sudah ditutup (${date}). Buka kembali periode tersebut terlebih dahulu.`
+      )
+      return
+    }
+  } catch {
+    // Pengecekan gagal — biarkan server menolak bila perlu.
+  }
+
+  const ok = await confirm({
+    title: 'Hapus Jurnal?',
+    message: `Jurnal ${j.journal_number} akan dihapus permanen dan tidak dapat dikembalikan.`,
+    confirmText: 'Ya, Hapus',
+    cancelText: 'Batal',
+    variant: 'danger',
+  })
+  if (!ok) return
+
+  deletingId.value = j.id
+  try {
+    await store.deleteJournal(j.id)
+    toast.success('Berhasil!', 'Jurnal berhasil dihapus')
+  } catch (e) {
+    toast.error('Gagal!', e instanceof Error ? e.message : 'Gagal menghapus jurnal')
+  } finally {
+    deletingId.value = null
+  }
+}
 
 const statusFilter = ref<'semua' | 'posted'>('semua')
 const statusOptions = [
@@ -271,6 +434,35 @@ const startDate = ref<string | undefined>(undefined)
 const endDate = ref<string | undefined>(undefined)
 const tempStartDate = ref('')
 const tempEndDate = ref('')
+
+// Pagination
+const currentPage = ref(1)
+const itemsPerPage = 10
+
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredJournals.value.length / itemsPerPage))
+)
+
+const paginatedJournals = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  return filteredJournals.value.slice(start, start + itemsPerPage)
+})
+
+const paginationInfo = computed(() => {
+  const total = filteredJournals.value.length
+  if (total === 0) return '0 jurnal'
+  const start = (currentPage.value - 1) * itemsPerPage + 1
+  const end = Math.min(currentPage.value * itemsPerPage, total)
+  return `${start}-${end} dari ${total}`
+})
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) currentPage.value++
+}
+
+const previousPage = () => {
+  if (currentPage.value > 1) currentPage.value--
+}
 
 // Auto register/unregister modal di navigation stack
 useAutoNavigationStack(showFilterModal, 'journal-list-filter-modal')
@@ -368,6 +560,16 @@ const filteredJournals = computed(() => {
   })
 })
 
+// Kembali ke halaman 1 saat filter berubah
+watch([statusFilter, startDate, endDate], () => {
+  currentPage.value = 1
+})
+
+// Jaga agar currentPage tidak melebihi totalPages (mis. setelah hapus data)
+watch(totalPages, (tp) => {
+  if (currentPage.value > tp) currentPage.value = tp
+})
+
 const applyDateFilter = () => {
   startDate.value = tempStartDate.value || undefined
   endDate.value = tempEndDate.value || undefined
@@ -387,6 +589,29 @@ const resetDateFilter = () => {
 const journalTotal = (j: JournalEntry) => {
   return (j.lines || []).reduce((sum, l) => sum + (l.debit || 0), 0)
 }
+
+const journalTotalDebit = (j: JournalEntry) => {
+  return (j.lines || []).reduce((sum, l) => sum + (l.debit || 0), 0)
+}
+
+const journalTotalCredit = (j: JournalEntry) => {
+  return (j.lines || []).reduce((sum, l) => sum + (l.credit || 0), 0)
+}
+
+/** Baris jurnal, urutkan debit dulu lalu kredit agar mudah dibaca di mobile. */
+const journalLines = (j: JournalEntry) => {
+  return [...(j.lines || [])].sort((a, b) => {
+    const aDebit = a.debit || 0
+    const bDebit = b.debit || 0
+    if (aDebit && !bDebit) return -1
+    if (!aDebit && bDebit) return 1
+    return 0
+  })
+}
+
+/** Angka tanpa simbol mata uang (kolom tabel sempit). */
+const formatNumber = (value: number) =>
+  new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value || 0)
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('id-ID', {
@@ -417,6 +642,15 @@ const getRefLabel = (ref: string) => {
     transaction: 'Penjualan',
     return: 'Retur',
     payment: 'Pembayaran',
+    void: 'Void',
+    purchase: 'Pembelian',
+    purchase_payment: 'Bayar Utang',
+    purchase_return: 'Retur Beli',
+    payroll: 'Gaji',
+    closing: 'Tutup Buku',
+    reclassify: 'Reklasifikasi',
+    stock_adjustment: 'Adj. Stok',
+    adjusting: 'Penyesuaian',
   }
   return labels[ref] || ref
 }
@@ -427,6 +661,15 @@ const getRefBadge = (ref: string) => {
     transaction: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400',
     return: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400',
     payment: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400',
+    void: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400',
+    purchase: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400',
+    purchase_payment: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400',
+    purchase_return: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400',
+    payroll: 'bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400',
+    closing: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400',
+    reclassify: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400',
+    stock_adjustment: 'bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400',
+    adjusting: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400',
   }
   return badges[ref] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
 }

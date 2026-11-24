@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { financeService } from '@/services/finance'
+import { financeServiceAdapter as financeService } from '@/services'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 import type { ClosingPeriod } from '@/types/database'
@@ -8,7 +8,6 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import ClosePeriodModal from '@/components/finance/ClosePeriodModal.vue'
-import SnapshotBalanceModal from '@/components/finance/SnapshotBalanceModal.vue'
 
 const toast = useToast()
 const { confirm } = useConfirm()
@@ -17,8 +16,6 @@ const loading = ref(false)
 const periods = ref<ClosingPeriod[]>([])
 const filterStatus = ref<'all' | 'closed' | 'reopened'>('all')
 const showClosePeriodModal = ref(false)
-const showSnapshotModal = ref(false)
-const selectedPeriod = ref<ClosingPeriod | null>(null)
 
 const filteredPeriods = computed(() => {
   if (filterStatus.value === 'all') return periods.value
@@ -74,9 +71,24 @@ const handleReopen = async (period: ClosingPeriod) => {
   }
 }
 
-const handleViewSnapshot = (period: ClosingPeriod) => {
-  selectedPeriod.value = period
-  showSnapshotModal.value = true
+const handleDelete = async (period: ClosingPeriod) => {
+  const confirmed = await confirm({
+    title: 'Hapus Periode?',
+    message: `Hapus periode ${formatDate(period.period_start)} - ${formatDate(period.period_end)}?\n\nPeringatan: Tindakan ini tidak dapat dibatalkan!\nSnapshot saldo dan data periode akan dihapus permanen.`,
+    confirmText: 'Ya, Hapus',
+    cancelText: 'Batal',
+    variant: 'danger'
+  })
+
+  if (!confirmed) return
+
+  try {
+    await financeService.deletePeriod(period.id)
+    toast.success('Berhasil', 'Periode berhasil dihapus')
+    await fetchPeriods()
+  } catch (error: any) {
+    toast.error('Gagal Menghapus Periode', error.message)
+  }
 }
 
 const handleClosePeriodSuccess = async () => {
@@ -233,10 +245,10 @@ onMounted(() => {
               <td class="px-4 py-3 text-right">
                 <div class="flex items-center justify-end gap-2">
                   <button
-                    @click="handleViewSnapshot(period)"
+                    @click="$router.push(`/finance/closing-periods/${period.id}`)"
                     class="rounded-lg px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10"
                   >
-                    Lihat Snapshot
+                    Lihat Detail
                   </button>
                   <button
                     v-if="period.status === 'closed'"
@@ -244,6 +256,12 @@ onMounted(() => {
                     class="rounded-lg px-3 py-1.5 text-xs font-medium text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-500/10"
                   >
                     Buka Kembali
+                  </button>
+                  <button
+                    @click="handleDelete(period)"
+                    class="rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                  >
+                    Hapus
                   </button>
                 </div>
               </td>
@@ -291,10 +309,10 @@ onMounted(() => {
           <!-- Actions -->
           <div class="flex items-center gap-2">
             <button
-              @click="handleViewSnapshot(period)"
+              @click="$router.push(`/finance/closing-periods/${period.id}`)"
               class="flex-1 rounded-xl border border-blue-300 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-100 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20"
             >
-              Lihat Snapshot
+              Lihat Detail
             </button>
             <button
               v-if="period.status === 'closed'"
@@ -302,6 +320,12 @@ onMounted(() => {
               class="flex-1 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20"
             >
               Buka Kembali
+            </button>
+            <button
+              @click="handleDelete(period)"
+              class="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20"
+            >
+              Hapus
             </button>
           </div>
         </div>
@@ -323,11 +347,6 @@ onMounted(() => {
       :show="showClosePeriodModal"
       @close="showClosePeriodModal = false"
       @success="handleClosePeriodSuccess"
-    />
-    <SnapshotBalanceModal
-      :show="showSnapshotModal"
-      :closing-period="selectedPeriod"
-      @close="showSnapshotModal = false"
     />
   </AdminLayout>
 </template>

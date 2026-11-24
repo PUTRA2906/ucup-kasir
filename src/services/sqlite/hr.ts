@@ -495,23 +495,39 @@ export const sqliteHrService = {
     const totalNet = Number(payroll.total_net) || 0
     if (totalNet <= 0) throw new Error('Gaji bersih harus lebih dari 0')
 
-    const expenseAccount = await queryOne<any>(
+    // Utamakan kode akun (5-5200 / 2-2100) agar akun custom bertipe salah
+    // tidak terpilih; fallback ke pencarian nama untuk data lama.
+    let expenseAccount = await queryOne<any>(
       `SELECT id, code, name FROM chart_of_accounts
-       WHERE user_id = ? AND type = 'beban' AND is_active = 1
-         AND (LOWER(name) LIKE '%gaji%' OR LOWER(name) LIKE '%salary%')
-       ORDER BY created_at LIMIT 1`,
+       WHERE user_id = ? AND code = '5-5200' AND is_active = 1`,
       [userId]
     )
+    if (!expenseAccount) {
+      expenseAccount = await queryOne<any>(
+        `SELECT id, code, name FROM chart_of_accounts
+         WHERE user_id = ? AND type = 'beban' AND is_active = 1
+           AND (LOWER(name) LIKE '%gaji%' OR LOWER(name) LIKE '%salary%')
+         ORDER BY created_at LIMIT 1`,
+        [userId]
+      )
+    }
     if (!expenseAccount)
       throw new Error('Akun biaya gaji tidak ditemukan. Buat dulu akun tipe Beban dengan nama mengandung "Gaji"')
 
-    const liabilityAccount = await queryOne<any>(
+    let liabilityAccount = await queryOne<any>(
       `SELECT id, code, name FROM chart_of_accounts
-       WHERE user_id = ? AND type = 'kewajiban' AND is_active = 1
-         AND LOWER(name) LIKE '%hutang%' AND LOWER(name) LIKE '%gaji%'
-       ORDER BY created_at LIMIT 1`,
+       WHERE user_id = ? AND code = '2-2100' AND is_active = 1`,
       [userId]
     )
+    if (!liabilityAccount) {
+      liabilityAccount = await queryOne<any>(
+        `SELECT id, code, name FROM chart_of_accounts
+         WHERE user_id = ? AND type = 'kewajiban' AND is_active = 1
+           AND LOWER(name) LIKE '%hutang%' AND LOWER(name) LIKE '%gaji%'
+         ORDER BY created_at LIMIT 1`,
+        [userId]
+      )
+    }
     if (!liabilityAccount)
       throw new Error('Akun hutang gaji tidak ditemukan. Buat dulu akun tipe Kewajiban dengan nama mengandung "Hutang Gaji"')
 

@@ -140,13 +140,32 @@
                 </div>
                 <p class="text-xs font-bold text-gray-900 dark:text-white">{{ formatCurrency(row.balance) }}</p>
               </div>
-              <!-- Laba ditahan dari laba periode berjalan -->
-              <div class="flex items-center justify-between px-4 py-2.5 bg-emerald-50/60 dark:bg-emerald-500/5">
+
+              <!-- Laba Periode Berjalan (Akrual) -->
+              <div class="flex items-center justify-between px-4 py-2.5 bg-gray-50/80 dark:bg-gray-800/80">
                 <div>
-                  <p class="text-xs font-medium text-emerald-700 dark:text-emerald-400">Laba (Rugi) Periode Berjalan</p>
-                  <p class="text-[10px] text-emerald-600/70 dark:text-emerald-500/70">dari pendapatan − beban</p>
+                  <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Laba Periode Berjalan (Akrual)</p>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400">Pendapatan − Beban</p>
                 </div>
-                <p class="text-xs font-bold text-emerald-700 dark:text-emerald-400">{{ formatCurrency(currentProfit) }}</p>
+                <p class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ formatCurrency(currentProfit) }}</p>
+              </div>
+
+              <!-- Laba Terealisasi (Tunai) -->
+              <div class="flex items-center justify-between px-4 py-2.5 bg-emerald-50 dark:bg-emerald-500/10">
+                <div>
+                  <p class="text-xs font-medium text-emerald-700 dark:text-emerald-400">💰 Laba Terealisasi (Tunai)</p>
+                  <p class="text-[10px] text-emerald-600 dark:text-emerald-500">Siap untuk modal usaha</p>
+                </div>
+                <p class="text-xs font-bold text-emerald-700 dark:text-emerald-400">{{ formatCurrency(realisedProfit) }}</p>
+              </div>
+
+              <!-- Laba Belum Terealisasi (Piutang) -->
+              <div class="flex items-center justify-between px-4 py-2.5 bg-amber-50 dark:bg-amber-500/10">
+                <div>
+                  <p class="text-xs font-medium text-amber-700 dark:text-amber-400">Laba Belum Terealisasi</p>
+                  <p class="text-[10px] text-amber-600 dark:text-amber-500">Masih dalam piutang</p>
+                </div>
+                <p class="text-xs font-bold text-amber-700 dark:text-amber-400">{{ formatCurrency(unrealisedProfit) }}</p>
               </div>
             </div>
             <div class="border-t border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
@@ -226,7 +245,7 @@ import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import DateField from '@/components/common/DateField.vue'
 import { useFinanceStore } from '@/stores/finance'
 import { useNavigationStack } from '@/composables/useNavigationStack'
-import type { AccountBalance } from '@/types/database'
+import type { AccountBalance, RealisedProfitResult } from '@/types/database'
 
 const router = useRouter()
 const store = useFinanceStore()
@@ -240,6 +259,7 @@ const endDate = ref<string | undefined>(undefined)
 const tempEnd = ref('')
 
 const accounts = ref<AccountBalance[]>([])
+const realisedProfitData = ref<RealisedProfitResult | null>(null)
 
 // Kelompokkan berdasarkan tipe. Pakai saldo bertanda (bukan Math.abs):
 // akun yang saldonya berlawanan normal_balance (mis. persediaan negatif) harus
@@ -269,6 +289,10 @@ const currentProfit = computed(() => {
   return pendapatan - beban
 })
 
+// Laba terealisasi (dari transaksi yang sudah dibayar)
+const realisedProfit = computed(() => realisedProfitData.value?.realisedProfit || 0)
+const unrealisedProfit = computed(() => realisedProfitData.value?.unrealisedProfit || 0)
+
 const totalEquityWithProfit = computed(() => totalEquity.value + currentProfit.value)
 const totalLiabilitiesEquity = computed(() => totalLiabilities.value + totalEquityWithProfit.value)
 // Toleransi Rp0,5 — jangan `===` murni (pembulatan bisa menipu tampilan balance)
@@ -291,9 +315,16 @@ const fetchData = async () => {
   loading.value = true
   error.value = null
   try {
-    const result = await store.getAccountBalances(endDate.value || undefined)
+    // Fetch account balances dan realised profit secara paralel
+    const [balances, profitData] = await Promise.all([
+      store.getAccountBalances(endDate.value || undefined),
+      store.getRealisedProfit(undefined, endDate.value || undefined)
+    ])
+
     if (seq !== fetchSeq) return
-    accounts.value = result
+
+    accounts.value = balances
+    realisedProfitData.value = profitData
   } catch (e: any) {
     if (seq !== fetchSeq) return
     error.value = e.message

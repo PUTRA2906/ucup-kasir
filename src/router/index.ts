@@ -479,12 +479,6 @@ const router = createRouter({
       meta: { title: 'Buat Jurnal' },
     },
     {
-      path: '/finance/journal/:id',
-      name: 'Journal Detail',
-      component: () => import('../views/Finance/JournalDetail.vue'),
-      meta: { title: 'Detail Jurnal' },
-    },
-    {
       path: '/finance/ledger',
       name: 'General Ledger',
       component: () => import('../views/Finance/GeneralLedger.vue'),
@@ -494,7 +488,7 @@ const router = createRouter({
       path: '/finance/trial-balance',
       name: 'Trial Balance',
       component: () => import('../views/Finance/TrialBalance.vue'),
-      meta: { title: 'Neraca Saldo' },
+      meta: { title: 'Neraca Saldo & Penyesuaian' },
     },
     {
       path: '/finance/balance-sheet',
@@ -509,10 +503,22 @@ const router = createRouter({
       meta: { title: 'Arus Kas' },
     },
     {
+      path: '/finance/statements',
+      name: 'Financial Statements',
+      component: () => import('../views/Finance/FinancialStatements.vue'),
+      meta: { title: 'Laporan Keuangan' },
+    },
+    {
       path: '/finance/closing-periods',
       name: 'Closing Periods',
       component: () => import('../views/Finance/ClosingPeriods.vue'),
       meta: { title: 'Tutup Buku' },
+    },
+    {
+      path: '/finance/closing-periods/:id',
+      name: 'Closing Period Detail',
+      component: () => import('../views/Finance/ClosingPeriodDetail.vue'),
+      meta: { title: 'Detail Tutup Buku' },
     },
     {
       path: '/laporan/mutasi-kas',

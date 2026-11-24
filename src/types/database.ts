@@ -223,7 +223,11 @@ export interface JournalEntry {
   journal_number: string
   entry_date: string
   description: string
-  reference_type?: 'manual' | 'transaction' | 'return' | 'payment' | 'void' | 'purchase' | 'purchase_payment' | 'purchase_return'
+  reference_type?:
+    | 'manual' | 'transaction' | 'return' | 'payment' | 'void'
+    | 'purchase' | 'purchase_payment' | 'purchase_return'
+    | 'payroll' | 'closing' | 'reclassify' | 'stock_adjustment'
+    | 'adjusting'
   reference_id?: string
   status: 'draft' | 'posted' | 'void'
   created_at: string
@@ -243,6 +247,16 @@ export interface JournalInput {
   lines: JournalLineInput[]
 }
 
+/**
+ * Jurnal penyesuaian (Adjusting Journal Entry / AJP).
+ * Struktur sama dengan jurnal umum, tetapi ditandai reference_type='adjusting'
+ * sehingga bisa dipisahkan dari transaksi operasional di Neraca Saldo.
+ */
+export interface AdjustingJournalInput extends JournalInput {
+  /** Opsional: kode akun yang disesuaikan, untuk penanda di UI. */
+  account_code?: string
+}
+
 /** Saldo akun (untuk Buku Besar & Neraca) */
 export interface AccountBalance {
   account_id: string
@@ -255,6 +269,45 @@ export interface AccountBalance {
   balance: number  // saldo akhir (debit - credit, disesuaikan normal_balance)
 }
 
+/**
+ * Baris Neraca Saldo & Penyesuaian (worksheet / kertas kerja).
+ *
+ * Kolom mengikuti standar akuntansi:
+ *   - Saldo sebelum penyesuaian (unadjusted trial balance)
+ *   - Jurnal penyesuaian periode berjalan (adjusting entries)
+ *   - Saldo setelah penyesuaian (adjusted trial balance)
+ */
+export interface TrialBalanceRow {
+  account_id: string
+  account_code: string
+  account_name: string
+  account_type: Account['type']
+  normal_balance: 'debit' | 'kredit'
+  unadjusted_debit: number
+  unadjusted_credit: number
+  adjustment_debit: number
+  adjustment_credit: number
+  adjusted_debit: number
+  adjusted_credit: number
+}
+
+export interface TrialBalanceWorksheet {
+  /** Baris akun dengan saldo/penyesuaian tidak nol. */
+  rows: TrialBalanceRow[]
+  /** Jurnal penyesuaian dalam periode (lengkap dengan baris akun). */
+  adjustments: JournalEntry[]
+  period_start?: string
+  period_end?: string
+  totals: {
+    unadjusted_debit: number
+    unadjusted_credit: number
+    adjustment_debit: number
+    adjustment_credit: number
+    adjusted_debit: number
+    adjusted_credit: number
+  }
+}
+
 /** Baris Buku Besar */
 export interface LedgerEntry {
   entry_date: string
@@ -264,6 +317,112 @@ export interface LedgerEntry {
   debit: number
   credit: number
   balance: number  // saldo berjalan
+}
+
+/** Hasil perhitungan Laba Terealisasi (cash-based profit) */
+export interface RealisedProfitResult {
+  realisedProfit: number        // Laba yang sudah dibayar tunai
+  unrealisedProfit: number      // Laba yang masih piutang
+  totalProfit: number           // Total laba (akrual)
+  realisedRevenue: number       // Pendapatan tunai
+  unrealisedRevenue: number     // Pendapatan masih piutang
+  totalRevenue: number          // Total pendapatan
+  totalCOGS: number             // Total HPP
+}
+
+// ============================================================
+// Laporan Keuangan Lengkap
+// (Laba Rugi, Perubahan Ekuitas, Posisi Keuangan)
+// ============================================================
+
+/** Satu baris akun di dalam laporan keuangan. */
+export interface StatementAccountRow {
+  account_id: string
+  account_code: string
+  account_name: string
+  amount: number
+}
+
+/** Laporan Laba Rugi periode berjalan. */
+export interface IncomeStatement {
+  period_start: string
+  period_end: string
+  /** Akun pendapatan (4-xxxx). */
+  revenue: StatementAccountRow[]
+  total_revenue: number
+  /** Akun HPP (5-50xx). */
+  cogs: StatementAccountRow[]
+  total_cogs: number
+  /** Laba kotor = pendapatan − HPP. */
+  gross_profit: number
+  /** Beban operasional (akun beban selain HPP). */
+  operating_expenses: StatementAccountRow[]
+  total_operating_expenses: number
+  /** Total seluruh beban (HPP + operasional). */
+  total_expenses: number
+  /** Laba bersih = pendapatan − total beban. */
+  net_profit: number
+  /** Margin laba bersih terhadap pendapatan (persen). */
+  profit_margin: number
+}
+
+/** Perubahan satu akun ekuitas dalam periode. */
+export interface EquityMovementRow {
+  account_id: string
+  account_code: string
+  account_name: string
+  /** Positif = penambahan ekuitas (kredit), negatif = pengurangan (debit). */
+  amount: number
+}
+
+/** Laporan Perubahan Ekuitas. */
+export interface EquityStatement {
+  period_start: string
+  period_end: string
+  /** Saldo akun ekuitas sebelum periode dimulai. */
+  opening_equity_accounts: StatementAccountRow[]
+  /** Laba kumulatif yang belum ditutup ke akun ekuitas (sebelum periode). */
+  opening_unclosed_profit: number
+  /** Total ekuitas awal = saldo akun ekuitas + laba belum ditutup. */
+  opening_total: number
+  /** Laba bersih periode berjalan (dari laporan laba rugi). */
+  net_profit: number
+  /** Setoran modal / penambahan ekuitas periode berjalan. */
+  contributions: EquityMovementRow[]
+  total_contributions: number
+  /** Prive / penarikan modal periode berjalan (nilai positif). */
+  withdrawals: EquityMovementRow[]
+  total_withdrawals: number
+  /** Saldo akun ekuitas pada akhir periode. */
+  ending_equity_accounts: StatementAccountRow[]
+  /** Total ekuitas akhir = awal + laba − prive + setoran. */
+  ending_total: number
+}
+
+/** Laporan Posisi Keuangan (Neraca) per tanggal tertentu. */
+export interface PositionStatement {
+  as_of: string
+  assets: StatementAccountRow[]
+  total_assets: number
+  liabilities: StatementAccountRow[]
+  total_liabilities: number
+  equity_accounts: StatementAccountRow[]
+  total_equity_accounts: number
+  /** Laba kumulatif yang belum ditutup (akun pendapatan − beban). */
+  unclosed_profit: number
+  total_equity: number
+  total_liabilities_equity: number
+  is_balanced: boolean
+  /** Total aset − (kewajiban + ekuitas). */
+  difference: number
+}
+
+/** Paket laporan keuangan lengkap untuk satu periode. */
+export interface FinancialStatements {
+  income_statement: IncomeStatement
+  equity_statement: EquityStatement
+  position_statement: PositionStatement
+  generated_at: string
 }
 
 // ============================================================

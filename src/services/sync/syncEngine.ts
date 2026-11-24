@@ -62,6 +62,7 @@ const DOWNLOAD_TABLES = [
   'chart_of_accounts',
   'journal_entries',
   'journal_lines',
+  'closing_periods',
   'suppliers',
   'purchase_orders',
   'po_items',
@@ -230,7 +231,7 @@ export async function downloadAllFromSupabase(): Promise<SyncResult> {
     const [categories, products, customers, transactions, transactionItems, transactionPayments,
            returns, returnItems, storeSettings, stockMovements, stockAdjustments,
            stockOpnames, stockOpnameItems, stockAlerts, notifications,
-           chartOfAccounts, journalEntries, journalLines,
+           chartOfAccounts, journalEntries, journalLines, closingPeriods,
            suppliers, purchaseOrders, poItems, goodsReceipts, grnItems,
            purchaseInvoices, piItems, piPayments, purchaseReturns, purchaseReturnItems,
            employees, attendance, payrolls,
@@ -256,6 +257,7 @@ export async function downloadAllFromSupabase(): Promise<SyncResult> {
       fetchAllFromTable('chart_of_accounts', user.id),
       fetchAllFromTable('journal_entries', user.id),
       fetchAllFromTable('journal_lines', user.id),
+      fetchAllFromTable('closing_periods', user.id),
       fetchAllFromTable('suppliers', user.id),
       fetchAllFromTable('purchase_orders', user.id),
       fetchAllFromTable('po_items', user.id),
@@ -347,6 +349,9 @@ export async function downloadAllFromSupabase(): Promise<SyncResult> {
         if (j) j.lines.push(l)
       }
       await sqliteFinanceService.replaceAllJournals([...jrnMap.values()])
+
+      // closing periods
+      await sqliteFinanceService.replaceAllClosingPeriods(closingPeriods)
 
       // purchasing: suppliers + PO (gabungkan items) + GRN (gabungkan items) + PI (gabungkan items+payments) + PR (gabungkan items)
       await sqlitePurchasingService.replaceAllSuppliers(suppliers)
@@ -571,6 +576,7 @@ async function mergeIntoLocalTable(table: string, rows: any[]): Promise<void> {
     case 'stock_alerts':
     case 'journal_entries':
     case 'journal_lines':
+    case 'closing_periods':
     case 'purchase_orders':
     case 'po_items':
     case 'goods_receipts':
@@ -1224,6 +1230,9 @@ async function processQueueItem(item: SyncQueueItem): Promise<void> {
       break
     case 'journal_lines':
       await genericUpsert('journal_lines', operation, record_id, data)
+      break
+    case 'closing_periods':
+      await genericUpsert('closing_periods', operation, record_id, data)
       break
     case 'suppliers':
       await genericUpsert('suppliers', operation, record_id, data)

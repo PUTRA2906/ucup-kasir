@@ -197,6 +197,15 @@ export const transactionsService = {
     return transactionId
   },
 
+  async deletePayment(paymentId: string): Promise<void> {
+    const { error } = await supabase
+      .from('transaction_payments')
+      .delete()
+      .eq('id', paymentId)
+
+    if (error) throw error
+  },
+
   async delete(id: string): Promise<void> {
     const { error } = await supabase.rpc('delete_transaction', {
       p_transaction_id: id,
