@@ -2,39 +2,22 @@
   <admin-layout>
     <PageBreadcrumb pageTitle="Dashboard" class="hidden md:block" />
     <div class="space-y-6 px-4 md:px-0">
-      <!-- Mobile Greeting Banner -->
+      <!-- Mobile Dashboard -->
       <div class="md:hidden">
-        <MobileGreeting
+        <MobileHomeDashboard
           :display-name="displayName"
           :unread-count="notificationsStore.unreadCount"
-        />
-      </div>
-
-      <!-- Mobile Account Balance Carousel -->
-      <div class="md:hidden">
-        <MobileAccountBalance
           :hidden="financialHidden"
-          :loading="loadingAccounts"
+          :loading="loading"
+          :loading-accounts="loadingAccounts"
           :cash-balance="cashBalance"
           :bank-balance="bankBalance"
-          @toggle-visibility="toggleFinancialVisibility"
-        />
-      </div>
-
-      <!-- Mobile Quick Menu -->
-      <div class="md:hidden">
-        <MobileQuickMenu
-          :menu-groups="QUICK_MENU_GROUPS"
+          :realized-profit="realizedProfit"
+          :unrealized-profit="unrealizedProfit"
+          :net-sales="salesReportStore.summary.net_sales"
+          :transactions="transactionsStore.transactions"
           :pending-shipments-count="pendingShipmentsCount"
-          @navigate-group="(slug) => router.push(`/quick-menu/${slug}`)"
-        />
-      </div>
-
-      <!-- Mobile Peringatan Stok Gudang -->
-      <div class="md:hidden">
-        <MobileLowStockWarning
-          :loading="loading"
-          :products="lowStockProducts"
+          @toggle-visibility="toggleFinancialVisibility"
         />
       </div>
 
@@ -115,17 +98,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import DashboardStats from '@/components/ecommerce/DashboardStats.vue'
 import LowStockList from '@/components/ecommerce/LowStockList.vue'
 import CategoryBreakdown from '@/components/ecommerce/CategoryBreakdown.vue'
 import RecentProductsList from '@/components/ecommerce/RecentProductsList.vue'
-import MobileGreeting from '@/components/dashboard/MobileGreeting.vue'
-import MobileAccountBalance from '@/components/dashboard/MobileAccountBalance.vue'
-import MobileQuickMenu from '@/components/dashboard/MobileQuickMenu.vue'
-import MobileLowStockWarning from '@/components/dashboard/MobileLowStockWarning.vue'
+import MobileHomeDashboard from '@/components/dashboard/MobileHomeDashboard.vue'
 import DesktopGreeting from '@/components/dashboard/DesktopGreeting.vue'
 import { useProductsStore } from '@/stores/products'
 import { useCategoriesStore } from '@/stores/categories'
@@ -135,10 +114,8 @@ import { useNotificationsStore } from '@/stores/notifications'
 import { useFinanceStore } from '@/stores/finance'
 import { useTransactionsStore } from '@/stores/transactions'
 import { useShippingStore } from '@/stores/shipping'
-import { QUICK_MENU_GROUPS } from '@/data/quickMenu'
 import { usePermission } from '@/composables/usePermission'
 
-const router = useRouter()
 const productsStore = useProductsStore()
 const categoriesStore = useCategoriesStore()
 const authStore = useAuthStore()
@@ -189,11 +166,8 @@ const stockValue = computed<number | null>(() => {
   return productsStore.products.reduce((sum, p) => sum + (p.price_buy || 0) * (p.stock || 0), 0)
 })
 
-const lowStockProducts = computed(() =>
-  productsStore.products
-    .filter((p) => p.is_active && p.stock <= (p.minimum_stock ?? 10))
-    .sort((a, b) => a.stock - b.stock)
-)
+const realizedProfit = computed(() => salesReportStore.summary.realized_profit ?? 0)
+const unrealizedProfit = computed(() => salesReportStore.summary.unrealized_profit ?? 0)
 
 const pendingShipmentsCount = computed(() => {
   const shippedIds = new Set<string>()
