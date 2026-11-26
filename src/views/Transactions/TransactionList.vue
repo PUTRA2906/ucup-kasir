@@ -6,6 +6,7 @@
     <MobilePageHeader title="Daftar Transaksi" :subtitle="transactionsStore.paginationTotal + ' Transaksi'">
       <template #actions>
         <button
+          v-can="'transaction.write'"
           @click="addTransaction"
           class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm hover:bg-blue-500 active:scale-95"
         >
@@ -354,7 +355,7 @@
         :data="displayTransactions"
         :per-page="PER_PAGE"
         :searchable="false"
-        :show-add-button="true"
+        :show-add-button="can('transaction.write')"
         add-button-text="Transaksi Baru"
         title="Daftar Transaksi"
         :subtitle="`${settingsStore.storeSubtitle} - ${transactionsStore.paginationTotal} Transaksi`"
@@ -593,6 +594,7 @@ import { useShippingStore } from '@/stores/shipping'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
+import { usePermission } from '@/composables/usePermission'
 import { parseCsv, downloadCsv, readFileAsText } from '@/composables/useCsv'
 import type { TransactionStatus } from '@/types/database'
 
@@ -601,6 +603,7 @@ const transactionsStore = useTransactionsStore()
 const shippingStore = useShippingStore()
 const settingsStore = useStoreSettingsStore()
 const toast = useToast()
+const { can } = usePermission()
 
 const showDeleteDialog = ref(false)
 const showBulkDeleteDialog = ref(false)

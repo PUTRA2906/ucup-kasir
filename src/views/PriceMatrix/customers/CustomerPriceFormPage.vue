@@ -219,7 +219,7 @@ const loadLookups = async()=>{
   try{ customers.value = await customersService.getAll() }catch{}
   try{
     const list = await productsService.getAll()
-    products.value = (list as any[]).map((p:any)=>({ id:p.id, name:p.name, sku:p.sku, barcode:p.barcode, price_sell:p.price_sell, price_buy:p.price_buy, stock: p.stock??0, category_id:p.category_id, category:p.category }))
+    products.value = (list as any[]).map((p:any)=>({ id:p.id, name:p.name, sku:p.sku, barcode:p.barcode, price_sell:p.price_sell, price_buy:p.price_buy ?? 0, stock: p.stock??0, category_id:p.category_id, category:p.category }))
   }catch{}
 }
 const loadEdit = async()=>{

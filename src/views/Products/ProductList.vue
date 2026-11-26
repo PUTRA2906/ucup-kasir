@@ -7,6 +7,7 @@
       <MobilePageHeader title="Produk" :subtitle="productsStore.products.length + ' produk terdaftar'">
         <template #actions>
           <button
+            v-can="'product.write'"
             @click="addProduct"
             class="flex h-8 w-8 items-center justify-center rounded-xl border border-brand-500 bg-brand-500 text-white transition hover:bg-brand-600 active:scale-95"
           >
@@ -138,8 +139,8 @@
                   <div class="text-[9px] text-gray-400 dark:text-gray-500">pcs</div>
                 </div>
 
-                <!-- Harga Beli -->
-                <div class="rounded-xl bg-gray-50 px-3 py-2 text-center dark:bg-gray-900/50">
+                <!-- Harga Beli (hanya untuk hpp.read) -->
+                <div v-if="can('hpp.read')" class="rounded-xl bg-gray-50 px-3 py-2 text-center dark:bg-gray-900/50">
                   <div class="text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-0.5">Beli</div>
                   <div class="text-xs font-bold text-gray-900 dark:text-white">
                     {{ formatCurrencyShort(product.price_buy) }}
@@ -158,6 +159,7 @@
               <!-- Action buttons -->
               <div class="flex items-center gap-2">
                 <button
+                  v-can="'product.read'"
                   @click="viewProduct(product)"
                   class="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white py-2.5 text-xs font-semibold text-gray-700 transition active:scale-95 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                 >
@@ -168,6 +170,7 @@
                   Detail
                 </button>
                 <button
+                  v-can="'product.write'"
                   @click="editProduct(product)"
                   class="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-brand-500 py-2.5 text-xs font-semibold text-white transition active:scale-95"
                 >
@@ -177,6 +180,7 @@
                   Edit
                 </button>
                 <button
+                  v-can="'product.write'"
                   @click="deleteProduct(product)"
                   class="flex-shrink-0 flex h-10 w-10 items-center justify-center rounded-xl border border-error-200 bg-error-50 text-error-600 transition active:scale-95 dark:border-error-500/20 dark:bg-error-500/10 dark:text-error-400"
                 >
@@ -239,7 +243,7 @@
           :per-page="10"
           :searchable="true"
           :show-filter="true"
-          :show-add-button="true"
+          :show-add-button="can('product.write')"
           add-button-text="Tambah Produk"
           title="Produk Barang"
           :subtitle="`${settingsStore.storeSubtitle} - ${productsStore.products.length} Produk barang`"
@@ -332,6 +336,7 @@
                   {{ selectedProducts.length }} dipilih
                 </span>
                 <button
+                  v-can="'product.write'"
                   @click="bulkDelete"
                   class="rounded-lg bg-error-500 px-4 py-2 text-sm font-medium text-white hover:bg-error-600"
                 >
@@ -343,6 +348,7 @@
             <template #rowActions="{ row }">
               <div class="flex items-center gap-2">
                 <button
+                  v-can="'product.read'"
                   @click="viewProduct(row)"
                   class="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
                   title="Detail"
@@ -353,6 +359,7 @@
                   </svg>
                 </button>
                 <button
+                  v-can="'product.write'"
                   @click="editProduct(row)"
                   class="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
                   title="Edit"
@@ -362,6 +369,7 @@
                   </svg>
                 </button>
                 <button
+                  v-can="'product.write'"
                   @click="deleteProduct(row)"
                   class="rounded-lg p-2 text-error-600 hover:bg-error-50 dark:text-error-500 dark:hover:bg-error-500/15"
                   title="Hapus"
@@ -422,6 +430,7 @@ import { useProductsStore } from '@/stores/products'
 import { useCategoriesStore } from '@/stores/categories'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useToast } from '@/composables/useToast'
+import { usePermission } from '@/composables/usePermission'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 import {
   downloadCsv,
@@ -436,6 +445,7 @@ const productsStore = useProductsStore()
 const categoriesStore = useCategoriesStore()
 const settingsStore = useStoreSettingsStore()
 const toast = useToast()
+const { can } = usePermission()
 
 const selectedProducts = ref<string[]>([])
 const searchQuery = ref('')
@@ -613,15 +623,31 @@ const formattedProducts = computed(() => {
   }))
 })
 
-const columns = [
-  { key: 'checkbox', label: 'Pilih', width: 'w-1/12' },
-  { key: 'name', label: 'NAMA PRODUK', sortable: true, width: 'w-2/12' },
-  { key: 'sku', label: 'SKU', sortable: true, width: 'w-1/12' },
-  { key: 'category', label: 'KATEGORI', sortable: true, width: 'w-1/12' },
-  { key: 'price_buy', label: 'HARGA BELI', sortable: true, format: 'currency' as const, width: 'w-2/12' },
-  { key: 'price_sell', label: 'HARGA JUAL', sortable: true, format: 'currency' as const, width: 'w-2/12' },
-  { key: 'stock', label: 'STOK', sortable: true, width: 'w-1/12' },
-]
+type ProductColumn = {
+  key: string
+  label: string
+  sortable?: boolean
+  width: string
+  format?: 'date' | 'currency' | 'number' | ((value: any) => string)
+}
+
+const columns = computed<ProductColumn[]>(() => {
+  const cols: ProductColumn[] = [
+    { key: 'checkbox', label: 'Pilih', width: 'w-1/12' },
+    { key: 'name', label: 'NAMA PRODUK', sortable: true, width: 'w-2/12' },
+    { key: 'sku', label: 'SKU', sortable: true, width: 'w-1/12' },
+    { key: 'category', label: 'KATEGORI', sortable: true, width: 'w-1/12' },
+  ]
+  // Kolom HPP hanya untuk role dengan hpp.read — tanpa permission nilainya NULL.
+  if (can('hpp.read')) {
+    cols.push({ key: 'price_buy', label: 'HARGA BELI', sortable: true, format: 'currency' as const, width: 'w-2/12' })
+  }
+  cols.push(
+    { key: 'price_sell', label: 'HARGA JUAL', sortable: true, format: 'currency' as const, width: 'w-2/12' },
+    { key: 'stock', label: 'STOK', sortable: true, width: 'w-1/12' },
+  )
+  return cols
+})
 
 onMounted(async () => {
   try {
@@ -727,32 +753,32 @@ const handleCategoryChange = (category: string) => {
 /* ============================================================
  * EXPORT CSV
  * ============================================================ */
-const EXPORT_HEADERS = [
-  'Nama Produk',
-  'SKU',
-  'Barcode',
-  'Kategori',
-  'Harga Beli',
-  'Harga Jual',
-  'Stok',
-  'Stok Minimum',
-  'Status',
-]
-
 const exportCsv = () => {
+  const canReadHpp = can('hpp.read')
+  const headers = [
+    'Nama Produk',
+    'SKU',
+    'Barcode',
+    'Kategori',
+    ...(canReadHpp ? ['Harga Beli'] : []),
+    'Harga Jual',
+    'Stok',
+    'Stok Minimum',
+    'Status',
+  ]
   const rows = formattedProducts.value.map((p) => [
     p.name,
     p.sku || '',
     p.barcode || '',
     p.category || '',
-    p.price_buy,
+    ...(canReadHpp ? [p.price_buy] : []),
     p.price_sell,
     p.stock,
     p.minimum_stock ?? '',
     p.is_active ? 'Aktif' : 'Nonaktif',
   ])
   downloadCsv(`produk-${new Date().toISOString().slice(0, 10)}.csv`, [
-    EXPORT_HEADERS,
+    headers,
     ...rows,
   ])
   toast.success(
@@ -765,8 +791,21 @@ const exportCsv = () => {
  * TEMPLATE IMPORT CSV
  * ============================================================ */
 const downloadImportTemplate = () => {
+  // Template import memuat kolom Harga Beli (gudang boleh menulis HPP),
+  // jadi header template selalu lengkap — terpisah dari export daftar produk.
+  const TEMPLATE_HEADERS = [
+    'Nama Produk',
+    'SKU',
+    'Barcode',
+    'Kategori',
+    'Harga Beli',
+    'Harga Jual',
+    'Stok',
+    'Stok Minimum',
+    'Status',
+  ]
   downloadCsv('template-import-produk.csv', [
-    EXPORT_HEADERS,
+    TEMPLATE_HEADERS,
     [
       'Contoh Produk',
       'SKU001',

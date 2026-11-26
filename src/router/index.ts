@@ -13,6 +13,7 @@ const router = createRouter({
       name: 'Ecommerce',
       component: () => import('../views/Ecommerce.vue'),
       meta: {
+        permission: 'dashboard.read',
         title: 'eCommerce Dashboard',
       },
     },
@@ -37,6 +38,7 @@ const router = createRouter({
       name: 'Store Settings',
       component: () => import('../views/Settings/StoreSettings.vue'),
       meta: {
+        permission: 'settings.read',
         title: 'Pengaturan Toko',
       },
     },
@@ -45,6 +47,7 @@ const router = createRouter({
       name: 'Store Info',
       component: () => import('../views/Settings/StoreInfo.vue'),
       meta: {
+        permission: 'settings.read',
         title: 'Informasi Toko',
       },
     },
@@ -53,7 +56,17 @@ const router = createRouter({
       name: 'Global Variables',
       component: () => import('../views/Settings/GlobalVariables.vue'),
       meta: {
+        permission: 'settings.read',
         title: 'Variabel Global',
+      },
+    },
+    {
+      path: '/settings/users',
+      name: 'User Management',
+      component: () => import('../views/Settings/Users.vue'),
+      meta: {
+        permission: 'user.manage',
+        title: 'Kelola Pengguna',
       },
     },
     {
@@ -69,6 +82,7 @@ const router = createRouter({
       name: 'Sync Debugger',
       component: () => import('../views/Settings/SyncDebugger.vue'),
       meta: {
+        permission: 'settings.read',
         title: 'Sync Debugger',
       },
     },
@@ -77,6 +91,7 @@ const router = createRouter({
       name: 'Event Log',
       component: () => import('../views/Settings/EventLog.vue'),
       meta: {
+        permission: 'settings.read',
         title: 'Log Event',
       },
     },
@@ -85,6 +100,7 @@ const router = createRouter({
       name: 'Fix Payment Allocation',
       component: () => import('../views/Settings/FixPaymentAllocation.vue'),
       meta: {
+        permission: 'settings.read',
         title: 'Perbaikan Laba Terealisasi',
       },
     },
@@ -93,6 +109,7 @@ const router = createRouter({
       name: 'DevTools',
       component: () => import('../views/DevTools.vue'),
       meta: {
+        permission: 'settings.read',
         title: 'Developer Tools',
       },
     },
@@ -111,6 +128,7 @@ const router = createRouter({
       name: 'Product List',
       component: () => import('../views/Products/ProductList.vue'),
       meta: {
+        permission: 'product.read',
         title: 'Daftar Produk',
       },
     },
@@ -119,6 +137,7 @@ const router = createRouter({
       name: 'Add Product',
       component: () => import('../views/Products/AddProduct.vue'),
       meta: {
+        permission: 'product.write',
         title: 'Tambah Produk',
       },
     },
@@ -127,6 +146,7 @@ const router = createRouter({
       name: 'Product Detail',
       component: () => import('../views/Products/ProductDetail.vue'),
       meta: {
+        permission: 'product.read',
         title: 'Detail Produk',
       },
     },
@@ -135,6 +155,7 @@ const router = createRouter({
       name: 'Edit Product',
       component: () => import('../views/Products/EditProduct.vue'),
       meta: {
+        permission: 'product.write',
         title: 'Edit Produk',
       },
     },
@@ -143,6 +164,7 @@ const router = createRouter({
       name: 'Category List',
       component: () => import('../views/Categories/CategoryList.vue'),
       meta: {
+        permission: 'product.read',
         title: 'Daftar Kategori',
       },
     },
@@ -151,6 +173,7 @@ const router = createRouter({
       name: 'Add Category',
       component: () => import('../views/Categories/AddCategory.vue'),
       meta: {
+        permission: 'product.write',
         title: 'Tambah Kategori',
       },
     },
@@ -159,6 +182,7 @@ const router = createRouter({
       name: 'Category Detail',
       component: () => import('../views/Categories/CategoryDetail.vue'),
       meta: {
+        permission: 'product.read',
         title: 'Detail Kategori',
       },
     },
@@ -167,6 +191,7 @@ const router = createRouter({
       name: 'Edit Category',
       component: () => import('../views/Categories/EditCategory.vue'),
       meta: {
+        permission: 'product.write',
         title: 'Edit Kategori',
       },
     },
@@ -175,6 +200,7 @@ const router = createRouter({
       name: 'Customer List',
       component: () => import('../views/Customers/CustomerList.vue'),
       meta: {
+        permission: 'customer.read',
         title: 'Daftar Customer',
       },
     },
@@ -183,6 +209,7 @@ const router = createRouter({
       name: 'Add Customer',
       component: () => import('../views/Customers/AddCustomer.vue'),
       meta: {
+        permission: 'customer.write',
         title: 'Tambah Customer',
       },
     },
@@ -191,6 +218,7 @@ const router = createRouter({
       name: 'Customer Detail',
       component: () => import('../views/Customers/CustomerDetail.vue'),
       meta: {
+        permission: 'customer.read',
         title: 'Detail Customer',
       },
     },
@@ -199,6 +227,7 @@ const router = createRouter({
       name: 'Edit Customer',
       component: () => import('../views/Customers/EditCustomer.vue'),
       meta: {
+        permission: 'customer.write',
         title: 'Edit Customer',
       },
     },
@@ -207,6 +236,7 @@ const router = createRouter({
       name: 'Transaction List',
       component: () => import('../views/Transactions/TransactionList.vue'),
       meta: {
+        permission: 'transaction.read',
         title: 'Daftar Transaksi',
       },
     },
@@ -215,6 +245,7 @@ const router = createRouter({
       name: 'Add Transaction',
       component: () => import('../views/Transactions/AddTransaction.vue'),
       meta: {
+        permission: 'transaction.write',
         title: 'Transaksi Baru',
       },
     },
@@ -223,6 +254,7 @@ const router = createRouter({
       name: 'Add Transaction From Home',
       component: () => import('../views/Transactions/AddTransactionFromHome.vue'),
       meta: {
+        permission: 'transaction.write',
         title: 'Transaksi Baru',
       },
     },
@@ -231,6 +263,7 @@ const router = createRouter({
       name: 'Return List',
       component: () => import('../views/Returns/ReturnList.vue'),
       meta: {
+        permission: 'transaction.read',
         title: 'Daftar Retur',
       },
     },
@@ -239,6 +272,7 @@ const router = createRouter({
       name: 'Transaction Detail',
       component: () => import('../views/Transactions/TransactionDetail.vue'),
       meta: {
+        permission: 'transaction.read',
         title: 'Detail Transaksi',
       },
     },
@@ -247,6 +281,7 @@ const router = createRouter({
       name: 'Transaction Invoice',
       component: () => import('../views/Transactions/InvoicePage.vue'),
       meta: {
+        permission: 'transaction.read',
         title: 'Cetak Invoice',
       },
     },
@@ -255,6 +290,7 @@ const router = createRouter({
       name: 'Price Matrix',
       component: () => import('../views/PriceMatrix/PriceMatrixMenu.vue'),
       meta: {
+        permission: 'price.read',
         title: 'Matriks Harga',
       },
     },
@@ -262,79 +298,80 @@ const router = createRouter({
       path: '/price-matrix/tiers',
       name: 'Price Tier List',
       component: () => import('../views/PriceMatrix/tiers/TierListPage.vue'),
-      meta: { title: 'Harga Tier' },
+      meta: { permission: 'price.read', title: 'Harga Tier' },
     },
     {
       path: '/price-matrix/tiers/add',
       name: 'Add Price Tier',
       component: () => import('../views/PriceMatrix/tiers/TierFormPage.vue'),
-      meta: { title: 'Tambah Harga Tier' },
+      meta: { permission: 'price.write', title: 'Tambah Harga Tier' },
     },
     {
       path: '/price-matrix/tiers/:id/edit',
       name: 'Edit Price Tier',
       component: () => import('../views/PriceMatrix/tiers/TierFormPage.vue'),
-      meta: { title: 'Edit Harga Tier' },
+      meta: { permission: 'price.write', title: 'Edit Harga Tier' },
     },
     {
       path: '/price-matrix/groups',
       name: 'Customer Group List',
       component: () => import('../views/PriceMatrix/groups/GroupListPage.vue'),
-      meta: { title: 'Grup Pelanggan' },
+      meta: { permission: 'price.read', title: 'Grup Pelanggan' },
     },
     {
       path: '/price-matrix/groups/add',
       name: 'Add Customer Group',
       component: () => import('../views/PriceMatrix/groups/GroupFormPage.vue'),
-      meta: { title: 'Tambah Grup' },
+      meta: { permission: 'price.write', title: 'Tambah Grup' },
     },
     {
       path: '/price-matrix/groups/:id/edit',
       name: 'Edit Customer Group',
       component: () => import('../views/PriceMatrix/groups/GroupFormPage.vue'),
-      meta: { title: 'Edit Grup' },
+      meta: { permission: 'price.write', title: 'Edit Grup' },
     },
     {
       path: '/price-matrix/group-prices',
       name: 'Group Price List',
       component: () => import('../views/PriceMatrix/groupPrices/GroupPriceListPage.vue'),
-      meta: { title: 'Harga Grup' },
+      meta: { permission: 'price.read', title: 'Harga Grup' },
     },
     {
       path: '/price-matrix/group-prices/add',
       name: 'Add Group Price',
       component: () => import('../views/PriceMatrix/groupPrices/GroupPriceFormPage.vue'),
-      meta: { title: 'Tambah Harga Grup' },
+      meta: { permission: 'price.write', title: 'Tambah Harga Grup' },
     },
     {
       path: '/price-matrix/group-prices/:id/edit',
       name: 'Edit Group Price',
       component: () => import('../views/PriceMatrix/groupPrices/GroupPriceFormPage.vue'),
-      meta: { title: 'Edit Harga Grup' },
+      meta: { permission: 'price.write', title: 'Edit Harga Grup' },
     },
     {
       path: '/price-matrix/customers',
       name: 'Customer Price List',
       component: () => import('../views/PriceMatrix/customers/CustomerPriceListPage.vue'),
-      meta: { title: 'Harga Khusus' },
+      meta: { permission: 'price.read', title: 'Harga Khusus' },
     },
     {
       path: '/price-matrix/customers/add',
       name: 'Add Customer Price',
       component: () => import('../views/PriceMatrix/customers/CustomerPriceFormPage.vue'),
-      meta: { title: 'Tambah Harga Khusus' },
+      meta: { permission: 'price.write', title: 'Tambah Harga Khusus' },
     },
     {
       path: '/price-matrix/customers/:id/edit',
       name: 'Edit Customer Price',
       component: () => import('../views/PriceMatrix/customers/CustomerPriceFormPage.vue'),
-      meta: { title: 'Edit Harga Khusus' },
+      meta: { permission: 'price.write', title: 'Edit Harga Khusus' },
     },
     {
       path: '/reports',
       name: 'Reports Index',
       component: () => import('../views/Reports/ReportsIndex.vue'),
       meta: {
+        permission: 'report.sales.read',
         title: 'Laporan',
       },
     },
@@ -343,6 +380,7 @@ const router = createRouter({
       name: 'Reports Menu',
       component: () => import('../views/Reports/ReportsIndex.vue'),
       meta: {
+        permission: 'report.sales.read',
         title: 'Laporan',
       },
     },
@@ -351,6 +389,7 @@ const router = createRouter({
       name: 'Sales Report',
       component: () => import('../views/Reports/SalesReport.vue'),
       meta: {
+        permission: 'report.sales.read',
         title: 'Laporan Penjualan',
       },
     },
@@ -359,6 +398,7 @@ const router = createRouter({
       name: 'Profit Loss Report',
       component: () => import('../views/Reports/ProfitLossReport.vue'),
       meta: {
+        permission: 'report.sales.read',
         title: 'Laporan Laba Rugi',
       },
     },
@@ -367,6 +407,7 @@ const router = createRouter({
       name: 'Daily Profit Report',
       component: () => import('../views/Reports/DailyProfitReport.vue'),
       meta: {
+        permission: 'report.sales.read',
         title: 'Laporan Keuntungan Harian',
       },
     },
@@ -375,6 +416,7 @@ const router = createRouter({
       name: 'Stock Management',
       component: () => import('../views/Stock/StockManagement.vue'),
       meta: {
+        permission: 'stock.read',
         title: 'Stok Gudang',
       },
     },
@@ -383,6 +425,7 @@ const router = createRouter({
       name: 'Stock Detail',
       component: () => import('../views/Stock/StockDetail.vue'),
       meta: {
+        permission: 'stock.read',
         title: 'Detail Stok',
       },
     },
@@ -391,6 +434,7 @@ const router = createRouter({
       name: 'Stock Movements',
       component: () => import('../views/Stock/StockMovements.vue'),
       meta: {
+        permission: 'stock.read',
         title: 'Riwayat Mutasi Stok',
       },
     },
@@ -399,6 +443,7 @@ const router = createRouter({
       name: 'Customer Invoices',
       component: () => import('../views/Invoices/InvoiceKecamatanList.vue'),
       meta: {
+        permission: 'transaction.read',
         title: 'Invoice Pelanggan',
       },
     },
@@ -407,6 +452,7 @@ const router = createRouter({
       name: 'Customer Invoices By Kecamatan',
       component: () => import('../views/Invoices/InvoiceCustomerList.vue'),
       meta: {
+        permission: 'transaction.read',
         title: 'Pilih Customer',
       },
     },
@@ -415,6 +461,7 @@ const router = createRouter({
       name: 'Customer Invoice List',
       component: () => import('../views/Invoices/CustomerInvoiceList.vue'),
       meta: {
+        permission: 'transaction.read',
         title: 'Daftar Invoice Pelanggan',
       },
     },
@@ -423,6 +470,7 @@ const router = createRouter({
       name: 'Add Customer Transaction',
       component: () => import('../views/Invoices/AddCustomerTransaction.vue'),
       meta: {
+        permission: 'transaction.write',
         title: 'Transaksi Baru',
       },
     },
@@ -431,6 +479,7 @@ const router = createRouter({
       name: 'Customer Invoice Detail',
       component: () => import('../views/Invoices/InvoiceDetail.vue'),
       meta: {
+        permission: 'transaction.read',
         title: 'Detail Invoice',
       },
     },
@@ -439,6 +488,7 @@ const router = createRouter({
       name: 'Customer Invoice Print',
       component: () => import('../views/Invoices/InvoicePrint.vue'),
       meta: {
+        permission: 'transaction.read',
         title: 'Cetak Invoice',
       },
     },
@@ -458,97 +508,97 @@ const router = createRouter({
       path: '/finance',
       name: 'Finance Dashboard',
       component: () => import('../views/Finance/FinanceDashboard.vue'),
-      meta: { title: 'Dashboard Keuangan' },
+      meta: { permission: 'finance.read', title: 'Dashboard Keuangan' },
     },
     {
       path: '/finance/accounts',
       name: 'Chart of Accounts',
       component: () => import('../views/Finance/ChartOfAccounts.vue'),
-      meta: { title: 'Chart of Accounts' },
+      meta: { permission: 'finance.read', title: 'Chart of Accounts' },
     },
     {
       path: '/finance/journal',
       name: 'Journal List',
       component: () => import('../views/Finance/JournalList.vue'),
-      meta: { title: 'Jurnal Umum' },
+      meta: { permission: 'finance.read', title: 'Jurnal Umum' },
     },
     {
       path: '/finance/journal/new',
       name: 'Journal Form',
       component: () => import('../views/Finance/JournalForm.vue'),
-      meta: { title: 'Buat Jurnal' },
+      meta: { permission: 'finance.write', title: 'Buat Jurnal' },
     },
     {
       path: '/finance/ledger',
       name: 'General Ledger',
       component: () => import('../views/Finance/GeneralLedger.vue'),
-      meta: { title: 'Buku Besar' },
+      meta: { permission: 'finance.read', title: 'Buku Besar' },
     },
     {
       path: '/finance/trial-balance',
       name: 'Trial Balance',
       component: () => import('../views/Finance/TrialBalance.vue'),
-      meta: { title: 'Neraca Saldo & Penyesuaian' },
+      meta: { permission: 'finance.read', title: 'Neraca Saldo & Penyesuaian' },
     },
     {
       path: '/finance/balance-sheet',
       name: 'Balance Sheet',
       component: () => import('../views/Finance/BalanceSheet.vue'),
-      meta: { title: 'Neraca' },
+      meta: { permission: 'finance.read', title: 'Neraca' },
     },
     {
       path: '/finance/cash-flow',
       name: 'Cash Flow',
       component: () => import('../views/Finance/CashFlow.vue'),
-      meta: { title: 'Arus Kas' },
+      meta: { permission: 'finance.read', title: 'Arus Kas' },
     },
     {
       path: '/finance/statements',
       name: 'Financial Statements',
       component: () => import('../views/Finance/FinancialStatements.vue'),
-      meta: { title: 'Laporan Keuangan' },
+      meta: { permission: 'finance.read', title: 'Laporan Keuangan' },
     },
     {
       path: '/finance/closing-periods',
       name: 'Closing Periods',
       component: () => import('../views/Finance/ClosingPeriods.vue'),
-      meta: { title: 'Tutup Buku' },
+      meta: { permission: 'finance.read', title: 'Tutup Buku' },
     },
     {
       path: '/finance/closing-periods/:id',
       name: 'Closing Period Detail',
       component: () => import('../views/Finance/ClosingPeriodDetail.vue'),
-      meta: { title: 'Detail Tutup Buku' },
+      meta: { permission: 'finance.read', title: 'Detail Tutup Buku' },
     },
     {
       path: '/laporan/mutasi-kas',
       name: 'Daily Cash Report',
       component: () => import('../views/Reports/DailyCashReport.vue'),
-      meta: { title: 'Mutasi Kas Hari Ini' },
+      meta: { permission: 'finance.read', title: 'Mutasi Kas Hari Ini' },
     },
     {
       path: '/laporan/mutasi-bank',
       name: 'Daily Bank Report',
       component: () => import('../views/Reports/DailyBankReport.vue'),
-      meta: { title: 'Mutasi Bank Hari Ini' },
+      meta: { permission: 'finance.read', title: 'Mutasi Bank Hari Ini' },
     },
     {
       path: '/laporan/mutasi-kas-bulanan',
       name: 'Monthly Cash Report',
       component: () => import('../views/Reports/MonthlyCashReport.vue'),
-      meta: { title: 'Mutasi Kas Bulanan' },
+      meta: { permission: 'finance.read', title: 'Mutasi Kas Bulanan' },
     },
     {
       path: '/reports/aging-receivables',
       name: 'Aging Receivables Report',
       component: () => import('../views/Reports/AgingReceivablesReport.vue'),
-      meta: { title: 'Laporan Piutang Menua' },
+      meta: { permission: 'report.sales.read', title: 'Laporan Piutang Menua' },
     },
     {
       path: '/reports/aging-receivables',
       name: 'Aging Receivables Report',
       component: () => import('../views/Reports/AgingReceivablesReport.vue'),
-      meta: { title: 'Laporan Piutang Menua' },
+      meta: { permission: 'report.sales.read', title: 'Laporan Piutang Menua' },
     },
     // ============================================================
     // Modul Pembelian Barang (Purchasing / Procurement)
@@ -557,97 +607,97 @@ const router = createRouter({
       path: '/purchasing',
       name: 'Purchasing Dashboard',
       component: () => import('../views/Purchasing/PurchaseDashboard.vue'),
-      meta: { title: 'Dashboard Pembelian' },
+      meta: { permission: 'purchasing.read', title: 'Dashboard Pembelian' },
     },
     {
       path: '/purchasing/suppliers',
       name: 'Supplier List',
       component: () => import('../views/Purchasing/SupplierList.vue'),
-      meta: { title: 'Daftar Supplier' },
+      meta: { permission: 'purchasing.read', title: 'Daftar Supplier' },
     },
     {
       path: '/purchasing/suppliers/add',
       name: 'Add Supplier',
       component: () => import('../views/Purchasing/AddSupplier.vue'),
-      meta: { title: 'Tambah Supplier' },
+      meta: { permission: 'purchasing.write', title: 'Tambah Supplier' },
     },
     {
       path: '/purchasing/suppliers/:id/edit',
       name: 'Edit Supplier',
       component: () => import('../views/Purchasing/EditSupplier.vue'),
-      meta: { title: 'Edit Supplier' },
+      meta: { permission: 'purchasing.write', title: 'Edit Supplier' },
     },
     {
       path: '/purchasing/pos',
       name: 'Purchase Order List',
       component: () => import('../views/Purchasing/PurchaseOrderList.vue'),
-      meta: { title: 'Purchase Order' },
+      meta: { permission: 'purchasing.read', title: 'Purchase Order' },
     },
     {
       path: '/purchasing/pos/add',
       name: 'Purchase Order Form',
       component: () => import('../views/Purchasing/PurchaseOrderForm.vue'),
-      meta: { title: 'Buat Purchase Order' },
+      meta: { permission: 'purchasing.write', title: 'Buat Purchase Order' },
     },
     {
       path: '/purchasing/pos/:id',
       name: 'Purchase Order Detail',
       component: () => import('../views/Purchasing/PurchaseOrderDetail.vue'),
-      meta: { title: 'Detail Purchase Order' },
+      meta: { permission: 'purchasing.read', title: 'Detail Purchase Order' },
     },
     {
       path: '/purchasing/grns',
       name: 'Goods Receipt List',
       component: () => import('../views/Purchasing/GoodsReceiptList.vue'),
-      meta: { title: 'Goods Receipt' },
+      meta: { permission: 'purchasing.read', title: 'Goods Receipt' },
     },
     {
       path: '/purchasing/grns/add',
       name: 'Goods Receipt Form',
       component: () => import('../views/Purchasing/GoodsReceiptForm.vue'),
-      meta: { title: 'Terima Barang' },
+      meta: { permission: 'purchasing.write', title: 'Terima Barang' },
     },
     {
       path: '/purchasing/grns/:id',
       name: 'Goods Receipt Detail',
       component: () => import('../views/Purchasing/GoodsReceiptDetail.vue'),
-      meta: { title: 'Detail Goods Receipt' },
+      meta: { permission: 'purchasing.read', title: 'Detail Goods Receipt' },
     },
     {
       path: '/purchasing/pis',
       name: 'Purchase Invoice List',
       component: () => import('../views/Purchasing/PurchaseInvoiceList.vue'),
-      meta: { title: 'Faktur Pembelian' },
+      meta: { permission: 'purchasing.read', title: 'Faktur Pembelian' },
     },
     {
       path: '/purchasing/pis/add',
       name: 'Purchase Invoice Form',
       component: () => import('../views/Purchasing/PurchaseInvoiceForm.vue'),
-      meta: { title: 'Buat Faktur Pembelian' },
+      meta: { permission: 'purchasing.write', title: 'Buat Faktur Pembelian' },
     },
     {
       path: '/purchasing/pis/:id',
       name: 'Purchase Invoice Detail',
       component: () => import('../views/Purchasing/PurchaseInvoiceDetail.vue'),
-      meta: { title: 'Detail Faktur Pembelian' },
+      meta: { permission: 'purchasing.read', title: 'Detail Faktur Pembelian' },
     },
     {
       path: '/purchasing/returns',
       name: 'Purchase Return List',
       component: () => import('../views/Purchasing/PurchaseReturnList.vue'),
-      meta: { title: 'Retur Pembelian' },
+      meta: { permission: 'purchasing.read', title: 'Retur Pembelian' },
     },
     {
       path: '/purchasing/returns/add',
       name: 'Purchase Return Form',
       component: () => import('../views/Purchasing/PurchaseReturnForm.vue'),
-      meta: { title: 'Buat Retur Pembelian' },
+      meta: { permission: 'purchasing.write', title: 'Buat Retur Pembelian' },
     },
     {
       path: '/purchasing/returns/:id',
       name: 'Purchase Return Detail',
       component: () => import('../views/Purchasing/PurchaseReturnDetail.vue'),
-      meta: { title: 'Detail Retur Pembelian' },
+      meta: { permission: 'purchasing.read', title: 'Detail Retur Pembelian' },
     },
     // ============================================================
     // Modul HR & Payroll — Manajemen Karyawan
@@ -656,43 +706,43 @@ const router = createRouter({
       path: '/hr/employees',
       name: 'Employee List',
       component: () => import('../views/Hr/EmployeeList.vue'),
-      meta: { title: 'Daftar Karyawan' },
+      meta: { permission: 'hr.read', title: 'Daftar Karyawan' },
     },
     {
       path: '/hr/employees/add',
       name: 'Add Employee',
       component: () => import('../views/Hr/EmployeeForm.vue'),
-      meta: { title: 'Tambah Karyawan' },
+      meta: { permission: 'hr.read', title: 'Tambah Karyawan' },
     },
     {
       path: '/hr/employees/:id',
       name: 'Employee Detail',
       component: () => import('../views/Hr/EmployeeDetail.vue'),
-      meta: { title: 'Detail Karyawan' },
+      meta: { permission: 'hr.read', title: 'Detail Karyawan' },
     },
     {
       path: '/hr/employees/edit/:id',
       name: 'Edit Employee',
       component: () => import('../views/Hr/EmployeeForm.vue'),
-      meta: { title: 'Edit Karyawan' },
+      meta: { permission: 'hr.read', title: 'Edit Karyawan' },
     },
     {
       path: '/hr/loans',
       name: 'Employee Loan List',
       component: () => import('../views/Hr/EmployeeLoanList.vue'),
-      meta: { title: 'Kasbon Karyawan' },
+      meta: { permission: 'hr.read', title: 'Kasbon Karyawan' },
     },
     {
       path: '/hr/payroll',
       name: 'Payroll List',
       component: () => import('../views/Hr/PayrollListNew.vue'),
-      meta: { title: 'Slip Gaji' },
+      meta: { permission: 'hr.read', title: 'Slip Gaji' },
     },
     {
       path: '/hr/payroll/print/:id',
       name: 'Print Payroll Slip',
       component: () => import('../views/Hr/PayrollSlipPrint.vue'),
-      meta: { title: 'Cetak Slip Gaji' },
+      meta: { permission: 'hr.read', title: 'Cetak Slip Gaji' },
     },
 
     // ============================================================
@@ -702,43 +752,43 @@ const router = createRouter({
       path: '/shipping/deliveries',
       name: 'Delivery Order List',
       component: () => import('../views/Shipping/DeliveryOrderList.vue'),
-      meta: { title: 'Surat Jalan' },
+      meta: { permission: 'shipping.read', title: 'Surat Jalan' },
     },
     {
       path: '/shipping/pending-shipments',
       name: 'Pending Shipment List',
       component: () => import('../views/Shipping/PendingShipmentList.vue'),
-      meta: { title: 'Transaksi Belum Dikirim' },
+      meta: { permission: 'shipping.read', title: 'Transaksi Belum Dikirim' },
     },
     {
       path: '/shipping/deliveries/add',
       name: 'Add Delivery Order',
       component: () => import('../views/Shipping/DeliveryOrderForm.vue'),
-      meta: { title: 'Buat Surat Jalan' },
+      meta: { permission: 'shipping.write', title: 'Buat Surat Jalan' },
     },
     {
       path: '/shipping/deliveries/:id',
       name: 'Delivery Order Detail',
       component: () => import('../views/Shipping/DeliveryOrderDetail.vue'),
-      meta: { title: 'Detail Surat Jalan' },
+      meta: { permission: 'shipping.read', title: 'Detail Surat Jalan' },
     },
     {
       path: '/shipping/deliveries/edit/:id',
       name: 'Edit Delivery Order',
       component: () => import('../views/Shipping/DeliveryOrderForm.vue'),
-      meta: { title: 'Edit Surat Jalan' },
+      meta: { permission: 'shipping.write', title: 'Edit Surat Jalan' },
     },
     {
       path: '/shipping/deliveries/print/:id',
       name: 'Print Delivery Order',
       component: () => import('../views/Shipping/DeliveryOrderPrint.vue'),
-      meta: { title: 'Cetak Surat Jalan' },
+      meta: { permission: 'shipping.read', title: 'Cetak Surat Jalan' },
     },
     {
       path: '/shipping/vehicles',
       name: 'Vehicle List',
       component: () => import('../views/Shipping/VehicleList.vue'),
-      meta: { title: 'Kendaraan' },
+      meta: { permission: 'shipping.read', title: 'Kendaraan' },
     },
     // ============================================================
     // Halaman "Lihat Semua" Menu Cepat (mobile dashboard)
@@ -747,7 +797,16 @@ const router = createRouter({
       path: '/quick-menu/:slug',
       name: 'Quick Menu Group',
       component: () => import('../views/QuickMenu/QuickMenuGroup.vue'),
-      meta: { title: 'Semua Menu' },
+      meta: { permission: 'dashboard.read', title: 'Semua Menu' },
+    },
+    // ============================================================
+    // Akses ditolak (guard permission)
+    // ============================================================
+    {
+      path: '/403',
+      name: 'Forbidden',
+      component: () => import('../views/Pages/Forbidden.vue'),
+      meta: { title: 'Akses Ditolak' },
     },
   ],
 })
@@ -801,4 +860,35 @@ router.beforeEach(async (to, from, next) => {
   } else {
     next()
   }
+})
+
+/**
+ * Guard permission (lapis UI).
+ *
+ * Dijalankan SETELAH guard auth, jadi `to` di sini sudah pasti rute yang
+ * boleh diakses secara sesi. Nilai `permissions` berasal dari `store_members`
+ * + `role_permissions`; bila belum termuat (mis. offline tanpa cache) kita
+ * coba muat sekali, lalu **fail-closed** — rute ber-permission tanpa hak
+ * diarahkan ke `/403`.
+ *
+ * Ini bukan kontrol keamanan: RLS/RPC tetap menolak akses data di server.
+ * Guard ini hanya mencegah pengguna tersesat ke halaman yang pasti gagal.
+ */
+router.beforeEach(async (to, from, next) => {
+  const required = to.meta.permission
+  if (!required) return next()
+
+  const authStore = useAuthStore()
+
+  // Rute publik / belum login sudah ditangani guard sebelumnya.
+  if (!authStore.isAuthenticated) return next()
+
+  if (!authStore.membershipLoaded) {
+    await authStore.loadMembership()
+  }
+
+  // `can()` membaca Set permission; kosong = tidak punya hak apa pun.
+  if (authStore.can(required)) return next()
+
+  next({ path: '/403', replace: true })
 })

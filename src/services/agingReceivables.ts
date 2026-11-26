@@ -38,7 +38,6 @@ export const agingReceivablesService = {
     const { data, error } = await supabase
       .from('transactions')
       .select('customer_id, customer_name, remaining_amount, created_at, customer:customers(kecamatan)')
-      .eq('user_id', userData.user.id)
       .neq('payment_status', 'lunas')
       .not('status', 'in', '("void","batal")')
       .gt('remaining_amount', 0)

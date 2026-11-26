@@ -301,7 +301,7 @@ export const purchasingService = {
   async fetchPurchaseReturns(): Promise<PurchaseReturn[]> {
     const { data, error } = await supabase
       .from('purchase_returns')
-      .select('*, items:purchase_return_items(*)')
+      .select('*, items:v_purchase_return_items(*)')
       .order('return_date', { ascending: false })
     if (error) throw error
     return (data || []) as PurchaseReturn[]
@@ -310,7 +310,7 @@ export const purchasingService = {
   async getPurchaseReturn(id: string): Promise<PurchaseReturn | null> {
     const { data, error } = await supabase
       .from('purchase_returns')
-      .select('*, items:purchase_return_items(*)')
+      .select('*, items:v_purchase_return_items(*)')
       .eq('id', id)
       .single()
     if (error) throw error

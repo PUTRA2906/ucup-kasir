@@ -6,6 +6,7 @@
       <MobilePageHeader title="Daftar Customer" :subtitle="customersStore.paginationTotal + ' Customer'">
         <template #actions>
           <button
+            v-can="'customer.write'"
             @click="addCustomer"
             class="flex h-8 w-8 items-center justify-center rounded-xl border border-brand-500 bg-brand-500 text-white transition hover:bg-brand-600 active:scale-95"
           >
@@ -167,7 +168,7 @@
         :data="displayCustomers"
         :per-page="PER_PAGE"
         :searchable="true"
-        :show-add-button="true"
+        :show-add-button="can('customer.write')"
         add-button-text="Tambah Customer"
         title="Daftar Customer"
         :subtitle="`${settingsStore.storeSubtitle} - ${customersStore.paginationTotal} Customer`"
@@ -294,6 +295,7 @@
               </svg>
             </button>
             <button
+              v-can="'customer.write'"
               @click="editCustomer(row)"
               class="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
               title="Edit"
@@ -308,6 +310,7 @@
               </svg>
             </button>
             <button
+              v-can="'customer.write'"
               @click="deleteCustomer(row)"
               class="rounded-lg p-2 text-error-600 hover:bg-error-50 dark:text-error-500 dark:hover:bg-error-500/15"
               title="Hapus"
@@ -357,6 +360,7 @@
                 </button>
 
                 <button
+                  v-can="'customer.write'"
                   @click="editCustomer(selectedMobileCustomer); showMobileMenu = false"
                   class="w-full flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-sm font-medium text-gray-700 transition hover:bg-gray-50 active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
@@ -367,6 +371,7 @@
                 </button>
 
                 <button
+                  v-can="'customer.write'"
                   @click="deleteCustomer(selectedMobileCustomer); showMobileMenu = false"
                   class="w-full flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-100 active:scale-95 dark:border-red-900/50 dark:bg-red-500/10 dark:text-red-500 dark:hover:bg-red-500/20"
                 >
@@ -508,6 +513,7 @@ import ImportCsvModal from '@/components/common/ImportCsvModal.vue'
 import { useCustomersStore } from '@/stores/customers'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useToast } from '@/composables/useToast'
+import { usePermission } from '@/composables/usePermission'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 import {
   downloadCsv,
@@ -520,6 +526,7 @@ const router = useRouter()
 const customersStore = useCustomersStore()
 const settingsStore = useStoreSettingsStore()
 const toast = useToast()
+const { can } = usePermission()
 
 const selectedCustomers = ref<string[]>([])
 const selectAllCheckbox = ref<HTMLInputElement | null>(null)

@@ -5,6 +5,7 @@
   >
     <!-- Home -->
     <router-link
+      v-if="can('dashboard.read')"
       to="/"
       class="nav-btn flex flex-1 flex-col items-center justify-center py-1 transition-colors"
       :class="isActive('/') ? 'font-semibold text-blue-500' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'"
@@ -22,6 +23,7 @@
 
     <!-- Kios -->
     <router-link
+      v-if="can('transaction.read')"
       to="/customer-invoices"
       class="nav-btn flex flex-1 flex-col items-center justify-center py-1 transition-colors"
       :class="isActive('/customer-invoices') ? 'font-semibold text-blue-500' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'"
@@ -39,6 +41,7 @@
 
     <!-- Transaksi (Floating Button) -->
     <router-link
+      v-if="can('transaction.write')"
       to="/transactions/add-from-home"
       class="group flex flex-1 flex-col items-center justify-center py-1 -mt-4"
     >
@@ -54,6 +57,7 @@
 
     <!-- Laporan -->
     <router-link
+      v-if="can('report.sales.read')"
       to="/reports"
       class="nav-btn flex flex-1 flex-col items-center justify-center py-1 transition-colors"
       :class="isActive('/reports') ? 'font-semibold text-blue-500' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'"
@@ -71,6 +75,7 @@
 
     <!-- Pengaturan -->
     <router-link
+      v-if="can('settings.read')"
       to="/settings"
       class="nav-btn flex flex-1 flex-col items-center justify-center py-1 transition-colors"
       :class="isActive('/settings') ? 'font-semibold text-blue-500' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'"
@@ -97,8 +102,10 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
+import { usePermission } from '@/composables/usePermission'
 
 const route = useRoute()
+const { can } = usePermission()
 
 const isActive = (path: string) => {
   if (path === '/') {
@@ -115,9 +122,18 @@ const hasActiveMenu = computed(() => {
   // Hanya tampilkan bottom nav di halaman utama menu, bukan sub-halaman
   const exactPaths = ['/', '/reports', '/settings']
   const prefixPaths = ['/customer-invoices', '/transactions/add-from-home']
-  return (
+  const onMenuPage =
     exactPaths.includes(route.path) ||
     prefixPaths.some(p => route.path.startsWith(p))
-  )
+
+  // Jangan tampilkan bar kosong bila semua tautannya disembunyikan permission.
+  const hasVisibleLink =
+    can('dashboard.read') ||
+    can('transaction.read') ||
+    can('transaction.write') ||
+    can('report.sales.read') ||
+    can('settings.read')
+
+  return onMenuPage && hasVisibleLink
 })
 </script>

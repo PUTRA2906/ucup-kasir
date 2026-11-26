@@ -356,7 +356,7 @@ export const sqliteReturnsService = {
     )
     return rows.map((r) => ({
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       return_id: r.return_id,
       product_id: r.product_id ?? undefined,
       product_name: r.product_name,
@@ -524,7 +524,7 @@ export const sqliteReturnsService = {
   mapRow(r: any): TransactionReturn {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       transaction_id: r.transaction_id,
       return_number: r.return_number,
       total_refund: r.total_refund,

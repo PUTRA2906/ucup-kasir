@@ -14,6 +14,7 @@
           </svg>
         </button>
         <button
+          v-can="'finance.write'"
           @click="router.push('/finance/journal/new')"
           class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-500"
         >
@@ -33,6 +34,7 @@
         Filter Periode
       </button>
       <button
+        v-can="'finance.write'"
         @click="router.push('/finance/journal/new')"
         class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500"
       >

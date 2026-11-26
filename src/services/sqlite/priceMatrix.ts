@@ -22,7 +22,7 @@ const boolToInt = (v: unknown) => (v === false || v === 0 ? 0 : 1)
 function mapTier(r: any): PriceTier & { product?: any } {
   return {
     id: r.id,
-    user_id: r.user_id,
+    store_id: r.user_id,
     product_id: r.product_id,
     min_quantity: r.min_quantity,
     max_quantity: r.max_quantity ?? null,
@@ -42,7 +42,7 @@ function mapTier(r: any): PriceTier & { product?: any } {
 function mapPrice(r: any): CustomerPriceMatrix & { customer?: any; group?: any; product?: any } {
   return {
     id: r.id,
-    user_id: r.user_id,
+    store_id: r.user_id,
     customer_id: r.customer_id ?? null,
     group_id: r.group_id ?? null,
     product_id: r.product_id,
@@ -129,7 +129,7 @@ export const sqlitePriceMatrixService = {
     const now = nowIso()
     const record: PriceTier = {
       id,
-      user_id: userId,
+      store_id: userId,
       product_id: data.product_id!,
       min_quantity: data.min_quantity ?? 1,
       max_quantity: data.max_quantity ?? null,
@@ -231,7 +231,7 @@ export const sqlitePriceMatrixService = {
         const id = uuid()
         const record: CustomerPriceMatrix = {
           id,
-          user_id: userId,
+          store_id: userId,
           customer_id: d.customer_id ?? null,
           group_id: d.group_id ?? null,
           product_id: d.product_id!,
@@ -363,7 +363,7 @@ export const sqlitePriceMatrixService = {
     const now = nowIso()
     const record: CustomerGroup = {
       id,
-      user_id: userId,
+      store_id: userId,
       name: data.name!,
       notes: data.notes,
       is_active: data.is_active ?? true,
@@ -384,7 +384,7 @@ export const sqlitePriceMatrixService = {
            VALUES (?, ?, ?, ?, ?, 'pending', ?)`,
           [memberId, userId, id, customer_id, now, now]
         )
-        memberRecords.push({ id: memberId, user_id: userId, group_id: id, customer_id, created_at: now })
+        memberRecords.push({ id: memberId, store_id: userId, group_id: id, customer_id, created_at: now })
       }
     })
     await addToSyncQueue('INSERT', 'customer_groups', id, { ...record, is_active: !!record.is_active })
@@ -425,7 +425,7 @@ export const sqlitePriceMatrixService = {
                VALUES (?, ?, ?, ?, ?, 'pending', ?)`,
               [memberId, userId, id, c, merged.updated_at, merged.updated_at]
             )
-            memberToAdd.push({ id: memberId, user_id: userId, group_id: id, customer_id: c, created_at: merged.updated_at })
+            memberToAdd.push({ id: memberId, store_id: userId, group_id: id, customer_id: c, created_at: merged.updated_at })
           }
         }
       }
@@ -533,7 +533,7 @@ export const sqlitePriceMatrixService = {
 function mapGroup(r: any): CustomerGroup {
   return {
     id: r.id,
-    user_id: r.user_id,
+    store_id: r.user_id,
     name: r.name,
     notes: r.notes ?? undefined,
     is_active: !!r.is_active,

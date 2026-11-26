@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 
 export interface ItemPaymentAllocation {
   id: string
-  user_id: string
+  store_id: string
   transaction_id: string
   item_id: string
   payment_id: string
@@ -18,7 +18,7 @@ export interface ItemPaymentAllocation {
 export interface ItemPaymentSummary {
   item_id: string
   transaction_id: string
-  user_id: string
+  store_id: string
   product_id?: string
   product_name: string
   item_total: number

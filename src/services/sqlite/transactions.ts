@@ -60,7 +60,7 @@ export const sqliteTransactionsService = {
     )
     return rows.map((r) => ({
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       transaction_id: r.transaction_id,
       product_id: r.product_id ?? undefined,
       product_name: r.product_name,
@@ -79,7 +79,7 @@ export const sqliteTransactionsService = {
     )
     return rows.map((r) => ({
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       transaction_id: r.transaction_id,
       amount: r.amount,
       payment_method: r.payment_method,
@@ -1208,7 +1208,7 @@ export const sqliteTransactionsService = {
   mapRow(r: any): Transaction {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       transaction_number: r.transaction_number,
       customer_id: r.customer_id ?? undefined,
       customer_name: r.customer_name ?? undefined,

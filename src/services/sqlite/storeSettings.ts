@@ -7,7 +7,7 @@ import type { StoreSettings, StoreSettingsUpdate } from '@/types/database'
 // Mirror dari src/services/storeSettings.ts tapi akses SQLite lokal.
 // ============================================================
 
-const DEFAULT_SETTINGS: Omit<StoreSettings, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {
+const DEFAULT_SETTINGS: Omit<StoreSettings, 'id' | 'created_at' | 'updated_at'> = {
   store_name: 'Ucup Kasir',
   store_subtitle: 'Toko Berkat Jaya Makmur',
   store_address: '',
@@ -67,7 +67,7 @@ export const sqliteStoreSettingsService = {
       )
     })
 
-    const created: StoreSettings = { id, user_id: userId, ...DEFAULT_SETTINGS, created_at: now, updated_at: now }
+    const created: StoreSettings = { id, ...DEFAULT_SETTINGS, created_at: now, updated_at: now }
     await addToSyncQueue('INSERT', 'store_settings', id, created)
     return created
   },
@@ -129,7 +129,7 @@ export const sqliteStoreSettingsService = {
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
           [
             r.id,
-            r.user_id ?? userId,
+            userId,
             r.store_name,
             r.store_subtitle ?? null,
             r.store_address ?? null,
@@ -171,7 +171,7 @@ export const sqliteStoreSettingsService = {
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
           [
             r.id,
-            r.user_id ?? userId,
+            userId,
             r.store_name,
             r.store_subtitle ?? null,
             r.store_address ?? null,
@@ -195,7 +195,6 @@ export const sqliteStoreSettingsService = {
   mapRow(r: any): StoreSettings {
     return {
       id: r.id,
-      user_id: r.user_id,
       store_name: r.store_name,
       store_subtitle: r.store_subtitle ?? undefined,
       store_address: r.store_address ?? undefined,

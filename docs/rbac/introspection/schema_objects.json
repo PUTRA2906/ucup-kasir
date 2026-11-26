@@ -1,0 +1,4765 @@
+{
+ "constraints": [
+  {
+   "tbl": "attendance",
+   "name": "attendance_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['hadir'::text, 'izin'::text, 'sakit'::text, 'cuti'::text, 'alpa'::text])))"
+  },
+  {
+   "tbl": "attendance",
+   "name": "attendance_employee_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "attendance",
+   "name": "attendance_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "attendance",
+   "name": "attendance_employee_id_attendance_date_key",
+   "contype": "u",
+   "def": "UNIQUE (employee_id, attendance_date)"
+  },
+  {
+   "tbl": "categories",
+   "name": "categories_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "chart_of_accounts",
+   "name": "chart_of_accounts_normal_balance_check",
+   "contype": "c",
+   "def": "CHECK ((normal_balance = ANY (ARRAY['debit'::text, 'kredit'::text])))"
+  },
+  {
+   "tbl": "chart_of_accounts",
+   "name": "chart_of_accounts_type_check",
+   "contype": "c",
+   "def": "CHECK ((type = ANY (ARRAY['aset'::text, 'kewajiban'::text, 'ekuitas'::text, 'pendapatan'::text, 'beban'::text])))"
+  },
+  {
+   "tbl": "chart_of_accounts",
+   "name": "chart_of_accounts_parent_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (parent_id) REFERENCES chart_of_accounts(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "chart_of_accounts",
+   "name": "chart_of_accounts_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "chart_of_accounts",
+   "name": "chart_of_accounts_user_id_code_key",
+   "contype": "u",
+   "def": "UNIQUE (user_id, code)"
+  },
+  {
+   "tbl": "closing_periods",
+   "name": "closing_periods_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['closed'::text, 'reopened'::text])))"
+  },
+  {
+   "tbl": "closing_periods",
+   "name": "valid_period",
+   "contype": "c",
+   "def": "CHECK ((period_end >= period_start))"
+  },
+  {
+   "tbl": "closing_periods",
+   "name": "closing_periods_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "closing_periods",
+   "name": "unique_period",
+   "contype": "u",
+   "def": "UNIQUE (user_id, period_start, period_end)"
+  },
+  {
+   "tbl": "customer_group_members",
+   "name": "customer_group_members_customer_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "customer_group_members",
+   "name": "customer_group_members_group_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (group_id) REFERENCES customer_groups(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "customer_group_members",
+   "name": "customer_group_members_user_fk",
+   "contype": "f",
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "customer_group_members",
+   "name": "customer_group_members_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "customer_group_members",
+   "name": "customer_group_members_unique",
+   "contype": "u",
+   "def": "UNIQUE (group_id, customer_id)"
+  },
+  {
+   "tbl": "customer_groups",
+   "name": "customer_groups_user_fk",
+   "contype": "f",
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "customer_groups",
+   "name": "customer_groups_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "customer_price_matrix",
+   "name": "customer_price_matrix_custom_price_check",
+   "contype": "c",
+   "def": "CHECK ((custom_price >= (0)::numeric))"
+  },
+  {
+   "tbl": "customer_price_matrix",
+   "name": "customer_price_matrix_date_check",
+   "contype": "c",
+   "def": "CHECK (((end_date IS NULL) OR (end_date >= start_date)))"
+  },
+  {
+   "tbl": "customer_price_matrix",
+   "name": "customer_price_matrix_min_quantity_check",
+   "contype": "c",
+   "def": "CHECK ((min_quantity > 0))"
+  },
+  {
+   "tbl": "customer_price_matrix",
+   "name": "customer_price_matrix_target_check",
+   "contype": "c",
+   "def": "CHECK ((((customer_id IS NOT NULL) AND (group_id IS NULL)) OR ((customer_id IS NULL) AND (group_id IS NOT NULL))))"
+  },
+  {
+   "tbl": "customer_price_matrix",
+   "name": "customer_price_matrix_customer_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "customer_price_matrix",
+   "name": "customer_price_matrix_group_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (group_id) REFERENCES customer_groups(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "customer_price_matrix",
+   "name": "customer_price_matrix_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "customer_price_matrix",
+   "name": "customer_price_matrix_user_fk",
+   "contype": "f",
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "customer_price_matrix",
+   "name": "customer_price_matrix_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "customer_price_matrix",
+   "name": "customer_price_matrix_unique",
+   "contype": "u",
+   "def": "UNIQUE (user_id, customer_id, product_id, start_date)"
+  },
+  {
+   "tbl": "customers",
+   "name": "customers_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "delivery_items",
+   "name": "delivery_items_delivery_order_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (delivery_order_id) REFERENCES delivery_orders(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "delivery_items",
+   "name": "delivery_items_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "delivery_items",
+   "name": "delivery_items_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "delivery_load_items",
+   "name": "delivery_load_items_delivery_order_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (delivery_order_id) REFERENCES delivery_orders(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "delivery_load_items",
+   "name": "delivery_load_items_user_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "delivery_load_items",
+   "name": "delivery_load_items_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "delivery_loaders",
+   "name": "delivery_loaders_delivery_order_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (delivery_order_id) REFERENCES delivery_orders(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "delivery_loaders",
+   "name": "delivery_loaders_employee_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "delivery_loaders",
+   "name": "delivery_loaders_user_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "delivery_loaders",
+   "name": "delivery_loaders_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "delivery_loaders",
+   "name": "delivery_loaders_delivery_order_id_employee_id_key",
+   "contype": "u",
+   "def": "UNIQUE (delivery_order_id, employee_id)"
+  },
+  {
+   "tbl": "delivery_order_transactions",
+   "name": "delivery_order_transactions_delivery_order_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (delivery_order_id) REFERENCES delivery_orders(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "delivery_order_transactions",
+   "name": "delivery_order_transactions_transaction_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "delivery_order_transactions",
+   "name": "delivery_order_transactions_user_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "delivery_order_transactions",
+   "name": "delivery_order_transactions_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "delivery_order_transactions",
+   "name": "delivery_order_transactions_delivery_order_id_transaction_i_key",
+   "contype": "u",
+   "def": "UNIQUE (delivery_order_id, transaction_id)"
+  },
+  {
+   "tbl": "delivery_orders",
+   "name": "delivery_orders_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['draft'::text, 'disiapkan'::text, 'dikirim'::text, 'selesai'::text, 'batal'::text])))"
+  },
+  {
+   "tbl": "delivery_orders",
+   "name": "delivery_orders_customer_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "delivery_orders",
+   "name": "delivery_orders_driver_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (driver_id) REFERENCES employees(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "delivery_orders",
+   "name": "delivery_orders_trip_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "delivery_orders",
+   "name": "delivery_orders_vehicle_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "delivery_orders",
+   "name": "delivery_orders_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "delivery_orders",
+   "name": "delivery_orders_user_id_do_number_key",
+   "contype": "u",
+   "def": "UNIQUE (user_id, do_number)"
+  },
+  {
+   "tbl": "delivery_tracking",
+   "name": "delivery_tracking_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['draft'::text, 'disiapkan'::text, 'dikirim'::text, 'selesai'::text, 'batal'::text])))"
+  },
+  {
+   "tbl": "delivery_tracking",
+   "name": "delivery_tracking_delivery_order_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (delivery_order_id) REFERENCES delivery_orders(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "delivery_tracking",
+   "name": "delivery_tracking_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "employee_loan_payments",
+   "name": "employee_loan_payments_amount_check",
+   "contype": "c",
+   "def": "CHECK ((amount > (0)::numeric))"
+  },
+  {
+   "tbl": "employee_loan_payments",
+   "name": "employee_loan_payments_created_by_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (created_by) REFERENCES auth.users(id)"
+  },
+  {
+   "tbl": "employee_loan_payments",
+   "name": "employee_loan_payments_loan_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (loan_id) REFERENCES employee_loans(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "employee_loan_payments",
+   "name": "employee_loan_payments_user_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "employee_loan_payments",
+   "name": "employee_loan_payments_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "employee_loans",
+   "name": "employee_loans_amount_check",
+   "contype": "c",
+   "def": "CHECK ((amount > (0)::numeric))"
+  },
+  {
+   "tbl": "employee_loans",
+   "name": "employee_loans_remaining_amount_check",
+   "contype": "c",
+   "def": "CHECK ((remaining_amount >= (0)::numeric))"
+  },
+  {
+   "tbl": "employee_loans",
+   "name": "employee_loans_status_check",
+   "contype": "c",
+   "def": "CHECK (((status)::text = ANY ((ARRAY['active'::character varying, 'paid'::character varying, 'cancelled'::character varying])::text[])))"
+  },
+  {
+   "tbl": "employee_loans",
+   "name": "employee_loans_created_by_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (created_by) REFERENCES auth.users(id)"
+  },
+  {
+   "tbl": "employee_loans",
+   "name": "employee_loans_employee_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "employee_loans",
+   "name": "employee_loans_updated_by_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (updated_by) REFERENCES auth.users(id)"
+  },
+  {
+   "tbl": "employee_loans",
+   "name": "employee_loans_user_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "employee_loans",
+   "name": "employee_loans_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "employees",
+   "name": "employees_gender_check",
+   "contype": "c",
+   "def": "CHECK ((gender = ANY (ARRAY['laki_laki'::text, 'perempuan'::text])))"
+  },
+  {
+   "tbl": "employees",
+   "name": "employees_position_check",
+   "contype": "c",
+   "def": "CHECK ((\"position\" = ANY (ARRAY['supir'::text, 'loader'::text])))"
+  },
+  {
+   "tbl": "employees",
+   "name": "employees_salary_type_check",
+   "contype": "c",
+   "def": "CHECK ((salary_type = ANY (ARRAY['bulanan'::text, 'harian'::text, 'mingguan'::text])))"
+  },
+  {
+   "tbl": "employees",
+   "name": "employees_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['aktif'::text, 'cuti'::text, 'nonaktif'::text, 'keluar'::text])))"
+  },
+  {
+   "tbl": "employees",
+   "name": "employees_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "goods_receipts",
+   "name": "goods_receipts_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['draft'::text, 'completed'::text, 'cancelled'::text])))"
+  },
+  {
+   "tbl": "goods_receipts",
+   "name": "goods_receipts_po_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (po_id) REFERENCES purchase_orders(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "goods_receipts",
+   "name": "goods_receipts_supplier_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "goods_receipts",
+   "name": "goods_receipts_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "grn_items",
+   "name": "grn_items_grn_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (grn_id) REFERENCES goods_receipts(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "grn_items",
+   "name": "grn_items_po_item_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (po_item_id) REFERENCES po_items(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "grn_items",
+   "name": "grn_items_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "grn_items",
+   "name": "grn_items_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "journal_entries",
+   "name": "journal_entries_reference_type_check",
+   "contype": "c",
+   "def": "CHECK ((reference_type = ANY (ARRAY['manual'::text, 'transaction'::text, 'return'::text, 'payment'::text, 'void'::text, 'purchase'::text, 'purchase_payment'::text, 'purchase_return'::text, 'payroll'::text, 'closing'::text, 'reclassify'::text, 'stock_adjustment'::text, 'adjusting'::text])))"
+  },
+  {
+   "tbl": "journal_entries",
+   "name": "journal_entries_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['draft'::text, 'posted'::text, 'void'::text])))"
+  },
+  {
+   "tbl": "journal_entries",
+   "name": "journal_entries_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "journal_lines",
+   "name": "journal_lines_account_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (account_id) REFERENCES chart_of_accounts(id)"
+  },
+  {
+   "tbl": "journal_lines",
+   "name": "journal_lines_journal_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (journal_id) REFERENCES journal_entries(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "journal_lines",
+   "name": "journal_lines_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "notifications",
+   "name": "notifications_type_check",
+   "contype": "c",
+   "def": "CHECK ((type = ANY (ARRAY['stock_alert'::text, 'transaction'::text, 'return'::text, 'system'::text, 'payment'::text])))"
+  },
+  {
+   "tbl": "notifications",
+   "name": "notifications_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "payrolls",
+   "name": "payrolls_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['draft'::text, 'paid'::text])))"
+  },
+  {
+   "tbl": "payrolls",
+   "name": "payrolls_employee_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "payrolls",
+   "name": "payrolls_journal_entry_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "payrolls",
+   "name": "payrolls_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "payrolls",
+   "name": "payrolls_user_id_period_code_key",
+   "contype": "u",
+   "def": "UNIQUE (user_id, period_code)"
+  },
+  {
+   "tbl": "pi_items",
+   "name": "pi_items_grn_item_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (grn_item_id) REFERENCES grn_items(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "pi_items",
+   "name": "pi_items_pi_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (pi_id) REFERENCES purchase_invoices(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "pi_items",
+   "name": "pi_items_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "pi_items",
+   "name": "pi_items_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "pi_payments",
+   "name": "pi_payments_pi_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (pi_id) REFERENCES purchase_invoices(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "pi_payments",
+   "name": "pi_payments_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "po_items",
+   "name": "po_items_po_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (po_id) REFERENCES purchase_orders(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "po_items",
+   "name": "po_items_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "po_items",
+   "name": "po_items_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "price_tiers",
+   "name": "price_tiers_check",
+   "contype": "c",
+   "def": "CHECK (((max_quantity IS NULL) OR (max_quantity >= min_quantity)))"
+  },
+  {
+   "tbl": "price_tiers",
+   "name": "price_tiers_date_check",
+   "contype": "c",
+   "def": "CHECK (((end_date IS NULL) OR (end_date >= start_date)))"
+  },
+  {
+   "tbl": "price_tiers",
+   "name": "price_tiers_min_quantity_check",
+   "contype": "c",
+   "def": "CHECK ((min_quantity > 0))"
+  },
+  {
+   "tbl": "price_tiers",
+   "name": "price_tiers_tier_price_check",
+   "contype": "c",
+   "def": "CHECK ((tier_price >= (0)::numeric))"
+  },
+  {
+   "tbl": "price_tiers",
+   "name": "price_tiers_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "price_tiers",
+   "name": "price_tiers_user_fk",
+   "contype": "f",
+   "def": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "price_tiers",
+   "name": "price_tiers_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "price_tiers",
+   "name": "price_tiers_unique_range",
+   "contype": "u",
+   "def": "UNIQUE (user_id, product_id, min_quantity, start_date)"
+  },
+  {
+   "tbl": "products",
+   "name": "products_category_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "products",
+   "name": "products_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "products",
+   "name": "products_sku_key",
+   "contype": "u",
+   "def": "UNIQUE (sku)"
+  },
+  {
+   "tbl": "purchase_invoices",
+   "name": "purchase_invoices_payment_status_check",
+   "contype": "c",
+   "def": "CHECK ((payment_status = ANY (ARRAY['belum_lunas'::text, 'sebagian'::text, 'lunas'::text])))"
+  },
+  {
+   "tbl": "purchase_invoices",
+   "name": "purchase_invoices_grn_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (grn_id) REFERENCES goods_receipts(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "purchase_invoices",
+   "name": "purchase_invoices_po_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (po_id) REFERENCES purchase_orders(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "purchase_invoices",
+   "name": "purchase_invoices_supplier_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "purchase_invoices",
+   "name": "purchase_invoices_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "purchase_orders",
+   "name": "purchase_orders_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['draft'::text, 'submitted'::text, 'confirmed'::text, 'partial'::text, 'completed'::text, 'cancelled'::text])))"
+  },
+  {
+   "tbl": "purchase_orders",
+   "name": "purchase_orders_supplier_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "purchase_orders",
+   "name": "purchase_orders_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "purchase_return_items",
+   "name": "purchase_return_items_pr_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (pr_id) REFERENCES purchase_returns(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "purchase_return_items",
+   "name": "purchase_return_items_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "purchase_return_items",
+   "name": "purchase_return_items_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "purchase_returns",
+   "name": "purchase_returns_reason_check",
+   "contype": "c",
+   "def": "CHECK ((reason = ANY (ARRAY['cacat'::text, 'salah_produk'::text, 'kadaluarsa'::text, 'rusak_kirim'::text, 'lainnya'::text])))"
+  },
+  {
+   "tbl": "purchase_returns",
+   "name": "purchase_returns_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['draft'::text, 'completed'::text, 'cancelled'::text])))"
+  },
+  {
+   "tbl": "purchase_returns",
+   "name": "purchase_returns_grn_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (grn_id) REFERENCES goods_receipts(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "purchase_returns",
+   "name": "purchase_returns_pi_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (pi_id) REFERENCES purchase_invoices(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "purchase_returns",
+   "name": "purchase_returns_supplier_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "purchase_returns",
+   "name": "purchase_returns_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "return_items",
+   "name": "return_items_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "return_items",
+   "name": "return_items_return_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (return_id) REFERENCES returns(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "return_items",
+   "name": "return_items_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "returns",
+   "name": "returns_transaction_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "returns",
+   "name": "returns_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "stock_adjustments",
+   "name": "stock_adjustments_adjustment_type_check",
+   "contype": "c",
+   "def": "CHECK ((adjustment_type = ANY (ARRAY['add'::text, 'subtract'::text, 'correction'::text])))"
+  },
+  {
+   "tbl": "stock_adjustments",
+   "name": "stock_adjustments_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "stock_adjustments",
+   "name": "stock_adjustments_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "stock_alerts",
+   "name": "stock_alerts_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "stock_alerts",
+   "name": "stock_alerts_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "stock_alerts",
+   "name": "stock_alerts_user_id_product_id_key",
+   "contype": "u",
+   "def": "UNIQUE (user_id, product_id)"
+  },
+  {
+   "tbl": "stock_movements",
+   "name": "stock_movements_movement_type_check",
+   "contype": "c",
+   "def": "CHECK ((movement_type = ANY (ARRAY['in'::text, 'out'::text, 'adjustment'::text, 'opname'::text, 'return'::text])))"
+  },
+  {
+   "tbl": "stock_movements",
+   "name": "stock_movements_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "stock_movements",
+   "name": "stock_movements_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "stock_opname_items",
+   "name": "stock_opname_items_opname_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (opname_id) REFERENCES stock_opnames(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "stock_opname_items",
+   "name": "stock_opname_items_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "stock_opname_items",
+   "name": "stock_opname_items_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "stock_opnames",
+   "name": "stock_opnames_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['draft'::text, 'completed'::text, 'cancelled'::text])))"
+  },
+  {
+   "tbl": "stock_opnames",
+   "name": "stock_opnames_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "stock_opnames",
+   "name": "stock_opnames_opname_number_key",
+   "contype": "u",
+   "def": "UNIQUE (opname_number)"
+  },
+  {
+   "tbl": "store_settings",
+   "name": "store_settings_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "store_settings",
+   "name": "store_settings_user_id_key",
+   "contype": "u",
+   "def": "UNIQUE (user_id)"
+  },
+  {
+   "tbl": "suppliers",
+   "name": "suppliers_payment_term_check",
+   "contype": "c",
+   "def": "CHECK ((payment_term = ANY (ARRAY['tunai'::text, '7'::text, '14'::text, '30'::text])))"
+  },
+  {
+   "tbl": "suppliers",
+   "name": "suppliers_supplier_type_check",
+   "contype": "c",
+   "def": "CHECK ((supplier_type = ANY (ARRAY['langsung'::text, 'distributor'::text, 'grosir'::text, 'importir'::text])))"
+  },
+  {
+   "tbl": "suppliers",
+   "name": "suppliers_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "transaction_item_payments",
+   "name": "positive_allocated_amount",
+   "contype": "c",
+   "def": "CHECK ((allocated_amount > (0)::numeric))"
+  },
+  {
+   "tbl": "transaction_item_payments",
+   "name": "transaction_item_payments_item_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (item_id) REFERENCES transaction_items(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "transaction_item_payments",
+   "name": "transaction_item_payments_payment_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (payment_id) REFERENCES transaction_payments(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "transaction_item_payments",
+   "name": "transaction_item_payments_transaction_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "transaction_item_payments",
+   "name": "transaction_item_payments_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "transaction_items",
+   "name": "transaction_items_product_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "transaction_items",
+   "name": "transaction_items_transaction_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "transaction_items",
+   "name": "transaction_items_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "transaction_payments",
+   "name": "transaction_payments_transaction_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "transaction_payments",
+   "name": "transaction_payments_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "transactions",
+   "name": "transactions_customer_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "transactions",
+   "name": "transactions_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "trip_loaders",
+   "name": "trip_loaders_role_check",
+   "contype": "c",
+   "def": "CHECK ((role = ANY (ARRAY['muat'::text, 'bongkar'::text])))"
+  },
+  {
+   "tbl": "trip_loaders",
+   "name": "trip_loaders_employee_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "trip_loaders",
+   "name": "trip_loaders_trip_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE"
+  },
+  {
+   "tbl": "trip_loaders",
+   "name": "trip_loaders_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "trip_loaders",
+   "name": "trip_loaders_trip_id_employee_id_role_key",
+   "contype": "u",
+   "def": "UNIQUE (trip_id, employee_id, role)"
+  },
+  {
+   "tbl": "trips",
+   "name": "trips_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['draft'::text, 'berjalan'::text, 'selesai'::text])))"
+  },
+  {
+   "tbl": "trips",
+   "name": "trips_driver_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (driver_id) REFERENCES employees(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "trips",
+   "name": "trips_vehicle_id_fkey",
+   "contype": "f",
+   "def": "FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE SET NULL"
+  },
+  {
+   "tbl": "trips",
+   "name": "trips_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  },
+  {
+   "tbl": "vehicles",
+   "name": "vehicles_status_check",
+   "contype": "c",
+   "def": "CHECK ((status = ANY (ARRAY['tersedia'::text, 'dipakai'::text, 'service'::text])))"
+  },
+  {
+   "tbl": "vehicles",
+   "name": "vehicles_pkey",
+   "contype": "p",
+   "def": "PRIMARY KEY (id)"
+  }
+ ],
+ "indexes": [
+  {
+   "tablename": "attendance",
+   "indexname": "attendance_employee_id_attendance_date_key",
+   "indexdef": "CREATE UNIQUE INDEX attendance_employee_id_attendance_date_key ON public.attendance USING btree (employee_id, attendance_date)"
+  },
+  {
+   "tablename": "attendance",
+   "indexname": "attendance_pkey",
+   "indexdef": "CREATE UNIQUE INDEX attendance_pkey ON public.attendance USING btree (id)"
+  },
+  {
+   "tablename": "attendance",
+   "indexname": "idx_attendance_date",
+   "indexdef": "CREATE INDEX idx_attendance_date ON public.attendance USING btree (attendance_date)"
+  },
+  {
+   "tablename": "attendance",
+   "indexname": "idx_attendance_employee",
+   "indexdef": "CREATE INDEX idx_attendance_employee ON public.attendance USING btree (employee_id)"
+  },
+  {
+   "tablename": "categories",
+   "indexname": "categories_pkey",
+   "indexdef": "CREATE UNIQUE INDEX categories_pkey ON public.categories USING btree (id)"
+  },
+  {
+   "tablename": "chart_of_accounts",
+   "indexname": "chart_of_accounts_pkey",
+   "indexdef": "CREATE UNIQUE INDEX chart_of_accounts_pkey ON public.chart_of_accounts USING btree (id)"
+  },
+  {
+   "tablename": "chart_of_accounts",
+   "indexname": "chart_of_accounts_user_id_code_key",
+   "indexdef": "CREATE UNIQUE INDEX chart_of_accounts_user_id_code_key ON public.chart_of_accounts USING btree (user_id, code)"
+  },
+  {
+   "tablename": "chart_of_accounts",
+   "indexname": "idx_coa_parent",
+   "indexdef": "CREATE INDEX idx_coa_parent ON public.chart_of_accounts USING btree (parent_id)"
+  },
+  {
+   "tablename": "chart_of_accounts",
+   "indexname": "idx_coa_user_type",
+   "indexdef": "CREATE INDEX idx_coa_user_type ON public.chart_of_accounts USING btree (user_id, type)"
+  },
+  {
+   "tablename": "closing_periods",
+   "indexname": "closing_periods_pkey",
+   "indexdef": "CREATE UNIQUE INDEX closing_periods_pkey ON public.closing_periods USING btree (id)"
+  },
+  {
+   "tablename": "closing_periods",
+   "indexname": "idx_closing_periods_status",
+   "indexdef": "CREATE INDEX idx_closing_periods_status ON public.closing_periods USING btree (status)"
+  },
+  {
+   "tablename": "closing_periods",
+   "indexname": "idx_closing_periods_user",
+   "indexdef": "CREATE INDEX idx_closing_periods_user ON public.closing_periods USING btree (user_id, period_end DESC)"
+  },
+  {
+   "tablename": "closing_periods",
+   "indexname": "unique_period",
+   "indexdef": "CREATE UNIQUE INDEX unique_period ON public.closing_periods USING btree (user_id, period_start, period_end)"
+  },
+  {
+   "tablename": "customer_group_members",
+   "indexname": "customer_group_members_pkey",
+   "indexdef": "CREATE UNIQUE INDEX customer_group_members_pkey ON public.customer_group_members USING btree (id)"
+  },
+  {
+   "tablename": "customer_group_members",
+   "indexname": "customer_group_members_unique",
+   "indexdef": "CREATE UNIQUE INDEX customer_group_members_unique ON public.customer_group_members USING btree (group_id, customer_id)"
+  },
+  {
+   "tablename": "customer_group_members",
+   "indexname": "idx_cgm_customer",
+   "indexdef": "CREATE INDEX idx_cgm_customer ON public.customer_group_members USING btree (customer_id)"
+  },
+  {
+   "tablename": "customer_group_members",
+   "indexname": "idx_cgm_group",
+   "indexdef": "CREATE INDEX idx_cgm_group ON public.customer_group_members USING btree (group_id)"
+  },
+  {
+   "tablename": "customer_group_members",
+   "indexname": "idx_cgm_user",
+   "indexdef": "CREATE INDEX idx_cgm_user ON public.customer_group_members USING btree (user_id)"
+  },
+  {
+   "tablename": "customer_groups",
+   "indexname": "customer_groups_pkey",
+   "indexdef": "CREATE UNIQUE INDEX customer_groups_pkey ON public.customer_groups USING btree (id)"
+  },
+  {
+   "tablename": "customer_groups",
+   "indexname": "idx_customer_groups_user",
+   "indexdef": "CREATE INDEX idx_customer_groups_user ON public.customer_groups USING btree (user_id)"
+  },
+  {
+   "tablename": "customer_groups",
+   "indexname": "uq_customer_groups_user_name",
+   "indexdef": "CREATE UNIQUE INDEX uq_customer_groups_user_name ON public.customer_groups USING btree (user_id, lower(name))"
+  },
+  {
+   "tablename": "customer_price_matrix",
+   "indexname": "customer_price_matrix_pkey",
+   "indexdef": "CREATE UNIQUE INDEX customer_price_matrix_pkey ON public.customer_price_matrix USING btree (id)"
+  },
+  {
+   "tablename": "customer_price_matrix",
+   "indexname": "customer_price_matrix_unique",
+   "indexdef": "CREATE UNIQUE INDEX customer_price_matrix_unique ON public.customer_price_matrix USING btree (user_id, customer_id, product_id, start_date)"
+  },
+  {
+   "tablename": "customer_price_matrix",
+   "indexname": "idx_cpm_group",
+   "indexdef": "CREATE INDEX idx_cpm_group ON public.customer_price_matrix USING btree (group_id) WHERE (group_id IS NOT NULL)"
+  },
+  {
+   "tablename": "customer_price_matrix",
+   "indexname": "idx_customer_price_matrix_customer",
+   "indexdef": "CREATE INDEX idx_customer_price_matrix_customer ON public.customer_price_matrix USING btree (customer_id, is_active) WHERE (is_active = true)"
+  },
+  {
+   "tablename": "customer_price_matrix",
+   "indexname": "idx_customer_price_matrix_product",
+   "indexdef": "CREATE INDEX idx_customer_price_matrix_product ON public.customer_price_matrix USING btree (product_id, is_active) WHERE (is_active = true)"
+  },
+  {
+   "tablename": "customer_price_matrix",
+   "indexname": "idx_customer_price_matrix_user",
+   "indexdef": "CREATE INDEX idx_customer_price_matrix_user ON public.customer_price_matrix USING btree (user_id, customer_id, product_id, is_active)"
+  },
+  {
+   "tablename": "customer_price_matrix",
+   "indexname": "uq_cpm_group_product_start",
+   "indexdef": "CREATE UNIQUE INDEX uq_cpm_group_product_start ON public.customer_price_matrix USING btree (user_id, group_id, product_id, start_date) WHERE (group_id IS NOT NULL)"
+  },
+  {
+   "tablename": "customers",
+   "indexname": "customers_pkey",
+   "indexdef": "CREATE UNIQUE INDEX customers_pkey ON public.customers USING btree (id)"
+  },
+  {
+   "tablename": "delivery_items",
+   "indexname": "delivery_items_pkey",
+   "indexdef": "CREATE UNIQUE INDEX delivery_items_pkey ON public.delivery_items USING btree (id)"
+  },
+  {
+   "tablename": "delivery_items",
+   "indexname": "idx_delivery_items_do",
+   "indexdef": "CREATE INDEX idx_delivery_items_do ON public.delivery_items USING btree (delivery_order_id)"
+  },
+  {
+   "tablename": "delivery_load_items",
+   "indexname": "delivery_load_items_pkey",
+   "indexdef": "CREATE UNIQUE INDEX delivery_load_items_pkey ON public.delivery_load_items USING btree (id)"
+  },
+  {
+   "tablename": "delivery_load_items",
+   "indexname": "idx_delivery_load_items_do",
+   "indexdef": "CREATE INDEX idx_delivery_load_items_do ON public.delivery_load_items USING btree (delivery_order_id)"
+  },
+  {
+   "tablename": "delivery_loaders",
+   "indexname": "delivery_loaders_delivery_order_id_employee_id_key",
+   "indexdef": "CREATE UNIQUE INDEX delivery_loaders_delivery_order_id_employee_id_key ON public.delivery_loaders USING btree (delivery_order_id, employee_id)"
+  },
+  {
+   "tablename": "delivery_loaders",
+   "indexname": "delivery_loaders_pkey",
+   "indexdef": "CREATE UNIQUE INDEX delivery_loaders_pkey ON public.delivery_loaders USING btree (id)"
+  },
+  {
+   "tablename": "delivery_loaders",
+   "indexname": "idx_delivery_loaders_do",
+   "indexdef": "CREATE INDEX idx_delivery_loaders_do ON public.delivery_loaders USING btree (delivery_order_id)"
+  },
+  {
+   "tablename": "delivery_order_transactions",
+   "indexname": "delivery_order_transactions_delivery_order_id_transaction_i_key",
+   "indexdef": "CREATE UNIQUE INDEX delivery_order_transactions_delivery_order_id_transaction_i_key ON public.delivery_order_transactions USING btree (delivery_order_id, transaction_id)"
+  },
+  {
+   "tablename": "delivery_order_transactions",
+   "indexname": "delivery_order_transactions_pkey",
+   "indexdef": "CREATE UNIQUE INDEX delivery_order_transactions_pkey ON public.delivery_order_transactions USING btree (id)"
+  },
+  {
+   "tablename": "delivery_order_transactions",
+   "indexname": "idx_do_transactions_do",
+   "indexdef": "CREATE INDEX idx_do_transactions_do ON public.delivery_order_transactions USING btree (delivery_order_id)"
+  },
+  {
+   "tablename": "delivery_order_transactions",
+   "indexname": "idx_do_transactions_tx",
+   "indexdef": "CREATE INDEX idx_do_transactions_tx ON public.delivery_order_transactions USING btree (transaction_id)"
+  },
+  {
+   "tablename": "delivery_orders",
+   "indexname": "delivery_orders_pkey",
+   "indexdef": "CREATE UNIQUE INDEX delivery_orders_pkey ON public.delivery_orders USING btree (id)"
+  },
+  {
+   "tablename": "delivery_orders",
+   "indexname": "delivery_orders_user_id_do_number_key",
+   "indexdef": "CREATE UNIQUE INDEX delivery_orders_user_id_do_number_key ON public.delivery_orders USING btree (user_id, do_number)"
+  },
+  {
+   "tablename": "delivery_orders",
+   "indexname": "idx_delivery_orders_status",
+   "indexdef": "CREATE INDEX idx_delivery_orders_status ON public.delivery_orders USING btree (status)"
+  },
+  {
+   "tablename": "delivery_orders",
+   "indexname": "idx_delivery_orders_trip",
+   "indexdef": "CREATE INDEX idx_delivery_orders_trip ON public.delivery_orders USING btree (trip_id)"
+  },
+  {
+   "tablename": "delivery_orders",
+   "indexname": "idx_delivery_orders_user_date",
+   "indexdef": "CREATE INDEX idx_delivery_orders_user_date ON public.delivery_orders USING btree (user_id, do_date DESC)"
+  },
+  {
+   "tablename": "delivery_tracking",
+   "indexname": "delivery_tracking_pkey",
+   "indexdef": "CREATE UNIQUE INDEX delivery_tracking_pkey ON public.delivery_tracking USING btree (id)"
+  },
+  {
+   "tablename": "delivery_tracking",
+   "indexname": "idx_delivery_tracking_do",
+   "indexdef": "CREATE INDEX idx_delivery_tracking_do ON public.delivery_tracking USING btree (delivery_order_id, created_at DESC)"
+  },
+  {
+   "tablename": "employee_loan_payments",
+   "indexname": "employee_loan_payments_pkey",
+   "indexdef": "CREATE UNIQUE INDEX employee_loan_payments_pkey ON public.employee_loan_payments USING btree (id)"
+  },
+  {
+   "tablename": "employee_loan_payments",
+   "indexname": "idx_employee_loan_payments_loan_id",
+   "indexdef": "CREATE INDEX idx_employee_loan_payments_loan_id ON public.employee_loan_payments USING btree (loan_id)"
+  },
+  {
+   "tablename": "employee_loan_payments",
+   "indexname": "idx_employee_loan_payments_payroll_id",
+   "indexdef": "CREATE INDEX idx_employee_loan_payments_payroll_id ON public.employee_loan_payments USING btree (payroll_id)"
+  },
+  {
+   "tablename": "employee_loan_payments",
+   "indexname": "idx_employee_loan_payments_user_id",
+   "indexdef": "CREATE INDEX idx_employee_loan_payments_user_id ON public.employee_loan_payments USING btree (user_id)"
+  },
+  {
+   "tablename": "employee_loans",
+   "indexname": "employee_loans_pkey",
+   "indexdef": "CREATE UNIQUE INDEX employee_loans_pkey ON public.employee_loans USING btree (id)"
+  },
+  {
+   "tablename": "employee_loans",
+   "indexname": "idx_employee_loans_employee_id",
+   "indexdef": "CREATE INDEX idx_employee_loans_employee_id ON public.employee_loans USING btree (employee_id)"
+  },
+  {
+   "tablename": "employee_loans",
+   "indexname": "idx_employee_loans_loan_date",
+   "indexdef": "CREATE INDEX idx_employee_loans_loan_date ON public.employee_loans USING btree (loan_date)"
+  },
+  {
+   "tablename": "employee_loans",
+   "indexname": "idx_employee_loans_status",
+   "indexdef": "CREATE INDEX idx_employee_loans_status ON public.employee_loans USING btree (status)"
+  },
+  {
+   "tablename": "employee_loans",
+   "indexname": "idx_employee_loans_user_id",
+   "indexdef": "CREATE INDEX idx_employee_loans_user_id ON public.employee_loans USING btree (user_id)"
+  },
+  {
+   "tablename": "employees",
+   "indexname": "employees_pkey",
+   "indexdef": "CREATE UNIQUE INDEX employees_pkey ON public.employees USING btree (id)"
+  },
+  {
+   "tablename": "employees",
+   "indexname": "idx_employees_status",
+   "indexdef": "CREATE INDEX idx_employees_status ON public.employees USING btree (status)"
+  },
+  {
+   "tablename": "employees",
+   "indexname": "idx_employees_user_name",
+   "indexdef": "CREATE INDEX idx_employees_user_name ON public.employees USING btree (user_id, name)"
+  },
+  {
+   "tablename": "goods_receipts",
+   "indexname": "goods_receipts_pkey",
+   "indexdef": "CREATE UNIQUE INDEX goods_receipts_pkey ON public.goods_receipts USING btree (id)"
+  },
+  {
+   "tablename": "goods_receipts",
+   "indexname": "idx_grn_po",
+   "indexdef": "CREATE INDEX idx_grn_po ON public.goods_receipts USING btree (po_id)"
+  },
+  {
+   "tablename": "goods_receipts",
+   "indexname": "idx_grn_user_date",
+   "indexdef": "CREATE INDEX idx_grn_user_date ON public.goods_receipts USING btree (user_id, receipt_date DESC)"
+  },
+  {
+   "tablename": "grn_items",
+   "indexname": "grn_items_pkey",
+   "indexdef": "CREATE UNIQUE INDEX grn_items_pkey ON public.grn_items USING btree (id)"
+  },
+  {
+   "tablename": "grn_items",
+   "indexname": "idx_grn_items_grn",
+   "indexdef": "CREATE INDEX idx_grn_items_grn ON public.grn_items USING btree (grn_id)"
+  },
+  {
+   "tablename": "journal_entries",
+   "indexname": "idx_journal_entries_reference",
+   "indexdef": "CREATE INDEX idx_journal_entries_reference ON public.journal_entries USING btree (reference_type, reference_id)"
+  },
+  {
+   "tablename": "journal_entries",
+   "indexname": "idx_journal_entries_user_date",
+   "indexdef": "CREATE INDEX idx_journal_entries_user_date ON public.journal_entries USING btree (user_id, entry_date DESC)"
+  },
+  {
+   "tablename": "journal_entries",
+   "indexname": "journal_entries_pkey",
+   "indexdef": "CREATE UNIQUE INDEX journal_entries_pkey ON public.journal_entries USING btree (id)"
+  },
+  {
+   "tablename": "journal_lines",
+   "indexname": "idx_journal_lines_account",
+   "indexdef": "CREATE INDEX idx_journal_lines_account ON public.journal_lines USING btree (account_id)"
+  },
+  {
+   "tablename": "journal_lines",
+   "indexname": "idx_journal_lines_journal",
+   "indexdef": "CREATE INDEX idx_journal_lines_journal ON public.journal_lines USING btree (journal_id)"
+  },
+  {
+   "tablename": "journal_lines",
+   "indexname": "journal_lines_pkey",
+   "indexdef": "CREATE UNIQUE INDEX journal_lines_pkey ON public.journal_lines USING btree (id)"
+  },
+  {
+   "tablename": "notifications",
+   "indexname": "idx_notifications_created_at",
+   "indexdef": "CREATE INDEX idx_notifications_created_at ON public.notifications USING btree (created_at DESC)"
+  },
+  {
+   "tablename": "notifications",
+   "indexname": "idx_notifications_is_read",
+   "indexdef": "CREATE INDEX idx_notifications_is_read ON public.notifications USING btree (is_read)"
+  },
+  {
+   "tablename": "notifications",
+   "indexname": "idx_notifications_type",
+   "indexdef": "CREATE INDEX idx_notifications_type ON public.notifications USING btree (type)"
+  },
+  {
+   "tablename": "notifications",
+   "indexname": "idx_notifications_user_id",
+   "indexdef": "CREATE INDEX idx_notifications_user_id ON public.notifications USING btree (user_id)"
+  },
+  {
+   "tablename": "notifications",
+   "indexname": "notifications_pkey",
+   "indexdef": "CREATE UNIQUE INDEX notifications_pkey ON public.notifications USING btree (id)"
+  },
+  {
+   "tablename": "payrolls",
+   "indexname": "idx_payrolls_incentive_details",
+   "indexdef": "CREATE INDEX idx_payrolls_incentive_details ON public.payrolls USING gin (incentive_details)"
+  },
+  {
+   "tablename": "payrolls",
+   "indexname": "idx_payrolls_journal",
+   "indexdef": "CREATE INDEX idx_payrolls_journal ON public.payrolls USING btree (journal_entry_id)"
+  },
+  {
+   "tablename": "payrolls",
+   "indexname": "idx_payrolls_period_dates",
+   "indexdef": "CREATE INDEX idx_payrolls_period_dates ON public.payrolls USING btree (period_start, period_end)"
+  },
+  {
+   "tablename": "payrolls",
+   "indexname": "idx_payrolls_status",
+   "indexdef": "CREATE INDEX idx_payrolls_status ON public.payrolls USING btree (status)"
+  },
+  {
+   "tablename": "payrolls",
+   "indexname": "idx_payrolls_user_employee",
+   "indexdef": "CREATE INDEX idx_payrolls_user_employee ON public.payrolls USING btree (user_id, employee_id)"
+  },
+  {
+   "tablename": "payrolls",
+   "indexname": "payrolls_pkey",
+   "indexdef": "CREATE UNIQUE INDEX payrolls_pkey ON public.payrolls USING btree (id)"
+  },
+  {
+   "tablename": "payrolls",
+   "indexname": "payrolls_user_id_period_code_key",
+   "indexdef": "CREATE UNIQUE INDEX payrolls_user_id_period_code_key ON public.payrolls USING btree (user_id, period_code)"
+  },
+  {
+   "tablename": "pi_items",
+   "indexname": "idx_pi_items_pi",
+   "indexdef": "CREATE INDEX idx_pi_items_pi ON public.pi_items USING btree (pi_id)"
+  },
+  {
+   "tablename": "pi_items",
+   "indexname": "pi_items_pkey",
+   "indexdef": "CREATE UNIQUE INDEX pi_items_pkey ON public.pi_items USING btree (id)"
+  },
+  {
+   "tablename": "pi_payments",
+   "indexname": "idx_pi_payments_pi",
+   "indexdef": "CREATE INDEX idx_pi_payments_pi ON public.pi_payments USING btree (pi_id, created_at DESC)"
+  },
+  {
+   "tablename": "pi_payments",
+   "indexname": "pi_payments_pkey",
+   "indexdef": "CREATE UNIQUE INDEX pi_payments_pkey ON public.pi_payments USING btree (id)"
+  },
+  {
+   "tablename": "po_items",
+   "indexname": "idx_po_items_po",
+   "indexdef": "CREATE INDEX idx_po_items_po ON public.po_items USING btree (po_id)"
+  },
+  {
+   "tablename": "po_items",
+   "indexname": "po_items_pkey",
+   "indexdef": "CREATE UNIQUE INDEX po_items_pkey ON public.po_items USING btree (id)"
+  },
+  {
+   "tablename": "price_tiers",
+   "indexname": "idx_price_tiers_product",
+   "indexdef": "CREATE INDEX idx_price_tiers_product ON public.price_tiers USING btree (product_id, is_active) WHERE (is_active = true)"
+  },
+  {
+   "tablename": "price_tiers",
+   "indexname": "idx_price_tiers_user_product",
+   "indexdef": "CREATE INDEX idx_price_tiers_user_product ON public.price_tiers USING btree (user_id, product_id, is_active)"
+  },
+  {
+   "tablename": "price_tiers",
+   "indexname": "price_tiers_pkey",
+   "indexdef": "CREATE UNIQUE INDEX price_tiers_pkey ON public.price_tiers USING btree (id)"
+  },
+  {
+   "tablename": "price_tiers",
+   "indexname": "price_tiers_unique_range",
+   "indexdef": "CREATE UNIQUE INDEX price_tiers_unique_range ON public.price_tiers USING btree (user_id, product_id, min_quantity, start_date)"
+  },
+  {
+   "tablename": "products",
+   "indexname": "idx_products_barcode",
+   "indexdef": "CREATE INDEX idx_products_barcode ON public.products USING btree (barcode)"
+  },
+  {
+   "tablename": "products",
+   "indexname": "idx_products_category_id",
+   "indexdef": "CREATE INDEX idx_products_category_id ON public.products USING btree (category_id)"
+  },
+  {
+   "tablename": "products",
+   "indexname": "idx_products_is_active",
+   "indexdef": "CREATE INDEX idx_products_is_active ON public.products USING btree (is_active)"
+  },
+  {
+   "tablename": "products",
+   "indexname": "idx_products_sku",
+   "indexdef": "CREATE INDEX idx_products_sku ON public.products USING btree (sku)"
+  },
+  {
+   "tablename": "products",
+   "indexname": "products_pkey",
+   "indexdef": "CREATE UNIQUE INDEX products_pkey ON public.products USING btree (id)"
+  },
+  {
+   "tablename": "products",
+   "indexname": "products_sku_key",
+   "indexdef": "CREATE UNIQUE INDEX products_sku_key ON public.products USING btree (sku)"
+  },
+  {
+   "tablename": "purchase_invoices",
+   "indexname": "idx_pi_payment_status",
+   "indexdef": "CREATE INDEX idx_pi_payment_status ON public.purchase_invoices USING btree (payment_status)"
+  },
+  {
+   "tablename": "purchase_invoices",
+   "indexname": "idx_pi_supplier",
+   "indexdef": "CREATE INDEX idx_pi_supplier ON public.purchase_invoices USING btree (supplier_id)"
+  },
+  {
+   "tablename": "purchase_invoices",
+   "indexname": "idx_pi_user_date",
+   "indexdef": "CREATE INDEX idx_pi_user_date ON public.purchase_invoices USING btree (user_id, invoice_date DESC)"
+  },
+  {
+   "tablename": "purchase_invoices",
+   "indexname": "purchase_invoices_pkey",
+   "indexdef": "CREATE UNIQUE INDEX purchase_invoices_pkey ON public.purchase_invoices USING btree (id)"
+  },
+  {
+   "tablename": "purchase_orders",
+   "indexname": "idx_po_status",
+   "indexdef": "CREATE INDEX idx_po_status ON public.purchase_orders USING btree (status)"
+  },
+  {
+   "tablename": "purchase_orders",
+   "indexname": "idx_po_supplier",
+   "indexdef": "CREATE INDEX idx_po_supplier ON public.purchase_orders USING btree (supplier_id)"
+  },
+  {
+   "tablename": "purchase_orders",
+   "indexname": "idx_po_user_date",
+   "indexdef": "CREATE INDEX idx_po_user_date ON public.purchase_orders USING btree (user_id, po_date DESC)"
+  },
+  {
+   "tablename": "purchase_orders",
+   "indexname": "purchase_orders_pkey",
+   "indexdef": "CREATE UNIQUE INDEX purchase_orders_pkey ON public.purchase_orders USING btree (id)"
+  },
+  {
+   "tablename": "purchase_return_items",
+   "indexname": "idx_pr_items_pr",
+   "indexdef": "CREATE INDEX idx_pr_items_pr ON public.purchase_return_items USING btree (pr_id)"
+  },
+  {
+   "tablename": "purchase_return_items",
+   "indexname": "purchase_return_items_pkey",
+   "indexdef": "CREATE UNIQUE INDEX purchase_return_items_pkey ON public.purchase_return_items USING btree (id)"
+  },
+  {
+   "tablename": "purchase_returns",
+   "indexname": "idx_pr_user_date",
+   "indexdef": "CREATE INDEX idx_pr_user_date ON public.purchase_returns USING btree (user_id, return_date DESC)"
+  },
+  {
+   "tablename": "purchase_returns",
+   "indexname": "purchase_returns_pkey",
+   "indexdef": "CREATE UNIQUE INDEX purchase_returns_pkey ON public.purchase_returns USING btree (id)"
+  },
+  {
+   "tablename": "return_items",
+   "indexname": "idx_return_items_return",
+   "indexdef": "CREATE INDEX idx_return_items_return ON public.return_items USING btree (return_id)"
+  },
+  {
+   "tablename": "return_items",
+   "indexname": "return_items_pkey",
+   "indexdef": "CREATE UNIQUE INDEX return_items_pkey ON public.return_items USING btree (id)"
+  },
+  {
+   "tablename": "returns",
+   "indexname": "idx_returns_transaction",
+   "indexdef": "CREATE INDEX idx_returns_transaction ON public.returns USING btree (transaction_id)"
+  },
+  {
+   "tablename": "returns",
+   "indexname": "returns_pkey",
+   "indexdef": "CREATE UNIQUE INDEX returns_pkey ON public.returns USING btree (id)"
+  },
+  {
+   "tablename": "stock_adjustments",
+   "indexname": "idx_stock_adjustments_created_at",
+   "indexdef": "CREATE INDEX idx_stock_adjustments_created_at ON public.stock_adjustments USING btree (created_at DESC)"
+  },
+  {
+   "tablename": "stock_adjustments",
+   "indexname": "idx_stock_adjustments_product_id",
+   "indexdef": "CREATE INDEX idx_stock_adjustments_product_id ON public.stock_adjustments USING btree (product_id)"
+  },
+  {
+   "tablename": "stock_adjustments",
+   "indexname": "idx_stock_adjustments_user_id",
+   "indexdef": "CREATE INDEX idx_stock_adjustments_user_id ON public.stock_adjustments USING btree (user_id)"
+  },
+  {
+   "tablename": "stock_adjustments",
+   "indexname": "stock_adjustments_pkey",
+   "indexdef": "CREATE UNIQUE INDEX stock_adjustments_pkey ON public.stock_adjustments USING btree (id)"
+  },
+  {
+   "tablename": "stock_alerts",
+   "indexname": "idx_stock_alerts_product_id",
+   "indexdef": "CREATE INDEX idx_stock_alerts_product_id ON public.stock_alerts USING btree (product_id)"
+  },
+  {
+   "tablename": "stock_alerts",
+   "indexname": "idx_stock_alerts_user_id",
+   "indexdef": "CREATE INDEX idx_stock_alerts_user_id ON public.stock_alerts USING btree (user_id)"
+  },
+  {
+   "tablename": "stock_alerts",
+   "indexname": "stock_alerts_pkey",
+   "indexdef": "CREATE UNIQUE INDEX stock_alerts_pkey ON public.stock_alerts USING btree (id)"
+  },
+  {
+   "tablename": "stock_alerts",
+   "indexname": "stock_alerts_user_id_product_id_key",
+   "indexdef": "CREATE UNIQUE INDEX stock_alerts_user_id_product_id_key ON public.stock_alerts USING btree (user_id, product_id)"
+  },
+  {
+   "tablename": "stock_movements",
+   "indexname": "idx_stock_movements_created_at",
+   "indexdef": "CREATE INDEX idx_stock_movements_created_at ON public.stock_movements USING btree (created_at DESC)"
+  },
+  {
+   "tablename": "stock_movements",
+   "indexname": "idx_stock_movements_product_id",
+   "indexdef": "CREATE INDEX idx_stock_movements_product_id ON public.stock_movements USING btree (product_id)"
+  },
+  {
+   "tablename": "stock_movements",
+   "indexname": "idx_stock_movements_reference",
+   "indexdef": "CREATE INDEX idx_stock_movements_reference ON public.stock_movements USING btree (reference_type, reference_id)"
+  },
+  {
+   "tablename": "stock_movements",
+   "indexname": "idx_stock_movements_user_id",
+   "indexdef": "CREATE INDEX idx_stock_movements_user_id ON public.stock_movements USING btree (user_id)"
+  },
+  {
+   "tablename": "stock_movements",
+   "indexname": "stock_movements_pkey",
+   "indexdef": "CREATE UNIQUE INDEX stock_movements_pkey ON public.stock_movements USING btree (id)"
+  },
+  {
+   "tablename": "stock_opname_items",
+   "indexname": "idx_stock_opname_items_opname_id",
+   "indexdef": "CREATE INDEX idx_stock_opname_items_opname_id ON public.stock_opname_items USING btree (opname_id)"
+  },
+  {
+   "tablename": "stock_opname_items",
+   "indexname": "idx_stock_opname_items_product_id",
+   "indexdef": "CREATE INDEX idx_stock_opname_items_product_id ON public.stock_opname_items USING btree (product_id)"
+  },
+  {
+   "tablename": "stock_opname_items",
+   "indexname": "stock_opname_items_pkey",
+   "indexdef": "CREATE UNIQUE INDEX stock_opname_items_pkey ON public.stock_opname_items USING btree (id)"
+  },
+  {
+   "tablename": "stock_opnames",
+   "indexname": "idx_stock_opnames_date",
+   "indexdef": "CREATE INDEX idx_stock_opnames_date ON public.stock_opnames USING btree (opname_date DESC)"
+  },
+  {
+   "tablename": "stock_opnames",
+   "indexname": "idx_stock_opnames_status",
+   "indexdef": "CREATE INDEX idx_stock_opnames_status ON public.stock_opnames USING btree (status)"
+  },
+  {
+   "tablename": "stock_opnames",
+   "indexname": "idx_stock_opnames_user_id",
+   "indexdef": "CREATE INDEX idx_stock_opnames_user_id ON public.stock_opnames USING btree (user_id)"
+  },
+  {
+   "tablename": "stock_opnames",
+   "indexname": "stock_opnames_opname_number_key",
+   "indexdef": "CREATE UNIQUE INDEX stock_opnames_opname_number_key ON public.stock_opnames USING btree (opname_number)"
+  },
+  {
+   "tablename": "stock_opnames",
+   "indexname": "stock_opnames_pkey",
+   "indexdef": "CREATE UNIQUE INDEX stock_opnames_pkey ON public.stock_opnames USING btree (id)"
+  },
+  {
+   "tablename": "store_settings",
+   "indexname": "idx_store_settings_user",
+   "indexdef": "CREATE INDEX idx_store_settings_user ON public.store_settings USING btree (user_id)"
+  },
+  {
+   "tablename": "store_settings",
+   "indexname": "store_settings_pkey",
+   "indexdef": "CREATE UNIQUE INDEX store_settings_pkey ON public.store_settings USING btree (id)"
+  },
+  {
+   "tablename": "store_settings",
+   "indexname": "store_settings_user_id_key",
+   "indexdef": "CREATE UNIQUE INDEX store_settings_user_id_key ON public.store_settings USING btree (user_id)"
+  },
+  {
+   "tablename": "suppliers",
+   "indexname": "idx_suppliers_user_name",
+   "indexdef": "CREATE INDEX idx_suppliers_user_name ON public.suppliers USING btree (user_id, name)"
+  },
+  {
+   "tablename": "suppliers",
+   "indexname": "suppliers_pkey",
+   "indexdef": "CREATE UNIQUE INDEX suppliers_pkey ON public.suppliers USING btree (id)"
+  },
+  {
+   "tablename": "transaction_item_payments",
+   "indexname": "idx_item_payments_item",
+   "indexdef": "CREATE INDEX idx_item_payments_item ON public.transaction_item_payments USING btree (item_id)"
+  },
+  {
+   "tablename": "transaction_item_payments",
+   "indexname": "idx_item_payments_payment",
+   "indexdef": "CREATE INDEX idx_item_payments_payment ON public.transaction_item_payments USING btree (payment_id)"
+  },
+  {
+   "tablename": "transaction_item_payments",
+   "indexname": "idx_item_payments_transaction",
+   "indexdef": "CREATE INDEX idx_item_payments_transaction ON public.transaction_item_payments USING btree (transaction_id)"
+  },
+  {
+   "tablename": "transaction_item_payments",
+   "indexname": "idx_item_payments_user_created",
+   "indexdef": "CREATE INDEX idx_item_payments_user_created ON public.transaction_item_payments USING btree (user_id, created_at DESC)"
+  },
+  {
+   "tablename": "transaction_item_payments",
+   "indexname": "transaction_item_payments_pkey",
+   "indexdef": "CREATE UNIQUE INDEX transaction_item_payments_pkey ON public.transaction_item_payments USING btree (id)"
+  },
+  {
+   "tablename": "transaction_items",
+   "indexname": "idx_transaction_items_transaction",
+   "indexdef": "CREATE INDEX idx_transaction_items_transaction ON public.transaction_items USING btree (transaction_id)"
+  },
+  {
+   "tablename": "transaction_items",
+   "indexname": "transaction_items_pkey",
+   "indexdef": "CREATE UNIQUE INDEX transaction_items_pkey ON public.transaction_items USING btree (id)"
+  },
+  {
+   "tablename": "transaction_payments",
+   "indexname": "idx_transaction_payments_payment_date",
+   "indexdef": "CREATE INDEX idx_transaction_payments_payment_date ON public.transaction_payments USING btree (payment_date)"
+  },
+  {
+   "tablename": "transaction_payments",
+   "indexname": "idx_transaction_payments_transaction",
+   "indexdef": "CREATE INDEX idx_transaction_payments_transaction ON public.transaction_payments USING btree (transaction_id, created_at DESC)"
+  },
+  {
+   "tablename": "transaction_payments",
+   "indexname": "transaction_payments_pkey",
+   "indexdef": "CREATE UNIQUE INDEX transaction_payments_pkey ON public.transaction_payments USING btree (id)"
+  },
+  {
+   "tablename": "transactions",
+   "indexname": "idx_transactions_transaction_status",
+   "indexdef": "CREATE INDEX idx_transactions_transaction_status ON public.transactions USING btree (user_id, transaction_status)"
+  },
+  {
+   "tablename": "transactions",
+   "indexname": "idx_transactions_user_created",
+   "indexdef": "CREATE INDEX idx_transactions_user_created ON public.transactions USING btree (user_id, created_at DESC)"
+  },
+  {
+   "tablename": "transactions",
+   "indexname": "transactions_pkey",
+   "indexdef": "CREATE UNIQUE INDEX transactions_pkey ON public.transactions USING btree (id)"
+  },
+  {
+   "tablename": "trip_loaders",
+   "indexname": "idx_trip_loaders_employee",
+   "indexdef": "CREATE INDEX idx_trip_loaders_employee ON public.trip_loaders USING btree (employee_id)"
+  },
+  {
+   "tablename": "trip_loaders",
+   "indexname": "idx_trip_loaders_trip",
+   "indexdef": "CREATE INDEX idx_trip_loaders_trip ON public.trip_loaders USING btree (trip_id)"
+  },
+  {
+   "tablename": "trip_loaders",
+   "indexname": "trip_loaders_pkey",
+   "indexdef": "CREATE UNIQUE INDEX trip_loaders_pkey ON public.trip_loaders USING btree (id)"
+  },
+  {
+   "tablename": "trip_loaders",
+   "indexname": "trip_loaders_trip_id_employee_id_role_key",
+   "indexdef": "CREATE UNIQUE INDEX trip_loaders_trip_id_employee_id_role_key ON public.trip_loaders USING btree (trip_id, employee_id, role)"
+  },
+  {
+   "tablename": "trips",
+   "indexname": "idx_trips_status",
+   "indexdef": "CREATE INDEX idx_trips_status ON public.trips USING btree (user_id, status)"
+  },
+  {
+   "tablename": "trips",
+   "indexname": "idx_trips_user_date",
+   "indexdef": "CREATE INDEX idx_trips_user_date ON public.trips USING btree (user_id, trip_date DESC)"
+  },
+  {
+   "tablename": "trips",
+   "indexname": "trips_pkey",
+   "indexdef": "CREATE UNIQUE INDEX trips_pkey ON public.trips USING btree (id)"
+  },
+  {
+   "tablename": "vehicles",
+   "indexname": "idx_vehicles_user_plate",
+   "indexdef": "CREATE INDEX idx_vehicles_user_plate ON public.vehicles USING btree (user_id, plate_number)"
+  },
+  {
+   "tablename": "vehicles",
+   "indexname": "vehicles_pkey",
+   "indexdef": "CREATE UNIQUE INDEX vehicles_pkey ON public.vehicles USING btree (id)"
+  }
+ ],
+ "policies": [
+  {
+   "tablename": "attendance",
+   "policyname": "users can delete own attendance",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "attendance",
+   "policyname": "users can insert own attendance",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "attendance",
+   "policyname": "users can update own attendance",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "attendance",
+   "policyname": "users can view own attendance",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "categories",
+   "policyname": "Enable delete access for all users",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "true",
+   "with_check": null
+  },
+  {
+   "tablename": "categories",
+   "policyname": "Enable insert access for all users",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "true"
+  },
+  {
+   "tablename": "categories",
+   "policyname": "Enable update access for all users",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "true",
+   "with_check": null
+  },
+  {
+   "tablename": "categories",
+   "policyname": "categories_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "categories",
+   "policyname": "categories_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "categories",
+   "policyname": "categories_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "categories",
+   "policyname": "categories_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "chart_of_accounts",
+   "policyname": "coa_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "chart_of_accounts",
+   "policyname": "coa_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "chart_of_accounts",
+   "policyname": "coa_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "chart_of_accounts",
+   "policyname": "coa_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "closing_periods",
+   "policyname": "closing_periods_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "closing_periods",
+   "policyname": "closing_periods_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "closing_periods",
+   "policyname": "closing_periods_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "closing_periods",
+   "policyname": "closing_periods_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "customer_group_members",
+   "policyname": "Users dapat delete customer_group_members mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "customer_group_members",
+   "policyname": "Users dapat insert customer_group_members mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "customer_group_members",
+   "policyname": "Users dapat melihat customer_group_members mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "customer_group_members",
+   "policyname": "Users dapat update customer_group_members mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "customer_groups",
+   "policyname": "Users dapat delete customer_groups mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "customer_groups",
+   "policyname": "Users dapat insert customer_groups mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "customer_groups",
+   "policyname": "Users dapat melihat customer_groups mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "customer_groups",
+   "policyname": "Users dapat update customer_groups mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "customer_price_matrix",
+   "policyname": "Users dapat delete customer_price_matrix mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "customer_price_matrix",
+   "policyname": "Users dapat insert customer_price_matrix mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "customer_price_matrix",
+   "policyname": "Users dapat melihat customer_price_matrix mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "customer_price_matrix",
+   "policyname": "Users dapat update customer_price_matrix mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "customers",
+   "policyname": "customers_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "customers",
+   "policyname": "customers_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "customers",
+   "policyname": "customers_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "customers",
+   "policyname": "customers_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "delivery_items",
+   "policyname": "delivery_items_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "delivery_items",
+   "policyname": "delivery_items_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "delivery_items",
+   "policyname": "delivery_items_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "delivery_items",
+   "policyname": "delivery_items_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "delivery_load_items",
+   "policyname": "delivery_load_items_user_is",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "ALL",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "delivery_loaders",
+   "policyname": "delivery_loaders_user_is",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "ALL",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "delivery_order_transactions",
+   "policyname": "delivery_order_transactions_user_is",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "ALL",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "delivery_orders",
+   "policyname": "delivery_orders_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "delivery_orders",
+   "policyname": "delivery_orders_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "delivery_orders",
+   "policyname": "delivery_orders_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "delivery_orders",
+   "policyname": "delivery_orders_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "delivery_tracking",
+   "policyname": "delivery_tracking_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "delivery_tracking",
+   "policyname": "delivery_tracking_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "delivery_tracking",
+   "policyname": "delivery_tracking_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "employee_loan_payments",
+   "policyname": "employee_loan_payments_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "employee_loan_payments",
+   "policyname": "employee_loan_payments_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "employee_loan_payments",
+   "policyname": "employee_loan_payments_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "employee_loan_payments",
+   "policyname": "employee_loan_payments_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "employee_loans",
+   "policyname": "employee_loans_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "employee_loans",
+   "policyname": "employee_loans_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "employee_loans",
+   "policyname": "employee_loans_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "employee_loans",
+   "policyname": "employee_loans_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "employees",
+   "policyname": "users can delete own employees",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "employees",
+   "policyname": "users can insert own employees",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "employees",
+   "policyname": "users can update own employees",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "employees",
+   "policyname": "users can view own employees",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "goods_receipts",
+   "policyname": "grn_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "goods_receipts",
+   "policyname": "grn_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "goods_receipts",
+   "policyname": "grn_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "goods_receipts",
+   "policyname": "grn_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "grn_items",
+   "policyname": "grn_items_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "grn_items",
+   "policyname": "grn_items_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "grn_items",
+   "policyname": "grn_items_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "grn_items",
+   "policyname": "grn_items_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "journal_entries",
+   "policyname": "journal_entries_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "journal_entries",
+   "policyname": "journal_entries_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "journal_entries",
+   "policyname": "journal_entries_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "journal_entries",
+   "policyname": "journal_entries_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "journal_lines",
+   "policyname": "journal_lines_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "journal_lines",
+   "policyname": "journal_lines_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "journal_lines",
+   "policyname": "journal_lines_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "journal_lines",
+   "policyname": "journal_lines_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "notifications",
+   "policyname": "Users can create notifications",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "notifications",
+   "policyname": "Users can delete their own notifications",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "notifications",
+   "policyname": "Users can update their own notifications",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "notifications",
+   "policyname": "Users can view their own notifications",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "payrolls",
+   "policyname": "payrolls_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "payrolls",
+   "policyname": "payrolls_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "payrolls",
+   "policyname": "payrolls_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "payrolls",
+   "policyname": "payrolls_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "pi_items",
+   "policyname": "pi_items_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "pi_items",
+   "policyname": "pi_items_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "pi_items",
+   "policyname": "pi_items_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "pi_items",
+   "policyname": "pi_items_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "pi_payments",
+   "policyname": "pi_payments_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "pi_payments",
+   "policyname": "pi_payments_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "pi_payments",
+   "policyname": "pi_payments_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "pi_payments",
+   "policyname": "pi_payments_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "po_items",
+   "policyname": "po_items_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "po_items",
+   "policyname": "po_items_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "po_items",
+   "policyname": "po_items_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "po_items",
+   "policyname": "po_items_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "price_tiers",
+   "policyname": "Users dapat delete price_tiers mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "price_tiers",
+   "policyname": "Users dapat insert price_tiers mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "price_tiers",
+   "policyname": "Users dapat melihat price_tiers mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "price_tiers",
+   "policyname": "Users dapat update price_tiers mereka sendiri",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "products",
+   "policyname": "Enable delete access for all users",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "true",
+   "with_check": null
+  },
+  {
+   "tablename": "products",
+   "policyname": "Enable insert access for all users",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "true"
+  },
+  {
+   "tablename": "products",
+   "policyname": "Enable update access for all users",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "true",
+   "with_check": null
+  },
+  {
+   "tablename": "products",
+   "policyname": "products_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "products",
+   "policyname": "products_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "products",
+   "policyname": "products_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "products",
+   "policyname": "products_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "purchase_invoices",
+   "policyname": "pi_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "purchase_invoices",
+   "policyname": "pi_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "purchase_invoices",
+   "policyname": "pi_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "purchase_invoices",
+   "policyname": "pi_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "purchase_orders",
+   "policyname": "po_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "purchase_orders",
+   "policyname": "po_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "purchase_orders",
+   "policyname": "po_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "purchase_orders",
+   "policyname": "po_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "purchase_return_items",
+   "policyname": "pr_items_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "purchase_return_items",
+   "policyname": "pr_items_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "purchase_return_items",
+   "policyname": "pr_items_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "purchase_return_items",
+   "policyname": "pr_items_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "purchase_returns",
+   "policyname": "pr_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "purchase_returns",
+   "policyname": "pr_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "purchase_returns",
+   "policyname": "pr_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "purchase_returns",
+   "policyname": "pr_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "return_items",
+   "policyname": "return_items_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "return_items",
+   "policyname": "return_items_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "return_items",
+   "policyname": "return_items_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "return_items",
+   "policyname": "return_items_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "returns",
+   "policyname": "returns_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "returns",
+   "policyname": "returns_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "returns",
+   "policyname": "returns_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "returns",
+   "policyname": "returns_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "stock_adjustments",
+   "policyname": "Users can create stock adjustments",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "stock_adjustments",
+   "policyname": "Users can view their own stock adjustments",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "stock_alerts",
+   "policyname": "Users can create stock alerts",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "stock_alerts",
+   "policyname": "Users can delete their own stock alerts",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "stock_alerts",
+   "policyname": "Users can update their own stock alerts",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "stock_alerts",
+   "policyname": "Users can view their own stock alerts",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "stock_movements",
+   "policyname": "Users can create stock movements",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "stock_movements",
+   "policyname": "Users can view their own stock movements",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "stock_opname_items",
+   "policyname": "Users can create stock opname items",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "stock_opname_items",
+   "policyname": "Users can delete their own stock opname items",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "stock_opname_items",
+   "policyname": "Users can update their own stock opname items",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "stock_opname_items",
+   "policyname": "Users can view their own stock opname items",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "stock_opnames",
+   "policyname": "Users can create stock opnames",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "stock_opnames",
+   "policyname": "Users can update their own stock opnames",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "stock_opnames",
+   "policyname": "Users can view their own stock opnames",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "store_settings",
+   "policyname": "store_settings_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "store_settings",
+   "policyname": "store_settings_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "store_settings",
+   "policyname": "store_settings_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "store_settings",
+   "policyname": "store_settings_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "suppliers",
+   "policyname": "suppliers_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "suppliers",
+   "policyname": "suppliers_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "suppliers",
+   "policyname": "suppliers_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "suppliers",
+   "policyname": "suppliers_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "transaction_item_payments",
+   "policyname": "item_payments_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "transaction_item_payments",
+   "policyname": "item_payments_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "transaction_item_payments",
+   "policyname": "item_payments_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "transaction_item_payments",
+   "policyname": "item_payments_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "transaction_items",
+   "policyname": "transaction_items_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "transaction_items",
+   "policyname": "transaction_items_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "transaction_items",
+   "policyname": "transaction_items_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "transaction_items",
+   "policyname": "transaction_items_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "transaction_payments",
+   "policyname": "transaction_payments_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "transaction_payments",
+   "policyname": "transaction_payments_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "transaction_payments",
+   "policyname": "transaction_payments_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "transaction_payments",
+   "policyname": "transaction_payments_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "transactions",
+   "policyname": "transactions_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "transactions",
+   "policyname": "transactions_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "transactions",
+   "policyname": "transactions_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "transactions",
+   "policyname": "transactions_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "trip_loaders",
+   "policyname": "trip_loaders_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "trip_loaders",
+   "policyname": "trip_loaders_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "trip_loaders",
+   "policyname": "trip_loaders_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "trip_loaders",
+   "policyname": "trip_loaders_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "trips",
+   "policyname": "trips_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "trips",
+   "policyname": "trips_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "trips",
+   "policyname": "trips_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "trips",
+   "policyname": "trips_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "vehicles",
+   "policyname": "vehicles_delete_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "DELETE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "vehicles",
+   "policyname": "vehicles_insert_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "(auth.uid() = user_id)"
+  },
+  {
+   "tablename": "vehicles",
+   "policyname": "vehicles_select_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "SELECT",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  },
+  {
+   "tablename": "vehicles",
+   "policyname": "vehicles_update_own",
+   "permissive": "PERMISSIVE",
+   "roles": "{public}",
+   "cmd": "UPDATE",
+   "qual": "(auth.uid() = user_id)",
+   "with_check": null
+  }
+ ],
+ "triggers": [
+  {
+   "tbl": "categories",
+   "name": "update_categories_updated_at",
+   "def": "CREATE TRIGGER update_categories_updated_at BEFORE UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+   "tbl": "customer_groups",
+   "name": "trigger_update_customer_groups_updated_at",
+   "def": "CREATE TRIGGER trigger_update_customer_groups_updated_at BEFORE UPDATE ON public.customer_groups FOR EACH ROW EXECUTE FUNCTION update_customer_groups_updated_at()"
+  },
+  {
+   "tbl": "customer_price_matrix",
+   "name": "trigger_update_customer_price_matrix_updated_at",
+   "def": "CREATE TRIGGER trigger_update_customer_price_matrix_updated_at BEFORE UPDATE ON public.customer_price_matrix FOR EACH ROW EXECUTE FUNCTION update_customer_price_matrix_updated_at()"
+  },
+  {
+   "tbl": "delivery_orders",
+   "name": "trg_delivery_orders_set_number",
+   "def": "CREATE TRIGGER trg_delivery_orders_set_number BEFORE INSERT ON public.delivery_orders FOR EACH ROW EXECUTE FUNCTION trg_delivery_orders_set_number()"
+  },
+  {
+   "tbl": "delivery_orders",
+   "name": "trg_prevent_closed_period_delivery",
+   "def": "CREATE TRIGGER trg_prevent_closed_period_delivery BEFORE INSERT OR UPDATE ON public.delivery_orders FOR EACH ROW EXECUTE FUNCTION prevent_closed_period_delivery()"
+  },
+  {
+   "tbl": "employee_loan_payments",
+   "name": "trigger_update_loan_after_payment",
+   "def": "CREATE TRIGGER trigger_update_loan_after_payment AFTER INSERT ON public.employee_loan_payments FOR EACH ROW EXECUTE FUNCTION update_loan_after_payment()"
+  },
+  {
+   "tbl": "employee_loans",
+   "name": "trigger_update_employee_loans_updated_at",
+   "def": "CREATE TRIGGER trigger_update_employee_loans_updated_at BEFORE UPDATE ON public.employee_loans FOR EACH ROW EXECUTE FUNCTION update_employee_loans_updated_at()"
+  },
+  {
+   "tbl": "employees",
+   "name": "trg_employees_set_code",
+   "def": "CREATE TRIGGER trg_employees_set_code BEFORE INSERT ON public.employees FOR EACH ROW EXECUTE FUNCTION trg_employees_set_code()"
+  },
+  {
+   "tbl": "goods_receipts",
+   "name": "trg_prevent_closed_period_grn",
+   "def": "CREATE TRIGGER trg_prevent_closed_period_grn BEFORE INSERT OR UPDATE ON public.goods_receipts FOR EACH ROW EXECUTE FUNCTION prevent_closed_period_grn()"
+  },
+  {
+   "tbl": "journal_entries",
+   "name": "trg_prevent_closed_period_journal",
+   "def": "CREATE TRIGGER trg_prevent_closed_period_journal BEFORE INSERT OR UPDATE ON public.journal_entries FOR EACH ROW EXECUTE FUNCTION prevent_closed_period_journal()"
+  },
+  {
+   "tbl": "journal_entries",
+   "name": "trg_prevent_closed_period_journal_delete",
+   "def": "CREATE TRIGGER trg_prevent_closed_period_journal_delete BEFORE DELETE ON public.journal_entries FOR EACH ROW EXECUTE FUNCTION prevent_closed_period_journal_delete()"
+  },
+  {
+   "tbl": "payrolls",
+   "name": "trg_prevent_closed_period_payroll",
+   "def": "CREATE TRIGGER trg_prevent_closed_period_payroll BEFORE INSERT OR UPDATE ON public.payrolls FOR EACH ROW EXECUTE FUNCTION prevent_closed_period_payroll()"
+  },
+  {
+   "tbl": "price_tiers",
+   "name": "trigger_update_price_tiers_updated_at",
+   "def": "CREATE TRIGGER trigger_update_price_tiers_updated_at BEFORE UPDATE ON public.price_tiers FOR EACH ROW EXECUTE FUNCTION update_price_tiers_updated_at()"
+  },
+  {
+   "tbl": "price_tiers",
+   "name": "trigger_validate_price_tier_range",
+   "def": "CREATE TRIGGER trigger_validate_price_tier_range BEFORE INSERT OR UPDATE ON public.price_tiers FOR EACH ROW EXECUTE FUNCTION validate_price_tier_range()"
+  },
+  {
+   "tbl": "products",
+   "name": "trigger_low_stock_notification",
+   "def": "CREATE TRIGGER trigger_low_stock_notification AFTER INSERT OR UPDATE OF stock ON public.products FOR EACH ROW EXECUTE FUNCTION create_low_stock_notification()"
+  },
+  {
+   "tbl": "products",
+   "name": "trigger_record_stock_movement",
+   "def": "CREATE TRIGGER trigger_record_stock_movement AFTER UPDATE ON public.products FOR EACH ROW WHEN ((new.stock IS DISTINCT FROM old.stock)) EXECUTE FUNCTION record_stock_movement()"
+  },
+  {
+   "tbl": "products",
+   "name": "update_products_updated_at",
+   "def": "CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON public.products FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+   "tbl": "purchase_invoices",
+   "name": "trg_prevent_closed_period_purchase_invoice",
+   "def": "CREATE TRIGGER trg_prevent_closed_period_purchase_invoice BEFORE INSERT OR UPDATE ON public.purchase_invoices FOR EACH ROW EXECUTE FUNCTION prevent_closed_period_purchase_invoice()"
+  },
+  {
+   "tbl": "purchase_orders",
+   "name": "trg_prevent_closed_period_po",
+   "def": "CREATE TRIGGER trg_prevent_closed_period_po BEFORE INSERT OR UPDATE ON public.purchase_orders FOR EACH ROW EXECUTE FUNCTION prevent_closed_period_po()"
+  },
+  {
+   "tbl": "returns",
+   "name": "trg_prevent_closed_period_return",
+   "def": "CREATE TRIGGER trg_prevent_closed_period_return BEFORE INSERT OR UPDATE ON public.returns FOR EACH ROW EXECUTE FUNCTION prevent_closed_period_return()"
+  },
+  {
+   "tbl": "returns",
+   "name": "trigger_return_notification",
+   "def": "CREATE TRIGGER trigger_return_notification AFTER INSERT ON public.returns FOR EACH ROW EXECUTE FUNCTION create_return_notification()"
+  },
+  {
+   "tbl": "stock_movements",
+   "name": "trg_prevent_closed_period_stock_movement",
+   "def": "CREATE TRIGGER trg_prevent_closed_period_stock_movement BEFORE INSERT OR UPDATE ON public.stock_movements FOR EACH ROW EXECUTE FUNCTION prevent_closed_period_stock_movement()"
+  },
+  {
+   "tbl": "transaction_item_payments",
+   "name": "trigger_validate_item_payment",
+   "def": "CREATE TRIGGER trigger_validate_item_payment BEFORE INSERT OR UPDATE ON public.transaction_item_payments FOR EACH ROW EXECUTE FUNCTION validate_item_payment_allocation()"
+  },
+  {
+   "tbl": "transaction_payments",
+   "name": "trg_auto_update_realized_profit",
+   "def": "CREATE TRIGGER trg_auto_update_realized_profit AFTER INSERT ON public.transaction_payments FOR EACH ROW EXECUTE FUNCTION auto_update_realized_profit()"
+  },
+  {
+   "tbl": "transaction_payments",
+   "name": "trg_prevent_closed_period_payment",
+   "def": "CREATE TRIGGER trg_prevent_closed_period_payment BEFORE INSERT OR UPDATE ON public.transaction_payments FOR EACH ROW EXECUTE FUNCTION prevent_closed_period_payment()"
+  },
+  {
+   "tbl": "transaction_payments",
+   "name": "trigger_auto_delete_payment_allocations",
+   "def": "CREATE TRIGGER trigger_auto_delete_payment_allocations BEFORE DELETE ON public.transaction_payments FOR EACH ROW EXECUTE FUNCTION auto_delete_payment_allocations()"
+  },
+  {
+   "tbl": "transaction_payments",
+   "name": "trigger_auto_journal_payment",
+   "def": "CREATE TRIGGER trigger_auto_journal_payment AFTER INSERT ON public.transaction_payments FOR EACH ROW EXECUTE FUNCTION auto_journal_payment()"
+  },
+  {
+   "tbl": "transaction_payments",
+   "name": "trigger_auto_update_transaction_on_payment_delete",
+   "def": "CREATE TRIGGER trigger_auto_update_transaction_on_payment_delete AFTER DELETE ON public.transaction_payments FOR EACH ROW EXECUTE FUNCTION auto_update_transaction_on_payment_delete()"
+  },
+  {
+   "tbl": "transaction_payments",
+   "name": "trigger_auto_void_journal_payment",
+   "def": "CREATE TRIGGER trigger_auto_void_journal_payment BEFORE DELETE ON public.transaction_payments FOR EACH ROW EXECUTE FUNCTION auto_void_journal_payment()"
+  },
+  {
+   "tbl": "transaction_payments",
+   "name": "trigger_payment_notification",
+   "def": "CREATE TRIGGER trigger_payment_notification AFTER INSERT ON public.transaction_payments FOR EACH ROW EXECUTE FUNCTION create_payment_notification()"
+  },
+  {
+   "tbl": "transactions",
+   "name": "ensure_coa_exists",
+   "def": "CREATE TRIGGER ensure_coa_exists BEFORE INSERT ON public.transactions FOR EACH ROW EXECUTE FUNCTION trigger_init_coa_on_first_transaction()"
+  },
+  {
+   "tbl": "transactions",
+   "name": "trg_prevent_closed_period_transaction",
+   "def": "CREATE TRIGGER trg_prevent_closed_period_transaction BEFORE INSERT OR UPDATE ON public.transactions FOR EACH ROW EXECUTE FUNCTION prevent_closed_period_transaction()"
+  },
+  {
+   "tbl": "transactions",
+   "name": "trigger_transaction_notification",
+   "def": "CREATE TRIGGER trigger_transaction_notification AFTER INSERT ON public.transactions FOR EACH ROW EXECUTE FUNCTION create_transaction_notification()"
+  },
+  {
+   "tbl": "trips",
+   "name": "trg_trips_set_number",
+   "def": "CREATE TRIGGER trg_trips_set_number BEFORE INSERT ON public.trips FOR EACH ROW EXECUTE FUNCTION trg_trips_set_number()"
+  }
+ ],
+ "views": [
+  {
+   "name": "transaction_items_payment_summary",
+   "def": " SELECT ti.id AS item_id,\n    ti.transaction_id,\n    ti.user_id,\n    ti.product_id,\n    ti.product_name,\n    ti.subtotal AS item_total,\n    COALESCE(sum(tip.allocated_amount), (0)::numeric) AS paid_amount,\n    (ti.subtotal - COALESCE(sum(tip.allocated_amount), (0)::numeric)) AS remaining_amount,\n        CASE\n            WHEN (COALESCE(sum(tip.allocated_amount), (0)::numeric) >= ti.subtotal) THEN 'lunas'::text\n            WHEN (COALESCE(sum(tip.allocated_amount), (0)::numeric) > (0)::numeric) THEN 'sebagian'::text\n            ELSE 'belum_bayar'::text\n        END AS payment_status\n   FROM (transaction_items ti\n     LEFT JOIN transaction_item_payments tip ON ((tip.item_id = ti.id)))\n  GROUP BY ti.id, ti.transaction_id, ti.user_id, ti.product_id, ti.product_name, ti.subtotal;",
+   "options": ""
+  }
+ ],
+ "grants": [
+  {
+   "grantee": "anon",
+   "table_name": "attendance",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "attendance",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "attendance",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "attendance",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "categories",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "categories",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "categories",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "categories",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "chart_of_accounts",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "chart_of_accounts",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "chart_of_accounts",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "chart_of_accounts",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "closing_periods",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "closing_periods",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "closing_periods",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "closing_periods",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "customer_group_members",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "customer_group_members",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "customer_group_members",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "customer_group_members",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "customer_groups",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "customer_groups",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "customer_groups",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "customer_groups",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "customer_price_matrix",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "customer_price_matrix",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "customer_price_matrix",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "customer_price_matrix",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "customers",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "customers",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "customers",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "customers",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "delivery_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "delivery_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "delivery_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "delivery_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "delivery_load_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "delivery_load_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "delivery_load_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "delivery_load_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "delivery_loaders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "delivery_loaders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "delivery_loaders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "delivery_loaders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "delivery_order_transactions",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "delivery_order_transactions",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "delivery_order_transactions",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "delivery_order_transactions",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "delivery_orders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "delivery_orders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "delivery_orders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "delivery_orders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "delivery_tracking",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "delivery_tracking",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "delivery_tracking",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "delivery_tracking",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "employee_loan_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "employee_loan_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "employee_loan_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "employee_loan_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "employee_loans",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "employee_loans",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "employee_loans",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "employee_loans",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "employees",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "employees",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "employees",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "employees",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "goods_receipts",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "goods_receipts",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "goods_receipts",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "goods_receipts",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "grn_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "grn_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "grn_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "grn_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "journal_entries",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "journal_entries",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "journal_entries",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "journal_entries",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "journal_lines",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "journal_lines",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "journal_lines",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "journal_lines",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "notifications",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "notifications",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "notifications",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "notifications",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "payrolls",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "payrolls",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "payrolls",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "payrolls",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "pi_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "pi_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "pi_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "pi_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "pi_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "pi_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "pi_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "pi_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "po_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "po_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "po_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "po_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "price_tiers",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "price_tiers",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "price_tiers",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "price_tiers",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "products",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "products",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "products",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "products",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "purchase_invoices",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "purchase_invoices",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "purchase_invoices",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "purchase_invoices",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "purchase_orders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "purchase_orders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "purchase_orders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "purchase_orders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "purchase_return_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "purchase_return_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "purchase_return_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "purchase_return_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "purchase_returns",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "purchase_returns",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "purchase_returns",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "purchase_returns",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "return_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "return_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "return_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "return_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "returns",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "returns",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "returns",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "returns",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "stock_adjustments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "stock_adjustments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "stock_adjustments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "stock_adjustments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "stock_alerts",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "stock_alerts",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "stock_alerts",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "stock_alerts",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "stock_movements",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "stock_movements",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "stock_movements",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "stock_movements",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "stock_opname_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "stock_opname_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "stock_opname_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "stock_opname_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "stock_opnames",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "stock_opnames",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "stock_opnames",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "stock_opnames",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "store_settings",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "store_settings",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "store_settings",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "store_settings",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "suppliers",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "suppliers",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "suppliers",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "suppliers",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "transaction_item_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "transaction_item_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "transaction_item_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "transaction_item_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "transaction_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "transaction_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "transaction_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "transaction_items",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "transaction_items_payment_summary",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "transaction_items_payment_summary",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "transaction_items_payment_summary",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "transaction_items_payment_summary",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "transaction_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "transaction_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "transaction_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "transaction_payments",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "transactions",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "transactions",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "transactions",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "transactions",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "trip_loaders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "trip_loaders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "trip_loaders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "trip_loaders",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "trips",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "trips",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "trips",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "trips",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "anon",
+   "table_name": "vehicles",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "authenticated",
+   "table_name": "vehicles",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "postgres",
+   "table_name": "vehicles",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  },
+  {
+   "grantee": "service_role",
+   "table_name": "vehicles",
+   "privs": "DELETE,INSERT,REFERENCES,SELECT,TRIGGER,TRUNCATE,UPDATE"
+  }
+ ],
+ "sequences": null,
+ "storage_policies": [
+  {
+   "policyname": "avatars_delete_own",
+   "cmd": "DELETE",
+   "qual": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+   "with_check": null
+  },
+  {
+   "policyname": "avatars_insert_own",
+   "cmd": "INSERT",
+   "qual": null,
+   "with_check": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))"
+  },
+  {
+   "policyname": "avatars_select_own",
+   "cmd": "SELECT",
+   "qual": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+   "with_check": null
+  },
+  {
+   "policyname": "avatars_update_own",
+   "cmd": "UPDATE",
+   "qual": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+   "with_check": "((bucket_id = 'avatars'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))"
+  }
+ ],
+ "storage_buckets": [
+  {
+   "id": "avatars",
+   "name": "avatars",
+   "public": true,
+   "file_size_limit": 2097152,
+   "allowed_mime_types": [
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "image/gif"
+   ]
+  }
+ ],
+ "auth_triggers": [
+  {
+   "tgname": "on_auth_user_created",
+   "def": "CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION create_default_store_settings()"
+  }
+ ]
+}

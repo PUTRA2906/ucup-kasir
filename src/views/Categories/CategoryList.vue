@@ -6,6 +6,7 @@
     <MobilePageHeader title="Daftar Kategori" :subtitle="categoriesStore.categories.length + ' Kategori'">
       <template #actions>
         <button
+          v-can="'product.write'"
           @click="addCategory"
           class="flex h-8 w-8 items-center justify-center rounded-xl border border-brand-500 bg-brand-500 text-white transition hover:bg-brand-600 active:scale-95"
         >
@@ -124,6 +125,7 @@
                 Detail
               </button>
               <button
+                v-can="'product.write'"
                 @click="editCategory(category)"
                 class="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-50 active:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-900/50 dark:active:bg-gray-900 transition-colors"
               >
@@ -133,6 +135,7 @@
                 Edit
               </button>
               <button
+                v-can="'product.write'"
                 @click="deleteCategory(category)"
                 class="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-error-600 hover:bg-error-50 active:bg-error-100 dark:text-error-500 dark:hover:bg-error-500/10 dark:active:bg-error-500/20 transition-colors"
               >
@@ -195,7 +198,7 @@
         :searchable="true"
 
         :show-filter="false"
-        :show-add-button="true"
+        :show-add-button="can('product.write')"
         add-button-text="Tambah Kategori"
         title="Kategori Produk"
         :subtitle="`${settingsStore.storeSubtitle} - ${categoriesStore.categories.length} Kategori`"
@@ -303,6 +306,7 @@
                 </svg>
               </button>
               <button
+                v-can="'product.write'"
                 @click="editCategory(row)"
                 class="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/[0.03]"
                 title="Edit"
@@ -317,6 +321,7 @@
               </svg>
             </button>
             <button
+              v-can="'product.write'"
               @click="deleteCategory(row)"
               class="rounded-lg p-2 text-error-600 hover:bg-error-50 dark:text-error-500 dark:hover:bg-error-500/15"
               title="Hapus"
@@ -379,6 +384,7 @@ import { useCategoriesStore } from '@/stores/categories'
 import { useProductsStore } from '@/stores/products'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useToast } from '@/composables/useToast'
+import { usePermission } from '@/composables/usePermission'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 import {
   downloadCsv,
@@ -392,6 +398,7 @@ const categoriesStore = useCategoriesStore()
 const productsStore = useProductsStore()
 const settingsStore = useStoreSettingsStore()
 const toast = useToast()
+const { can } = usePermission()
 
 const selectedCategories = ref<string[]>([])
 const selectAllCheckbox = ref<HTMLInputElement | null>(null)

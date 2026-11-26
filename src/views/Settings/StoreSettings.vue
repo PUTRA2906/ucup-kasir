@@ -76,6 +76,25 @@
           </div>
         </button>
 
+        <!-- Kelola Pengguna -->
+        <button
+          v-can="'user.manage'"
+          @click="router.push('/settings/users')"
+          class="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition active:bg-gray-50 dark:active:bg-white/[0.02]"
+        >
+          <div class="flex items-center gap-3">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10">
+              <svg class="h-4 w-4 text-violet-500 dark:text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6-4a3 3 0 11-3-3" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-sm font-medium text-gray-900 dark:text-white">Kelola Pengguna</h2>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Anggota toko & undangan karyawan</p>
+            </div>
+          </div>
+        </button>
+
         <!-- Tampilan Aplikasi -->
         <div class="flex w-full items-center justify-between gap-3 px-4 py-3.5">
           <div class="flex items-center gap-3">
@@ -320,6 +339,29 @@
             <div>
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">Variabel Global</h3>
               <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Limit kredit default & upah bongkar muat per karung</p>
+            </div>
+          </div>
+          <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Kelola Pengguna -->
+      <div v-can="'user.manage'" class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+        <button
+          @click="router.push('/settings/users')"
+          class="flex w-full items-center justify-between gap-4 p-6 text-left transition hover:bg-gray-50 dark:hover:bg-white/[0.02]"
+        >
+          <div class="flex items-center gap-4">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10">
+              <svg class="h-5 w-5 text-violet-500 dark:text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6-4a3 3 0 11-3-3" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">Kelola Pengguna</h3>
+              <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Undang karyawan, atur role, dan nonaktifkan akses</p>
             </div>
           </div>
           <svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

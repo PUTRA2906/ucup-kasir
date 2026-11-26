@@ -1,6 +1,6 @@
 export interface Category {
   id: string
-  user_id?: string
+  store_id?: string
   name: string
   description?: string
   created_at: string
@@ -9,7 +9,7 @@ export interface Category {
 
 export interface Product {
   id: string
-  user_id?: string
+  store_id?: string
   name: string
   description?: string
   category_id?: string
@@ -37,7 +37,7 @@ export interface ProductWithCategory extends Product {
 
 export interface Customer {
   id: string
-  user_id?: string
+  store_id?: string
   name: string
   store_name?: string
   phone?: string
@@ -51,7 +51,7 @@ export interface Customer {
 
 export interface TransactionItem {
   id: string
-  user_id?: string
+  store_id?: string
   transaction_id: string
   product_id?: string
   product_name: string
@@ -63,7 +63,7 @@ export interface TransactionItem {
 
 export interface TransactionPayment {
   id: string
-  user_id?: string
+  store_id?: string
   transaction_id: string
   amount: number
   payment_method: string
@@ -77,7 +77,7 @@ export type TransactionStatus = 'disiapkan' | 'dikirim' | 'selesai'
 
 export interface Transaction {
   id: string
-  user_id?: string
+  store_id?: string
   transaction_number: string
   customer_id?: string
   customer_name?: string
@@ -131,7 +131,7 @@ export interface TransactionInput {
 
 export interface ReturnItem {
   id: string
-  user_id?: string
+  store_id?: string
   return_id: string
   product_id?: string
   product_name: string
@@ -143,7 +143,7 @@ export interface ReturnItem {
 
 export interface TransactionReturn {
   id: string
-  user_id?: string
+  store_id?: string
   transaction_id: string
   return_number: string
   total_refund: number
@@ -166,7 +166,6 @@ export interface ReturnItemInput {
 
 export interface StoreSettings {
   id: string
-  user_id?: string
   store_name: string
   store_subtitle?: string
   store_address?: string
@@ -182,7 +181,7 @@ export interface StoreSettings {
   updated_at: string
 }
 
-export type StoreSettingsUpdate = Partial<Omit<StoreSettings, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
+export type StoreSettingsUpdate = Partial<Omit<StoreSettings, 'id' | 'created_at' | 'updated_at'>>
 
 // ============================================================
 // Modul Finance — Double-entry Accounting
@@ -190,7 +189,7 @@ export type StoreSettingsUpdate = Partial<Omit<StoreSettings, 'id' | 'user_id' |
 
 export interface Account {
   id: string
-  user_id?: string
+  store_id?: string
   code: string
   name: string
   type: 'aset' | 'kewajiban' | 'ekuitas' | 'pendapatan' | 'beban'
@@ -207,7 +206,7 @@ export type AccountUpdate = Partial<AccountInsert>
 
 export interface JournalLine {
   id: string
-  user_id?: string
+  store_id?: string
   journal_id: string
   account_id: string
   account_code: string
@@ -219,7 +218,7 @@ export interface JournalLine {
 
 export interface JournalEntry {
   id: string
-  user_id?: string
+  store_id?: string
   journal_number: string
   entry_date: string
   description: string
@@ -431,11 +430,11 @@ export interface FinancialStatements {
 
 export interface ClosingPeriod {
   id: string
-  user_id?: string
+  store_id?: string
   period_start: string  // 'YYYY-MM-DD'
   period_end: string    // 'YYYY-MM-DD'
   closed_at: string     // ISO timestamp
-  closed_by: string     // user_id
+  closed_by: string     // auth user id (orang)
   notes?: string
   status: 'closed' | 'reopened'
   snapshot_balances?: AccountBalance[]  // JSON parsed dari JSONB
@@ -455,7 +454,7 @@ export interface ClosePeriodInput {
 
 export interface Supplier {
   id: string
-  user_id?: string
+  store_id?: string
   name: string
   contact_person?: string
   phone?: string
@@ -480,7 +479,7 @@ export interface SupplierWithStats extends Supplier {
 
 export interface PurchaseOrderItem {
   id: string
-  user_id?: string
+  store_id?: string
   po_id: string
   product_id?: string
   product_name: string
@@ -494,7 +493,7 @@ export interface PurchaseOrderItem {
 
 export interface PurchaseOrder {
   id: string
-  user_id?: string
+  store_id?: string
   po_number: string
   supplier_id?: string
   supplier_name?: string
@@ -538,7 +537,7 @@ export type PurchaseOrderUpdate = Partial<PurchaseOrderInsert>
 
 export interface GoodsReceiptItem {
   id: string
-  user_id?: string
+  store_id?: string
   grn_id: string
   po_item_id?: string
   product_id?: string
@@ -552,7 +551,7 @@ export interface GoodsReceiptItem {
 
 export interface GoodsReceipt {
   id: string
-  user_id?: string
+  store_id?: string
   grn_number: string
   po_id?: string
   supplier_id?: string
@@ -586,7 +585,7 @@ export interface GoodsReceiptInput {
 
 export interface PurchaseInvoiceItem {
   id: string
-  user_id?: string
+  store_id?: string
   pi_id: string
   grn_item_id?: string
   product_id?: string
@@ -599,7 +598,7 @@ export interface PurchaseInvoiceItem {
 
 export interface PurchaseInvoicePayment {
   id: string
-  user_id?: string
+  store_id?: string
   pi_id: string
   amount: number
   payment_method: string
@@ -609,7 +608,7 @@ export interface PurchaseInvoicePayment {
 
 export interface PurchaseInvoice {
   id: string
-  user_id?: string
+  store_id?: string
   pi_number: string
   grn_id?: string
   po_id?: string
@@ -648,7 +647,7 @@ export interface PurchaseInvoiceInput {
 
 export interface PurchaseReturnItem {
   id: string
-  user_id?: string
+  store_id?: string
   pr_id: string
   product_id?: string
   product_name: string
@@ -661,7 +660,7 @@ export interface PurchaseReturnItem {
 
 export interface PurchaseReturn {
   id: string
-  user_id?: string
+  store_id?: string
   pr_number: string
   grn_id?: string
   pi_id?: string
@@ -698,7 +697,7 @@ export type PositionName = 'supir' | 'loader'
 
 export interface Employee {
   id: string
-  user_id?: string
+  store_id?: string
   employee_code: string
   name: string
   gender?: 'laki_laki' | 'perempuan'
@@ -735,7 +734,7 @@ export interface EmployeeWithStats extends Employee {
 
 export interface Attendance {
   id: string
-  user_id?: string
+  store_id?: string
   employee_id: string
   attendance_date: string
   check_in?: string
@@ -755,7 +754,7 @@ export type AttendanceUpdate = Partial<AttendanceInsert>
 
 export interface Payroll {
   id: string
-  user_id?: string
+  store_id?: string
   employee_id: string
   period_code: string
   period_start: string
@@ -791,7 +790,7 @@ export type PayrollUpdate = Partial<PayrollInsert>
 
 export interface EmployeeLoan {
   id: string
-  user_id?: string
+  store_id?: string
   employee_id: string
   loan_date: string
   amount: number
@@ -844,7 +843,7 @@ export interface KasbonDeductionResult {
 
 export interface Vehicle {
   id: string
-  user_id?: string
+  store_id?: string
   plate_number: string
   vehicle_type: string
   brand?: string
@@ -866,7 +865,7 @@ export type VehicleUpdate = Partial<VehicleInsert>
 
 export interface DeliveryOrderTransaction {
   id: string
-  user_id?: string
+  store_id?: string
   delivery_order_id: string
   transaction_id: string
   created_at: string
@@ -878,7 +877,7 @@ export type DeliveryOrderTransactionInput = {
 
 export interface DeliveryLoader {
   id: string
-  user_id?: string
+  store_id?: string
   delivery_order_id: string
   employee_id: string
   employee_name?: string
@@ -892,7 +891,7 @@ export type DeliveryLoaderInput = {
 
 export interface DeliveryLoadItem {
   id: string
-  user_id?: string
+  store_id?: string
   delivery_order_id: string
   product_name: string
   quantity: number
@@ -908,7 +907,7 @@ export type DeliveryLoadItemInput = {
 
 export interface DeliveryOrder {
   id: string
-  user_id?: string
+  store_id?: string
   do_number: string
   do_date: string
   customer_id?: string
@@ -942,7 +941,7 @@ export type DeliveryOrderUpdate = Partial<DeliveryOrderInsert>
 
 export interface DeliveryItem {
   id: string
-  user_id?: string
+  store_id?: string
   delivery_order_id: string
   product_id?: string
   product_name: string
@@ -954,7 +953,7 @@ export type DeliveryItemInsert = Omit<DeliveryItem, 'id' | 'created_at'>
 
 export interface DeliveryTracking {
   id: string
-  user_id?: string
+  store_id?: string
   delivery_order_id: string
   status: 'draft' | 'disiapkan' | 'dikirim' | 'selesai' | 'batal'
   note?: string

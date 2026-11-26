@@ -86,7 +86,7 @@ export const salesReportService = {
         *,
         items:transaction_items(
           *,
-          product:products(id, name, category_id, price_buy, price_sell)
+          product:v_products(id, name, category_id, price_buy, price_sell)
         ),
         payments:transaction_payments(*)
       `)
@@ -109,7 +109,7 @@ export const salesReportService = {
     // Fetch returns data untuk periode yang sama
     const { data: returns, error: returnsError } = await supabase
       .from('returns')
-      .select('*, items:return_items(*, product:products(id, name))')
+      .select('*, items:v_return_items(*, product:v_products(id, name))')
       .gte('created_at', startDate)
       .lte('created_at', endDate + 'T23:59:59')
 

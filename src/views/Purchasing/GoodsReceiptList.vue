@@ -6,6 +6,7 @@
     <MobilePageHeader title="Goods Receipt" subtitle="Penerimaan Barang">
       <template #actions>
         <button
+          v-can="'purchasing.write'"
           @click="$router.push('/purchasing/grns/add')"
           class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-500"
         >
@@ -20,6 +21,7 @@
     <div class="mb-4 hidden items-center justify-between md:flex">
       <div></div>
       <button
+        v-can="'purchasing.write'"
         @click="$router.push('/purchasing/grns/add')"
         class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500"
       >

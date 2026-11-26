@@ -5,6 +5,7 @@
     <!-- Mobile Header -->
     <MobilePageHeader title="Retur Pembelian" subtitle="Purchase Return">
       <template #actions>
+        v-can="'purchasing.write'"
         <button @click="$router.push('/purchasing/returns/add')" class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-500">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
         </button>
@@ -13,6 +14,7 @@
 
     <div class="mb-4 hidden items-center justify-between md:flex">
       <div></div>
+      v-can="'purchasing.write'"
       <button @click="$router.push('/purchasing/returns/add')" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500">+ Retur Barang</button>
     </div>
 
@@ -34,6 +36,7 @@
         </div>
         <h3 class="text-sm font-bold text-gray-900 dark:text-white">Belum ada retur pembelian</h3>
         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Retur barang yang rusak atau tidak sesuai.</p>
+        v-can="'purchasing.write'"
         <button @click="$router.push('/purchasing/returns/add')" class="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500">Buat Retur</button>
       </div>
 

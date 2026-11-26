@@ -48,7 +48,7 @@ export const sqliteCategoriesService = {
     // Queue untuk backup ke Supabase
     const created: Category = {
       id,
-      user_id: userId,
+      store_id: userId,
       name: category.name,
       description: category.description,
       created_at: now,
@@ -76,7 +76,7 @@ export const sqliteCategoriesService = {
         )
         results.push({
           id,
-          user_id: userId,
+          store_id: userId,
           name: cat.name,
           description: cat.description,
           created_at: now,
@@ -150,7 +150,7 @@ export const sqliteCategoriesService = {
         await tx.run(
           `INSERT OR REPLACE INTO categories (id, user_id, name, description, created_at, updated_at, sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [r.id, r.user_id ?? userId, r.name, r.description ?? null, r.created_at, r.updated_at, r.updated_at]
+          [r.id, r.store_id ?? userId, r.name, r.description ?? null, r.created_at, r.updated_at, r.updated_at]
         )
       }
     })
@@ -177,7 +177,7 @@ export const sqliteCategoriesService = {
         await tx.run(
           `INSERT OR REPLACE INTO categories (id, user_id, name, description, created_at, updated_at, sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [r.id, r.user_id ?? userId, r.name, r.description ?? null, r.created_at, r.updated_at, r.updated_at]
+          [r.id, r.store_id ?? userId, r.name, r.description ?? null, r.created_at, r.updated_at, r.updated_at]
         )
       }
     })
@@ -186,7 +186,7 @@ export const sqliteCategoriesService = {
   mapRow(r: any): Category {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       name: r.name,
       description: r.description ?? undefined,
       created_at: r.created_at,

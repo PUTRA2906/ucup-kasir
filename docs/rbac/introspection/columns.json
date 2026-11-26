@@ -1,0 +1,4194 @@
+[
+ {
+  "tbl": "attendance",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "attendance",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "attendance",
+  "col": "employee_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "attendance",
+  "col": "attendance_date",
+  "typ": "date",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "attendance",
+  "col": "check_in",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "attendance",
+  "col": "check_out",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "attendance",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'hadir'::text",
+  "attnum": 7
+ },
+ {
+  "tbl": "attendance",
+  "col": "overtime_minutes",
+  "typ": "integer",
+  "notnull": false,
+  "def": "0",
+  "attnum": 8
+ },
+ {
+  "tbl": "attendance",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "attendance",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 10
+ },
+ {
+  "tbl": "attendance",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 11
+ },
+ {
+  "tbl": "categories",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "categories",
+  "col": "name",
+  "typ": "character varying(255)",
+  "notnull": true,
+  "def": null,
+  "attnum": 2
+ },
+ {
+  "tbl": "categories",
+  "col": "description",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "categories",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 4
+ },
+ {
+  "tbl": "categories",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 5
+ },
+ {
+  "tbl": "categories",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 6
+ },
+ {
+  "tbl": "chart_of_accounts",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "chart_of_accounts",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "chart_of_accounts",
+  "col": "code",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "chart_of_accounts",
+  "col": "name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "chart_of_accounts",
+  "col": "type",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "chart_of_accounts",
+  "col": "normal_balance",
+  "typ": "text",
+  "notnull": true,
+  "def": "'debit'::text",
+  "attnum": 6
+ },
+ {
+  "tbl": "chart_of_accounts",
+  "col": "is_active",
+  "typ": "boolean",
+  "notnull": true,
+  "def": "true",
+  "attnum": 7
+ },
+ {
+  "tbl": "chart_of_accounts",
+  "col": "is_system",
+  "typ": "boolean",
+  "notnull": true,
+  "def": "false",
+  "attnum": 8
+ },
+ {
+  "tbl": "chart_of_accounts",
+  "col": "parent_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "chart_of_accounts",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 10
+ },
+ {
+  "tbl": "chart_of_accounts",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 11
+ },
+ {
+  "tbl": "closing_periods",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "closing_periods",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "closing_periods",
+  "col": "period_start",
+  "typ": "date",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "closing_periods",
+  "col": "period_end",
+  "typ": "date",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "closing_periods",
+  "col": "closed_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 5
+ },
+ {
+  "tbl": "closing_periods",
+  "col": "closed_by",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 6
+ },
+ {
+  "tbl": "closing_periods",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "closing_periods",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'closed'::text",
+  "attnum": 8
+ },
+ {
+  "tbl": "closing_periods",
+  "col": "snapshot_balances",
+  "typ": "jsonb",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "closing_periods",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 10
+ },
+ {
+  "tbl": "closing_periods",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 11
+ },
+ {
+  "tbl": "customer_group_members",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "customer_group_members",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "customer_group_members",
+  "col": "group_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "customer_group_members",
+  "col": "customer_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "customer_group_members",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 5
+ },
+ {
+  "tbl": "customer_groups",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "customer_groups",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "customer_groups",
+  "col": "name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "customer_groups",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "customer_groups",
+  "col": "is_active",
+  "typ": "boolean",
+  "notnull": false,
+  "def": "true",
+  "attnum": 5
+ },
+ {
+  "tbl": "customer_groups",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 6
+ },
+ {
+  "tbl": "customer_groups",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 7
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "customer_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "custom_price",
+  "typ": "numeric",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "min_quantity",
+  "typ": "integer",
+  "notnull": false,
+  "def": "1",
+  "attnum": 6
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "is_active",
+  "typ": "boolean",
+  "notnull": false,
+  "def": "true",
+  "attnum": 7
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "start_date",
+  "typ": "date",
+  "notnull": false,
+  "def": null,
+  "attnum": 8
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "end_date",
+  "typ": "date",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 10
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 11
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 12
+ },
+ {
+  "tbl": "customer_price_matrix",
+  "col": "group_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 13
+ },
+ {
+  "tbl": "customers",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "customers",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "customers",
+  "col": "name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "customers",
+  "col": "phone",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "customers",
+  "col": "address",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "customers",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "customers",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 7
+ },
+ {
+  "tbl": "customers",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 8
+ },
+ {
+  "tbl": "customers",
+  "col": "kecamatan",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "customers",
+  "col": "store_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 10
+ },
+ {
+  "tbl": "customers",
+  "col": "credit_limit",
+  "typ": "real",
+  "notnull": true,
+  "def": "0",
+  "attnum": 11
+ },
+ {
+  "tbl": "delivery_items",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "delivery_items",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "delivery_items",
+  "col": "delivery_order_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "delivery_items",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "delivery_items",
+  "col": "product_name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "delivery_items",
+  "col": "quantity",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 6
+ },
+ {
+  "tbl": "delivery_items",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 7
+ },
+ {
+  "tbl": "delivery_load_items",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "delivery_load_items",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "delivery_load_items",
+  "col": "delivery_order_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "delivery_load_items",
+  "col": "product_name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "delivery_load_items",
+  "col": "quantity",
+  "typ": "numeric",
+  "notnull": true,
+  "def": "0",
+  "attnum": 5
+ },
+ {
+  "tbl": "delivery_load_items",
+  "col": "unit_price",
+  "typ": "numeric",
+  "notnull": true,
+  "def": "0",
+  "attnum": 6
+ },
+ {
+  "tbl": "delivery_load_items",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 7
+ },
+ {
+  "tbl": "delivery_loaders",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "delivery_loaders",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "delivery_loaders",
+  "col": "delivery_order_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "delivery_loaders",
+  "col": "employee_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "delivery_loaders",
+  "col": "employee_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "delivery_loaders",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 6
+ },
+ {
+  "tbl": "delivery_order_transactions",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "delivery_order_transactions",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "delivery_order_transactions",
+  "col": "delivery_order_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "delivery_order_transactions",
+  "col": "transaction_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "delivery_order_transactions",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 5
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "do_number",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "do_date",
+  "typ": "date",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "customer_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "customer_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "customer_address",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 8
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "vehicle_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "driver_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 10
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "driver_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 11
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 12
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'draft'::text",
+  "attnum": 13
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 14
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 15
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "trip_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 17
+ },
+ {
+  "tbl": "delivery_orders",
+  "col": "driver_fee",
+  "typ": "numeric(12,2)",
+  "notnull": false,
+  "def": "0",
+  "attnum": 18
+ },
+ {
+  "tbl": "delivery_tracking",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "delivery_tracking",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "delivery_tracking",
+  "col": "delivery_order_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "delivery_tracking",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'draft'::text",
+  "attnum": 4
+ },
+ {
+  "tbl": "delivery_tracking",
+  "col": "note",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "delivery_tracking",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 6
+ },
+ {
+  "tbl": "employee_loan_payments",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "employee_loan_payments",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "employee_loan_payments",
+  "col": "loan_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "employee_loan_payments",
+  "col": "payroll_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "employee_loan_payments",
+  "col": "payment_date",
+  "typ": "date",
+  "notnull": true,
+  "def": "CURRENT_DATE",
+  "attnum": 5
+ },
+ {
+  "tbl": "employee_loan_payments",
+  "col": "amount",
+  "typ": "numeric(15,2)",
+  "notnull": true,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "employee_loan_payments",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "employee_loan_payments",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 8
+ },
+ {
+  "tbl": "employee_loan_payments",
+  "col": "created_by",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "employee_loans",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "employee_loans",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "employee_loans",
+  "col": "employee_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "employee_loans",
+  "col": "loan_date",
+  "typ": "date",
+  "notnull": true,
+  "def": "CURRENT_DATE",
+  "attnum": 4
+ },
+ {
+  "tbl": "employee_loans",
+  "col": "amount",
+  "typ": "numeric(15,2)",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "employee_loans",
+  "col": "remaining_amount",
+  "typ": "numeric(15,2)",
+  "notnull": true,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "employee_loans",
+  "col": "description",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "employee_loans",
+  "col": "status",
+  "typ": "character varying(20)",
+  "notnull": true,
+  "def": "'active'::character varying",
+  "attnum": 8
+ },
+ {
+  "tbl": "employee_loans",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 9
+ },
+ {
+  "tbl": "employee_loans",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 10
+ },
+ {
+  "tbl": "employee_loans",
+  "col": "created_by",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 11
+ },
+ {
+  "tbl": "employee_loans",
+  "col": "updated_by",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 12
+ },
+ {
+  "tbl": "employees",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "employees",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "employees",
+  "col": "employee_code",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "employees",
+  "col": "name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "employees",
+  "col": "gender",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "employees",
+  "col": "birth_place",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "employees",
+  "col": "birth_date",
+  "typ": "date",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "employees",
+  "col": "phone",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 8
+ },
+ {
+  "tbl": "employees",
+  "col": "email",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "employees",
+  "col": "address",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 10
+ },
+ {
+  "tbl": "employees",
+  "col": "identity_type",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 11
+ },
+ {
+  "tbl": "employees",
+  "col": "identity_number",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 12
+ },
+ {
+  "tbl": "employees",
+  "col": "join_date",
+  "typ": "date",
+  "notnull": false,
+  "def": null,
+  "attnum": 15
+ },
+ {
+  "tbl": "employees",
+  "col": "resign_date",
+  "typ": "date",
+  "notnull": false,
+  "def": null,
+  "attnum": 16
+ },
+ {
+  "tbl": "employees",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'aktif'::text",
+  "attnum": 17
+ },
+ {
+  "tbl": "employees",
+  "col": "salary_type",
+  "typ": "text",
+  "notnull": true,
+  "def": "'bulanan'::text",
+  "attnum": 18
+ },
+ {
+  "tbl": "employees",
+  "col": "base_salary",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 19
+ },
+ {
+  "tbl": "employees",
+  "col": "bank_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 20
+ },
+ {
+  "tbl": "employees",
+  "col": "bank_account_number",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 21
+ },
+ {
+  "tbl": "employees",
+  "col": "bank_account_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 22
+ },
+ {
+  "tbl": "employees",
+  "col": "npwp",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 23
+ },
+ {
+  "tbl": "employees",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 24
+ },
+ {
+  "tbl": "employees",
+  "col": "is_active",
+  "typ": "boolean",
+  "notnull": true,
+  "def": "true",
+  "attnum": 25
+ },
+ {
+  "tbl": "employees",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 26
+ },
+ {
+  "tbl": "employees",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 27
+ },
+ {
+  "tbl": "employees",
+  "col": "position",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 28
+ },
+ {
+  "tbl": "goods_receipts",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "goods_receipts",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "goods_receipts",
+  "col": "grn_number",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "goods_receipts",
+  "col": "po_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "goods_receipts",
+  "col": "supplier_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "goods_receipts",
+  "col": "supplier_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "goods_receipts",
+  "col": "receipt_date",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 7
+ },
+ {
+  "tbl": "goods_receipts",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'draft'::text",
+  "attnum": 8
+ },
+ {
+  "tbl": "goods_receipts",
+  "col": "total",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 9
+ },
+ {
+  "tbl": "goods_receipts",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 10
+ },
+ {
+  "tbl": "goods_receipts",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 11
+ },
+ {
+  "tbl": "goods_receipts",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 12
+ },
+ {
+  "tbl": "grn_items",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "grn_items",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "grn_items",
+  "col": "grn_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "grn_items",
+  "col": "po_item_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "grn_items",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "grn_items",
+  "col": "product_name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "grn_items",
+  "col": "quantity_received",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 7
+ },
+ {
+  "tbl": "grn_items",
+  "col": "quantity_rejected",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 8
+ },
+ {
+  "tbl": "grn_items",
+  "col": "price",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 9
+ },
+ {
+  "tbl": "grn_items",
+  "col": "subtotal",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 10
+ },
+ {
+  "tbl": "grn_items",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 11
+ },
+ {
+  "tbl": "journal_entries",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "journal_entries",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "journal_entries",
+  "col": "journal_number",
+  "typ": "text",
+  "notnull": true,
+  "def": "((('JRN-'::text || to_char(now(), 'YYYYMMDD'::text)) || '-'::text) || upper(substr(md5((random())::text), 1, 6)))",
+  "attnum": 3
+ },
+ {
+  "tbl": "journal_entries",
+  "col": "entry_date",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 4
+ },
+ {
+  "tbl": "journal_entries",
+  "col": "description",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "journal_entries",
+  "col": "reference_type",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "journal_entries",
+  "col": "reference_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "journal_entries",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'posted'::text",
+  "attnum": 8
+ },
+ {
+  "tbl": "journal_entries",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 9
+ },
+ {
+  "tbl": "journal_entries",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 10
+ },
+ {
+  "tbl": "journal_lines",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "journal_lines",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "journal_lines",
+  "col": "journal_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "journal_lines",
+  "col": "account_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "journal_lines",
+  "col": "account_code",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "journal_lines",
+  "col": "account_name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "journal_lines",
+  "col": "debit",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 7
+ },
+ {
+  "tbl": "journal_lines",
+  "col": "credit",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 8
+ },
+ {
+  "tbl": "journal_lines",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 9
+ },
+ {
+  "tbl": "notifications",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "notifications",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "notifications",
+  "col": "type",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "notifications",
+  "col": "title",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "notifications",
+  "col": "message",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "notifications",
+  "col": "data",
+  "typ": "jsonb",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "notifications",
+  "col": "is_read",
+  "typ": "boolean",
+  "notnull": false,
+  "def": "false",
+  "attnum": 7
+ },
+ {
+  "tbl": "notifications",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 8
+ },
+ {
+  "tbl": "notifications",
+  "col": "read_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "payrolls",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "payrolls",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "payrolls",
+  "col": "employee_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "payrolls",
+  "col": "period_code",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "payrolls",
+  "col": "period_start",
+  "typ": "date",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "payrolls",
+  "col": "period_end",
+  "typ": "date",
+  "notnull": true,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "payrolls",
+  "col": "base_salary",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 7
+ },
+ {
+  "tbl": "payrolls",
+  "col": "incentive_amount",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 8
+ },
+ {
+  "tbl": "payrolls",
+  "col": "kasbon_deduction",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 9
+ },
+ {
+  "tbl": "payrolls",
+  "col": "total_net",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 10
+ },
+ {
+  "tbl": "payrolls",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'draft'::text",
+  "attnum": 11
+ },
+ {
+  "tbl": "payrolls",
+  "col": "journal_entry_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 12
+ },
+ {
+  "tbl": "payrolls",
+  "col": "paid_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": null,
+  "attnum": 13
+ },
+ {
+  "tbl": "payrolls",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 14
+ },
+ {
+  "tbl": "payrolls",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 15
+ },
+ {
+  "tbl": "payrolls",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 16
+ },
+ {
+  "tbl": "payrolls",
+  "col": "incentive_details",
+  "typ": "jsonb",
+  "notnull": false,
+  "def": null,
+  "attnum": 17
+ },
+ {
+  "tbl": "pi_items",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "pi_items",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "pi_items",
+  "col": "pi_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "pi_items",
+  "col": "grn_item_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "pi_items",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "pi_items",
+  "col": "product_name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "pi_items",
+  "col": "quantity",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 7
+ },
+ {
+  "tbl": "pi_items",
+  "col": "price",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 8
+ },
+ {
+  "tbl": "pi_items",
+  "col": "subtotal",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 9
+ },
+ {
+  "tbl": "pi_items",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 10
+ },
+ {
+  "tbl": "pi_payments",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "pi_payments",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "pi_payments",
+  "col": "pi_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "pi_payments",
+  "col": "amount",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 4
+ },
+ {
+  "tbl": "pi_payments",
+  "col": "payment_method",
+  "typ": "text",
+  "notnull": true,
+  "def": "'tunai'::text",
+  "attnum": 5
+ },
+ {
+  "tbl": "pi_payments",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "pi_payments",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 7
+ },
+ {
+  "tbl": "po_items",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "po_items",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "po_items",
+  "col": "po_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "po_items",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "po_items",
+  "col": "product_name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "po_items",
+  "col": "quantity",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 6
+ },
+ {
+  "tbl": "po_items",
+  "col": "price",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 7
+ },
+ {
+  "tbl": "po_items",
+  "col": "discount",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 8
+ },
+ {
+  "tbl": "po_items",
+  "col": "subtotal",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 9
+ },
+ {
+  "tbl": "po_items",
+  "col": "received_quantity",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 10
+ },
+ {
+  "tbl": "po_items",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 11
+ },
+ {
+  "tbl": "price_tiers",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "price_tiers",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "price_tiers",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "price_tiers",
+  "col": "min_quantity",
+  "typ": "integer",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "price_tiers",
+  "col": "max_quantity",
+  "typ": "integer",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "price_tiers",
+  "col": "tier_price",
+  "typ": "numeric",
+  "notnull": true,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "price_tiers",
+  "col": "tier_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "price_tiers",
+  "col": "is_active",
+  "typ": "boolean",
+  "notnull": false,
+  "def": "true",
+  "attnum": 8
+ },
+ {
+  "tbl": "price_tiers",
+  "col": "start_date",
+  "typ": "date",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "price_tiers",
+  "col": "end_date",
+  "typ": "date",
+  "notnull": false,
+  "def": null,
+  "attnum": 10
+ },
+ {
+  "tbl": "price_tiers",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 11
+ },
+ {
+  "tbl": "price_tiers",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 12
+ },
+ {
+  "tbl": "products",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "products",
+  "col": "name",
+  "typ": "character varying(255)",
+  "notnull": true,
+  "def": null,
+  "attnum": 2
+ },
+ {
+  "tbl": "products",
+  "col": "description",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "products",
+  "col": "category_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "products",
+  "col": "price_buy",
+  "typ": "numeric(10,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 5
+ },
+ {
+  "tbl": "products",
+  "col": "stock",
+  "typ": "integer",
+  "notnull": true,
+  "def": "0",
+  "attnum": 6
+ },
+ {
+  "tbl": "products",
+  "col": "sku",
+  "typ": "character varying(100)",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "products",
+  "col": "barcode",
+  "typ": "character varying(100)",
+  "notnull": false,
+  "def": null,
+  "attnum": 8
+ },
+ {
+  "tbl": "products",
+  "col": "image_url",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "products",
+  "col": "is_active",
+  "typ": "boolean",
+  "notnull": false,
+  "def": "true",
+  "attnum": 10
+ },
+ {
+  "tbl": "products",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 11
+ },
+ {
+  "tbl": "products",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": "now()",
+  "attnum": 12
+ },
+ {
+  "tbl": "products",
+  "col": "price_modal",
+  "typ": "numeric(10,2)",
+  "notnull": false,
+  "def": "0",
+  "attnum": 13
+ },
+ {
+  "tbl": "products",
+  "col": "price_sell",
+  "typ": "numeric(10,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 14
+ },
+ {
+  "tbl": "products",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 15
+ },
+ {
+  "tbl": "products",
+  "col": "minimum_stock",
+  "typ": "integer",
+  "notnull": true,
+  "def": "10",
+  "attnum": 16
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "pi_number",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "grn_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "po_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "supplier_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "supplier_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "invoice_date",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 8
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "due_date",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "subtotal",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 10
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "discount",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 11
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "tax",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 12
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "shipping_cost",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 13
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "total",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 14
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "paid_amount",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 15
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "remaining_amount",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 16
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "payment_status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'belum_lunas'::text",
+  "attnum": 17
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 18
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 19
+ },
+ {
+  "tbl": "purchase_invoices",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 20
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "po_number",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "supplier_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "supplier_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "po_date",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 6
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "expected_date",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'draft'::text",
+  "attnum": 8
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "subtotal",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 9
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "discount",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 10
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "tax",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 11
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "shipping_cost",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 12
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "total",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 13
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 14
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 15
+ },
+ {
+  "tbl": "purchase_orders",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 16
+ },
+ {
+  "tbl": "purchase_return_items",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "purchase_return_items",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "purchase_return_items",
+  "col": "pr_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "purchase_return_items",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "purchase_return_items",
+  "col": "product_name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "purchase_return_items",
+  "col": "quantity",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 6
+ },
+ {
+  "tbl": "purchase_return_items",
+  "col": "price",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 7
+ },
+ {
+  "tbl": "purchase_return_items",
+  "col": "price_buy",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 8
+ },
+ {
+  "tbl": "purchase_return_items",
+  "col": "subtotal",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 9
+ },
+ {
+  "tbl": "purchase_return_items",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 10
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "pr_number",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "grn_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "pi_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "supplier_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "supplier_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "return_date",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 8
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "total_refund",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 9
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "reason",
+  "typ": "text",
+  "notnull": true,
+  "def": "'cacat'::text",
+  "attnum": 10
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 11
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'completed'::text",
+  "attnum": 12
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 13
+ },
+ {
+  "tbl": "purchase_returns",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 14
+ },
+ {
+  "tbl": "return_items",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "return_items",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "return_items",
+  "col": "return_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "return_items",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "return_items",
+  "col": "product_name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "return_items",
+  "col": "price",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 6
+ },
+ {
+  "tbl": "return_items",
+  "col": "quantity",
+  "typ": "integer",
+  "notnull": true,
+  "def": "1",
+  "attnum": 7
+ },
+ {
+  "tbl": "return_items",
+  "col": "subtotal",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 8
+ },
+ {
+  "tbl": "return_items",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 9
+ },
+ {
+  "tbl": "return_items",
+  "col": "price_buy",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 10
+ },
+ {
+  "tbl": "returns",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "returns",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "returns",
+  "col": "transaction_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "returns",
+  "col": "return_number",
+  "typ": "text",
+  "notnull": true,
+  "def": "((('RTR-'::text || to_char(now(), 'YYYYMMDD'::text)) || '-'::text) || upper(substr(md5((random())::text), 1, 6)))",
+  "attnum": 4
+ },
+ {
+  "tbl": "returns",
+  "col": "total_refund",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 5
+ },
+ {
+  "tbl": "returns",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "returns",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 7
+ },
+ {
+  "tbl": "returns",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 8
+ },
+ {
+  "tbl": "stock_adjustments",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "stock_adjustments",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "stock_adjustments",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "stock_adjustments",
+  "col": "adjustment_type",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "stock_adjustments",
+  "col": "quantity_before",
+  "typ": "integer",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "stock_adjustments",
+  "col": "quantity_after",
+  "typ": "integer",
+  "notnull": true,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "stock_adjustments",
+  "col": "quantity_change",
+  "typ": "integer",
+  "notnull": true,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "stock_adjustments",
+  "col": "reason",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 8
+ },
+ {
+  "tbl": "stock_adjustments",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "stock_adjustments",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 10
+ },
+ {
+  "tbl": "stock_adjustments",
+  "col": "created_by",
+  "typ": "uuid",
+  "notnull": false,
+  "def": "auth.uid()",
+  "attnum": 11
+ },
+ {
+  "tbl": "stock_alerts",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "stock_alerts",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "stock_alerts",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "stock_alerts",
+  "col": "minimum_stock",
+  "typ": "integer",
+  "notnull": true,
+  "def": "10",
+  "attnum": 4
+ },
+ {
+  "tbl": "stock_alerts",
+  "col": "alert_enabled",
+  "typ": "boolean",
+  "notnull": false,
+  "def": "true",
+  "attnum": 5
+ },
+ {
+  "tbl": "stock_alerts",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 6
+ },
+ {
+  "tbl": "stock_alerts",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 7
+ },
+ {
+  "tbl": "stock_movements",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "stock_movements",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "stock_movements",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "stock_movements",
+  "col": "movement_type",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "stock_movements",
+  "col": "quantity",
+  "typ": "integer",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "stock_movements",
+  "col": "quantity_before",
+  "typ": "integer",
+  "notnull": true,
+  "def": "0",
+  "attnum": 6
+ },
+ {
+  "tbl": "stock_movements",
+  "col": "quantity_after",
+  "typ": "integer",
+  "notnull": true,
+  "def": "0",
+  "attnum": 7
+ },
+ {
+  "tbl": "stock_movements",
+  "col": "reference_type",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 8
+ },
+ {
+  "tbl": "stock_movements",
+  "col": "reference_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 9
+ },
+ {
+  "tbl": "stock_movements",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 10
+ },
+ {
+  "tbl": "stock_movements",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 11
+ },
+ {
+  "tbl": "stock_movements",
+  "col": "created_by",
+  "typ": "uuid",
+  "notnull": false,
+  "def": "auth.uid()",
+  "attnum": 12
+ },
+ {
+  "tbl": "stock_opname_items",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "stock_opname_items",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "stock_opname_items",
+  "col": "opname_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "stock_opname_items",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "stock_opname_items",
+  "col": "system_quantity",
+  "typ": "integer",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "stock_opname_items",
+  "col": "actual_quantity",
+  "typ": "integer",
+  "notnull": true,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "stock_opname_items",
+  "col": "difference",
+  "typ": "integer",
+  "notnull": true,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "stock_opname_items",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 8
+ },
+ {
+  "tbl": "stock_opname_items",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 9
+ },
+ {
+  "tbl": "stock_opnames",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "stock_opnames",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "stock_opnames",
+  "col": "opname_number",
+  "typ": "text",
+  "notnull": true,
+  "def": "((('OPN-'::text || to_char(now(), 'YYYYMMDD'::text)) || '-'::text) || upper(substr(md5((random())::text), 1, 6)))",
+  "attnum": 3
+ },
+ {
+  "tbl": "stock_opnames",
+  "col": "opname_date",
+  "typ": "date",
+  "notnull": true,
+  "def": "CURRENT_DATE",
+  "attnum": 4
+ },
+ {
+  "tbl": "stock_opnames",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'draft'::text",
+  "attnum": 5
+ },
+ {
+  "tbl": "stock_opnames",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "stock_opnames",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 7
+ },
+ {
+  "tbl": "stock_opnames",
+  "col": "completed_at",
+  "typ": "timestamp with time zone",
+  "notnull": false,
+  "def": null,
+  "attnum": 8
+ },
+ {
+  "tbl": "stock_opnames",
+  "col": "created_by",
+  "typ": "uuid",
+  "notnull": false,
+  "def": "auth.uid()",
+  "attnum": 9
+ },
+ {
+  "tbl": "store_settings",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "store_settings",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "store_settings",
+  "col": "store_name",
+  "typ": "text",
+  "notnull": true,
+  "def": "'Ucup Kasir'::text",
+  "attnum": 3
+ },
+ {
+  "tbl": "store_settings",
+  "col": "store_subtitle",
+  "typ": "text",
+  "notnull": false,
+  "def": "'Toko Berkat Jaya Makmur'::text",
+  "attnum": 4
+ },
+ {
+  "tbl": "store_settings",
+  "col": "store_address",
+  "typ": "text",
+  "notnull": false,
+  "def": "''::text",
+  "attnum": 5
+ },
+ {
+  "tbl": "store_settings",
+  "col": "store_phone",
+  "typ": "text",
+  "notnull": false,
+  "def": "''::text",
+  "attnum": 6
+ },
+ {
+  "tbl": "store_settings",
+  "col": "store_email",
+  "typ": "text",
+  "notnull": false,
+  "def": "''::text",
+  "attnum": 7
+ },
+ {
+  "tbl": "store_settings",
+  "col": "tax_enabled",
+  "typ": "boolean",
+  "notnull": false,
+  "def": "false",
+  "attnum": 8
+ },
+ {
+  "tbl": "store_settings",
+  "col": "tax_rate",
+  "typ": "numeric(5,2)",
+  "notnull": false,
+  "def": "0",
+  "attnum": 9
+ },
+ {
+  "tbl": "store_settings",
+  "col": "currency",
+  "typ": "text",
+  "notnull": false,
+  "def": "'IDR'::text",
+  "attnum": 10
+ },
+ {
+  "tbl": "store_settings",
+  "col": "receipt_footer",
+  "typ": "text",
+  "notnull": false,
+  "def": "'Terima kasih atas kunjungan Anda'::text",
+  "attnum": 11
+ },
+ {
+  "tbl": "store_settings",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 12
+ },
+ {
+  "tbl": "store_settings",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 13
+ },
+ {
+  "tbl": "store_settings",
+  "col": "default_credit_limit",
+  "typ": "real",
+  "notnull": true,
+  "def": "0",
+  "attnum": 16
+ },
+ {
+  "tbl": "store_settings",
+  "col": "loading_rate_per_sack",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 17
+ },
+ {
+  "tbl": "store_settings",
+  "col": "unloading_rate_per_sack",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 18
+ },
+ {
+  "tbl": "suppliers",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "suppliers",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "suppliers",
+  "col": "name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "suppliers",
+  "col": "contact_person",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "suppliers",
+  "col": "phone",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "suppliers",
+  "col": "email",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "suppliers",
+  "col": "address",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "suppliers",
+  "col": "supplier_type",
+  "typ": "text",
+  "notnull": true,
+  "def": "'langsung'::text",
+  "attnum": 8
+ },
+ {
+  "tbl": "suppliers",
+  "col": "payment_term",
+  "typ": "text",
+  "notnull": true,
+  "def": "'tunai'::text",
+  "attnum": 9
+ },
+ {
+  "tbl": "suppliers",
+  "col": "credit_limit",
+  "typ": "numeric(14,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 10
+ },
+ {
+  "tbl": "suppliers",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 11
+ },
+ {
+  "tbl": "suppliers",
+  "col": "is_active",
+  "typ": "boolean",
+  "notnull": true,
+  "def": "true",
+  "attnum": 12
+ },
+ {
+  "tbl": "suppliers",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 13
+ },
+ {
+  "tbl": "suppliers",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 14
+ },
+ {
+  "tbl": "transaction_item_payments",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "transaction_item_payments",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "transaction_item_payments",
+  "col": "transaction_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "transaction_item_payments",
+  "col": "item_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "transaction_item_payments",
+  "col": "payment_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "transaction_item_payments",
+  "col": "allocated_amount",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 6
+ },
+ {
+  "tbl": "transaction_item_payments",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "transaction_item_payments",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 8
+ },
+ {
+  "tbl": "transaction_items",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "transaction_items",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "transaction_items",
+  "col": "transaction_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "transaction_items",
+  "col": "product_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "transaction_items",
+  "col": "product_name",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "transaction_items",
+  "col": "price",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 6
+ },
+ {
+  "tbl": "transaction_items",
+  "col": "quantity",
+  "typ": "integer",
+  "notnull": true,
+  "def": "1",
+  "attnum": 7
+ },
+ {
+  "tbl": "transaction_items",
+  "col": "subtotal",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 8
+ },
+ {
+  "tbl": "transaction_items",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 9
+ },
+ {
+  "tbl": "transaction_payments",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "transaction_payments",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "transaction_payments",
+  "col": "transaction_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "transaction_payments",
+  "col": "amount",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 4
+ },
+ {
+  "tbl": "transaction_payments",
+  "col": "payment_method",
+  "typ": "text",
+  "notnull": true,
+  "def": "'tunai'::text",
+  "attnum": 5
+ },
+ {
+  "tbl": "transaction_payments",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "transaction_payments",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 7
+ },
+ {
+  "tbl": "transaction_payments",
+  "col": "payment_date",
+  "typ": "date",
+  "notnull": true,
+  "def": "CURRENT_DATE",
+  "attnum": 8
+ },
+ {
+  "tbl": "transactions",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "transactions",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "transactions",
+  "col": "transaction_number",
+  "typ": "text",
+  "notnull": true,
+  "def": "((('TRX-'::text || to_char(now(), 'YYYYMMDD'::text)) || '-'::text) || upper(substr(md5((random())::text), 1, 6)))",
+  "attnum": 3
+ },
+ {
+  "tbl": "transactions",
+  "col": "customer_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "transactions",
+  "col": "customer_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "transactions",
+  "col": "subtotal",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 6
+ },
+ {
+  "tbl": "transactions",
+  "col": "discount",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 7
+ },
+ {
+  "tbl": "transactions",
+  "col": "total",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 8
+ },
+ {
+  "tbl": "transactions",
+  "col": "payment_method",
+  "typ": "text",
+  "notnull": true,
+  "def": "'tunai'::text",
+  "attnum": 9
+ },
+ {
+  "tbl": "transactions",
+  "col": "paid_amount",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 10
+ },
+ {
+  "tbl": "transactions",
+  "col": "change_amount",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 11
+ },
+ {
+  "tbl": "transactions",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'selesai'::text",
+  "attnum": 12
+ },
+ {
+  "tbl": "transactions",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 13
+ },
+ {
+  "tbl": "transactions",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 14
+ },
+ {
+  "tbl": "transactions",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 15
+ },
+ {
+  "tbl": "transactions",
+  "col": "remaining_amount",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 16
+ },
+ {
+  "tbl": "transactions",
+  "col": "payment_status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'belum_lunas'::text",
+  "attnum": 17
+ },
+ {
+  "tbl": "transactions",
+  "col": "shipping_cost",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 18
+ },
+ {
+  "tbl": "transactions",
+  "col": "return_amount",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 19
+ },
+ {
+  "tbl": "transactions",
+  "col": "transaction_status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'disiapkan'::text",
+  "attnum": 20
+ },
+ {
+  "tbl": "trip_loaders",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "trip_loaders",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "trip_loaders",
+  "col": "trip_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "trip_loaders",
+  "col": "employee_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "trip_loaders",
+  "col": "employee_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "trip_loaders",
+  "col": "role",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "trip_loaders",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 7
+ },
+ {
+  "tbl": "trips",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "trips",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "trips",
+  "col": "trip_number",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "trips",
+  "col": "trip_date",
+  "typ": "date",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "trips",
+  "col": "vehicle_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "trips",
+  "col": "driver_id",
+  "typ": "uuid",
+  "notnull": false,
+  "def": null,
+  "attnum": 6
+ },
+ {
+  "tbl": "trips",
+  "col": "driver_name",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 7
+ },
+ {
+  "tbl": "trips",
+  "col": "notes",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 8
+ },
+ {
+  "tbl": "trips",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'draft'::text",
+  "attnum": 9
+ },
+ {
+  "tbl": "trips",
+  "col": "muat_rate",
+  "typ": "numeric(14,2)",
+  "notnull": false,
+  "def": null,
+  "attnum": 10
+ },
+ {
+  "tbl": "trips",
+  "col": "bongkar_rate",
+  "typ": "numeric(14,2)",
+  "notnull": false,
+  "def": null,
+  "attnum": 11
+ },
+ {
+  "tbl": "trips",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 12
+ },
+ {
+  "tbl": "trips",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 13
+ },
+ {
+  "tbl": "vehicles",
+  "col": "id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "gen_random_uuid()",
+  "attnum": 1
+ },
+ {
+  "tbl": "vehicles",
+  "col": "user_id",
+  "typ": "uuid",
+  "notnull": true,
+  "def": "auth.uid()",
+  "attnum": 2
+ },
+ {
+  "tbl": "vehicles",
+  "col": "plate_number",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 3
+ },
+ {
+  "tbl": "vehicles",
+  "col": "vehicle_type",
+  "typ": "text",
+  "notnull": true,
+  "def": null,
+  "attnum": 4
+ },
+ {
+  "tbl": "vehicles",
+  "col": "brand",
+  "typ": "text",
+  "notnull": false,
+  "def": null,
+  "attnum": 5
+ },
+ {
+  "tbl": "vehicles",
+  "col": "capacity_kg",
+  "typ": "numeric(12,2)",
+  "notnull": true,
+  "def": "0",
+  "attnum": 6
+ },
+ {
+  "tbl": "vehicles",
+  "col": "status",
+  "typ": "text",
+  "notnull": true,
+  "def": "'tersedia'::text",
+  "attnum": 7
+ },
+ {
+  "tbl": "vehicles",
+  "col": "is_active",
+  "typ": "boolean",
+  "notnull": true,
+  "def": "true",
+  "attnum": 8
+ },
+ {
+  "tbl": "vehicles",
+  "col": "created_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 9
+ },
+ {
+  "tbl": "vehicles",
+  "col": "updated_at",
+  "typ": "timestamp with time zone",
+  "notnull": true,
+  "def": "now()",
+  "attnum": 10
+ }
+]

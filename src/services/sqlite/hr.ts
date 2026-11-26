@@ -793,7 +793,7 @@ export const sqliteHrService = {
           join_date, resign_date, status, salary_type, base_salary, bank_name, bank_account_number,
           bank_account_name, npwp, notes, is_active, created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [r.id, r.user_id || userId, r.employee_code, r.name, r.gender || null, r.birth_place || null, r.birth_date || null,
+        [r.id, r.store_id || userId, r.employee_code, r.name, r.gender || null, r.birth_place || null, r.birth_date || null,
          r.phone || null, r.email || null, r.address || null, 'KTP', r.identity_number || null,
          r.position || null, r.join_date || null, r.resign_date || null,
          r.status, r.salary_type, r.base_salary, r.bank_name || null, r.bank_account_number || null,
@@ -824,7 +824,7 @@ export const sqliteHrService = {
             join_date, resign_date, status, salary_type, base_salary, bank_name, bank_account_number,
             bank_account_name, npwp, notes, is_active, created_at, updated_at, sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [r.id, r.user_id || userId, r.employee_code, r.name, r.gender || null, r.birth_place || null, r.birth_date || null,
+          [r.id, r.store_id || userId, r.employee_code, r.name, r.gender || null, r.birth_place || null, r.birth_date || null,
            r.phone || null, r.email || null, r.address || null, 'KTP', r.identity_number || null,
            r.position || null, r.join_date || null, r.resign_date || null,
            r.status, r.salary_type, r.base_salary, r.bank_name || null, r.bank_account_number || null,
@@ -843,7 +843,7 @@ export const sqliteHrService = {
       await run(
         `INSERT OR REPLACE INTO attendance (id, user_id, employee_id, attendance_date, check_in, check_out, status, notes, created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [r.id, r.user_id || userId, r.employee_id, r.attendance_date, r.check_in || null, r.check_out || null,
+        [r.id, r.store_id || userId, r.employee_id, r.attendance_date, r.check_in || null, r.check_out || null,
          r.status, r.notes || null, r.created_at, r.updated_at, r.updated_at || now]
       )
     }
@@ -858,7 +858,7 @@ export const sqliteHrService = {
       await run(
         `INSERT OR REPLACE INTO employee_loans (id, user_id, employee_id, loan_date, amount, remaining_amount, description, status, created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [r.id, r.user_id || userId, r.employee_id, r.loan_date, r.amount, r.remaining_amount,
+        [r.id, r.store_id || userId, r.employee_id, r.loan_date, r.amount, r.remaining_amount,
          r.description || null, r.status, r.created_at, r.updated_at, r.updated_at || now]
       )
       for (const payment of r.payments || []) {
@@ -882,7 +882,7 @@ export const sqliteHrService = {
           base_salary, incentive_amount, kasbon_deduction, total_net, status, journal_entry_id, paid_at,
           notes, created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [r.id, r.user_id || userId, r.employee_id, r.period_code, r.period_start, r.period_end,
+        [r.id, r.store_id || userId, r.employee_id, r.period_code, r.period_start, r.period_end,
          r.base_salary, r.incentive_amount, r.kasbon_deduction, r.total_net, r.status,
          r.journal_entry_id || null, r.paid_at || null, r.notes || null,
          r.created_at, r.updated_at, r.updated_at || now]
@@ -897,7 +897,7 @@ export const sqliteHrService = {
   mapEmployee(r: any): Employee {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       employee_code: r.employee_code,
       name: r.name,
       gender: r.gender ?? undefined,
@@ -928,7 +928,7 @@ export const sqliteHrService = {
   mapAttendance(r: any): Attendance {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       employee_id: r.employee_id,
       attendance_date: r.attendance_date,
       check_in: r.check_in ?? undefined,
@@ -943,7 +943,7 @@ export const sqliteHrService = {
   mapPayroll(r: any): Payroll {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       employee_id: r.employee_id,
       period_code: r.period_code,
       period_start: r.period_start,
@@ -978,7 +978,7 @@ export const sqliteHrService = {
   mapEmployeeLoan(r: any): EmployeeLoan {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       employee_id: r.employee_id,
       loan_date: r.loan_date,
       amount: r.amount,

@@ -73,7 +73,7 @@ export const sqliteFinanceService = {
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
           [id, userId, acc.code, acc.name, acc.type, acc.normal_balance, acc.is_active ? 1 : 0, acc.is_system ? 1 : 0, now, now, now]
         )
-        created.push({ ...acc, id, user_id: userId, created_at: now, updated_at: now })
+        created.push({ ...acc, id, store_id: userId, created_at: now, updated_at: now })
       }
     }
 
@@ -1134,7 +1134,7 @@ export const sqliteFinanceService = {
       await run(
         `INSERT OR REPLACE INTO chart_of_accounts (id, user_id, code, name, type, normal_balance, is_active, is_system, parent_id, created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [a.id, a.user_id || userId, a.code, a.name, a.type, a.normal_balance,
+        [a.id, a.store_id || userId, a.code, a.name, a.type, a.normal_balance,
          a.is_active ? 1 : 0, a.is_system ? 1 : 0, a.parent_id || null,
          a.created_at, a.updated_at, a.updated_at || now]
       )
@@ -1159,7 +1159,7 @@ export const sqliteFinanceService = {
         await tx.run(
           `INSERT OR REPLACE INTO chart_of_accounts (id, user_id, code, name, type, normal_balance, is_active, is_system, parent_id, created_at, updated_at, sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [a.id, a.user_id || userId, a.code, a.name, a.type, a.normal_balance,
+          [a.id, a.store_id || userId, a.code, a.name, a.type, a.normal_balance,
            a.is_active ? 1 : 0, a.is_system ? 1 : 0, a.parent_id || null,
            a.created_at, a.updated_at, a.updated_at || now]
         )
@@ -1175,7 +1175,7 @@ export const sqliteFinanceService = {
       await run(
         `INSERT OR REPLACE INTO journal_entries (id, user_id, journal_number, entry_date, description, reference_type, reference_id, status, created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [e.id, e.user_id || userId, e.journal_number, e.entry_date, e.description,
+        [e.id, e.store_id || userId, e.journal_number, e.entry_date, e.description,
          e.reference_type || null, e.reference_id || null, e.status,
          e.created_at, e.updated_at, e.updated_at || now]
       )
@@ -1183,7 +1183,7 @@ export const sqliteFinanceService = {
         await run(
           `INSERT OR REPLACE INTO journal_lines (id, user_id, journal_id, account_id, account_code, account_name, debit, credit, created_at, sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [l.id, l.user_id || userId, e.id, l.account_id, l.account_code, l.account_name,
+          [l.id, l.store_id || userId, e.id, l.account_id, l.account_code, l.account_name,
            l.debit, l.credit, l.created_at, l.created_at || now]
         )
       }
@@ -1197,7 +1197,7 @@ export const sqliteFinanceService = {
   mapAccount(r: any): Account {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       code: r.code,
       name: r.name,
       type: r.type,
@@ -1213,7 +1213,7 @@ export const sqliteFinanceService = {
   mapJournalEntry(r: any): JournalEntry {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       journal_number: r.journal_number,
       entry_date: r.entry_date,
       description: r.description,
@@ -1228,7 +1228,7 @@ export const sqliteFinanceService = {
   mapJournalLine(r: any): JournalLine {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       journal_id: r.journal_id,
       account_id: r.account_id,
       account_code: r.account_code,
@@ -1547,7 +1547,7 @@ export const sqliteFinanceService = {
 
     return rows.map(r => ({
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       period_start: r.period_start,
       period_end: r.period_end,
       closed_at: r.closed_at,
@@ -2068,7 +2068,7 @@ export const sqliteFinanceService = {
       await run(
         `INSERT OR REPLACE INTO closing_periods (id, user_id, period_start, period_end, closed_at, closed_by, notes, status, snapshot_balances, created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [cp.id, cp.user_id || userId, cp.period_start, cp.period_end, cp.closed_at, cp.closed_by, cp.notes || null, cp.status, snapshotBalances, cp.created_at, cp.updated_at, cp.updated_at || now]
+        [cp.id, cp.store_id || userId, cp.period_start, cp.period_end, cp.closed_at, cp.closed_by, cp.notes || null, cp.status, snapshotBalances, cp.created_at, cp.updated_at, cp.updated_at || now]
       )
     }
   },

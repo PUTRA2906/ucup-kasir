@@ -41,3 +41,6 @@ android/*.jks
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Supabase CLI temp
+supabase/.temp/

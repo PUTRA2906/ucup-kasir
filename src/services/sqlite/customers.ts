@@ -59,7 +59,7 @@ export const sqliteCustomersService = {
 
     const created: Customer = {
       id,
-      user_id: userId,
+      store_id: userId,
       name: customer.name,
       store_name: customer.store_name,
       phone: customer.phone,
@@ -104,7 +104,7 @@ export const sqliteCustomersService = {
         )
         results.push({
           id,
-          user_id: userId,
+          store_id: userId,
           name: c.name,
           store_name: c.store_name,
           phone: c.phone,
@@ -321,7 +321,7 @@ export const sqliteCustomersService = {
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
           [
             r.id,
-            r.user_id ?? userId,
+            r.store_id ?? userId,
             r.name,
             r.store_name ?? null,
             r.phone ?? null,
@@ -357,7 +357,7 @@ export const sqliteCustomersService = {
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
           [
             r.id,
-            r.user_id ?? userId,
+            r.store_id ?? userId,
             r.name,
             r.store_name ?? null,
             r.phone ?? null,
@@ -377,7 +377,7 @@ export const sqliteCustomersService = {
   mapRow(r: any): Customer {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       name: r.name,
       store_name: r.store_name ?? undefined,
       phone: r.phone ?? undefined,

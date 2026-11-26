@@ -15,6 +15,7 @@ import type {
   FinancialStatements,
 } from '@/types/database'
 import { buildFinancialStatements } from '@/lib/financialStatements'
+import { requireCurrentStoreId } from '@/lib/currentStore'
 
 // ============================================================
 // Service: Finance (Supabase)
@@ -569,8 +570,9 @@ export const financeService = {
     realized_cogs: number
     realized_profit: number
   }> {
+    const storeId = await requireCurrentStoreId()
     const { data, error } = await supabase.rpc('get_profit_summary', {
-      p_user_id: (await supabase.auth.getUser()).data.user?.id || null,
+      p_store_id: storeId,
       p_start_date: startDate || null,
       p_end_date: endDate || null
     })
@@ -614,7 +616,7 @@ export const financeService = {
           quantity,
           price,
           subtotal,
-          product:products!transaction_items_product_id_fkey(price_buy),
+          product:v_products(price_buy),
           allocations:transaction_item_payments(allocated_amount)
         )
       `)
@@ -941,12 +943,12 @@ export const financeService = {
   },
 
   async checkPeriodClosed(date: string): Promise<boolean> {
-    const { data: user } = await supabase.auth.getUser()
-    if (!user.user) return false
+    const storeId = await requireCurrentStoreId()
+    if (!storeId) return false
 
     const { data, error } = await supabase.rpc('check_period_closed', {
       p_date: date,
-      p_user_id: user.user.id
+      p_store_id: storeId
     })
 
     if (error) throw error

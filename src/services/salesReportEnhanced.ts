@@ -117,7 +117,7 @@ export const salesReportEnhancedService = {
         *,
         items:transaction_items(
           *,
-          product:products(id, name, category_id, price_buy, price_sell)
+          product:v_products(id, name, category_id, price_buy, price_sell)
         ),
         payments:transaction_payments(*)
       `)
@@ -174,7 +174,7 @@ export const salesReportEnhancedService = {
           *,
           items:transaction_items(
             *,
-            product:products(id, name, category_id, price_buy, price_sell)
+            product:v_products(id, name, category_id, price_buy, price_sell)
           ),
           payments:transaction_payments(*)
         `)
@@ -200,7 +200,7 @@ export const salesReportEnhancedService = {
     // 5. Fetch data retur
     let returnsQuery = supabase
       .from('returns')
-      .select('*, items:return_items(*, product:products(id, name))')
+      .select('*, items:v_return_items(*, product:v_products(id, name))')
 
     if (startDate) {
       returnsQuery = returnsQuery.gte('created_at', startDate)
@@ -779,7 +779,7 @@ export const salesReportEnhancedService = {
         *,
         items:transaction_items(
           *,
-          product:products(id, name, category_id, price_buy, price_sell)
+          product:v_products(id, name, category_id, price_buy, price_sell)
         ),
         payments:transaction_payments(*)
       `)
@@ -793,7 +793,7 @@ export const salesReportEnhancedService = {
     // Ambil retur terkait
     const { data: returns, error: retError } = await supabase
       .from('returns')
-      .select('*, items:return_items(*, product:products(id, name))')
+      .select('*, items:v_return_items(*, product:v_products(id, name))')
       .eq('transaction_id', transactionId)
 
     if (retError) throw retError

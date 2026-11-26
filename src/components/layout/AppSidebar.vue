@@ -228,17 +228,20 @@ import SidebarWidget from "./SidebarWidget.vue";
 import BoxCubeIcon from "@/icons/BoxCubeIcon.vue";
 import BarChartIcon from "@/icons/BarChartIcon.vue";
 import { useSidebar } from "@/composables/useSidebar";
+import { useAuthStore } from "@/stores/auth";
 
 const route = useRoute();
 
 const { isExpanded, isMobileOpen, isHovered, openSubmenu, closeMobileSidebar } = useSidebar();
+const authStore = useAuthStore();
 
 // Auto-close sidebar on route change for mobile
 watch(() => route.path, () => {
   closeMobileSidebar()
 })
 
-const menuGroups = [
+// Permission hanya untuk menyembunyikan menu (UI). Penegakan di database.
+const allMenuGroups = [
   {
     title: "Menu",
     items: [
@@ -246,106 +249,140 @@ const menuGroups = [
         icon: GridIcon,
         name: "Dashboard",
         path: "/",
+        permission: "dashboard.read",
       },
       {
         name: "Products",
         icon: BoxCubeIcon,
         subItems: [
-          { name: "Daftar Produk", path: "/products", pro: false },
-          { name: "Daftar Kategori", path: "/categories", pro: false },
+          { name: "Daftar Produk", path: "/products", pro: false, permission: "product.read" },
+          { name: "Daftar Kategori", path: "/categories", pro: false, permission: "product.read" },
         ],
       },
       {
         name: "Stok Gudang",
         icon: WarehouseIcon,
         subItems: [
-          { name: "Kelola Stok", path: "/stock", pro: false },
-          { name: "Riwayat Mutasi", path: "/stock/movements", pro: false },
+          { name: "Kelola Stok", path: "/stock", pro: false, permission: "stock.read" },
+          { name: "Riwayat Mutasi", path: "/stock/movements", pro: false, permission: "stock.read" },
         ],
       },
       {
         name: "Transaksi",
         icon: ReceiptIcon,
         subItems: [
-          { name: "Daftar Transaksi", path: "/transactions", pro: false },
-          { name: "Transaksi Baru", path: "/transactions/add", pro: false },
-          { name: "Daftar Retur", path: "/returns", pro: false },
+          { name: "Daftar Transaksi", path: "/transactions", pro: false, permission: "transaction.read" },
+          { name: "Transaksi Baru", path: "/transactions/add", pro: false, permission: "transaction.write" },
+          { name: "Daftar Retur", path: "/returns", pro: false, permission: "transaction.read" },
         ],
       },
       {
         name: "Laporan",
         icon: PieChartIcon,
         subItems: [
-          { name: "Keuntungan Harian", path: "/reports/daily-profit", pro: false },
-          { name: "Laporan Penjualan", path: "/reports/sales", pro: false },
-          { name: "Laporan Laba Rugi", path: "/reports/profit-loss", pro: false },
-          { name: "Laba Per Transaksi", path: "/reports/transaction-profit", pro: false },
+          { name: "Keuntungan Harian", path: "/reports/daily-profit", pro: false, permission: "report.sales.read" },
+          { name: "Laporan Penjualan", path: "/reports/sales", pro: false, permission: "report.sales.read" },
+          { name: "Laporan Laba Rugi", path: "/reports/profit-loss", pro: false, permission: "report.sales.read" },
+          { name: "Laba Per Transaksi", path: "/reports/transaction-profit", pro: false, permission: "report.sales.read" },
         ],
       },
       {
         name: "Keuangan",
         icon: BarChartIcon,
         subItems: [
-          { name: "Dashboard Keuangan", path: "/finance", pro: false },
-          { name: "Chart of Accounts", path: "/finance/accounts", pro: false },
-          { name: "Jurnal Umum", path: "/finance/journal", pro: false },
-          { name: "Buku Besar", path: "/finance/ledger", pro: false },
-          { name: "Neraca Saldo & Penyesuaian", path: "/finance/trial-balance", pro: false },
-          { name: "Neraca", path: "/finance/balance-sheet", pro: false },
-          { name: "Laporan Keuangan", path: "/finance/statements", pro: false },
-          { name: "Arus Kas", path: "/finance/cash-flow", pro: false },
-          { name: "Tutup Buku", path: "/finance/closing-periods", pro: false },
+          { name: "Dashboard Keuangan", path: "/finance", pro: false, permission: "finance.read" },
+          { name: "Chart of Accounts", path: "/finance/accounts", pro: false, permission: "finance.read" },
+          { name: "Jurnal Umum", path: "/finance/journal", pro: false, permission: "finance.read" },
+          { name: "Buku Besar", path: "/finance/ledger", pro: false, permission: "finance.read" },
+          { name: "Neraca Saldo & Penyesuaian", path: "/finance/trial-balance", pro: false, permission: "finance.read" },
+          { name: "Neraca", path: "/finance/balance-sheet", pro: false, permission: "finance.read" },
+          { name: "Laporan Keuangan", path: "/finance/statements", pro: false, permission: "finance.read" },
+          { name: "Arus Kas", path: "/finance/cash-flow", pro: false, permission: "finance.read" },
+          { name: "Tutup Buku", path: "/finance/closing-periods", pro: false, permission: "finance.read" },
         ],
       },
       {
         name: "Pembelian",
         icon: BoxCubeIcon,
         subItems: [
-          { name: "Dashboard", path: "/purchasing", pro: false },
-          { name: "Supplier", path: "/purchasing/suppliers", pro: false },
-          { name: "Purchase Order", path: "/purchasing/pos", pro: false },
-          { name: "Terima Barang", path: "/purchasing/grns", pro: false },
-          { name: "Faktur", path: "/purchasing/pis", pro: false },
-          { name: "Retur", path: "/purchasing/returns", pro: false },
+          { name: "Dashboard", path: "/purchasing", pro: false, permission: "purchasing.read" },
+          { name: "Supplier", path: "/purchasing/suppliers", pro: false, permission: "purchasing.read" },
+          { name: "Purchase Order", path: "/purchasing/pos", pro: false, permission: "purchasing.read" },
+          { name: "Terima Barang", path: "/purchasing/grns", pro: false, permission: "purchasing.read" },
+          { name: "Faktur", path: "/purchasing/pis", pro: false, permission: "purchasing.read" },
+          { name: "Retur", path: "/purchasing/returns", pro: false, permission: "purchasing.read" },
         ],
       },
       {
         name: "Karyawan & Payroll",
         icon: UserCircleIcon,
         subItems: [
-          { name: "Daftar Karyawan", path: "/hr/employees", pro: false },
-          { name: "Kasbon", path: "/hr/loans", pro: false },
-          { name: "Payroll", path: "/hr/payroll", pro: false },
+          { name: "Daftar Karyawan", path: "/hr/employees", pro: false, permission: "hr.read" },
+          { name: "Kasbon", path: "/hr/loans", pro: false, permission: "hr.read" },
+          { name: "Payroll", path: "/hr/payroll", pro: false, permission: "hr.read" },
         ],
       },
       {
         name: "Pengiriman",
         icon: TruckIcon,
         subItems: [
-          { name: "Surat Jalan", path: "/shipping/deliveries", pro: false },
-          { name: "Kendaraan", path: "/shipping/vehicles", pro: false },
+          { name: "Surat Jalan", path: "/shipping/deliveries", pro: false, permission: "shipping.read" },
+          { name: "Kendaraan", path: "/shipping/vehicles", pro: false, permission: "shipping.read" },
         ],
       },
       {
         name: "Customer",
         icon: UserGroupIcon,
         subItems: [
-          { name: "Daftar Customer", path: "/customers", pro: false },
+          { name: "Daftar Customer", path: "/customers", pro: false, permission: "customer.read" },
         ],
       },
       {
         icon: ReceiptIcon,
         name: "Invoice Pelanggan",
         path: "/customer-invoices",
+        permission: "transaction.read",
       },
       {
         icon: SettingsIcon,
         name: "Pengaturan",
         path: "/settings",
+        permission: "settings.read",
+      },
+      {
+        icon: UserGroupIcon,
+        name: "Kelola Pengguna",
+        path: "/settings/users",
+        permission: "user.manage",
       },
     ],
   },
 ];
+
+/**
+ * Saring menu sesuai permission. Selama keanggotaan belum termuat, menu
+ * dikosongkan (fail-closed) — lebih baik menu sempat kosong sekejap daripada
+ * menampilkan tautan yang pasti ditolak.
+ */
+const menuGroups = computed(() => {
+  if (!authStore.membershipLoaded) return [];
+  return allMenuGroups
+    .map((group) => ({
+      ...group,
+      items: group.items
+        .map((item) => {
+          if (item.subItems) {
+            const subItems = item.subItems.filter(
+              (sub) => !sub.permission || authStore.can(sub.permission)
+            );
+            return subItems.length > 0 ? { ...item, subItems } : null;
+          }
+          return !item.permission || authStore.can(item.permission) ? item : null;
+        })
+        .filter(Boolean),
+    }))
+    .filter((group) => group.items.length > 0);
+});
 
 const isActive = (path) => route.path === path;
 
@@ -355,7 +392,7 @@ const toggleSubmenu = (groupIndex, itemIndex) => {
 };
 
 const isAnySubmenuRouteActive = computed(() => {
-  return menuGroups.some((group) =>
+  return menuGroups.value.some((group) =>
     group.items.some(
       (item) =>
         item.subItems && item.subItems.some((subItem) => isActive(subItem.path))
@@ -368,7 +405,7 @@ const isSubmenuOpen = (groupIndex, itemIndex) => {
   return (
     openSubmenu.value === key ||
     (isAnySubmenuRouteActive.value &&
-      menuGroups[groupIndex].items[itemIndex].subItems?.some((subItem) =>
+      menuGroups.value[groupIndex]?.items[itemIndex]?.subItems?.some((subItem) =>
         isActive(subItem.path)
       ))
   );

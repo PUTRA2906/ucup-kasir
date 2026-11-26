@@ -116,7 +116,7 @@
             <!-- Harga Beli -->
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Harga Beli <span class="text-error-500">*</span>
+                Harga Beli <span v-if="canReadHpp" class="text-error-500">*</span>
               </label>
               <div class="relative">
                 <span
@@ -129,11 +129,14 @@
                   v-model="displayPriceBuy"
                   @input="handlePriceBuyInput"
                   @blur="formatPriceBuy"
-                  placeholder="0"
-                  required
+                  :placeholder="canReadHpp ? '0' : 'Kosongkan bila tidak diubah'"
+                  :required="canReadHpp"
                   class="h-11 w-full rounded-lg border border-gray-300 bg-transparent py-2.5 pl-14 pr-4 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                 />
               </div>
+              <p v-if="!canReadHpp" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Harga beli saat ini disembunyikan (tanpa izin HPP). Isi hanya bila ingin mengubahnya.
+              </p>
             </div>
 
             <!-- Harga Jual -->
@@ -254,6 +257,7 @@ import SelectField from '@/components/common/SelectField.vue'
 import { useProductsStore } from '@/stores/products'
 import { useCategoriesStore } from '@/stores/categories'
 import { useToast } from '@/composables/useToast'
+import { usePermission } from '@/composables/usePermission'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 
 const router = useRouter()
@@ -261,6 +265,7 @@ const route = useRoute()
 const productsStore = useProductsStore()
 const categoriesStore = useCategoriesStore()
 const toast = useToast()
+const { can } = usePermission()
 
 const productId = route.params.id as string
 const product = ref<any>(null)
@@ -287,6 +292,11 @@ const formData = reactive({
 
 const displayPriceBuy = ref('')
 const displayPriceSell = ref('')
+// Role tanpa hpp.read tidak bisa MEMBACA harga beli (view mengembalikan NULL),
+// jadi jangan kirim price_buy kecuali pengguna benar-benar mengisinya —
+// kalau tidak, nilai lama tertimpa 0.
+const priceBuyTouched = ref(false)
+const canReadHpp = computed(() => can('hpp.read'))
 
 const categoryOptions = computed(() =>
   categoriesStore.categories.map(cat => ({
@@ -309,6 +319,7 @@ const handlePriceBuyInput = (e: Event) => {
   const numericValue = parseCurrency(input.value)
   formData.price_buy = numericValue
   displayPriceBuy.value = formatCurrency(numericValue)
+  priceBuyTouched.value = true
 }
 
 const formatPriceBuy = () => {
@@ -378,7 +389,9 @@ const handleSubmit = async () => {
       name: formData.name,
       sku: formData.sku || undefined,
       category_id: formData.category_id || undefined,
-      price_buy: formData.price_buy,
+      ...(canReadHpp.value || priceBuyTouched.value
+        ? { price_buy: formData.price_buy }
+        : {}),
       price_sell: formData.price_sell,
       stock: formData.stock,
       description: formData.description || undefined,
@@ -409,13 +422,15 @@ onMounted(async () => {
       formData.name = product.value.name
       formData.sku = product.value.sku || ''
       formData.category_id = product.value.category_id || ''
-      formData.price_buy = product.value.price_buy
+      formData.price_buy = product.value.price_buy ?? 0
       formData.price_sell = product.value.price_sell
       formData.stock = product.value.stock
       formData.description = product.value.description || ''
       formData.is_active = product.value.is_active
 
-      displayPriceBuy.value = formatCurrency(product.value.price_buy)
+      // NULL berarti role tidak punya hpp.read — biarkan kosong.
+      displayPriceBuy.value =
+        product.value.price_buy == null ? '' : formatCurrency(product.value.price_buy)
       displayPriceSell.value = formatCurrency(product.value.price_sell)
     }
   } catch (error) {

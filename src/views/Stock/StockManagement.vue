@@ -238,7 +238,7 @@
         :per-page="10"
         :searchable="true"
         :show-filter="true"
-        :show-add-button="true"
+        :show-add-button="can('stock.write')"
         add-button-text="Penyesuaian Stok"
         title="Stok Gudang"
         :subtitle="`${settingsStore.storeSubtitle} - ${productsStore.products.length} Produk`"
@@ -507,6 +507,7 @@ import { useCategoriesStore } from '@/stores/categories'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useStockStore } from '@/stores/stock'
 import { useToast } from '@/composables/useToast'
+import { usePermission } from '@/composables/usePermission'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 
 const router = useRouter()
@@ -515,6 +516,7 @@ const categoriesStore = useCategoriesStore()
 const settingsStore = useStoreSettingsStore()
 const stockStore = useStockStore()
 const toast = useToast()
+const { can } = usePermission()
 
 const showAdjustmentModal = ref(false)
 const showOpnameModal = ref(false)

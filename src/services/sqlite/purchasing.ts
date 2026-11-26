@@ -86,7 +86,7 @@ export const sqlitePurchasingService = {
     )
 
     const created: Supplier = {
-      id, user_id: userId, name: input.name,
+      id, store_id: userId, name: input.name,
       contact_person: input.contact_person, phone: input.phone, email: input.email,
       address: input.address, supplier_type: input.supplier_type ?? 'langsung',
       payment_term: input.payment_term ?? 'tunai', credit_limit: input.credit_limit ?? 0,
@@ -201,7 +201,7 @@ export const sqlitePurchasingService = {
     )
     return rows.map((r) => ({
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       po_id: r.po_id,
       product_id: r.product_id ?? undefined,
       product_name: r.product_name,
@@ -328,7 +328,7 @@ export const sqlitePurchasingService = {
     )
     return rows.map((r) => ({
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       grn_id: r.grn_id,
       po_item_id: r.po_item_id ?? undefined,
       product_id: r.product_id ?? undefined,
@@ -523,7 +523,7 @@ export const sqlitePurchasingService = {
     )
     return rows.map((r) => ({
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       pi_id: r.pi_id,
       grn_item_id: r.grn_item_id ?? undefined,
       product_id: r.product_id ?? undefined,
@@ -543,7 +543,7 @@ export const sqlitePurchasingService = {
     )
     return rows.map((r) => ({
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       pi_id: r.pi_id,
       amount: r.amount,
       payment_method: r.payment_method,
@@ -657,7 +657,7 @@ export const sqlitePurchasingService = {
     })
 
     const payment: PurchaseInvoicePayment = {
-      id: paymentId, user_id: userId, pi_id: piId,
+      id: paymentId, store_id: userId, pi_id: piId,
       amount, payment_method: paymentMethod ?? 'tunai',
       notes, created_at: now,
     }
@@ -711,7 +711,7 @@ export const sqlitePurchasingService = {
     )
     return rows.map((r) => ({
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       pr_id: r.pr_id,
       product_id: r.product_id ?? undefined,
       product_name: r.product_name,
@@ -932,7 +932,7 @@ export const sqlitePurchasingService = {
                                            supplier_type, payment_term, credit_limit, notes, is_active,
                                            created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [s.id, s.user_id || userId, s.name, s.contact_person ?? null, s.phone ?? null,
+        [s.id, s.store_id || userId, s.name, s.contact_person ?? null, s.phone ?? null,
          s.email ?? null, s.address ?? null, s.supplier_type, s.payment_term, s.credit_limit,
          s.notes ?? null, s.is_active ? 1 : 0, s.created_at, s.updated_at, s.updated_at]
       )
@@ -958,7 +958,7 @@ export const sqlitePurchasingService = {
                                              supplier_type, payment_term, credit_limit, notes, is_active,
                                              created_at, updated_at, sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [s.id, s.user_id || userId, s.name, s.contact_person ?? null, s.phone ?? null,
+          [s.id, s.store_id || userId, s.name, s.contact_person ?? null, s.phone ?? null,
            s.email ?? null, s.address ?? null, s.supplier_type, s.payment_term, s.credit_limit,
            s.notes ?? null, s.is_active ? 1 : 0, s.created_at, s.updated_at, s.updated_at]
         )
@@ -976,7 +976,7 @@ export const sqlitePurchasingService = {
                                                  shipping_cost, total, notes, created_at, updated_at,
                                                  sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [po.id, po.user_id || userId, po.po_number, po.supplier_id ?? null, po.supplier_name ?? null,
+        [po.id, po.store_id || userId, po.po_number, po.supplier_id ?? null, po.supplier_name ?? null,
          po.po_date, po.expected_date ?? null, po.status, po.subtotal, po.discount, po.tax,
          po.shipping_cost, po.total, po.notes ?? null, po.created_at, po.updated_at, po.updated_at]
       )
@@ -986,7 +986,7 @@ export const sqlitePurchasingService = {
                                            discount, subtotal, received_quantity, created_at,
                                            sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [it.id, it.user_id || userId, po.id, it.product_id ?? null, it.product_name, it.quantity,
+          [it.id, it.store_id || userId, po.id, it.product_id ?? null, it.product_name, it.quantity,
            it.price, it.discount, it.subtotal, it.received_quantity, it.created_at, it.created_at]
         )
       }
@@ -1002,7 +1002,7 @@ export const sqlitePurchasingService = {
                                                 receipt_date, status, total, notes, created_at, updated_at,
                                                 sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [grn.id, grn.user_id || userId, grn.grn_number, grn.po_id ?? null, grn.supplier_id ?? null,
+        [grn.id, grn.store_id || userId, grn.grn_number, grn.po_id ?? null, grn.supplier_id ?? null,
          grn.supplier_name ?? null, grn.receipt_date, grn.status, grn.total, grn.notes ?? null,
          grn.created_at, grn.updated_at, grn.updated_at]
       )
@@ -1012,7 +1012,7 @@ export const sqlitePurchasingService = {
                                              quantity_received, quantity_rejected, price, subtotal, created_at,
                                              sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [it.id, it.user_id || userId, grn.id, it.po_item_id ?? null, it.product_id ?? null,
+          [it.id, it.store_id || userId, grn.id, it.po_item_id ?? null, it.product_id ?? null,
            it.product_name, it.quantity_received, it.quantity_rejected, it.price, it.subtotal,
            it.created_at, it.created_at]
         )
@@ -1030,7 +1030,7 @@ export const sqlitePurchasingService = {
                                                    total, paid_amount, remaining_amount, payment_status, notes,
                                                    created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [pi.id, pi.user_id || userId, pi.pi_number, pi.grn_id ?? null, pi.po_id ?? null,
+        [pi.id, pi.store_id || userId, pi.pi_number, pi.grn_id ?? null, pi.po_id ?? null,
          pi.supplier_id ?? null, pi.supplier_name ?? null, pi.invoice_date, pi.due_date ?? null,
          pi.subtotal, pi.discount, pi.tax, pi.shipping_cost, pi.total, pi.paid_amount,
          pi.remaining_amount, pi.payment_status, pi.notes ?? null, pi.created_at, pi.updated_at,
@@ -1041,7 +1041,7 @@ export const sqlitePurchasingService = {
           `INSERT OR REPLACE INTO pi_items (id, user_id, pi_id, grn_item_id, product_id, product_name,
                                             quantity, price, subtotal, created_at, sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [it.id, it.user_id || userId, pi.id, it.grn_item_id ?? null, it.product_id ?? null,
+          [it.id, it.store_id || userId, pi.id, it.grn_item_id ?? null, it.product_id ?? null,
            it.product_name, it.quantity, it.price, it.subtotal, it.created_at, it.created_at]
         )
       }
@@ -1050,7 +1050,7 @@ export const sqlitePurchasingService = {
           `INSERT OR REPLACE INTO pi_payments (id, user_id, pi_id, amount, payment_method, notes, created_at,
                                                sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [p.id, p.user_id || userId, pi.id, p.amount, p.payment_method, p.notes ?? null,
+          [p.id, p.store_id || userId, pi.id, p.amount, p.payment_method, p.notes ?? null,
            p.created_at, p.created_at]
         )
       }
@@ -1066,7 +1066,7 @@ export const sqlitePurchasingService = {
                                                   return_date, total_refund, reason, notes, status,
                                                   created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [pr.id, pr.user_id || userId, pr.pr_number, pr.grn_id ?? null, pr.pi_id ?? null,
+        [pr.id, pr.store_id || userId, pr.pr_number, pr.grn_id ?? null, pr.pi_id ?? null,
          pr.supplier_id ?? null, pr.supplier_name ?? null, pr.return_date, pr.total_refund,
          pr.reason, pr.notes ?? null, pr.status, pr.created_at, pr.updated_at, pr.updated_at]
       )
@@ -1076,7 +1076,7 @@ export const sqlitePurchasingService = {
                                                          quantity, price, price_buy, subtotal, created_at,
                                                          sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [it.id, it.user_id || userId, pr.id, it.product_id ?? null, it.product_name,
+          [it.id, it.store_id || userId, pr.id, it.product_id ?? null, it.product_name,
            it.quantity, it.price, it.price_buy, it.subtotal, it.created_at, it.created_at]
         )
       }
@@ -1090,7 +1090,7 @@ export const sqlitePurchasingService = {
   mapSupplier(r: any): Supplier {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       name: r.name,
       contact_person: r.contact_person ?? undefined,
       phone: r.phone ?? undefined,
@@ -1109,7 +1109,7 @@ export const sqlitePurchasingService = {
   mapPurchaseOrder(r: any): PurchaseOrder {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       po_number: r.po_number,
       supplier_id: r.supplier_id ?? undefined,
       supplier_name: r.supplier_name ?? undefined,
@@ -1130,7 +1130,7 @@ export const sqlitePurchasingService = {
   mapGoodsReceipt(r: any): GoodsReceipt {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       grn_number: r.grn_number,
       po_id: r.po_id ?? undefined,
       supplier_id: r.supplier_id ?? undefined,
@@ -1147,7 +1147,7 @@ export const sqlitePurchasingService = {
   mapPurchaseInvoice(r: any): PurchaseInvoice {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       pi_number: r.pi_number,
       grn_id: r.grn_id ?? undefined,
       po_id: r.po_id ?? undefined,
@@ -1172,7 +1172,7 @@ export const sqlitePurchasingService = {
   mapPurchaseReturn(r: any): PurchaseReturn {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       pr_number: r.pr_number,
       grn_id: r.grn_id ?? undefined,
       pi_id: r.pi_id ?? undefined,

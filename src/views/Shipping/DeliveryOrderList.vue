@@ -18,6 +18,7 @@
           </span>
         </button>
         <button
+          v-can="'shipping.write'"
           @click="router.push('/shipping/deliveries/add')"
           class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm hover:bg-blue-500 active:scale-95"
         >
@@ -37,6 +38,7 @@
           Perlu Dikirim
           <span v-if="pendingCount > 0" class="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">{{ pendingCount }}</span>
         </button>
+        v-can="'shipping.write'"
         <button @click="router.push('/shipping/deliveries/add')" class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-500">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
           Buat Surat Jalan

@@ -128,7 +128,7 @@ export const sqliteProductsService = {
       barcode: product.barcode,
       image_url: undefined,
       is_active: product.is_active ?? true,
-      user_id: userId,
+      store_id: userId,
       created_at: now,
       updated_at: now,
       category: undefined,
@@ -196,7 +196,7 @@ export const sqliteProductsService = {
           barcode: p.barcode,
           image_url: undefined,
           is_active: p.is_active ?? true,
-          user_id: userId,
+          store_id: userId,
           created_at: now,
           updated_at: now,
           category: undefined,
@@ -342,7 +342,7 @@ export const sqliteProductsService = {
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
           [
             r.id,
-            r.user_id ?? userId,
+            r.store_id ?? userId,
             r.name,
             r.description ?? null,
             r.category_id ?? null,
@@ -384,7 +384,7 @@ export const sqliteProductsService = {
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
           [
             r.id,
-            r.user_id ?? userId,
+            r.store_id ?? userId,
             r.name,
             r.description ?? null,
             r.category_id ?? null,
@@ -407,12 +407,12 @@ export const sqliteProductsService = {
 
   mapRow(r: any): ProductWithCategory {
     const category = r.cat_id
-      ? { id: r.cat_id, name: r.cat_name, description: r.cat_description ?? undefined, user_id: r.user_id, created_at: '', updated_at: '' }
+      ? { id: r.cat_id, name: r.cat_name, description: r.cat_description ?? undefined, store_id: r.user_id, created_at: '', updated_at: '' }
       : undefined
 
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       name: r.name,
       description: r.description ?? undefined,
       category_id: r.category_id ?? undefined,

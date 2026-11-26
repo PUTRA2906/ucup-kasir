@@ -34,8 +34,11 @@
 
         <!-- Harga & Stok Card -->
         <div class="grid grid-cols-2 gap-3">
-          <!-- Harga Beli -->
-          <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <!-- Harga Beli (hanya untuk hpp.read) -->
+          <div
+            v-if="can('hpp.read')"
+            class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+          >
             <p class="text-xs text-gray-500 dark:text-gray-400">Harga Beli</p>
             <p class="mt-1 text-base font-bold text-gray-900 dark:text-white">
               Rp {{ formatNumber(product.price_buy) }}
@@ -145,7 +148,7 @@
               <p class="mt-1 text-base text-gray-900 dark:text-white">{{ product.barcode || '-' }}</p>
             </div>
 
-            <div>
+            <div v-if="can('hpp.read')">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-400">Harga Beli</label>
               <p class="mt-1 text-base font-semibold text-gray-900 dark:text-white">
                 Rp {{ formatNumber(product.price_buy) }}
@@ -270,12 +273,14 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import { useProductsStore } from '@/stores/products'
 import { useToast } from '@/composables/useToast'
+import { usePermission } from '@/composables/usePermission'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 
 const router = useRouter()
 const route = useRoute()
 const productsStore = useProductsStore()
 const toast = useToast()
+const { can } = usePermission()
 
 const productId = route.params.id as string
 const product = ref<any>(null)

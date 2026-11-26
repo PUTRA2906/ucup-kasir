@@ -213,7 +213,8 @@ const onProductSelect = (idx: number) => {
   const product = products.value.find((p) => p.id === item.product_id)
   if (product) {
     item.product_name = product.name
-    if (!item.price || item.price === 0) item.price = product.price_buy
+    // price_buy dimasker (NULL) untuk role tanpa hpp.read — jangan biarkan NaN.
+    if (!item.price || item.price === 0) item.price = product.price_buy ?? 0
   }
 }
 

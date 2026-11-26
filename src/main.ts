@@ -18,6 +18,7 @@ import { installEventLog, logEvent, flushToSQLite } from '@/lib/eventLog'
 import { startNetworkMonitor, isOnlineNow } from '@/lib/network'
 import { useNavigationStack } from '@/composables/useNavigationStack'
 import { pushStartupLog } from '@/composables/useStartupLog'
+import { vCan } from '@/directives/can'
 
 // Pasang perekam event log SESEDINI MUNGKIN — error WebView/crash yang
 // terjadi setelah titik ini ikut terekam otomatis.
@@ -33,6 +34,7 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 app.use(VueApexCharts)
+app.directive('can', vCan)
 
 app.mount('#app')
 

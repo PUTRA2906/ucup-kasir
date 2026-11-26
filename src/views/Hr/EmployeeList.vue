@@ -6,6 +6,7 @@
     <MobilePageHeader title="Karyawan" subtitle="Manajemen data karyawan">
       <template #actions>
         <button
+          v-can="'hr.write'"
           @click="$router.push('/hr/employees/add')"
           class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm transition hover:bg-blue-500 active:scale-95"
         >
@@ -54,6 +55,7 @@
         button-class="flex items-center justify-between rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs text-gray-900 focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
       />
       <button
+        v-can="'hr.write'"
         @click="openAddPage"
         class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-500"
       >
@@ -142,6 +144,7 @@
       <p class="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">Tidak ada karyawan ditemukan</p>
       <p class="mb-4 text-xs text-gray-400 dark:text-gray-500">Coba ubah filter atau tambah karyawan baru</p>
       <button
+        v-can="'hr.write'"
         @click="openAddPage"
         class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-500"
       >

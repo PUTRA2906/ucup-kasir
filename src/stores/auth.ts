@@ -7,6 +7,16 @@ import { isNativeApp } from '@/lib/platform'
 import { isOnlineNow } from '@/lib/network'
 import { getSyncQueue } from '@/lib/sqlite'
 import { useConfirm } from '@/composables/useConfirm'
+import {
+  EMPTY_MEMBERSHIP,
+  clearCachedMembership,
+  fetchMembership,
+  readCachedMembership,
+  writeCachedMembership,
+  type Membership,
+} from '@/services/membership'
+import type { Permission, Role } from '@/constants/permissions'
+import { setCurrentStoreId } from '@/lib/currentStore'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
@@ -15,6 +25,62 @@ export const useAuthStore = defineStore('auth', () => {
   const initialized = ref(false)
 
   const isAuthenticated = computed(() => !!session.value)
+
+  // === Keanggotaan toko & permission ===
+  // Hanya untuk UI. Penegakan sebenarnya di database (RLS + has_permission).
+  // Fail-closed: sebelum dimuat / bila user bukan anggota toko, semuanya kosong.
+  const storeId = ref<string | null>(null)
+  const role = ref<Role | null>(null)
+  const permissions = ref<Set<Permission>>(new Set())
+  const membershipLoaded = ref(false)
+
+  function applyMembership(m: Membership): void {
+    storeId.value = m.storeId
+    role.value = m.role
+    permissions.value = new Set(m.permissions)
+    membershipLoaded.value = true
+    // Sinkronkan konteks toko untuk lapisan service (RPC butuh p_store_id).
+    setCurrentStoreId(m.storeId)
+  }
+
+  function resetMembership(): void {
+    applyMembership(EMPTY_MEMBERSHIP)
+    membershipLoaded.value = false
+  }
+
+  /** Cek permission untuk UI. BUKAN kontrol keamanan. */
+  function can(permission: Permission | Permission[]): boolean {
+    const list = Array.isArray(permission) ? permission : [permission]
+    return list.some((p) => permissions.value.has(p))
+  }
+
+  /** Cek beberapa permission sekaligus (semua harus terpenuhi). */
+  function canAll(...required: Permission[]): boolean {
+    return required.every((p) => permissions.value.has(p))
+  }
+
+  /**
+   * Muat keanggotaan dari server; bila gagal (offline) pakai cache per-user.
+   * Tidak pernah melempar — kegagalan berarti permission kosong (fail-closed).
+   */
+  async function loadMembership(userId: string | null = user.value?.id ?? null): Promise<void> {
+    if (!userId) {
+      resetMembership()
+      return
+    }
+    const fresh = await fetchMembership(userId)
+    if (fresh) {
+      applyMembership(fresh)
+      writeCachedMembership(userId, fresh)
+      return
+    }
+    const cached = readCachedMembership(userId)
+    if (cached) {
+      applyMembership(cached)
+      return
+    }
+    resetMembership()
+  }
 
   let unsubscribe: (() => void) | null = null
 
@@ -102,6 +168,13 @@ export const useAuthStore = defineStore('auth', () => {
       setCurrentUserId(null)
     }
 
+    // Muat role & permission. Gagal (offline) → pakai cache; tetap gagal →
+    // permission kosong (fail-closed), bukan "semua boleh".
+    await loadMembership(activeSession?.user?.id ?? null)
+
+    // Dipakai listener di bawah untuk mendeteksi pergantian akun.
+    let previousUserId = activeSession?.user?.id ?? null
+
     // Event yang dianggap "logout nyata" (bukan artefak refresh token).
     // Supabase bisa mengirim SIGNED_OUT sesaat saat refresh halaman bila
     // refresh token gagal diperpanjang di background — jangan dianggap
@@ -126,8 +199,17 @@ export const useAuthStore = defineStore('auth', () => {
       // Ikutkan perubahan user ke service SQLite
       if (newSession?.user?.id) {
         setCurrentUserId(newSession.user.id)
+        // Akun berganti → muat ulang keanggotaan supaya menu tidak
+        // menampilkan hak akun sebelumnya. Token refresh untuk user yang
+        // sama tidak memicu query tambahan.
+        if (newSession.user.id !== previousUserId) {
+          previousUserId = newSession.user.id
+          await loadMembership(newSession.user.id)
+        }
       } else {
+        previousUserId = null
         setCurrentUserId(null)
+        resetMembership()
       }
     })
     unsubscribe = listener.subscription.unsubscribe
@@ -145,6 +227,9 @@ export const useAuthStore = defineStore('auth', () => {
       if (data.user?.id) {
         setCurrentUserId(data.user.id)
       }
+      // Muat role & permission sebelum navigasi supaya guard rute tidak
+      // sempat melihat permission kosong lalu melempar ke /403.
+      await loadMembership(data.user?.id ?? null)
       return { data, error: null as Error | null }
     } catch (e: any) {
       return { data: null, error: e as Error }
@@ -229,9 +314,14 @@ export const useAuthStore = defineStore('auth', () => {
       // panggilan signOut di atas (jangan sampai fallback sesi tersimpan
       // menghidupkan kembali sesi yang sudah "keluar").
       clearStoredSession()
+      // Cache permission milik akun yang keluar ikut dihapus: perangkat ini
+      // bisa dipakai akun lain, dan hak lama tidak boleh tertinggal.
+      const signedOutUserId = user.value?.id
       session.value = null
       user.value = null
       setCurrentUserId(null)
+      resetMembership()
+      if (signedOutUserId) clearCachedMembership(signedOutUserId)
 
       // Reset preferensi UI yang tersimpan per-perangkat (bukan per-akun).
       // Tanpa ini, filter periode laporan milik user lama ikut terlihat saat
@@ -274,6 +364,13 @@ export const useAuthStore = defineStore('auth', () => {
     loading,
     initialized,
     isAuthenticated,
+    storeId,
+    role,
+    permissions,
+    membershipLoaded,
+    can,
+    canAll,
+    loadMembership,
     initialize,
     signIn,
     signOut,

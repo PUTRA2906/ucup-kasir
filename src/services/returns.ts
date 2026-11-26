@@ -20,7 +20,7 @@ export const returnsService = {
   async getByTransaction(transactionId: string): Promise<TransactionReturn[]> {
     const { data, error } = await supabase
       .from('returns')
-      .select(`*, items:return_items(*)`)
+      .select(`*, items:v_return_items(*)`)
       .eq('transaction_id', transactionId)
       .order('created_at', { ascending: false })
 
@@ -31,7 +31,7 @@ export const returnsService = {
   async getLinkedReturns(transactionId: string): Promise<TransactionReturn[]> {
     const { data, error } = await supabase
       .from('returns')
-      .select(`*, items:return_items(*)`)
+      .select(`*, items:v_return_items(*)`)
       .like('notes', `%linked:${transactionId}%`)
       .order('created_at', { ascending: false })
 
@@ -61,7 +61,7 @@ export const returnsService = {
 
     const { data, error } = await supabase
       .from('returns')
-      .select(`*, items:return_items(*)`)
+      .select(`*, items:v_return_items(*)`)
       .gte('created_at', startTime.toISOString())
       .lte('created_at', endTime.toISOString())
       .like('notes', '%Retur gabungan dengan transaksi baru%')
@@ -84,7 +84,7 @@ export const returnsService = {
       .from('returns')
       .select(`
         *,
-        items:return_items(*),
+        items:v_return_items(*),
         transaction:transactions(id, transaction_number, customer_name, status)
       `)
       .order('created_at', { ascending: false })

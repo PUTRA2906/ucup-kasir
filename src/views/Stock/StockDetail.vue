@@ -78,7 +78,7 @@
                 {{ product.minimum_stock ?? 10 }}
               </span>
             </div>
-            <div class="px-2">
+            <div v-if="can('hpp.read')" class="px-2">
               <span class="block text-[10px] font-medium text-gray-500 dark:text-gray-400">Harga Beli</span>
               <span class="mt-0.5 block text-xs font-extrabold text-gray-900 dark:text-white">
                 {{ formatCurrencyShort(product.price_buy || 0) }}
@@ -214,6 +214,7 @@ import StockAdjustmentModal from './StockAdjustmentModal.vue'
 import { useProductsStore } from '@/stores/products'
 import { useStockStore } from '@/stores/stock'
 import { useToast } from '@/composables/useToast'
+import { usePermission } from '@/composables/usePermission'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 import type { StockMovement } from '@/services/sqlite/stock'
 
@@ -222,6 +223,7 @@ const route = useRoute()
 const productsStore = useProductsStore()
 const stockStore = useStockStore()
 const toast = useToast()
+const { can } = usePermission()
 
 const productId = route.params.id as string
 const loading = ref(true)

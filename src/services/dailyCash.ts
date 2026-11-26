@@ -43,7 +43,6 @@ export const dailyCashService = {
       .select('amount, payment_method, transaction:transactions!inner(status)')
       .gte('payment_date', date)
       .lte('payment_date', date)
-      .eq('user_id', user.user.id)
       .eq('payment_method', 'tunai')
       .not('transaction.status', 'in', '("void","batal")')
 
@@ -64,14 +63,12 @@ export const dailyCashService = {
       .lte('created_at', date + 'T23:59:59.999')
       .neq('status', 'void')
       .neq('status', 'batal')
-      .eq('user_id', user.user.id)
 
     // ── Kas keluar dari jurnal manual ─────────────────────────────────────────
     const { data: cashAccounts } = await supabase
       .from('chart_of_accounts')
       .select('id, code')
       .eq('code', '1-1000')
-      .eq('user_id', user.user.id)
 
     const cashAccountIds = (cashAccounts || []).map(a => a.id)
 
@@ -137,7 +134,6 @@ export const dailyCashService = {
       .select('id, amount, payment_method, created_at, transaction:transactions!inner(transaction_number, customer_name, created_at, status)')
       .gte('payment_date', date)
       .lte('payment_date', date)
-      .eq('user_id', user.user.id)
       .eq('payment_method', 'tunai')
       .not('transaction.status', 'in', '("void","batal")')
       .order('created_at', { ascending: false })
@@ -174,7 +170,6 @@ export const dailyCashService = {
       .from('chart_of_accounts')
       .select('id, code, name')
       .eq('code', '1-1000')
-      .eq('user_id', user.user.id)
 
     const cashAccountIds = (cashAccounts || []).map(a => a.id)
 

@@ -145,7 +145,7 @@ export const sqliteSalesReportService = {
 
       txn.items = itemRows.map((r: any) => ({
         id: r.id,
-        user_id: r.user_id,
+        store_id: r.user_id,
         transaction_id: r.transaction_id,
         product_id: r.product_id ?? undefined,
         product_name: r.product_name,
@@ -584,7 +584,7 @@ export const sqliteSalesReportService = {
   mapTransaction(r: any): Transaction {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       transaction_number: r.transaction_number,
       customer_id: r.customer_id ?? undefined,
       customer_name: r.customer_name ?? undefined,
@@ -609,7 +609,7 @@ export const sqliteSalesReportService = {
   mapPayment(r: any): TransactionPayment {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       transaction_id: r.transaction_id,
       amount: r.amount,
       payment_method: r.payment_method,

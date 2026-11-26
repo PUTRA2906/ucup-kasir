@@ -35,7 +35,6 @@ export const dailyBankService = {
       .select('amount, transaction:transactions!inner(status)')
       .gte('payment_date', date)
       .lte('payment_date', date)
-      .eq('user_id', user.user.id)
       .eq('payment_method', 'transfer')
       .not('transaction.status', 'in', '("void","batal")')
 
@@ -52,14 +51,12 @@ export const dailyBankService = {
       .eq('payment_method', 'transfer')
       .neq('status', 'void')
       .neq('status', 'batal')
-      .eq('user_id', user.user.id)
 
     // ── Kas keluar dari jurnal manual (akun bank) ─────────────────────────────
     const { data: bankAccounts } = await supabase
       .from('chart_of_accounts')
       .select('id, code')
       .eq('code', '1-1010')
-      .eq('user_id', user.user.id)
 
     const bankAccountIds = (bankAccounts || []).map(a => a.id)
     let bankOut = 0
@@ -110,7 +107,6 @@ export const dailyBankService = {
       .select('id, amount, created_at, transaction:transactions!inner(transaction_number, customer_name, created_at, status)')
       .gte('payment_date', date)
       .lte('payment_date', date)
-      .eq('user_id', user.user.id)
       .eq('payment_method', 'transfer')
       .not('transaction.status', 'in', '("void","batal")')
       .order('created_at', { ascending: false })
@@ -140,7 +136,6 @@ export const dailyBankService = {
       .from('chart_of_accounts')
       .select('id, code, name')
       .eq('code', '1-1010')
-      .eq('user_id', user.user.id)
 
     const bankAccountIds = (bankAccounts || []).map(a => a.id)
 

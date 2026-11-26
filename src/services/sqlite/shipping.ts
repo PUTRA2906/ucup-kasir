@@ -366,7 +366,7 @@ export const sqliteShippingService = {
         await tx.run(
           `INSERT INTO sync_queue (operation, table_name, record_id, payload, created_at)
            VALUES ('INSERT', 'delivery_items', ?, ?, ?)`,
-          [id, JSON.stringify({ id, user_id: userId, delivery_order_id: doId, product_id: item.product_id || null, product_name: item.product_name, quantity: item.quantity || 0, created_at: now }), now]
+          [id, JSON.stringify({ id, store_id: userId, delivery_order_id: doId, product_id: item.product_id || null, product_name: item.product_name, quantity: item.quantity || 0, created_at: now }), now]
         )
       }
     })
@@ -425,7 +425,7 @@ export const sqliteShippingService = {
         await tx.run(
           `INSERT INTO sync_queue (operation, table_name, record_id, payload, created_at)
            VALUES ('INSERT', 'delivery_order_transactions', ?, ?, ?)`,
-          [id, JSON.stringify({ id, user_id: userId, delivery_order_id: doId, transaction_id: tid, created_at: now }), now]
+          [id, JSON.stringify({ id, store_id: userId, delivery_order_id: doId, transaction_id: tid, created_at: now }), now]
         )
       }
     })
@@ -463,7 +463,7 @@ export const sqliteShippingService = {
         await tx.run(
           `INSERT INTO sync_queue (operation, table_name, record_id, payload, created_at)
            VALUES ('INSERT', 'delivery_loaders', ?, ?, ?)`,
-          [id, JSON.stringify({ id, user_id: userId, delivery_order_id: doId, employee_id: l.employee_id, employee_name: l.employee_name || null, created_at: now }), now]
+          [id, JSON.stringify({ id, store_id: userId, delivery_order_id: doId, employee_id: l.employee_id, employee_name: l.employee_name || null, created_at: now }), now]
         )
       }
     })
@@ -503,7 +503,7 @@ export const sqliteShippingService = {
         await tx.run(
           `INSERT INTO sync_queue (operation, table_name, record_id, payload, created_at)
            VALUES ('INSERT', 'delivery_load_items', ?, ?, ?)`,
-          [id, JSON.stringify({ id, user_id: userId, delivery_order_id: doId, product_name: item.product_name, quantity: item.quantity || 0, unit_price: item.unit_price || 0, created_at: now }), now]
+          [id, JSON.stringify({ id, store_id: userId, delivery_order_id: doId, product_name: item.product_name, quantity: item.quantity || 0, unit_price: item.unit_price || 0, created_at: now }), now]
         )
       }
     })
@@ -523,7 +523,7 @@ export const sqliteShippingService = {
       await run(
         `INSERT OR REPLACE INTO vehicles (id, user_id, plate_number, vehicle_type, brand, capacity_kg, status, is_active, created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [r.id, r.user_id || userId, r.plate_number, r.vehicle_type, r.brand || null,
+        [r.id, r.store_id || userId, r.plate_number, r.vehicle_type, r.brand || null,
          r.capacity_kg, r.status, r.is_active ? 1 : 0, r.created_at, r.updated_at, r.updated_at || now]
       )
     }
@@ -547,7 +547,7 @@ export const sqliteShippingService = {
         await tx.run(
           `INSERT OR REPLACE INTO vehicles (id, user_id, plate_number, vehicle_type, brand, capacity_kg, status, is_active, created_at, updated_at, sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [r.id, r.user_id || userId, r.plate_number, r.vehicle_type, r.brand || null,
+          [r.id, r.store_id || userId, r.plate_number, r.vehicle_type, r.brand || null,
            r.capacity_kg, r.status, r.is_active ? 1 : 0, r.created_at, r.updated_at, r.updated_at || now]
         )
       }
@@ -571,7 +571,7 @@ export const sqliteShippingService = {
            customer_name, customer_address, vehicle_id, driver_id, driver_name, driver_fee, notes, status,
            created_at, updated_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [r.id, r.user_id || userId, r.do_number, r.do_date,
+        [r.id, r.store_id || userId, r.do_number, r.do_date,
          r.customer_id || null, r.customer_name || null, r.customer_address || null,
          r.vehicle_id || null, r.driver_id || null, r.driver_name || null, r.driver_fee ?? 0, r.notes || null,
          r.status, r.created_at, r.updated_at, r.updated_at || now]
@@ -580,7 +580,7 @@ export const sqliteShippingService = {
         await run(
           `INSERT OR REPLACE INTO delivery_items (id, user_id, delivery_order_id, product_id, product_name, quantity, created_at, sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [item.id, item.user_id || userId, r.id, item.product_id || null, item.product_name,
+          [item.id, item.store_id || userId, r.id, item.product_id || null, item.product_name,
            item.quantity, item.created_at, item.created_at || now]
         )
       }
@@ -588,7 +588,7 @@ export const sqliteShippingService = {
         await run(
           `INSERT OR REPLACE INTO delivery_tracking (id, user_id, delivery_order_id, status, note, created_at, sync_status, updated_at_local)
            VALUES (?, ?, ?, ?, ?, ?, 'synced', ?)`,
-          [tr.id, tr.user_id || userId, r.id, tr.status, tr.note || null, tr.created_at, tr.created_at || now]
+          [tr.id, tr.store_id || userId, r.id, tr.status, tr.note || null, tr.created_at, tr.created_at || now]
         )
       }
     }
@@ -602,7 +602,7 @@ export const sqliteShippingService = {
       await run(
         `INSERT OR REPLACE INTO delivery_loaders (id, user_id, delivery_order_id, employee_id, employee_name, created_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [r.id, r.user_id || userId, r.delivery_order_id, r.employee_id, r.employee_name || null,
+        [r.id, r.store_id || userId, r.delivery_order_id, r.employee_id, r.employee_name || null,
          r.created_at, r.created_at || now]
       )
     }
@@ -616,13 +616,13 @@ export const sqliteShippingService = {
       await run(
         `INSERT OR REPLACE INTO delivery_load_items (id, user_id, delivery_order_id, product_name, quantity, unit_price, created_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
-        [r.id, r.user_id || userId, r.delivery_order_id, r.product_name, r.quantity, r.unit_price,
+        [r.id, r.store_id || userId, r.delivery_order_id, r.product_name, r.quantity, r.unit_price,
          r.created_at, r.created_at || now]
       )
     }
   },
 
-  async replaceAllDeliveryOrderTransactions(records: Array<{ id: string; user_id?: string; delivery_order_id: string; transaction_id: string; created_at: string }>): Promise<void> {
+  async replaceAllDeliveryOrderTransactions(records: Array<{ id: string; store_id?: string; delivery_order_id: string; transaction_id: string; created_at: string }>): Promise<void> {
     const userId = getCurrentUserId()
     await run('DELETE FROM delivery_order_transactions WHERE user_id = ?', [userId])
     const now = nowIso()
@@ -630,7 +630,7 @@ export const sqliteShippingService = {
       await run(
         `INSERT OR REPLACE INTO delivery_order_transactions (id, user_id, delivery_order_id, transaction_id, created_at, sync_status, updated_at_local)
          VALUES (?, ?, ?, ?, ?, 'synced', ?)`,
-        [r.id, r.user_id || userId, r.delivery_order_id, r.transaction_id,
+        [r.id, r.store_id || userId, r.delivery_order_id, r.transaction_id,
          r.created_at, r.created_at || now]
       )
     }
@@ -643,7 +643,7 @@ export const sqliteShippingService = {
   mapVehicle(r: any): Vehicle {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       plate_number: r.plate_number,
       vehicle_type: r.vehicle_type,
       brand: r.brand ?? undefined,
@@ -658,7 +658,7 @@ export const sqliteShippingService = {
   mapDeliveryOrder(r: any): DeliveryOrder {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       do_number: r.do_number,
       do_date: r.do_date,
       customer_id: r.customer_id ?? undefined,
@@ -678,7 +678,7 @@ export const sqliteShippingService = {
   mapDeliveryItem(r: any): DeliveryItem {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       delivery_order_id: r.delivery_order_id,
       product_id: r.product_id ?? undefined,
       product_name: r.product_name,
@@ -690,7 +690,7 @@ export const sqliteShippingService = {
   mapDeliveryTracking(r: any): DeliveryTracking {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       delivery_order_id: r.delivery_order_id,
       status: r.status,
       note: r.note ?? undefined,
@@ -701,7 +701,7 @@ export const sqliteShippingService = {
   mapDeliveryLoader(r: any): DeliveryLoader {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       delivery_order_id: r.delivery_order_id,
       employee_id: r.employee_id,
       employee_name: r.employee_name ?? undefined,
@@ -712,7 +712,7 @@ export const sqliteShippingService = {
   mapDeliveryLoadItem(r: any): DeliveryLoadItem {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       delivery_order_id: r.delivery_order_id,
       product_name: r.product_name,
       quantity: r.quantity,

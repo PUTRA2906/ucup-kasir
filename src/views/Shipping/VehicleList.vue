@@ -5,6 +5,7 @@
     <!-- Mobile Header -->
     <MobilePageHeader title="Kendaraan" subtitle="Kelola armada">
       <template #actions>
+        v-can="'shipping.write'"
         <button @click="openForm()" class="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm hover:bg-blue-500 active:scale-95">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
         </button>
@@ -14,6 +15,7 @@
     <!-- Desktop Header -->
     <div class="mb-4 hidden items-center justify-between md:flex">
       <h2 class="text-lg font-bold text-gray-900 dark:text-white">Daftar Kendaraan</h2>
+      v-can="'shipping.write'"
       <button @click="openForm()" class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-500">
         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
         Tambah Kendaraan

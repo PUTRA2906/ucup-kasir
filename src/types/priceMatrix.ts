@@ -1,6 +1,6 @@
 export interface PriceTier {
   id: string
-  user_id: string
+  store_id: string
   product_id: string
   min_quantity: number
   max_quantity: number | null
@@ -15,7 +15,7 @@ export interface PriceTier {
 
 export interface CustomerPriceMatrix {
   id: string
-  user_id: string
+  store_id: string
   customer_id: string | null
   group_id: string | null
   product_id: string
@@ -31,7 +31,7 @@ export interface CustomerPriceMatrix {
 
 export interface CustomerGroup {
   id: string
-  user_id: string
+  store_id: string
   name: string
   notes?: string
   is_active: boolean
@@ -41,7 +41,7 @@ export interface CustomerGroup {
 
 export interface CustomerGroupMember {
   id: string
-  user_id: string
+  store_id: string
   group_id: string
   customer_id: string
   created_at: string

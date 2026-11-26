@@ -5,12 +5,12 @@ import type { Product } from '@/types/database'
 // ============================================================
 // SQLite Service: Stock
 // Mengelola stock_movements, stock_adjustments, stock_opnames, stock_alerts
-// Semua operasi: filter user_id manual (pengganti RLS)
+// Semua operasi: filter user_id manual (pengganti RLS) — Fase 4 akan rename ke store_id
 // ============================================================
 
 export interface StockMovement {
   id: string
-  user_id?: string
+  store_id?: string
   product_id: string
   product?: Pick<Product, 'id' | 'name' | 'sku' | 'price_sell' | 'stock'>
   movement_type: 'in' | 'out' | 'adjustment' | 'opname' | 'return'
@@ -26,7 +26,7 @@ export interface StockMovement {
 
 export interface StockAdjustment {
   id: string
-  user_id?: string
+  store_id?: string
   product_id: string
   product?: Pick<Product, 'id' | 'name' | 'sku' | 'price_sell' | 'stock'>
   adjustment_type: 'add' | 'subtract' | 'correction'
@@ -41,7 +41,7 @@ export interface StockAdjustment {
 
 export interface StockOpname {
   id: string
-  user_id?: string
+  store_id?: string
   opname_number: string
   opname_date: string
   status: 'draft' | 'completed' | 'cancelled'
@@ -54,7 +54,7 @@ export interface StockOpname {
 
 export interface StockOpnameItem {
   id: string
-  user_id?: string
+  store_id?: string
   opname_id: string
   product_id: string
   product?: Pick<Product, 'id' | 'name' | 'sku' | 'price_sell' | 'stock'>
@@ -67,7 +67,7 @@ export interface StockOpnameItem {
 
 export interface StockAlert {
   id: string
-  user_id?: string
+  store_id?: string
   product_id: string
   product?: Pick<Product, 'id' | 'name' | 'sku' | 'price_sell' | 'stock'>
   minimum_stock: number
@@ -216,7 +216,7 @@ export const sqliteStockService = {
       created_by: userId,
     })
     return {
-      id, user_id: userId, ...adjustment,
+      id, store_id: userId, ...adjustment,
       created_at: now, created_by: userId,
     }
   },
@@ -377,7 +377,7 @@ export const sqliteStockService = {
       })
       return {
         id: existing.id,
-        user_id: userId,
+        store_id: userId,
         product_id: productId,
         minimum_stock: minimumStock,
         alert_enabled: true,
@@ -392,7 +392,7 @@ export const sqliteStockService = {
         [id, userId, productId, minimumStock, now, now, now]
       )
       const created: StockAlert = {
-        id, user_id: userId, product_id: productId,
+        id, store_id: userId, product_id: productId,
         minimum_stock: minimumStock, alert_enabled: true,
         created_at: now, updated_at: now,
       }
@@ -600,7 +600,7 @@ export const sqliteStockService = {
       : undefined
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       product_id: r.product_id,
       product,
       movement_type: r.movement_type,
@@ -621,7 +621,7 @@ export const sqliteStockService = {
       : undefined
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       product_id: r.product_id,
       product,
       adjustment_type: r.adjustment_type,
@@ -638,7 +638,7 @@ export const sqliteStockService = {
   mapOpname(r: any): StockOpname {
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       opname_number: r.opname_number,
       opname_date: r.opname_date,
       status: r.status,
@@ -655,7 +655,7 @@ export const sqliteStockService = {
       : undefined
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       opname_id: r.opname_id,
       product_id: r.product_id,
       product,
@@ -673,7 +673,7 @@ export const sqliteStockService = {
       : undefined
     return {
       id: r.id,
-      user_id: r.user_id,
+      store_id: r.user_id,
       product_id: r.product_id,
       product,
       minimum_stock: r.minimum_stock,

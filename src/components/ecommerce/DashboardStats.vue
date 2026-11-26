@@ -32,7 +32,8 @@ interface Props {
   totalProducts: number
   totalCategories: number
   totalStock: number
-  stockValue: number
+  /** Nilai stok (modal). NULL bila role tidak punya `hpp.read`. */
+  stockValue: number | null
 }
 
 const props = defineProps<Props>()
@@ -68,12 +69,17 @@ const cards = computed(() => [
     iconBg: 'bg-warning-100 dark:bg-warning-500/15',
     iconColor: 'text-warning-600 dark:text-warning-500',
   },
-  {
-    label: 'Nilai Stok (Modal)',
-    value: formatCurrency(props.stockValue),
-    icon: Wallet,
-    iconBg: 'bg-success-100 dark:bg-success-500/15',
-    iconColor: 'text-success-600 dark:text-success-500',
-  },
+  // Kartu modal hanya relevan bila role boleh melihat HPP.
+  ...(props.stockValue === null
+    ? []
+    : [
+        {
+          label: 'Nilai Stok (Modal)',
+          value: formatCurrency(props.stockValue),
+          icon: Wallet,
+          iconBg: 'bg-success-100 dark:bg-success-500/15',
+          iconColor: 'text-success-600 dark:text-success-500',
+        },
+      ]),
 ])
 </script>

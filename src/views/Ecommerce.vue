@@ -136,6 +136,7 @@ import { useFinanceStore } from '@/stores/finance'
 import { useTransactionsStore } from '@/stores/transactions'
 import { useShippingStore } from '@/stores/shipping'
 import { QUICK_MENU_GROUPS } from '@/data/quickMenu'
+import { usePermission } from '@/composables/usePermission'
 
 const router = useRouter()
 const productsStore = useProductsStore()
@@ -146,6 +147,7 @@ const notificationsStore = useNotificationsStore()
 const financeStore = useFinanceStore()
 const transactionsStore = useTransactionsStore()
 const shippingStore = useShippingStore()
+const { can } = usePermission()
 
 const loading = ref(true)
 const loadingAccounts = ref(true)
@@ -180,9 +182,12 @@ const totalStock = computed(() =>
   productsStore.products.reduce((sum, p) => sum + (p.stock || 0), 0)
 )
 
-const stockValue = computed(() =>
-  productsStore.products.reduce((sum, p) => sum + (p.price_buy || 0) * (p.stock || 0), 0)
-)
+// `price_buy` dimasker (NULL) untuk role tanpa hpp.read — jangan tampilkan Rp 0
+// yang menyesatkan; kembalikan null agar kartunya disembunyikan.
+const stockValue = computed<number | null>(() => {
+  if (!can('hpp.read')) return null
+  return productsStore.products.reduce((sum, p) => sum + (p.price_buy || 0) * (p.stock || 0), 0)
+})
 
 const lowStockProducts = computed(() =>
   productsStore.products
