@@ -708,7 +708,7 @@ import ComponentCard from '@/components/common/ComponentCard.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import { useCustomersStore } from '@/stores/customers'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
-import { sqliteTransactionsService } from '@/services/sqlite/transactions'
+import { transactionsServiceAdapter } from '@/services'
 import { useToast } from '@/composables/useToast'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 import type { Transaction } from '@/types/database'
@@ -911,7 +911,7 @@ const resetFilters = () => {
 const loadTransactions = async () => {
   loadingTransactions.value = true
   try {
-    transactions.value = await sqliteTransactionsService.getByCustomer(customerId)
+    transactions.value = await transactionsServiceAdapter.getByCustomer(customerId)
   } catch (error) {
     console.error('Error loading transactions:', error)
     toast.error('Gagal!', 'Gagal memuat data transaksi')

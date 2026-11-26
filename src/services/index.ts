@@ -1,3 +1,5 @@
+import { getActiveBackend } from '@/lib/connectionMode'
+import { scheduleCacheRefresh } from '@/lib/cacheRefresh'
 import { isNativeApp } from '@/lib/platform'
 import { productsService } from './products'
 import { sqliteProductsService } from './sqlite/products'
@@ -39,33 +41,82 @@ import { agingReceivablesService } from './agingReceivables'
 import { sqliteAgingReceivablesService } from './sqlite/agingReceivables'
 
 // ============================================================
-// Service factory — pilih implementasi berdasarkan platform.
+// Service router — HYBRID online/offline.
 //
-// Android (native) → SQLite lokal (offline-first).
-// Web (mobile/desktop) → Supabase langsung.
+// Dulu: pilihan statis `isNativeApp() ? sqlite : supabase`, dievaluasi
+// sekali saat import (Android selalu SQLite).
 //
-// Store Pinia memanggil service dari sini, bukan langsung ke
-// implementasi SQLite/Supabase, supaya logika pemilihan platform
-// terpusat di satu tempat.
+// Sekarang: router per-domain yang memilih implementasi SETIAP KALI
+// method dipanggil, berdasarkan konektivitas (lihat getActiveBackend):
+//   - Online (Android & web) → service Supabase.
+//   - Offline (Android)      → service SQLite (cache lokal + sync_queue).
+//
+// Kedua implementasi punya API identik (paritas method 1:1), jadi tipe
+// publik cukup memakai tipe implementasi online.
 // ============================================================
 
-export const productsServiceAdapter = isNativeApp() ? sqliteProductsService : productsService
-export const categoriesServiceAdapter = isNativeApp() ? sqliteCategoriesService : categoriesService
-export const storeSettingsServiceAdapter = isNativeApp() ? sqliteStoreSettingsService : storeSettingsService
-export const customersServiceAdapter = isNativeApp() ? sqliteCustomersService : customersService
-export const notificationsServiceAdapter = isNativeApp() ? sqliteNotificationsService : notificationsService
-export const transactionsServiceAdapter = isNativeApp() ? sqliteTransactionsService : transactionsService
-export const returnsServiceAdapter = isNativeApp() ? sqliteReturnsService : returnsService
-export const stockServiceAdapter = isNativeApp() ? sqliteStockService : stockService
-export const salesReportServiceAdapter = isNativeApp() ? sqliteSalesReportService : salesReportService
-export const salesReportEnhancedServiceAdapter = isNativeApp() ? sqliteSalesReportEnhancedService : salesReportEnhancedService
-export const financeServiceAdapter = isNativeApp() ? sqliteFinanceService : financeService
-export const purchasingServiceAdapter = isNativeApp() ? sqlitePurchasingService : purchasingService
-export const hrServiceAdapter = isNativeApp() ? sqliteHrService : hrService
-export const shippingServiceAdapter = isNativeApp() ? sqliteShippingService : shippingService
-export const priceMatrixServiceAdapter = isNativeApp() ? sqlitePriceMatrixService : priceMatrixService
-export const itemPaymentServiceAdapter = isNativeApp() ? sqliteItemPaymentService : itemPaymentService
-export const dailyCashServiceAdapter = isNativeApp() ? sqliteDailyCashService : dailyCashService
-export const dailyBankServiceAdapter = isNativeApp() ? sqliteDailyBankService : dailyBankService
-export const agingReceivablesServiceAdapter = isNativeApp() ? sqliteAgingReceivablesService : agingReceivablesService
+/**
+ * Nama method yang menandakan operasi TULIS (memicu refresh cache).
+ * Sengaja tidak menyertakan prefiks baca (get/fetch/list/calculate/search)
+ * agar refresh tidak terpicu oleh setiap pembacaan.
+ */
+const MUTATION_RE =
+  /^(create|update|delete|void|add|remove|import|save|set|post|reopen|close|generate|reclassify|bulk|allocate|deallocate|reallocate|adjust|replace|merge|mark|seedDefault)/i
+
+function routeDomain<SB, SQ>(online: SB, local: SQ): SB {
+  return new Proxy({} as any, {
+    get(_target, prop) {
+      const impl: any = getActiveBackend() === 'local' ? local : online
+      const value = impl[prop as keyof typeof impl]
+
+      if (typeof value !== 'function') return value
+
+      return function (this: unknown, ...args: unknown[]) {
+        // Bind `this` ke implementasi terpilih — service memakai this.mapRow,
+        // this.updateStatus, this.getById, dsb.
+        const result = value.apply(impl, args)
+
+        // Setelah mutasi online di Android, segarkan cache SQLite (debounced)
+        // supaya siap bila koneksi putus. Refresh sendiri mengecek status.
+        if (
+          isNativeApp() &&
+          getActiveBackend() === 'online' &&
+          typeof prop === 'string' &&
+          MUTATION_RE.test(prop) &&
+          result &&
+          typeof (result as any).then === 'function'
+        ) {
+          ;(result as Promise<unknown>).then(
+            () => scheduleCacheRefresh(),
+            () => {
+              /* error sudah ditangani pemanggil; jangan refresh */
+            }
+          )
+        }
+
+        return result
+      }
+    },
+  })
+}
+
+export const productsServiceAdapter = routeDomain(productsService, sqliteProductsService)
+export const categoriesServiceAdapter = routeDomain(categoriesService, sqliteCategoriesService)
+export const storeSettingsServiceAdapter = routeDomain(storeSettingsService, sqliteStoreSettingsService)
+export const customersServiceAdapter = routeDomain(customersService, sqliteCustomersService)
+export const notificationsServiceAdapter = routeDomain(notificationsService, sqliteNotificationsService)
+export const transactionsServiceAdapter = routeDomain(transactionsService, sqliteTransactionsService)
+export const returnsServiceAdapter = routeDomain(returnsService, sqliteReturnsService)
+export const stockServiceAdapter = routeDomain(stockService, sqliteStockService)
+export const salesReportServiceAdapter = routeDomain(salesReportService, sqliteSalesReportService)
+export const salesReportEnhancedServiceAdapter = routeDomain(salesReportEnhancedService, sqliteSalesReportEnhancedService)
+export const financeServiceAdapter = routeDomain(financeService, sqliteFinanceService)
+export const purchasingServiceAdapter = routeDomain(purchasingService, sqlitePurchasingService)
+export const hrServiceAdapter = routeDomain(hrService, sqliteHrService)
+export const shippingServiceAdapter = routeDomain(shippingService, sqliteShippingService)
+export const priceMatrixServiceAdapter = routeDomain(priceMatrixService, sqlitePriceMatrixService)
+export const itemPaymentServiceAdapter = routeDomain(itemPaymentService, sqliteItemPaymentService)
+export const dailyCashServiceAdapter = routeDomain(dailyCashService, sqliteDailyCashService)
+export const dailyBankServiceAdapter = routeDomain(dailyBankService, sqliteDailyBankService)
+export const agingReceivablesServiceAdapter = routeDomain(agingReceivablesService, sqliteAgingReceivablesService)
 export type { StockMovement, StockAdjustment, StockOpname, StockAlert }

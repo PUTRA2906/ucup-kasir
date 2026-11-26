@@ -154,8 +154,23 @@ export async function downloadIncrementalSync(): Promise<SyncResult> {
   try {
     let totalDownloaded = 0
 
-    // Simple tables (tidak ada relasi child yang perlu grouping)
-    const simpleTables = ['categories', 'products', 'customers', 'store_settings', 'notifications']
+    // Tabel tanpa relasi child yang perlu grouping (merge langsung per baris).
+    // Semua punya kolom updated_at sehingga bisa di-fetch incremental.
+    // Tabel domain lain (PO/GRN/journal/slip gaji/surat jalan) tetap
+    // diperbarui lewat full refresh / download saat login — trade-off yang
+    // diterima agar incremental tetap ringan.
+    const simpleTables = [
+      'categories',
+      'products',
+      'customers',
+      'store_settings',
+      'notifications',
+      'chart_of_accounts',
+      'suppliers',
+      'employees',
+      'vehicles',
+      'customer_groups',
+    ]
 
     for (const table of simpleTables) {
       try {
@@ -169,6 +184,12 @@ export async function downloadIncrementalSync(): Promise<SyncResult> {
         // Continue dengan table lain
       }
     }
+
+    // Core POS relational tables: transaksi & retur beserta anak-anaknya.
+    // Dibutuhkan agar transaksi yang dibuat saat ONLINE langsung muncul di
+    // cache offline. Di-fetch & digabung per parent sebelum di-merge.
+    totalDownloaded += await incrementalMergeTransactions(user.id, lastSync)
+    totalDownloaded += await incrementalMergeReturns(user.id, lastSync)
 
     // Update timestamp
     await setMetadata('last_download_at', new Date().toISOString())
@@ -185,6 +206,74 @@ export async function downloadIncrementalSync(): Promise<SyncResult> {
     logError('sync', 'incremental_download_failed', e, 'Gagal download incremental')
     return { success: false, message: e.message || 'Gagal download incremental' }
   }
+}
+
+/**
+ * Incremental merge untuk transaksi + items + payments.
+ * Fetch parent yang berubah (updated_at > since), lalu fetch anak-anaknya
+ * berdasarkan daftar id parent tersebut, gabungkan, dan mergeAll.
+ * Mengembalikan jumlah baris parent yang diproses.
+ */
+async function incrementalMergeTransactions(userId: string, since: string): Promise<number> {
+  try {
+    const changedTxns = await fetchChangedRows('transactions', userId, since)
+    if (changedTxns.length === 0) return 0
+
+    const ids = changedTxns.map((t) => t.id)
+    const [items, payments] = await Promise.all([
+      fetchRowsByParent('transaction_items', 'transaction_id', ids),
+      fetchRowsByParent('transaction_payments', 'transaction_id', ids),
+    ])
+
+    const map = new Map<string, any>()
+    for (const t of changedTxns) map.set(t.id, { ...t, items: [], payments: [] })
+    for (const it of items) map.get(it.transaction_id)?.items.push(it)
+    for (const p of payments) map.get(p.transaction_id)?.payments.push(p)
+
+    await sqliteTransactionsService.mergeAll([...map.values()])
+    return changedTxns.length
+  } catch (e: any) {
+    logError('sync', 'incremental_transactions_failed', e, 'Merge transaksi incremental gagal')
+    return 0
+  }
+}
+
+/** Incremental merge untuk retur + items. */
+async function incrementalMergeReturns(userId: string, since: string): Promise<number> {
+  try {
+    const changedReturns = await fetchChangedRows('returns', userId, since)
+    if (changedReturns.length === 0) return 0
+
+    const ids = changedReturns.map((r) => r.id)
+    const items = await fetchRowsByParent('return_items', 'return_id', ids)
+
+    const map = new Map<string, any>()
+    for (const r of changedReturns) map.set(r.id, { ...r, items: [] })
+    for (const it of items) map.get(it.return_id)?.items.push(it)
+
+    await sqliteReturnsService.mergeAll([...map.values()])
+    return changedReturns.length
+  } catch (e: any) {
+    logError('sync', 'incremental_returns_failed', e, 'Merge retur incremental gagal')
+    return 0
+  }
+}
+
+/** Fetch row anak berdasarkan sekumpulan id parent (di-chunk agar .in() tidak kepanjangan). */
+async function fetchRowsByParent(
+  table: string,
+  parentColumn: string,
+  parentIds: string[]
+): Promise<any[]> {
+  const CHUNK = 300
+  const all: any[] = []
+  for (let i = 0; i < parentIds.length; i += CHUNK) {
+    const chunk = parentIds.slice(i, i + CHUNK)
+    const { data, error } = await supabase.from(table).select('*').in(parentColumn, chunk)
+    if (error) throw error
+    if (data) all.push(...data)
+  }
+  return all
 }
 
 /** Ambil semua data user dari Supabase dan isi ke SQLite (truncate dulu). */

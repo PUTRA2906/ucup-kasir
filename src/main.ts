@@ -15,12 +15,17 @@ import { App as CapacitorApp } from '@capacitor/app'
 import { initSQLite } from '@/lib/sqlite'
 import { isNativeApp } from '@/lib/platform'
 import { installEventLog, logEvent, flushToSQLite } from '@/lib/eventLog'
+import { startNetworkMonitor, isOnlineNow } from '@/lib/network'
 import { useNavigationStack } from '@/composables/useNavigationStack'
 import { pushStartupLog } from '@/composables/useStartupLog'
 
 // Pasang perekam event log SESEDINI MUNGKIN — error WebView/crash yang
 // terjadi setelah titik ini ikut terekam otomatis.
 installEventLog()
+
+// Mulai pemantau koneksi lebih awal agar status online/offline sudah akurat
+// sebelum halaman pertama memanggil service.
+startNetworkMonitor()
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -55,34 +60,33 @@ async function startup() {
     await flushToSQLite()
     pushStartupLog('Log berhasil disimpan ✓')
 
-    // 2. Cek & upload perubahan yang tertunda (backup harian)
+    // 2. Sinkronisasi startup: kirim antrean offline, lalu segarkan cache.
     //    Jalankan setelah app siap (nextTick) supaya tidak blokir render.
     setTimeout(async () => {
       try {
         pushStartupLog('Memuat sesi pengguna...')
         const { useAuthStore } = await import('@/stores/auth')
         const { useSyncStore } = await import('@/stores/sync')
-        const { useNetwork } = await import('@/lib/network')
 
         const authStore = useAuthStore()
         await authStore.initialize()
 
-        // Hanya upload jika sudah login & online
+        // Hanya sinkron jika sudah login & online
         if (authStore.isAuthenticated) {
           pushStartupLog('Pengguna terautentikasi ✓')
           const syncStore = useSyncStore()
           await syncStore.loadInfo()
-          if (useNetwork().isOnline.value) {
-            pushStartupLog('Mengunggah perubahan yang tertunda...')
-            const result = await syncStore.checkAndUpload()
-            const uploaded = (result as any)?.uploaded ?? 0
-            if (uploaded > 0) {
-              pushStartupLog(`${uploaded} perubahan berhasil dikirim ke server ✓`)
+          if (isOnlineNow()) {
+            pushStartupLog('Menyinkronkan data dengan server...')
+            const result = await syncStore.handleReconnect()
+            const downloaded = (result as any)?.downloaded ?? 0
+            if (downloaded > 0) {
+              pushStartupLog(`Cache lokal diperbarui (${downloaded} data) ✓`)
             } else {
-              pushStartupLog('Tidak ada perubahan tertunda ✓')
+              pushStartupLog('Cache lokal sudah terbaru ✓')
             }
           } else {
-            pushStartupLog('Perangkat offline — perubahan akan dikirim saat online', 'warn')
+            pushStartupLog('Perangkat offline — memakai data lokal', 'warn')
           }
         } else {
           pushStartupLog('Belum login, melewati sinkronisasi')

@@ -6,6 +6,8 @@ import {
   uploadAllToSupabase,
   getLastSyncInfo,
 } from '@/services/sync/syncEngine'
+import { getActiveBackend } from '@/lib/connectionMode'
+import { isNativeApp } from '@/lib/platform'
 import { isOnlineNow } from '@/lib/network'
 
 // ============================================================
@@ -125,6 +127,61 @@ export const useSyncStore = defineStore('sync', () => {
     return result
   }
 
+  /**
+   * Segarkan cache SQLite dari Supabase (tanpa flag UI berat).
+   * Dipakai oleh: penyegaran berkala saat online, setelah mutasi online
+   * (debounced), dan saat koneksi pulih. Hanya jalan di native & saat online.
+   *
+   * Guard `refreshInFlight`: beberapa pemicu (timer 3 menit, debounce mutasi,
+   * reconnect) bisa bertabrakan. Menjalankan dua incremental sync sekaligus
+   * hanya menggandakan request dan bisa saling menimpa `last_download_at`.
+   */
+  let refreshInFlight: Promise<any> | null = null
+
+  async function refreshCache() {
+    if (!isNativeApp()) return { success: false, message: 'Bukan native' }
+    if (getActiveBackend() !== 'online') return { success: false, message: 'Tidak online' }
+    if (refreshInFlight) return refreshInFlight
+    // Jangan bertabrakan dengan upload/manual download yang sedang berjalan.
+    if (syncing.value || uploading.value) {
+      return { success: false, message: 'Sinkronisasi sedang berjalan' }
+    }
+    refreshInFlight = (async () => {
+      try {
+        const result = await downloadIncrementalSync()
+        await loadInfo()
+        return result
+      } catch (e: any) {
+        // non-critical: cache refresh gagal tidak boleh mengganggu UI
+        return { success: false, message: e?.message || 'Refresh cache gagal' }
+      } finally {
+        refreshInFlight = null
+      }
+    })()
+    return refreshInFlight
+  }
+
+  /**
+   * Dipanggil saat koneksi pulih: kirim antrean offline dulu, lalu segarkan
+   * cache. Upload wajib lebih dulu (download men-truncate + mengosongkan queue).
+   */
+  async function handleReconnect() {
+    if (!isNativeApp()) return { success: false, message: 'Bukan native' }
+    try {
+      const upload = await uploadChangesToSupabase()
+      // Bila ada perubahan gagal terkirim, jangan download (cegah data hilang).
+      if (upload.failed && upload.failed > 0) {
+        await loadInfo()
+        return { success: false, message: upload.message }
+      }
+      const result = await downloadIncrementalSync()
+      await loadInfo()
+      return result
+    } catch (e: any) {
+      return { success: false, message: e?.message || 'Sinkronisasi ulang gagal' }
+    }
+  }
+
   return {
     syncing,
     uploading,
@@ -139,5 +196,7 @@ export const useSyncStore = defineStore('sync', () => {
     uploadChanges,
     uploadAll,
     checkAndUpload,
+    refreshCache,
+    handleReconnect,
   }
 })

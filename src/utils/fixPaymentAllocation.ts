@@ -9,7 +9,7 @@
 
 import { supabase } from '@/lib/supabase'
 import { query, run, getCurrentUserId } from '@/services/sqlite/db'
-import { isNativeApp } from '@/lib/platform'
+import { getActiveBackend } from '@/lib/connectionMode'
 
 export interface PaymentAllocationResult {
   mode: 'supabase' | 'sqlite'
@@ -277,8 +277,8 @@ async function fixPaymentAllocationSQLite(): Promise<PaymentAllocationResult> {
  * Entry point - otomatis deteksi mode dan fix
  */
 export async function fixPaymentAllocation(): Promise<PaymentAllocationResult> {
-  // Deteksi platform - jika native Android, gunakan SQLite
-  const useOfflineMode = isNativeApp()
+  // Deteksi backend aktif - mode offline (Android tanpa internet) pakai SQLite
+  const useOfflineMode = getActiveBackend() === 'local'
 
   if (useOfflineMode) {
     return await fixPaymentAllocationSQLite()

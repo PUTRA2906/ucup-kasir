@@ -470,6 +470,39 @@ export const sqliteReturnsService = {
     })
   },
 
+  /**
+   * Merge incremental (tanpa truncate): upsert retur yang berubah beserta
+   * items-nya. Baris lokal `pending` tidak ditimpa.
+   */
+  async mergeAll(records: Array<TransactionReturn & { items?: ReturnItem[] }>): Promise<void> {
+    if (records.length === 0) return
+    const userId = getCurrentUserId()
+    await transaction(async (tx) => {
+      for (const r of records) {
+        const existing = await tx.query<{ sync_status: string }>(
+          'SELECT sync_status FROM returns WHERE id = ?',
+          [r.id]
+        )
+        if (existing[0] && existing[0].sync_status !== 'synced') continue
+
+        await tx.run(
+          `INSERT OR REPLACE INTO returns (id, user_id, transaction_id, return_number, total_refund,
+                   notes, created_at, updated_at, sync_status, updated_at_local)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+          [r.id, userId, r.transaction_id, r.return_number, r.total_refund, r.notes ?? null, r.created_at, r.updated_at, r.updated_at]
+        )
+        for (const item of r.items || []) {
+          await tx.run(
+            `INSERT OR REPLACE INTO return_items (id, user_id, return_id, product_id, product_name,
+                     price, price_buy, quantity, subtotal, created_at, sync_status, updated_at_local)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+            [item.id, userId, r.id, item.product_id ?? null, item.product_name, item.price, 0, item.quantity, item.subtotal, item.created_at, item.created_at]
+          )
+        }
+      }
+    })
+  },
+
   // ============================================================
   // Internal helpers
   // ============================================================

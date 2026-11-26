@@ -7,7 +7,7 @@ import {
   type StockOpname,
   type StockAlert,
 } from '@/services'
-import { isNativeApp } from '@/lib/platform'
+import { getActiveBackend } from '@/lib/connectionMode'
 import { run } from '@/lib/sqlite'
 import { getCurrentUserId, uuid, nowIso, addToSyncQueue } from '@/services/sqlite/db'
 
@@ -179,14 +179,14 @@ export const useStockStore = defineStore('stock', () => {
     notes?: string
   }) => {
     try {
-      // Di web (Supabase): movement stok otomatis dicatat oleh trigger
-      // trigger_record_stock_movement saat kolom stock berubah,
-      // jadi tidak perlu insert manual di sini.
-      if (!isNativeApp()) {
+      // Saat backend online (Supabase, web maupun Android): movement stok
+      // otomatis dicatat oleh trigger trigger_record_stock_movement saat
+      // kolom stock berubah, jadi tidak perlu insert manual di sini.
+      if (getActiveBackend() !== 'local') {
         return
       }
 
-      // Android: insert langsung ke SQLite dengan generate id & queue sync
+      // Mode offline (Android, SQLite): insert langsung + queue sync
       const userId = getCurrentUserId()
       const id = uuid()
       const now = nowIso()

@@ -1,9 +1,9 @@
 <template>
   <AdminLayout hide-bottom-nav>
-    <PageBreadcrumb pageTitle="Laporan Keuntungan Harian" class="hidden md:block" />
+    <PageBreadcrumb pageTitle="Laporan Keuntungan" class="hidden md:block" />
 
     <!-- Mobile Header -->
-    <MobilePageHeader title="Keuntungan Harian" :subtitle="formatDate(selectedDate)">
+    <MobilePageHeader title="Keuntungan" :subtitle="formatDateRange()">
       <template #actions>
         <button
           @click="openDatePicker"
@@ -26,42 +26,16 @@
 
     <!-- Content -->
     <div v-else class="space-y-4 pb-24 md:pb-6">
-      <!-- Quick Date Navigation (Mobile) -->
-      <div class="flex items-center gap-2 md:hidden">
-        <button
-          @click="changeDate(-1)"
-          class="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white text-xs font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-        >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-          Kemarin
-        </button>
-        <button
-          @click="openDatePicker"
-          class="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white text-xs font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-        >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          Pilih Tanggal
-        </button>
-        <button
-          @click="changeDate(1)"
-          :disabled="isToday"
-          :class="[
-            'flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl border text-xs font-medium',
-            isToday
-              ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-800 dark:bg-gray-800/50'
-              : 'border-gray-300 bg-white text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
-          ]"
-        >
-          Besok
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
+      <!-- Range Picker (Mobile) -->
+      <button
+        @click="openDatePicker"
+        class="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-xs font-medium text-gray-700 md:hidden dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+      >
+        <svg class="h-4 w-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        {{ formatDateRange() }}
+      </button>
 
       <!-- Summary Cards (2 Kolom Mobile) -->
       <div class="grid grid-cols-2 gap-3">
@@ -98,7 +72,7 @@
                 </svg>
                 {{ Math.abs(trendData.cashTrend).toFixed(1) }}%
               </span>
-              <span class="text-[9px] text-gray-500 dark:text-gray-400">vs kemarin</span>
+              <span class="text-[9px] text-gray-500 dark:text-gray-400">vs periode sebelumnya</span>
             </div>
           </div>
         </div>
@@ -167,19 +141,28 @@
         </div>
       </div>
 
-      <!-- Trend 7 Hari (Chart) -->
-      <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+      <!-- Trend Chart -->
+      <div
+        v-if="showChart"
+        class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+      >
         <div class="mb-3 flex items-center justify-between">
-          <h3 class="text-sm font-bold text-gray-900 dark:text-white">Trend 7 Hari Terakhir</h3>
+          <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ chartTitle }}</h3>
           <span class="text-[10px] text-gray-500 dark:text-gray-400">Laba Bersih</span>
         </div>
         <div id="trendChart" class="h-48"></div>
       </div>
+      <div
+        v-else
+        class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-4 text-center text-xs text-gray-500 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-400"
+      >
+        Grafik harian hanya ditampilkan untuk rentang maksimal 31 hari.
+      </div>
 
-      <!-- Breakdown Hari Ini -->
+      <!-- Breakdown Periode -->
       <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <h3 class="mb-3 border-b border-gray-200 pb-2 text-sm font-bold text-gray-900 dark:border-gray-700 dark:text-white">
-          Rincian Hari Ini
+          Rincian Periode
         </h3>
         <div class="space-y-2">
           <div class="flex justify-between text-xs">
@@ -255,11 +238,11 @@
         </div>
       </div>
 
-      <!-- Transaksi Hari Ini -->
+      <!-- Transaksi Periode -->
       <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <div class="mb-3 flex items-center justify-between border-b border-gray-200 pb-2 dark:border-gray-700">
           <h3 class="text-sm font-bold text-gray-900 dark:text-white">
-            Transaksi Hari Ini
+            Transaksi Periode
           </h3>
           <span class="text-xs text-gray-500 dark:text-gray-400">
             {{ transactions.length }} transaksi
@@ -287,7 +270,7 @@
                 {{ transaction.transaction_number }}
               </p>
               <p class="text-[9px] text-gray-500 dark:text-gray-400">
-                {{ formatTime(transaction.created_at) }} · {{ transaction.customer_name || 'Umum' }}
+                {{ formatDateTime(transaction.created_at) }} · {{ transaction.customer_name || 'Umum' }}
               </p>
               <div class="mt-1 flex items-center gap-2">
                 <span
@@ -322,7 +305,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            Belum ada transaksi hari ini
+            Belum ada transaksi pada periode ini
           </p>
         </div>
       </div>
@@ -339,36 +322,39 @@
       </button>
     </div>
 
-    <!-- Hidden DateField (Triggered Programmatically) -->
-    <DateField
-      v-model="selectedDate"
-      title="Pilih Tanggal"
-      ref="dateFieldRef"
+    <!-- Hidden DateRangeField (Triggered Programmatically) -->
+    <DateRangeField
+      v-model:start="dateRange.start"
+      v-model:end="dateRange.end"
+      title="Pilih Rentang Tanggal"
+      placeholder="Semua tanggal"
+      ref="dateRangeRef"
       button-class="hidden"
     />
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
-import DateField from '@/components/common/DateField.vue'
-import { salesReportEnhancedService } from '@/services/salesReportEnhanced'
-import { sqliteSalesReportEnhancedService } from '@/services/sqlite/salesReportEnhanced'
+import DateRangeField from '@/components/common/DateRangeField.vue'
+import { salesReportEnhancedServiceAdapter } from '@/services'
 import type { EnhancedSalesSummary, TransactionDetail } from '@/services/salesReportEnhanced'
 import { useFinanceStore } from '@/stores/finance'
 import { useToast } from '@/composables/useToast'
-import { localTodayStr } from '@/utils/date'
-import { isNativeApp } from '@/lib/platform'
+import { localDateStr, localTodayStr } from '@/utils/date'
 import ApexCharts from 'apexcharts'
 
 const toast = useToast()
 const financeStore = useFinanceStore()
 
-const dateFieldRef = ref()
-const selectedDate = ref(localTodayStr())
+const dateRangeRef = ref()
+const dateRange = ref({
+  start: localTodayStr(),
+  end: localTodayStr(),
+})
 const loading = ref(false)
 
 const summary = ref<EnhancedSalesSummary>({
@@ -398,18 +384,44 @@ const summary = ref<EnhancedSalesSummary>({
 
 const transactions = ref<TransactionDetail[]>([])
 const totalExpenses = ref(0)
-const trendData = ref({
-  cashTrend: 0,
-  profitTrend: 0,
-})
+
+// Periode sebelumnya (untuk indikator tren "vs periode sebelumnya")
+const prevSummary = ref<EnhancedSalesSummary | null>(null)
+const prevExpenses = ref(0)
 
 // Chart
 let chartInstance: ApexCharts | null = null
 const chartData = ref<{ date: string; profit: number }[]>([])
+const showChart = ref(true)
 
 const netProfit = computed(() => summary.value.realized_profit - totalExpenses.value)
 
-const isToday = computed(() => selectedDate.value === localTodayStr())
+/** Jumlah hari inklusif dalam rentang (YYYY-MM-DD). */
+const daysBetween = (start: string, end: string): number => {
+  if (!start || !end) return 0
+  const s = new Date(start + 'T00:00:00')
+  const e = new Date(end + 'T00:00:00')
+  return Math.round((e.getTime() - s.getTime()) / 86400000) + 1
+}
+
+const rangeDays = computed(() => daysBetween(dateRange.value.start, dateRange.value.end))
+const isSingleDay = computed(() => rangeDays.value === 1)
+
+const chartTitle = computed(() =>
+  isSingleDay.value ? 'Trend 7 Hari Terakhir' : 'Tren Laba Bersih Harian'
+)
+
+const trendData = computed(() => {
+  if (!prevSummary.value) return { cashTrend: 0, profitTrend: 0 }
+  const prevCash = prevSummary.value.total_cash_received
+  const prevNet = prevSummary.value.realized_profit - prevExpenses.value
+  const curCash = summary.value.total_cash_received
+  const curNet = netProfit.value
+  return {
+    cashTrend: prevCash !== 0 ? ((curCash - prevCash) / Math.abs(prevCash)) * 100 : 0,
+    profitTrend: prevNet !== 0 ? ((curNet - prevNet) / Math.abs(prevNet)) * 100 : 0,
+  }
+})
 
 // Kas masuk per metode pembayaran
 const paymentMethods = computed(() => {
@@ -450,62 +462,62 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value || 0)
 
-const formatDate = (dateStr: string) => {
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString('id-ID', {
-    weekday: 'long',
+const fmtShort = (ymd: string) =>
+  new Date(ymd + 'T00:00:00').toLocaleDateString('id-ID', {
     day: 'numeric',
-    month: 'long',
+    month: 'short',
     year: 'numeric',
   })
+
+const formatDateRange = () => {
+  const { start, end } = dateRange.value
+  if (!start) return 'Pilih rentang tanggal'
+  if (!end || start === end) return fmtShort(start)
+  return `${fmtShort(start)} – ${fmtShort(end)}`
 }
 
-const formatTime = (dateStr: string) => {
+const formatDateTime = (dateStr: string) => {
   const date = new Date(dateStr)
-  return date.toLocaleTimeString('id-ID', {
+  return date.toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   })
 }
 
 const openDatePicker = () => {
-  const button = dateFieldRef.value?.$el?.querySelector('button')
+  const button = dateRangeRef.value?.$el?.querySelector('button')
   if (button) {
     button.click()
   }
 }
 
-const changeDate = (offset: number) => {
-  const current = new Date(selectedDate.value + 'T00:00:00')
-  current.setDate(current.getDate() + offset)
-  selectedDate.value = current.toLocaleDateString('en-CA')
-}
-
 const fetchReport = async () => {
   loading.value = true
   try {
-    // Pilih service berdasarkan platform
-    const service = isNativeApp() ? sqliteSalesReportEnhancedService : salesReportEnhancedService
+    const service = salesReportEnhancedServiceAdapter
+    const { start, end } = dateRange.value
 
-    const result = await service.getEnhancedSalesReport(
-      selectedDate.value,
-      selectedDate.value,
-      'all'
-    )
+    const result = await service.getEnhancedSalesReport(start, end, 'all')
 
     summary.value = result.summary
     transactions.value = result.transactions
 
-    // Load beban operasional
-    await loadExpenseBalances(selectedDate.value, selectedDate.value)
+    // Load beban operasional periode
+    await loadExpenseBalances(start, end)
+
+    // Load periode sebelumnya untuk indikator tren (best-effort)
+    await loadPreviousPeriod(start, end)
   } catch (error) {
     console.error('Error fetching report:', error)
-    toast.error('Gagal!', 'Gagal memuat laporan keuntungan harian')
+    toast.error('Gagal!', 'Gagal memuat laporan keuntungan')
   } finally {
     loading.value = false
 
     // Load trend setelah loading selesai dan DOM sudah update
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await nextTick()
     await loadTrendData()
   }
 }
@@ -536,32 +548,94 @@ const loadExpenseBalances = async (startDate: string, endDate: string) => {
   }
 }
 
+/**
+ * Muat ringkasan periode sebelumnya (panjang sama, tepat sebelum rentang
+ * terpilih) untuk menghitung indikator tren "vs periode sebelumnya".
+ * Best-effort: bila gagal, indikator tren disembunyikan.
+ */
+const loadPreviousPeriod = async (start: string, end: string) => {
+  try {
+    const len = daysBetween(start, end)
+    if (len <= 0) {
+      prevSummary.value = null
+      prevExpenses.value = 0
+      return
+    }
+
+    const startD = new Date(start + 'T00:00:00')
+    const prevEndD = new Date(startD)
+    prevEndD.setDate(prevEndD.getDate() - 1)
+    const prevStartD = new Date(prevEndD)
+    prevStartD.setDate(prevStartD.getDate() - (len - 1))
+
+    const ps = localDateStr(prevStartD)
+    const pe = localDateStr(prevEndD)
+
+    const service = salesReportEnhancedServiceAdapter
+    const prev = await service.getEnhancedSalesReport(ps, pe, 'all')
+    prevSummary.value = prev.summary
+
+    const activity = await financeStore.getPeriodActivity(ps, pe)
+    let expenseTotal = 0
+    for (const acc of activity.byAccount) {
+      if (acc.account_type === 'beban' && acc.account_code !== '5-5000') {
+        expenseTotal += acc.amount
+      }
+    }
+    prevExpenses.value = expenseTotal
+  } catch (error) {
+    console.error('Error loading previous period:', error)
+    prevSummary.value = null
+    prevExpenses.value = 0
+  }
+}
+
+/**
+ * Data grafik:
+ * - Rentang 1 hari → 7 hari terakhir berakhir di tanggal itu (perilaku lama).
+ * - Rentang multi-hari → laba bersih harian sepanjang rentang.
+ * - Rentang > 31 hari → grafik disembunyikan (terlalu banyak query harian).
+ */
 const loadTrendData = async () => {
   try {
-    // Pilih service berdasarkan platform
-    const service = isNativeApp() ? sqliteSalesReportEnhancedService : salesReportEnhancedService
+    const service = salesReportEnhancedServiceAdapter
 
-    // Load 7 hari terakhir dari selectedDate
-    const endDate = new Date(selectedDate.value + 'T00:00:00')
-    const startDate = new Date(endDate)
-    startDate.setDate(startDate.getDate() - 6)
+    let startD: Date
+    let endD: Date
+    if (isSingleDay.value) {
+      endD = new Date(dateRange.value.start + 'T00:00:00')
+      startD = new Date(endD)
+      startD.setDate(startD.getDate() - 6)
+    } else {
+      startD = new Date(dateRange.value.start + 'T00:00:00')
+      endD = new Date(dateRange.value.end + 'T00:00:00')
+    }
+
+    const totalDays = Math.round((endD.getTime() - startD.getTime()) / 86400000) + 1
+
+    if (totalDays > 31) {
+      showChart.value = false
+      chartData.value = []
+      if (chartInstance) {
+        chartInstance.destroy()
+        chartInstance = null
+      }
+      return
+    }
+
+    showChart.value = true
 
     const data: { date: string; profit: number }[] = []
 
-    for (let i = 0; i < 7; i++) {
-      const current = new Date(startDate)
+    for (let i = 0; i < totalDays; i++) {
+      const current = new Date(startD)
       current.setDate(current.getDate() + i)
-      const dateStr = current.toLocaleDateString('en-CA')
+      const dateStr = localDateStr(current)
 
-      const result = await service.getEnhancedSalesReport(
-        dateStr,
-        dateStr,
-        'all'
-      )
+      const result = await service.getEnhancedSalesReport(dateStr, dateStr, 'all')
 
-      // Load expenses untuk hari ini (aktivitas periode, tanpa jurnal penutup)
+      // Load expenses untuk hari itu (aktivitas periode, tanpa jurnal penutup)
       const activity = await financeStore.getPeriodActivity(dateStr, dateStr)
-
       let expenseTotal = 0
       for (const acc of activity.byAccount) {
         if (acc.account_type === 'beban' && acc.account_code !== '5-5000') {
@@ -569,29 +643,15 @@ const loadTrendData = async () => {
         }
       }
 
-      const dayNetProfit = result.summary.realized_profit - expenseTotal
-
       data.push({
         date: dateStr,
-        profit: dayNetProfit,
+        profit: result.summary.realized_profit - expenseTotal,
       })
     }
 
     chartData.value = data
 
-    // Hitung trend vs kemarin
-    if (data.length >= 2) {
-      const today = data[data.length - 1].profit
-      const yesterday = data[data.length - 2].profit
-
-      if (yesterday !== 0) {
-        trendData.value.cashTrend = ((summary.value.total_cash_received - 0) / (yesterday || 1)) * 100
-        trendData.value.profitTrend = ((today - yesterday) / Math.abs(yesterday)) * 100
-      }
-    }
-
-    // Render chart dengan nextTick untuk memastikan DOM sudah ready
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await nextTick()
     renderChart()
   } catch (error) {
     console.error('Error loading trend data:', error)
@@ -675,9 +735,9 @@ const exportPDF = async () => {
   toast.info('Export PDF', 'Fitur export PDF sedang dalam pengembangan')
 }
 
-watch(selectedDate, () => {
+watch(dateRange, () => {
   fetchReport()
-})
+}, { deep: true })
 
 onMounted(() => {
   fetchReport()

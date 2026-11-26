@@ -1,5 +1,6 @@
 import { uploadChangesToSupabase } from '@/services/sync/syncEngine'
 import { isOnlineNow } from '@/lib/network'
+import { getActiveBackend } from '@/lib/connectionMode'
 import { isNativeApp } from '@/lib/platform'
 import { logEvent, logError } from '@/lib/eventLog'
 
@@ -209,8 +210,8 @@ async function runScheduledUpload(retryCount: number = 0): Promise<void> {
   const config = await getScheduledSyncConfig()
   const MAX_RETRY = 3
 
-  // Cek internet
-  if (!isOnlineNow()) {
+  // Cek internet & backend aktif (jangan sinkron saat mode offline)
+  if (!isOnlineNow() || getActiveBackend() !== 'online') {
     logEvent({
       level: 'warn',
       source: 'scheduled_sync',

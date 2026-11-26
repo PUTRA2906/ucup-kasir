@@ -1065,6 +1065,62 @@ export const sqliteTransactionsService = {
     })
   },
 
+  /**
+   * Merge incremental (tanpa truncate): upsert transaksi yang berubah beserta
+   * items & payments-nya. Baris lokal yang masih `pending` (belum ter-upload)
+   * TIDAK ditimpa agar perubahan lokal tidak hilang.
+   */
+  async mergeAll(
+    records: Array<Transaction & { items?: TransactionItem[]; payments?: TransactionPayment[] }>
+  ): Promise<void> {
+    if (records.length === 0) return
+    const userId = getCurrentUserId()
+    await transaction(async (tx) => {
+      for (const t of records) {
+        // Lewati bila baris lokal masih punya perubahan belum terkirim.
+        const existing = await tx.query<{ sync_status: string }>(
+          'SELECT sync_status FROM transactions WHERE id = ?',
+          [t.id]
+        )
+        if (existing[0] && existing[0].sync_status !== 'synced') continue
+
+        await tx.run(
+          `INSERT OR REPLACE INTO transactions (id, user_id, transaction_number, customer_id, customer_name,
+                   subtotal, discount, shipping_cost, return_amount, total, payment_method, paid_amount,
+                   change_amount, remaining_amount, payment_status, status, transaction_status, notes, created_at, updated_at,
+                   sync_status, updated_at_local)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+          [
+            t.id, userId, t.transaction_number, t.customer_id ?? null, t.customer_name ?? null,
+            t.subtotal, t.discount, t.shipping_cost ?? 0, t.return_amount ?? 0, t.total,
+            t.payment_method, t.paid_amount, t.change_amount, t.remaining_amount,
+            t.payment_status, t.status, (t as any).transaction_status ?? 'disiapkan', t.notes ?? null,
+            t.created_at, t.updated_at, t.updated_at,
+          ]
+        )
+
+        for (const item of t.items || []) {
+          await tx.run(
+            `INSERT OR REPLACE INTO transaction_items (id, user_id, transaction_id, product_id, product_name,
+                     price, quantity, subtotal, created_at, sync_status, updated_at_local)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+            [item.id, userId, t.id, item.product_id ?? null, item.product_name, item.price, item.quantity, item.subtotal, item.created_at, item.created_at]
+          )
+        }
+
+        for (const p of t.payments || []) {
+          await tx.run(
+            `INSERT OR REPLACE INTO transaction_payments (id, user_id, transaction_id, amount, payment_method, notes, payment_date, created_at, sync_status, updated_at_local)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?)`,
+            [p.id, userId, t.id, p.amount, p.payment_method, p.notes ?? null,
+             p.payment_date ?? p.created_at?.split('T')[0] ?? null,
+             p.created_at, p.created_at]
+          )
+        }
+      }
+    })
+  },
+
   // ============================================================
   // Internal helpers
   // ============================================================

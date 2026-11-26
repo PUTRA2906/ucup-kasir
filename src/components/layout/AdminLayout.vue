@@ -8,6 +8,7 @@
     >
       <app-header class="hidden md:block" />
       <div class="p-4 mx-auto max-w-(--breakpoint-2xl) pb-24 md:p-6 md:pb-6">
+        <ConnectionStatusBanner />
         <slot></slot>
       </div>
     </div>
@@ -19,6 +20,7 @@
 import AppSidebar from './AppSidebar.vue'
 import AppHeader from './AppHeader.vue'
 import BottomNavigation from './BottomNavigation.vue'
+import ConnectionStatusBanner from './ConnectionStatusBanner.vue'
 import { useSidebar } from '@/composables/useSidebar'
 import Backdrop from './Backdrop.vue'
 const { isExpanded, isHovered } = useSidebar()

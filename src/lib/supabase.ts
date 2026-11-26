@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { logEvent } from '@/lib/eventLog'
+import { notifyNetworkFailure } from '@/lib/network'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -27,6 +28,27 @@ function describeError(error: any): string {
   if (error?.details) parts.push(String(error.details))
   if (error?.hint) parts.push(`hint: ${error.hint}`)
   return parts.join(' | ')
+}
+
+/**
+ * Apakah error berasal dari masalah JARINGAN (bukan validasi/logika)?
+ * Supabase-js melempar TypeError("Failed to fetch")/AbortError saat offline,
+ * atau mengembalikan error dengan pesan jaringan. Ini memicu probe koneksi
+ * agar aplikasi berpindah ke mode offline + menampilkan popup persetujuan.
+ */
+function isNetworkError(error: any): boolean {
+  if (!error) return false
+  const msg = String(error?.message || error).toLowerCase()
+  return (
+    msg.includes('failed to fetch') ||
+    msg.includes('networkerror') ||
+    msg.includes('network request failed') ||
+    msg.includes('fetch failed') ||
+    msg.includes('timeout') ||
+    msg.includes('abort') ||
+    error?.name === 'AbortError' ||
+    error?.name === 'TypeError'
+  )
 }
 
 const QUERY_METHODS = new Set(['select', 'insert', 'update', 'delete', 'upsert'])
@@ -60,6 +82,7 @@ function wrapBuilder(builder: any, table: string, method: 'from' | 'rpc'): any {
                   message: `${op} ${table}${rowsHint ? ` (${rowsHint})` : ''}: ${describeError(result.error)}`,
                   detail: filters.length ? `filters: ${filters.join(', ')}` : undefined,
                 })
+                if (isNetworkError(result.error)) notifyNetworkFailure()
               }
               return resolve?.(result)
             },
@@ -71,6 +94,7 @@ function wrapBuilder(builder: any, table: string, method: 'from' | 'rpc'): any {
                 message: `${op} ${table}: ${(e as Error)?.message || String(e)}`,
                 detail: (e as Error)?.stack,
               })
+              if (isNetworkError(e)) notifyNetworkFailure()
               return reject?.(e)
             }
           )
@@ -111,17 +135,25 @@ function wrapAuth(target: any): any {
         return (...args: any[]) => {
           const result = value.apply(t, args)
           if (result && typeof result.then === 'function') {
-            return result.then((r: any) => {
-              if (r && r.error) {
-                logEvent({
-                  level: 'error',
-                  source: 'auth',
-                  event: `auth_${String(prop)}`,
-                  message: describeError(r.error),
-                })
+            return result.then(
+              (r: any) => {
+                if (r && r.error) {
+                  logEvent({
+                    level: 'error',
+                    source: 'auth',
+                    event: `auth_${String(prop)}`,
+                    message: describeError(r.error),
+                  })
+                  if (isNetworkError(r.error)) notifyNetworkFailure()
+                }
+                return r
+              },
+              (e: any) => {
+                // Auth bisa melempar (bukan return { error }) saat jaringan putus.
+                if (isNetworkError(e)) notifyNetworkFailure()
+                throw e
               }
-              return r
-            })
+            )
           }
           return result
         }

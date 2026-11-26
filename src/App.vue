@@ -4,6 +4,8 @@
       <RouterView />
     </SidebarProvider>
     <ConfirmDialogHost />
+    <OfflineConsentDialog />
+    <OfflineBlockedScreen />
   </ThemeProvider>
 </template>
 
@@ -12,15 +14,26 @@ import { onMounted, watch } from 'vue'
 import ThemeProvider from './components/layout/ThemeProvider.vue'
 import SidebarProvider from './components/layout/SidebarProvider.vue'
 import ConfirmDialogHost from './components/common/ConfirmDialogHost.vue'
+import OfflineConsentDialog from './components/common/OfflineConsentDialog.vue'
+import OfflineBlockedScreen from './components/common/OfflineBlockedScreen.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
+import { startNetworkMonitor } from '@/lib/network'
+import { startConnectionWatcher } from '@/lib/connectionMode'
 
 const authStore = useAuthStore()
 const settingsStore = useStoreSettingsStore()
 
 onMounted(async () => {
-  // Inisialisasi auth (sudah dipanggil di main.ts, tapi idempotent)
+  // Pasang pemantau koneksi lebih dulu (idempotent).
+  startNetworkMonitor()
+
+  // Inisialisasi auth (sudah dipanggil di main.ts, tapi idempotent) SEBELUM
+  // watcher mode, supaya pengecekan kondisi awal tahu status login dan bisa
+  // menampilkan popup persetujuan offline saat cold start tanpa internet.
   await authStore.initialize()
+
+  startConnectionWatcher()
 
   // Jika sudah login, ambil settings
   if (authStore.isAuthenticated) {
