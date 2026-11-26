@@ -2,7 +2,7 @@
   <div class="space-y-4">
     <!-- Header -->
     <header
-      class="-mx-8 -mt-4 px-8 pb-[120px] pt-5 text-white"
+      class="-mx-8 -mt-4 px-8 pb-[150px] pt-5 text-white"
       style="background-image: radial-gradient(circle at 100% 0, transparent 60px, rgba(255,255,255,.09) 61px, rgba(255,255,255,.09) 90px, transparent 91px, transparent 120px, rgba(255,255,255,.06) 121px, rgba(255,255,255,.06) 150px, transparent 151px), radial-gradient(circle at 0 100%, rgba(255,255,255,.10) 80px, transparent 81px), radial-gradient(rgba(255,255,255,.18) 1.2px, transparent 1.6px), linear-gradient(135deg, #1e40af, #2563eb); background-size: 100% 100%, 100% 100%, 16px 16px, 100% 100%;"
     >
       <div class="flex items-center justify-between">

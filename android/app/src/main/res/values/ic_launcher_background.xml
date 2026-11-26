@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Diambil dari sudut src/assets/image.png -->
-    <color name="ic_launcher_background">#1E3A8B</color>
+    <!-- Latar putih, sama dengan latar gambar ikon (src/assets/image.png). -->
+    <color name="ic_launcher_background">#FFFFFF</color>
 </resources>

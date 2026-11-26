@@ -5,15 +5,8 @@
       <!-- Bagian atas: ilustrasi / branding -->
       <div class="flex flex-col items-center justify-center bg-brand-600 pb-10 pt-14 dark:bg-brand-700">
         <!-- Logo / ikon aplikasi -->
-        <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-white shadow-lg">
-          <svg class="h-11 w-11 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.8"
-              d="M9 7H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1-4H9m0 0a2 2 0 000 4h6a2 2 0 000-4M9 3h6"
-            />
-          </svg>
+        <div class="mb-4 flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-white shadow-lg">
+          <img src="/images/logo/app-icon.png" alt="Tagih Kios" class="h-full w-full object-cover" />
         </div>
         <h1 class="text-2xl font-bold tracking-tight text-white">Tagih Kios</h1>
         <p class="mt-1 text-sm text-brand-200">Kelola toko, stok & piutang dengan mudah</p>
