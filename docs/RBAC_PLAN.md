@@ -1,6 +1,6 @@
 # Rencana: Role-Based Access Control (RBAC) + Rebaseline Skema
 
-Status: **Fase 0–2 selesai & live; Fase 3A–3F selesai, terverifikasi, dan sudah diterapkan ke live** · Tanggal: 2026-11-26
+Status: **Fase 0–2 selesai & live; Fase 3A–3F selesai, terverifikasi, dan sudah diterapkan ke live; Fase 4 (cache) selesai di kode & lolos type-check/build — sisa Fase 5 (uji regresi + rilis)** · Tanggal: 2026-11-26
 
 ## 1. Keputusan yang sudah disepakati
 
@@ -13,6 +13,7 @@ Status: **Fase 0–2 selesai & live; Fase 3A–3F selesai, terverifikasi, dan su
 | Akun karyawan | Dibuat lewat **Edge Function** dengan `service_role` + **undangan token** (`store_invites`) — lihat §6.5 |
 | HPP & laba | **Disembunyikan** dari kasir (`hpp.read`); input HPP oleh `gudang` lewat RPC server-side — lihat §6.4 |
 | Masking HPP | View dimiliki `postgres` + filter tenant eksplisit + cabut hak kolom `price_buy`/`price_modal` — lihat §6.1 |
+| Mode offline | **Dibatalkan.** Layer SQLite/sync dihapus, diganti **cache baca** (L1 memori + opsional L2 IndexedDB) — lihat §7.3 |
 
 ## 2. Hasil audit database live
 
@@ -412,7 +413,7 @@ end if;
 | `authenticated_security_definer_function_executable` (60 fungsi) | Semua RPC memang dipanggil dari frontend. Pengamannya ada di dalam fungsi: guard `has_permission()` (28 fungsi write) + `current_store_id()` untuk isolasi tenant. |
 | `auth_leaked_password_protection` | Perlu keputusan pemilik produk (mengaktifkan cek HaveIBeenPwned menambah dependensi jaringan saat signup). **Belum diaktifkan.** |
 
-## 7. Dampak frontend & offline
+## 7. Dampak frontend & cache
 
 Angka di bawah hasil audit ulang 2026-11-26 (`grep` atas `src/`), bukan perkiraan.
 
@@ -427,7 +428,7 @@ Angka di bawah hasil audit ulang 2026-11-26 (`grep` atas `src/`), bukan perkiraa
 | K5 | `stock.ts` memetakan `r.user_id` dari `stock_movements` | `src/services/stock.ts` 11 tempat | Kolomnya kini `store_id`; ganti nama field interface ke `store_id` |
 | K6 | `itemPaymentService.ts` interface `user_id` | `transaction_item_payments` kini `store_id`; view `transaction_items_payment_summary` masih meng-*alias* `store_id as user_id` | Samakan ke `store_id` (dan ubah alias di view saat 3E) |
 | K7 | `types/priceMatrix.ts` 4 interface pakai `user_id` | tabel `price_tiers`, `customer_price_matrix`, `customer_groups` | Ganti ke `store_id` |
-| K8 | `utils/fixPaymentAllocation.ts` | 4 titik; sebagian kode SQL SQLite mentah (`WHERE ti.user_id = ?`) | Hanya bagian Supabase yang rusak; bagian SQLite ikut Fase 4 |
+| K8 | `utils/fixPaymentAllocation.ts` | 4 titik; sebagian kode SQL SQLite mentah (`WHERE ti.user_id = ?`) | Hanya bagian Supabase yang dipertahankan; cabang SQLite **dihapus** di Fase 4 |
 
 ### 7.2 Fitur baru
 
@@ -439,14 +440,34 @@ Angka di bawah hasil audit ulang 2026-11-26 (`grep` atas `src/`), bukan perkiraa
 | `composables/usePermission.ts` + `v-can` | Belum ada sama sekali (hanya 3 kemunculan kata "permission" di `src/`) |
 | `Settings/Users.vue` + Edge Function | Belum ada (`supabase/functions/` kosong). **Desain sudah diputuskan** (§6.5): undangan berbasis token `store_invites`, bukan penanda metadata. **Blocking go-live** karena `/signup` ditutup dan live punya 0 user |
 
-### 7.3 Offline (Fase 4)
+### 7.3 Cache (Fase 4) — menggantikan mode offline
 
-| Area | Dampak |
-|---|---|
-| `src/services/sqlite/*` + `sync/*` + `src/lib/sqlite.ts` | **724 kemunculan** `user_id`; total `src/` = 802 |
-| `currentUserId` → `currentStoreId` | 5 titik |
-| `src/services/sync/syncEngine.ts` | `.eq('user_id', userId)` → `.eq('store_id', storeId)` |
-| `signOut()` | Jangan wipe SQLite bila `store_id` sama (ganti user di device yang sama) |
+**Keputusan:** mode offline (SQLite mirror + `sync_queue`) **dibatalkan**, bukan diperbaiki. Alasannya:
+
+1. Layer SQLite menulis langsung ke tabel (`insert into transactions`), **tidak lewat RPC** — melanggar aturan proyek "transaksi HARUS lewat fungsi SQL" (`create_transaction`, `add_transaction_payment`, `void_transaction`, `create_return`). Tanpa RPC, validasi stok, mutasi stok, dan jurnal **tidak terbentuk** saat offline.
+2. Layer SQLite menduplikasi ±15k baris logika bisnis (jumlah method 2–3× versi online) dan tetap memfilter `user_id` yang sudah tidak ada, serta mengunduh `store_settings` yang sudah di-drop — jadi **sudah tidak berfungsi** terhadap skema baru.
+3. SQLite mengekspos `price_buy` (77 referensi) → **membatalkan masking HPP Fase 3E** di perangkat kasir.
+4. 95 view memanggil service di `onMounted` tanpa TTL/dedup → keluhan "ambil data yang sama berulang" yang sebenarnya ingin diselesaikan. Cache menyelesaikan ini **tanpa** menanggung risiko offline-write.
+
+**Konsekuensi yang diterima:** tanpa koneksi internet, aplikasi **tidak bisa membuat transaksi**. Yang tetap bekerja: halaman yang datanya sudah ter-cache tampil (read-only), dengan banner "offline — data mungkin tidak terbaru".
+
+#### Desain
+
+| Lapisan | Isi | Catatan |
+|---|---|---|
+| **L1 — memori** | `Map<key, { value, expiresAt }>` + in-flight dedup (`Map<key, Promise>`) | Key = `${storeId}:${domain}:${variant}`. TTL per domain (produk/kategori/pelanggan 5 menit; transaksi & laporan 60 detik; pengaturan 10 menit). 0 dependency, ~120 baris |
+| **Invalidasi** | Setiap method mutasi pada adapter service (`MUTATION_RE` di `src/services/index.ts` sudah mendeteksinya) memanggil `invalidate(domain)` | Cache tidak pernah basi setelah tulis: hapus domain terkait (termasuk domain turunan, mis. transaksi → `transactions`, `salesReport`, `stock`) |
+| **Ganti tenant** | Key memuat `storeId` dari `currentStoreId()`; `signOut()` + `applyMembership()` memanggil `clearAll()` | Cache user A tidak pernah terbaca user B di device yang sama |
+| **L2 — IndexedDB (opsional)** | Snapshot L1 per `${storeId}:${domain}` untuk bertahan setelah app ditutup | **Wajib** men-strip `price_buy`/`price_modal` sebelum menulis bila `!can('hpp.read')`. Bila ragu, **jangan** implementasikan L2 — L1 saja sudah menyelesaikan keluhan utama |
+| **Realtime (opsional)** | Subscribe `postgres_changes` → `invalidate(domain)` | Hanya untuk data yang sering berubah dari perangkat lain (stok, transaksi). Tidak wajib |
+
+#### Yang dihapus
+
+`src/services/sqlite/**` (20 file), `src/services/sync/**`, `src/lib/sqlite.ts`, `src/lib/connectionMode.ts`, `src/lib/cacheRefresh.ts`, `src/db/**`, `src/stores/sync.ts`, `src/utils/syncTester.ts`, `src/utils/sqliteMigration.ts`, `src/utils/fixPaymentDateMigration.ts`, `src/components/dev/Migration*.vue`, `src/components/common/OfflineConsentDialog.vue`, `src/components/common/SyncProgressModal.vue`, `src/views/Sync/**`, `src/views/Settings/SyncDebugger.vue`, `src/views/DevTools.vue`, `src/composables/useStartupLog.ts`, plus UI sync/backup di `StoreSettings.vue`, route `/sync/download`, `/settings/sync-debugger`, `/dev-tools`, dan inisialisasi SQLite di `main.ts`.
+
+#### Yang dipertahankan
+
+`src/lib/network.ts` (monitor koneksi untuk banner), `src/services/membership.ts` (cache membership + permission di localStorage — pola TTL yang sama), `src/stores/auth.ts` (disederhanakan), `ConnectionStatusBanner.vue` + `OfflineBlockedScreen.vue` (ditulis ulang tanpa antrean sync).
 
 ### 7.4 Pemetaan kolom `store_settings` → `stores` (untuk K1)
 
@@ -585,11 +606,15 @@ Prasyarat: Fase 0–2 selesai; live sudah greenfield dan kosong (§2.4). Urutan 
 
 **Estimasi (aktual):** seluruh 3A–3F selesai dalam satu sesi kerja. 3B (kerusakan skema) dan 3E (masking HPP) tetap yang paling berisiko; 3F memunculkan **tiga** bug nyata yang tidak tertangkap unit test (§6.5).
 
-### Fase 4 — Offline
-- [ ] Rename **724** referensi `user_id` di layer SQLite/sync/`lib/sqlite.ts` (total `src/` = 802)
-- [ ] `currentUserId` → `currentStoreId` (5 titik)
-- [ ] Bump schema version SQLite + migrasi lokal
-- [ ] Perbaiki `signOut()` (jangan wipe bila store sama)
+### Fase 4 — Cache (menggantikan offline) — SELESAI (2026-11-26)
+- [x] Hapus layer offline: `src/services/sqlite/**`, `src/services/sync/**`, `src/lib/sqlite.ts`, `src/lib/connectionMode.ts`, `src/lib/cacheRefresh.ts`, `src/db/**`, `src/stores/sync.ts`, `src/utils/{syncTester,sqliteMigration,fixPaymentDateMigration}.ts`, komponen/route dev & sync (daftar lengkap §7.3)
+- [x] Bersihkan referensi yang tersisa: `main.ts`, `App.vue`, `stores/auth.ts` (`signOut` disederhanakan), `stores/stock.ts` (`recordStockMovement` **dihapus** — tidak ada pemanggil eksternal, mutasi stok dicatat trigger server), `lib/eventLog.ts`, `EventLog.vue`, `StoreSettings.vue`, `ConnectionStatusBanner.vue`, `OfflineBlockedScreen.vue`, `Signin.vue`, `router/index.ts`, `utils/fixPaymentAllocation.ts`, type-import dari `services/sqlite/*`
+- [x] Buat `src/lib/queryCache.ts`: L1 TTL + in-flight dedup + `invalidateDomain(domain)` (ikut menghapus domain turunan via `DEPENDENTS`) + `clearAll()`, key `${storeId}:${domain}:${variant}`
+- [x] Wire di store `products`, `categories`, `customers`, `transactions` (+ `storeSettings`, `stock`, `returns`, `notifications`, `salesReport`, `finance`, `hr`, `purchasing` — 12 store total)
+- [x] Panggil `invalidateDomain()` dari 19 adapter mutasi di `src/services/index.ts` (`MUTATION_RE`); `clearAll()` di `signOut()` dan saat `applyMembership()` berganti toko
+- [ ] (Opsional, **ditunda**) L2 IndexedDB dengan strip `price_buy`/`price_modal` bila tanpa `hpp.read` — sesuai rekomendasi §7.3, L1 sudah menyelesaikan keluhan utama; L2 hanya layak bila nanti ada kebutuhan baca setelah app ditutup
+
+**Hasil verifikasi Fase 4:** `npm run type-check` EXIT 0; `npm run build` EXIT 0 (33,5 s, hanya warning chunk >500 kB yang sudah ada). ESLint file baru (queryCache/services index/eventLog/main/App) 0 temuan; sisa temuan hanya `no-explicit-any` & import tak terpakai yang sudah ada di HEAD. 43 file offline dihapus, `@capacitor-community/sqlite` di-uninstall. **Belum ada uji manual browser** — itu bagian Fase 5.
 
 ### Fase 5 — Verifikasi & rilis
 - [ ] Regresi penuh (stack lokal + browser)
@@ -598,7 +623,7 @@ Prasyarat: Fase 0–2 selesai; live sudah greenfield dan kosong (§2.4). Urutan 
 - [ ] Deploy web + build APK (`npm run build && npx cap sync && cd android && ./gradlew assembleRelease`)
 - [ ] ~~Merge ke produksi~~ → sudah live (§2.4); Fase 5 = rilis frontend yang cocok dengan skema baru
 
-**Estimasi sisa: Fase 3 ±6,5 hari + Fase 4 ±2 hari + Fase 5 ±1 hari ≈ 9–10 hari kerja.** (Fase 0–2 sudah selesai; estimasi total awal ±7–8 hari tidak lagi relevan karena pekerjaan frontend ternyata lebih luas — 8 jenis kerusakan skema + masking HPP + kelola user.)
+**Estimasi (aktual):** Fase 3 ±6,5 hari + Fase 4 selesai dalam satu sesi (hapus offline + L1 + wiring; L2 opsional ditunda) + Fase 5 ±1 hari. (Fase 0–2 sudah selesai; estimasi total awal ±7–8 hari tidak lagi relevan karena pekerjaan frontend ternyata lebih luas — 8 jenis kerusakan skema + masking HPP + kelola user.)
 
 ## 9. Checklist pengujian
 
@@ -612,9 +637,11 @@ Prasyarat: Fase 0–2 selesai; live sudah greenfield dan kosong (§2.4). Urutan 
 - [ ] **Audit:** `created_by` terisi kasir yang input
 - [ ] **Gudang input produk:** gudang buat produk stok 10 @ HPP 3000 → jurnal Dr 1-1200 / Cr 3-3000 sebesar 30.000 **terbentuk**; gudang tetap tidak bisa melihat HPP produk lain (§6.4)
 - [x] **Undangan karyawan:** undang via `Settings/Users` → karyawan jadi anggota toko dengan role yang dipilih, **tidak** punya toko sendiri; token dipakai 2x ditolak; `role` dari metadata klien diabaikan (§6.5) — diuji di live via Edge Function + RPC
-- [ ] **Offline:** kasir buat transaksi offline → sinkron → muncul di laporan owner
+- [ ] **Cache:** buka Produk → Pelanggan → Produk lagi dalam <5 menit → **tidak ada request Supabase baru** (cek tab Network)
+- [ ] **Cache basi:** buat transaksi → daftar transaksi & laporan penjualan langsung menampilkan data baru (invalidasi jalan)
+- [ ] **Isolasi cache:** login kasir lalu owner di device yang sama → owner tidak pernah melihat data kasir dari cache; `localStorage`/IndexedDB tidak menyimpan `price_buy` untuk role tanpa `hpp.read`
+- [ ] **Offline baca:** matikan jaringan → halaman yang sudah pernah dibuka tetap tampil + banner "offline"; tombol transaksi baru tidak bisa dipakai (bukan error mentah)
 - [x] **Cabut akses:** owner nonaktifkan kasir → akses langsung mati (uji grup 12 & 14)
-- [ ] **Ganti user di device:** login kasir lalu owner di HP sama → tidak unduh ulang penuh
 
 ## 10. Rollback
 
@@ -634,7 +661,9 @@ Untuk perubahan berikutnya (Fase 3 ke atas):
 | ~~Baseline tidak lengkap (ada objek terlewat)~~ | **Sudah terverifikasi**: 50 tabel / 2 view / 73 fungsi / 34 trigger / 98 policy di live cocok dengan harness |
 | ~~Policy lama yang benar ikut hilang saat rewrite~~ | **Sudah terdokumentasi**: 183 → 98 policy, mapping di Fase 1 |
 | ~~Data test hilang~~ | **Sudah terjadi** (keputusan: greenfield, §2.4) |
-| Role basi saat offline | Cache permission terakhir; tampilkan info saat offline |
+| Role basi saat offline | Cache membership + permission di localStorage (sudah ada di `membership.ts`, TTL 24 jam). RLS tetap penjaga utama: bila role sudah dicabut, semua query tetap ditolak walau UI masih menampilkan menu. |
+| **Cache persisten membocorkan HPP** (L2 IndexedDB menyimpan `price_buy` untuk perangkat kasir) | Bila L2 diimplementasikan: strip `price_buy`/`price_modal` **sebelum** menulis, berdasarkan `can('hpp.read')`; key L2 memuat `storeId` + `role`. Default: **jangan** implementasikan L2 bila belum ada kebutuhan nyata. |
+| **Stok basi dari cache** → kasir menjual barang yang sudah habis (stok dikurangi di perangkat lain) | Validasi stok tetap dilakukan server-side di `create_transaction` → transaksi ditolak dengan error yang jelas, bukan oversell. TTL domain stok/transaksi dibuat pendek (60 detik). |
 | **View masking lupa filter tenant** → seluruh toko bocor (desain C memindahkan isolasi dari RLS ke `where` di view) | Aturan tetap: setiap view masking wajib `where store_id = current_store_id()`; tambahkan uji di `test_rbac.sh` yang memastikan user toko lain melihat 0 baris |
 | **`select('*')` patah setelah grant kolom dicabut** (3E) | Ganti ke daftar kolom eksplisit **sebelum** grant dicabut; uji semua halaman produk |
 | **Trigger `handle_new_user` membuat toko untuk setiap user** → karyawan yang diundang malah jadi pemilik toko sendiri | **Sudah diputuskan** (§6.5): `store_invites` + token rahasia; role diambil dari DB, bukan metadata klien |

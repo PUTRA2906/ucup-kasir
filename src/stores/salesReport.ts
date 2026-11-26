@@ -11,6 +11,7 @@ import type {
 } from '@/services/salesReport'
 import type { Transaction } from '@/types/database'
 import { localDateStr, localTodayStr, localDateOffsetStr } from '@/utils/date'
+import { cachedQuery } from '@/lib/queryCache'
 
 export const useSalesReportStore = defineStore('salesReport', () => {
   const loading = ref(false)
@@ -157,11 +158,18 @@ export const useSalesReportStore = defineStore('salesReport', () => {
     loading.value = true
     error.value = null
     try {
-      const data = await salesReportService.getSalesReport(
-        startDate.value,
-        endDate.value,
-        selectedCategoryId.value,
-        paymentStatusFilter.value
+      // Laporan cukup mahal; cache 60 detik agar pindah halaman bolak-balik
+      // tidak menghitung ulang. Mutasi transaksi/retur membuang cache ini.
+      const data = await cachedQuery(
+        'salesReport',
+        `report:${startDate.value}:${endDate.value}:${selectedCategoryId.value ?? ''}:${paymentStatusFilter.value}`,
+        () =>
+          salesReportService.getSalesReport(
+            startDate.value,
+            endDate.value,
+            selectedCategoryId.value,
+            paymentStatusFilter.value,
+          ),
       )
       summary.value = data.summary
       dailySales.value = data.dailySales

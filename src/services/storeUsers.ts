@@ -11,6 +11,13 @@ import { supabase } from '@/lib/supabase'
 // Itu tugas Edge Function `admin-create-user`, yang memverifikasi ulang
 // permission pemanggil di server.
 //
+// Kenapa masih ada token undangan: trigger `handle_new_user` (0005) memakai
+// token sebagai SATU-SATUNYA sumber role, karena metadata klien tidak boleh
+// dipercaya. `createMemberAccount()` membuat token itu di belakang layar dan
+// langsung memakainya — admin cukup mengisi nama, email, kata sandi, dan role.
+// Token tidak pernah ditampilkan ke UI dan dihapus lagi bila pembuatan akun
+// gagal, supaya tidak ada undangan menggantung.
+//
 // Service ini sengaja TIDAK didaftarkan di services/index.ts (tidak ada
 // padanan SQLite): kelola akun hanya masuk akal saat online.
 // ============================================================
@@ -105,6 +112,8 @@ export const storeUsersService = {
   /**
    * Buat akun login untuk pemegang undangan. Role & keanggotaan ditentukan
    * trigger `handle_new_user` dari baris undangan — bukan dari parameter ini.
+   *
+   * Tidak dipakai UI secara langsung; gunakan `createMemberAccount()`.
    */
   async createAccount(input: {
     token: string
@@ -128,5 +137,40 @@ export const storeUsersService = {
       throw new Error((data && data.error) || 'Gagal membuat akun')
     }
     return data as CreatedUser
+  },
+
+  /**
+   * Alur satu langkah untuk UI: buat akun karyawan tanpa pernah menampilkan
+   * token undangan.
+   *
+   *   1. `create_invite(role, email)` → token rahasia (server menentukan role)
+   *   2. `admin-create-user` → akun dibuat, trigger memakai token untuk role
+   *   3. bila langkah 2 gagal → token di-revoke supaya tidak menggantung
+   */
+  async createMemberAccount(input: {
+    role: string
+    email: string
+    password: string
+    fullName?: string
+  }): Promise<CreatedUser> {
+    const email = input.email.trim()
+    const invite = await this.createInvite(input.role, email)
+
+    try {
+      return await this.createAccount({
+        token: invite.token,
+        email,
+        password: input.password,
+        fullName: input.fullName,
+      })
+    } catch (err) {
+      // Bersihkan undangan agar daftar undangan tidak penuh sisa percobaan.
+      try {
+        await this.revokeInvite(invite.token)
+      } catch {
+        // Abaikan: token tetap kedaluwarsa sendiri (default 7 hari).
+      }
+      throw err
+    }
   },
 }

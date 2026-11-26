@@ -12,12 +12,10 @@ import App from './App.vue'
 import router from './router'
 import VueApexCharts from 'vue3-apexcharts'
 import { App as CapacitorApp } from '@capacitor/app'
-import { initSQLite } from '@/lib/sqlite'
 import { isNativeApp } from '@/lib/platform'
-import { installEventLog, logEvent, flushToSQLite } from '@/lib/eventLog'
-import { startNetworkMonitor, isOnlineNow } from '@/lib/network'
+import { installEventLog } from '@/lib/eventLog'
+import { startNetworkMonitor } from '@/lib/network'
 import { useNavigationStack } from '@/composables/useNavigationStack'
-import { pushStartupLog } from '@/composables/useStartupLog'
 import { vCan } from '@/directives/can'
 
 // Pasang perekam event log SESEDINI MUNGKIN — error WebView/crash yang
@@ -37,74 +35,6 @@ app.use(VueApexCharts)
 app.directive('can', vCan)
 
 app.mount('#app')
-
-// ============================================================
-// Startup
-// - Android (native): init SQLite + upload perubahan ke Supabase.
-// - Web: langsung pakai Supabase — SQLite tidak dipakai.
-// ============================================================
-async function startup() {
-  if (!isNativeApp()) {
-    // Web (mobile browser & desktop): tidak perlu inisialisasi SQLite,
-    // semua data dibaca langsung dari Supabase.
-    return
-  }
-
-  try {
-    // 1. Inisialisasi database SQLite lokal
-    pushStartupLog('Menginisialisasi database lokal...')
-    await initSQLite()
-    logEvent({ level: 'info', source: 'sqlite', event: 'init_ok', message: 'SQLite lokal siap' })
-    pushStartupLog('Database lokal siap ✓')
-
-    // Pindahkan entry yang tertahan di localStorage ke tabel SQLite.
-    pushStartupLog('Memindahkan log ke database...')
-    await flushToSQLite()
-    pushStartupLog('Log berhasil disimpan ✓')
-
-    // 2. Sinkronisasi startup: kirim antrean offline, lalu segarkan cache.
-    //    Jalankan setelah app siap (nextTick) supaya tidak blokir render.
-    setTimeout(async () => {
-      try {
-        pushStartupLog('Memuat sesi pengguna...')
-        const { useAuthStore } = await import('@/stores/auth')
-        const { useSyncStore } = await import('@/stores/sync')
-
-        const authStore = useAuthStore()
-        await authStore.initialize()
-
-        // Hanya sinkron jika sudah login & online
-        if (authStore.isAuthenticated) {
-          pushStartupLog('Pengguna terautentikasi ✓')
-          const syncStore = useSyncStore()
-          await syncStore.loadInfo()
-          if (isOnlineNow()) {
-            pushStartupLog('Menyinkronkan data dengan server...')
-            const result = await syncStore.handleReconnect()
-            const downloaded = (result as any)?.downloaded ?? 0
-            if (downloaded > 0) {
-              pushStartupLog(`Cache lokal diperbarui (${downloaded} data) ✓`)
-            } else {
-              pushStartupLog('Cache lokal sudah terbaru ✓')
-            }
-          } else {
-            pushStartupLog('Perangkat offline — memakai data lokal', 'warn')
-          }
-        } else {
-          pushStartupLog('Belum login, melewati sinkronisasi')
-        }
-      } catch (e) {
-        pushStartupLog(`Sinkronisasi startup gagal: ${(e as Error)?.message || String(e)}`, 'error')
-        console.error('Startup sync gagal (non-critical):', e)
-      }
-    }, 1500)
-  } catch (e) {
-    pushStartupLog(`Gagal inisialisasi database: ${(e as Error)?.message || String(e)}`, 'error')
-    console.error('Gagal inisialisasi SQLite:', e)
-  }
-}
-
-startup()
 
 // Handle Android back button dengan navigation stack
 const { handleBackButton } = useNavigationStack()

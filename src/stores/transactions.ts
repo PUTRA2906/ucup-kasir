@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { transactionsServiceAdapter } from '@/services'
+import { cachedQuery, variantOf } from '@/lib/queryCache'
 import type { Transaction, TransactionInput, TransactionStatus } from '@/types/database'
 
 export const useTransactionsStore = defineStore('transactions', () => {
@@ -19,7 +20,11 @@ export const useTransactionsStore = defineStore('transactions', () => {
     loading.value = true
     error.value = null
     try {
-      transactions.value = await transactionsServiceAdapter.getAll()
+      transactions.value = await cachedQuery(
+        'transactions',
+        'all',
+        () => transactionsServiceAdapter.getAll(),
+      )
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -48,7 +53,11 @@ export const useTransactionsStore = defineStore('transactions', () => {
     paginationLoading.value = true
     error.value = null
     try {
-      const result = await transactionsServiceAdapter.getPaginated(page, perPage, filters)
+      const result = await cachedQuery(
+        'transactions',
+        `page:${variantOf([page, perPage, filters])}`,
+        () => transactionsServiceAdapter.getPaginated(page, perPage, filters),
+      )
       paginatedTransactions.value = result.data
       paginationTotal.value = result.count
       paginationPage.value = page

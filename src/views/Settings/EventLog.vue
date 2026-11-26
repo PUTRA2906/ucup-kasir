@@ -43,8 +43,8 @@
 
       <!-- Platform info -->
       <div class="rounded-xl bg-gray-50 px-4 py-2.5 text-[11px] text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
-        Platform: <strong class="text-gray-700 dark:text-gray-200">{{ isNative ? 'Android (SQLite lokal)' : 'Web (Supabase langsung)' }}</strong>
-        <span v-if="sqliteNote" class="mt-0.5 block">{{ sqliteNote }}</span>
+        Platform: <strong class="text-gray-700 dark:text-gray-200">{{ isNative ? 'Android' : 'Web' }}</strong>
+        — semua data dibaca langsung dari Supabase.
       </div>
 
       <!-- Toolbar filter -->
@@ -161,7 +161,6 @@ import { useConfirm } from '@/composables/useConfirm'
 import {
   getLocalEntries,
   clearLocalEntries,
-  flushToSQLite,
   type EventLogEntry,
   type EventSource,
 } from '@/lib/eventLog'
@@ -172,7 +171,6 @@ const { confirm } = useConfirm()
 
 const isNative = isNativeApp()
 const entries = ref<EventLogEntry[]>([])
-const sqliteNote = ref('')
 
 const sourceFilter = ref<string>('')
 const levelFilter = ref<string>('')
@@ -180,9 +178,7 @@ const search = ref('')
 
 const sourceOptions = [
   { label: 'Semua Sumber', value: '' },
-  { label: 'SQLite (lokal)', value: 'sqlite' },
   { label: 'Supabase (server)', value: 'supabase' },
-  { label: 'Sinkronisasi', value: 'sync' },
   { label: 'Auth / Login', value: 'auth' },
   { label: 'Jaringan', value: 'network' },
   { label: 'Aplikasi', value: 'app' },
@@ -208,10 +204,10 @@ const filteredEntries = computed(() => {
 const summaryCards = computed(() => {
   const count = (s: EventSource) => entries.value.filter((e) => e.source === s && e.level === 'error').length
   return [
-    { source: 'sqlite', label: 'SQLite', count: count('sqlite'), barClass: 'bg-sky-500' },
     { source: 'supabase', label: 'Supabase', count: count('supabase'), barClass: 'bg-emerald-500' },
-    { source: 'sync', label: 'Sync', count: count('sync'), barClass: 'bg-violet-500' },
-    { source: 'app', label: 'Lainnya', count: count('auth') + count('network') + count('app'), barClass: 'bg-amber-500' },
+    { source: 'network', label: 'Jaringan', count: count('network'), barClass: 'bg-blue-500' },
+    { source: 'auth', label: 'Auth', count: count('auth'), barClass: 'bg-violet-500' },
+    { source: 'app', label: 'Aplikasi', count: count('app'), barClass: 'bg-amber-500' },
   ]
 })
 
@@ -229,9 +225,7 @@ function levelBorder(level: string): string {
 
 function sourceBadge(source: string): string {
   const map: Record<string, string> = {
-    sqlite: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400',
     supabase: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400',
-    sync: 'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400',
     auth: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400',
     network: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400',
     app: 'bg-gray-100 text-gray-600 dark:bg-gray-700/40 dark:text-gray-300',
@@ -253,28 +247,9 @@ function formatTime(ts: number): string {
   }
 }
 
-/**
- * Ambil seluruh log: gabungkan buffer localStorage + tabel SQLite (native).
- * Sumber SQLite dipakai bila tersedia & lebih lengkap (baru saja di-flush).
- */
-async function load() {
+/** Ambil seluruh log dari buffer localStorage. */
+function load() {
   entries.value = getLocalEntries()
-
-  if (isNative) {
-    try {
-      // Paksa flush localStorage → SQLite agar data terbaru ikut terbaca,
-      // lalu ambil dari tabel SQLite (paling lengkap).
-      await flushToSQLite()
-      const { getEventLogFromSqlite } = await import('@/lib/sqlite')
-      const rows = await getEventLogFromSqlite(1000)
-      if (rows.length >= entries.value.length) {
-        entries.value = rows
-      }
-      sqliteNote.value = `${rows.length} baris tersimpan permanen di SQLite.`
-    } catch (e: any) {
-      sqliteNote.value = `SQLite belum terbaca: ${e?.message || e}`
-    }
-  }
 }
 
 async function copyAll() {
@@ -300,16 +275,8 @@ async function confirmClear() {
   if (ok) clearAll()
 }
 
-async function clearAll() {
+function clearAll() {
   clearLocalEntries()
-  if (isNative) {
-    try {
-      const { clearEventLogTable } = await import('@/lib/sqlite')
-      await clearEventLogTable()
-    } catch {
-      // non-critical
-    }
-  }
   entries.value = []
   toast.success('Log dihapus', 'Semua catatan event log telah dibersihkan')
 }

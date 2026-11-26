@@ -144,7 +144,6 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import FullScreenLayout from '@/components/layout/FullScreenLayout.vue'
 import { useAuthStore } from '@/stores/auth'
-import { isNativeApp } from '@/lib/platform'
 
 const router = useRouter()
 const route = useRoute()
@@ -186,14 +185,6 @@ const handleSubmit = async () => {
   }
 
   const redirect = route.query.redirect as string | undefined
-
-  if (isNativeApp()) {
-    // Android: download data dari Supabase ke SQLite dulu
-    const encoded = redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''
-    router.push(`/sync/download${encoded}`)
-  } else {
-    // Web: langsung ke app, data dibaca dari Supabase realtime
-    router.push(redirect || '/')
-  }
+  router.push(redirect || '/')
 }
 </script>

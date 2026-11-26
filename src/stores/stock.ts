@@ -7,9 +7,7 @@ import {
   type StockOpname,
   type StockAlert,
 } from '@/services'
-import { getActiveBackend } from '@/lib/connectionMode'
-import { run } from '@/lib/sqlite'
-import { getCurrentUserId, uuid, nowIso, addToSyncQueue } from '@/services/sqlite/db'
+import { cachedQuery, variantOf } from '@/lib/queryCache'
 
 export const useStockStore = defineStore('stock', () => {
   const movements = ref<StockMovement[]>([])
@@ -28,7 +26,11 @@ export const useStockStore = defineStore('stock', () => {
     loading.value = true
     error.value = null
     try {
-      movements.value = await stockServiceAdapter.fetchMovements(filters)
+      movements.value = await cachedQuery(
+        'stock',
+        `movements:${variantOf([filters])}`,
+        () => stockServiceAdapter.fetchMovements(filters),
+      )
     } catch (e: any) {
       error.value = e.message
       console.error('Error fetching stock movements:', e)
@@ -42,7 +44,11 @@ export const useStockStore = defineStore('stock', () => {
     loading.value = true
     error.value = null
     try {
-      adjustments.value = await stockServiceAdapter.fetchAdjustments(productId)
+      adjustments.value = await cachedQuery(
+        'stock',
+        `adjustments:${variantOf([productId])}`,
+        () => stockServiceAdapter.fetchAdjustments(productId),
+      )
     } catch (e: any) {
       error.value = e.message
       console.error('Error fetching stock adjustments:', e)
@@ -56,7 +62,11 @@ export const useStockStore = defineStore('stock', () => {
     loading.value = true
     error.value = null
     try {
-      opnames.value = await stockServiceAdapter.fetchOpnames()
+      opnames.value = await cachedQuery(
+        'stock',
+        'opnames',
+        () => stockServiceAdapter.fetchOpnames(),
+      )
     } catch (e: any) {
       error.value = e.message
       console.error('Error fetching stock opnames:', e)
@@ -70,7 +80,11 @@ export const useStockStore = defineStore('stock', () => {
     loading.value = true
     error.value = null
     try {
-      alerts.value = await stockServiceAdapter.fetchStockAlerts()
+      alerts.value = await cachedQuery(
+        'stock',
+        'alerts',
+        () => stockServiceAdapter.fetchStockAlerts(),
+      )
     } catch (e: any) {
       error.value = e.message
       console.error('Error fetching stock alerts:', e)
@@ -168,65 +182,6 @@ export const useStockStore = defineStore('stock', () => {
     }
   }
 
-  const recordStockMovement = async (movement: {
-    product_id: string
-    movement_type: 'in' | 'out' | 'return'
-    quantity: number
-    quantity_before: number
-    quantity_after: number
-    reference_type?: string
-    reference_id?: string
-    notes?: string
-  }) => {
-    try {
-      // Saat backend online (Supabase, web maupun Android): movement stok
-      // otomatis dicatat oleh trigger trigger_record_stock_movement saat
-      // kolom stock berubah, jadi tidak perlu insert manual di sini.
-      if (getActiveBackend() !== 'local') {
-        return
-      }
-
-      // Mode offline (Android, SQLite): insert langsung + queue sync
-      const userId = getCurrentUserId()
-      const id = uuid()
-      const now = nowIso()
-      await run(
-        `INSERT INTO stock_movements (id, user_id, product_id, movement_type, quantity,
-                                      quantity_before, quantity_after, reference_type, reference_id,
-                                      notes, created_at, created_by, sync_status, updated_at_local)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
-        [id, userId, movement.product_id, movement.movement_type, movement.quantity,
-         movement.quantity_before, movement.quantity_after, movement.reference_type ?? null,
-         movement.reference_id ?? null, movement.notes ?? null, now, userId, now]
-      )
-      await addToSyncQueue('INSERT', 'stock_movements', id, {
-        id,
-        product_id: movement.product_id,
-        movement_type: movement.movement_type,
-        quantity: movement.quantity,
-        quantity_before: movement.quantity_before,
-        quantity_after: movement.quantity_after,
-        reference_type: movement.reference_type,
-        reference_id: movement.reference_id,
-        notes: movement.notes,
-        created_at: now,
-        created_by: userId,
-      })
-
-      // Update local state
-      movements.value.unshift({
-        ...movement,
-        id,
-        product_id: movement.product_id,
-        created_at: now,
-        created_by: userId,
-      })
-    } catch (e: any) {
-      console.error('Error recording stock movement:', e)
-      throw e
-    }
-  }
-
   return {
     movements,
     adjustments,
@@ -241,7 +196,6 @@ export const useStockStore = defineStore('stock', () => {
     createAdjustment,
     createOpname,
     setMinimumStock,
-    importStock,
-    recordStockMovement
+    importStock
   }
 })

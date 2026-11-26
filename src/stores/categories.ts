@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { categoriesServiceAdapter } from '@/services'
+import { cachedQuery } from '@/lib/queryCache'
 import type { Category, CategoryInsert, CategoryUpdate } from '@/types/database'
 
 export const useCategoriesStore = defineStore('categories', () => {
@@ -12,7 +13,11 @@ export const useCategoriesStore = defineStore('categories', () => {
     loading.value = true
     error.value = null
     try {
-      categories.value = await categoriesServiceAdapter.getAll()
+      categories.value = await cachedQuery(
+        'categories',
+        'all',
+        () => categoriesServiceAdapter.getAll(),
+      )
     } catch (e: any) {
       error.value = e.message
       throw e

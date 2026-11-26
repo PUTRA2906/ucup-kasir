@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { returnsServiceAdapter } from '@/services'
+import { cachedQuery } from '@/lib/queryCache'
 import type { TransactionReturn, ReturnItemInput } from '@/types/database'
 
 export const useReturnsStore = defineStore('returns', () => {
@@ -13,7 +14,11 @@ export const useReturnsStore = defineStore('returns', () => {
     loading.value = true
     error.value = null
     try {
-      returns.value = await returnsServiceAdapter.getByTransaction(transactionId)
+      returns.value = await cachedQuery(
+        'returns',
+        `byTransaction:${transactionId}`,
+        () => returnsServiceAdapter.getByTransaction(transactionId),
+      )
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -24,7 +29,11 @@ export const useReturnsStore = defineStore('returns', () => {
 
   async function fetchLinkedReturns(transactionId: string) {
     try {
-      linkedReturns.value = await returnsServiceAdapter.getLinkedReturns(transactionId)
+      linkedReturns.value = await cachedQuery(
+        'returns',
+        `linked:${transactionId}`,
+        () => returnsServiceAdapter.getLinkedReturns(transactionId),
+      )
     } catch (e: any) {
       // non-critical, silently fail
       linkedReturns.value = []

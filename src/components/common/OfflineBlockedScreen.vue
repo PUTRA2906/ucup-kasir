@@ -34,13 +34,8 @@
 
           <h1 class="text-xl font-bold text-gray-900 dark:text-white">Tidak Ada Internet</h1>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            <template v-if="native">
-              Sambungkan perangkat ke internet lalu coba lagi, atau masuk ke Mode Offline
-              untuk tetap bekerja dengan data lokal.
-            </template>
-            <template v-else>
-              Aplikasi memerlukan koneksi internet. Sambungkan perangkat ke internet lalu coba lagi.
-            </template>
+            Aplikasi memerlukan koneksi internet untuk menyimpan perubahan. Sambungkan perangkat
+            ke internet lalu coba lagi.
           </p>
 
           <!-- Progress saat mencoba -->
@@ -65,13 +60,15 @@
               Coba Lagi
             </button>
             <button
-              v-if="native"
-              @click="handleOffline"
+              @click="browseCached"
               class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-white/[0.03]"
             >
-              Masuk Mode Offline
+              Lihat Data Tersimpan
             </button>
           </div>
+          <p class="mt-3 text-[11px] text-gray-400 dark:text-gray-600">
+            Data tersimpan hanya bisa dibaca; transaksi baru tidak dapat dibuat.
+          </p>
 
           <p v-if="lastChecked" class="mt-6 text-xs text-gray-400 dark:text-gray-600">
             Terakhir diperiksa: {{ lastChecked }}
@@ -83,43 +80,40 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { isNativeApp } from '@/lib/platform'
-import { isOnlineRef } from '@/lib/network'
-import {
-  isOfflineBlocked,
-  acceptOffline,
-  retryConnection,
-} from '@/lib/connectionMode'
+import { computed, ref, watch } from 'vue'
+import { isOnlineRef, probeConnectivity } from '@/lib/network'
 
-const native = isNativeApp()
 const retrying = ref(false)
 const lastChecked = ref<string | null>(null)
 
-// Tampil saat pengguna menolak offline (native) ATAU saat web offline.
-// Di native yang sudah menerima mode offline, layar ini TIDAK tampil.
-const visible = computed(() => {
-  if (isOfflineBlocked.value) return true
-  // Web: tidak ada mode offline → blokir selama offline. Dicek langsung dari
-  // status konektivitas (bukan isOfflineMode yang khusus native) agar layar
-  // tetap tampil walau watcher belum sempat berjalan.
-  if (!native && !isOnlineRef.value) return true
-  return false
+// Pengguna boleh menembus layar ini untuk melihat data yang sudah ter-cache
+// (read-only). Nilai kembali false begitu koneksi pulih, supaya layar tidak
+// menutupi UI lagi pada pemutusan berikutnya.
+const dismissed = ref(false)
+
+// Mode offline sudah dihapus: tanpa internet aplikasi tidak bisa menyimpan
+// perubahan (transaksi wajib lewat RPC Supabase). Layar ini menutupi UI
+// selama offline, kecuali pengguna memilih melihat data tersimpan.
+const visible = computed(() => !isOnlineRef.value && !dismissed.value)
+
+function browseCached() {
+  dismissed.value = true
+}
+
+// Koneksi pulih → reset agar pemutusan berikutnya menampilkan layar lagi.
+watch(isOnlineRef, (online) => {
+  if (online) dismissed.value = false
 })
 
 async function handleRetry() {
   if (retrying.value) return
   retrying.value = true
   try {
-    await retryConnection()
+    await probeConnectivity()
     const now = new Date()
     lastChecked.value = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
   } finally {
     retrying.value = false
   }
-}
-
-function handleOffline() {
-  acceptOffline()
 }
 </script>

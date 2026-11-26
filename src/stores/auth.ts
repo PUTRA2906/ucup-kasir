@@ -2,11 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
 import type { Session, User } from '@supabase/supabase-js'
-import { setCurrentUserId } from '@/services/sqlite/db'
-import { isNativeApp } from '@/lib/platform'
-import { isOnlineNow } from '@/lib/network'
-import { getSyncQueue } from '@/lib/sqlite'
-import { useConfirm } from '@/composables/useConfirm'
 import {
   EMPTY_MEMBERSHIP,
   clearCachedMembership,
@@ -17,6 +12,7 @@ import {
 } from '@/services/membership'
 import type { Permission, Role } from '@/constants/permissions'
 import { setCurrentStoreId } from '@/lib/currentStore'
+import { clearAll as clearQueryCache } from '@/lib/queryCache'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
@@ -35,12 +31,16 @@ export const useAuthStore = defineStore('auth', () => {
   const membershipLoaded = ref(false)
 
   function applyMembership(m: Membership): void {
+    const previousStoreId = storeId.value
     storeId.value = m.storeId
     role.value = m.role
     permissions.value = new Set(m.permissions)
     membershipLoaded.value = true
     // Sinkronkan konteks toko untuk lapisan service (RPC butuh p_store_id).
     setCurrentStoreId(m.storeId)
+    // Cache baca ber-key storeId; bila toko berganti, buang seluruh isinya
+    // supaya data toko lama tidak pernah terbaca oleh toko baru.
+    if (previousStoreId !== m.storeId) clearQueryCache()
   }
 
   function resetMembership(): void {
@@ -82,18 +82,14 @@ export const useAuthStore = defineStore('auth', () => {
     resetMembership()
   }
 
-  let unsubscribe: (() => void) | null = null
-
   /**
    * Baca sesi tersimpan langsung dari localStorage.
    *
-   * Dipakai sebagai fallback saat OFFLINE: supabase-js mengembalikan
-   * `session: null` bila access token sudah kedaluwarsa dan refresh token
-   * gagal dihubungi (tidak ada jaringan). Tanpa fallback ini pengguna yang
-   * membuka app offline setelah token kedaluwarsa akan dilempar ke layar
-   * masuk — padahal mode offline justru dimaksudkan untuk kondisi itu.
-   * Sesi ini hanya dipakai untuk identitas pengguna & query SQLite; saat
-   * online kembali, supabase-js akan me-refresh token seperti biasa.
+   * Dipakai sebagai fallback saat supabase-js mengembalikan `session: null`
+   * karena refresh token gagal dihubungi (jaringan putus sesaat). Tanpa
+   * fallback ini pengguna yang membuka app dengan token kedaluwarsa akan
+   * dilempar ke layar masuk. Sesi ini hanya dipakai untuk identitas pengguna;
+   * saat online kembali, supabase-js me-refresh token seperti biasa.
    */
   function readStoredSession(): Session | null {
     try {
@@ -128,13 +124,12 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Muat session dari localStorage dan pasang listener perubahan auth.
    * Aman dipanggil berulang kali (idempotent).
-   * Jika ada session, set current user id untuk service SQLite.
    *
    * Beberapa pemanggil bisa berjalan bersamaan (router guard, App.vue,
    * main.ts). `initialized` hanya menandai "sudah selesai", jadi pemanggil
    * kedua menunggu promise yang sama — bukan langsung lanjut dengan session
    * yang masih kosong (itu membuat guard mengira belum login dan melempar
-   * pengguna ke /signin saat cold start offline).
+   * pengguna ke /signin saat cold start).
    */
   let initPromise: Promise<void> | null = null
 
@@ -161,13 +156,6 @@ export const useAuthStore = defineStore('auth', () => {
     session.value = activeSession
     user.value = activeSession?.user ?? null
 
-    // Set user aktif untuk query SQLite (pengganti RLS)
-    if (activeSession?.user?.id) {
-      setCurrentUserId(activeSession.user.id)
-    } else {
-      setCurrentUserId(null)
-    }
-
     // Muat role & permission. Gagal (offline) → pakai cache; tetap gagal →
     // permission kosong (fail-closed), bukan "semua boleh".
     await loadMembership(activeSession?.user?.id ?? null)
@@ -190,15 +178,12 @@ export const useAuthStore = defineStore('auth', () => {
         if (restored) {
           session.value = restored
           user.value = restored.user
-          setCurrentUserId(restored.user.id)
           return
         }
       }
       session.value = newSession
       user.value = newSession?.user ?? null
-      // Ikutkan perubahan user ke service SQLite
       if (newSession?.user?.id) {
-        setCurrentUserId(newSession.user.id)
         // Akun berganti → muat ulang keanggotaan supaya menu tidak
         // menampilkan hak akun sebelumnya. Token refresh untuk user yang
         // sama tidak memicu query tambahan.
@@ -208,11 +193,11 @@ export const useAuthStore = defineStore('auth', () => {
         }
       } else {
         previousUserId = null
-        setCurrentUserId(null)
         resetMembership()
       }
     })
-    unsubscribe = listener.subscription.unsubscribe
+    // Listener dibiarkan aktif selama aplikasi hidup; tidak ada teardown.
+    void listener
   }
 
   async function signIn(email: string, password: string) {
@@ -223,10 +208,6 @@ export const useAuthStore = defineStore('auth', () => {
       session.value = data.session
       user.value = data.user
 
-      // Set user aktif untuk service SQLite
-      if (data.user?.id) {
-        setCurrentUserId(data.user.id)
-      }
       // Muat role & permission sebelum navigasi supaya guard rute tidak
       // sempat melihat permission kosong lalu melempar ke /403.
       await loadMembership(data.user?.id ?? null)
@@ -241,74 +222,22 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Keluar dari akun.
    *
-   * (Isu #2) Pada aplikasi Android (offline-first), data perubahan lokal menunggu
-   * di sync_queue untuk di-upload. Jika user logout dalam keadaan queue masih
-   * berisi perubahan yang belum tersinkron, login berikutnya (akun sama atau beda)
-   * akan men-truncate SQLite + mengosongkan queue → perubahan itu hilang permanen.
-   * Karena itu signOut WAJIB memaksakan upload perubahan lokal dulu.
+   * Mode offline sudah dihapus, jadi tidak ada lagi antrean perubahan lokal
+   * yang harus di-flush lebih dulu. Yang wajib dibersihkan hanyalah state
+   * perangkat yang terikat akun/toko: sesi, cache membership, dan cache baca.
    *
-   * Return { cancelled: true } bila user menolak keluar (mis. gagal sinkron lalu
-   * memilih batal) — pemanggil tidak boleh navigasi ke /signin saat itu.
+   * `cancelled` dipertahankan di bentuk return agar pemanggil lama
+   * (`StoreSettings.vue`) tidak perlu diubah — nilainya selalu false.
    */
   async function signOut(): Promise<{ cancelled: boolean }> {
-    // === Lapis perlindungan: flush sync_queue sebelum sesi benar-benar ditutup ===
-    if (isNativeApp()) {
-      try {
-        const pending = await getSyncQueue()
-        if (pending.length > 0) {
-          if (!isOnlineNow()) {
-            // Offline: perubahan TIDAK bisa dikirim. Kalau lanjut logout, login
-            // berikutnya menghapusnya (trunkasi + clearSyncQueue). Peringatkan,
-            // jangan biarkan hilang tanpa keputusan sadar.
-            const { confirm } = useConfirm()
-            const proceed = await confirm({
-              title: 'Perubahan Belum Tersinkron',
-              message:
-                `Masih ada ${pending.length} perubahan yang belum tersinkron dan perangkat sedang offline. ` +
-                `Jika Anda keluar sekarang, perubahan ini bisa hilang saat login lagi.\n\n` +
-                `Sambungkan internet lalu logout ulang untuk amannya. Keluar sekarang juga?`,
-              confirmText: 'Keluar Tetap',
-              cancelText: 'Batal',
-              variant: 'danger',
-            })
-            if (!proceed) return { cancelled: true }
-          } else {
-            // Online: upload dulu. Beri tahu sedang memproses (dialog tanpa tombol
-            // batal tidak tepat di sini — upload bisa cepat). Cukup jalankan.
-            const { uploadChangesToSupabase } = await import('@/services/sync/syncEngine')
-            const result = await uploadChangesToSupabase()
-            if (result.failed && result.failed > 0) {
-              const { confirm } = useConfirm()
-              const proceed = await confirm({
-                title: 'Sinkronisasi Belum Selesai',
-                message:
-                  `${result.failed} perubahan gagal tersinkron ke server. ` +
-                  `Keluar sekarang berisiko membuat perubahan itu hilang saat login berikutnya.\n\n` +
-                  `Coba sinkronkan lagi dari Pengaturan sebelum keluar. Tetap keluar?`,
-                confirmText: 'Keluar Tetap',
-                cancelText: 'Batal',
-                variant: 'danger',
-              })
-              if (!proceed) return { cancelled: true }
-            }
-          }
-        }
-      } catch (e) {
-        // Gagal membaca/meng-upload queue tidak boleh mengunci user di dalam app.
-        // Lanjutkan logout biasa; kesalahan tercatat oleh sync engine itu sendiri.
-        console.error('Flush sync_queue sebelum logout gagal:', e)
-      }
-    }
-
     loading.value = true
     try {
       try {
         await supabase.auth.signOut()
       } catch (e) {
-        // Offline: revoke sesi di server gagal (tidak ada jaringan). Tetap
-        // keluarkan pengguna secara lokal — kalau tidak, tombol keluar tampak
-        // tidak berfungsi saat mode offline.
-        console.warn('signOut ke server gagal (offline), keluar secara lokal:', e)
+        // Jaringan putus saat revoke sesi: tetap keluarkan pengguna secara
+        // lokal, kalau tidak tombol keluar tampak tidak berfungsi.
+        console.warn('signOut ke server gagal (jaringan), keluar secara lokal:', e)
       }
       // Pastikan token benar-benar hilang dari penyimpanan, apa pun hasil
       // panggilan signOut di atas (jangan sampai fallback sesi tersimpan
@@ -319,8 +248,10 @@ export const useAuthStore = defineStore('auth', () => {
       const signedOutUserId = user.value?.id
       session.value = null
       user.value = null
-      setCurrentUserId(null)
       resetMembership()
+      // Cache baca milik toko yang barusan ditinggalkan tidak boleh terbaca
+      // akun berikutnya di perangkat yang sama.
+      clearQueryCache()
       if (signedOutUserId) clearCachedMembership(signedOutUserId)
 
       // Reset preferensi UI yang tersimpan per-perangkat (bukan per-akun).
@@ -334,24 +265,6 @@ export const useAuthStore = defineStore('auth', () => {
         // localStorage tidak tersedia — abaikan
       }
 
-      // === Wipe database lokal setelah sesi ditutup ===
-      // Hanya bila perubahan lokal dipastikan sudah tidak menggantung di
-      // sync_queue (flush di atas sukses, atau memang tidak ada dari awal).
-      // Bila masih ada queue tersisa (offline / upload gagal lalu user tetap
-      // keluar), baris lokal JANGAN dihapus — satu-satunya salinan data itu
-      // ada di device ini. Queue itu tetap terlindungi lapis-pengaman di
-      // downloadAllFromSupabase pada login berikutnya.
-      if (isNativeApp()) {
-        try {
-          const leftover = await getSyncQueue()
-          if (leftover.length === 0) {
-            const { clearLocalDatabase } = await import('@/services/sync/syncEngine')
-            await clearLocalDatabase()
-          }
-        } catch (e) {
-          console.error('Wipe database lokal saat logout gagal:', e)
-        }
-      }
       return { cancelled: false }
     } finally {
       loading.value = false

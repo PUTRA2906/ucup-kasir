@@ -216,7 +216,7 @@ import { useStockStore } from '@/stores/stock'
 import { useToast } from '@/composables/useToast'
 import { usePermission } from '@/composables/usePermission'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
-import type { StockMovement } from '@/services/sqlite/stock'
+import type { StockMovement } from '@/services/stock'
 
 const router = useRouter()
 const route = useRoute()

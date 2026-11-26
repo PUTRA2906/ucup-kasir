@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { hrServiceAdapter } from '@/services'
+import { cachedQuery } from '@/lib/queryCache'
 import type {
   Employee,
   EmployeeInsert,
@@ -44,7 +45,11 @@ export const useHrStore = defineStore('hr', () => {
     loading.value = true
     error.value = null
     try {
-      employees.value = await hrServiceAdapter.fetchEmployees()
+      employees.value = await cachedQuery(
+        'hr',
+        'employees',
+        () => hrServiceAdapter.fetchEmployees(),
+      )
       return employees.value
     } catch (e: any) {
       error.value = e.message

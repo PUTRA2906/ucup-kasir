@@ -1,6 +1,5 @@
 /**
- * Utility untuk memperbaiki alokasi pembayaran yang hilang
- * Untuk mode online (Supabase) dan offline (SQLite)
+ * Utility untuk memperbaiki alokasi pembayaran yang hilang.
  *
  * Masalah: Laba terealisasi tidak update saat ada pembayaran cicilan
  * Penyebab: Tabel transaction_item_payments tidak terisi
@@ -8,11 +7,9 @@
  */
 
 import { supabase } from '@/lib/supabase'
-import { query, run, getCurrentUserId } from '@/services/sqlite/db'
-import { getActiveBackend } from '@/lib/connectionMode'
 
 export interface PaymentAllocationResult {
-  mode: 'supabase' | 'sqlite'
+  mode: 'supabase'
   totalPayments: number
   fixedPayments: number
   errors: string[]
@@ -74,62 +71,6 @@ async function allocatePaymentToItemsSupabase(
       })
 
     if (insertError) throw insertError
-
-    allocationsCreated++
-    remainingPayment -= allocated
-
-    if (remainingPayment <= 0) break
-  }
-
-  return allocationsCreated
-}
-
-/**
- * Alokasikan pembayaran ke items (SQLite version)
- */
-async function allocatePaymentToItemsSQLite(
-  transactionId: string,
-  paymentId: string,
-  paymentAmount: number,
-  userId: string
-): Promise<number> {
-  // Ambil items yang belum lunas
-  const items = await query<any>(
-    `SELECT ti.id, ti.subtotal,
-            COALESCE(SUM(tip.allocated_amount), 0) as already_paid
-     FROM transaction_items ti
-     LEFT JOIN transaction_item_payments tip ON tip.item_id = ti.id
-     WHERE ti.transaction_id = ? AND ti.user_id = ?
-     GROUP BY ti.id, ti.subtotal, ti.created_at
-     ORDER BY ti.created_at ASC`,
-    [transactionId, userId]
-  )
-
-  let remainingPayment = paymentAmount
-  let allocationsCreated = 0
-
-  for (const item of items) {
-    const itemRemaining = item.subtotal - Number(item.already_paid)
-
-    if (itemRemaining <= 0) continue // Item sudah lunas
-
-    // Alokasikan ke item ini
-    const allocated = Math.min(remainingPayment, itemRemaining)
-
-    await run(
-      `INSERT INTO transaction_item_payments
-       (id, user_id, transaction_id, item_id, payment_id, allocated_amount, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        crypto.randomUUID(),
-        userId,
-        transactionId,
-        item.id,
-        paymentId,
-        allocated,
-        new Date().toISOString(),
-      ]
-    )
 
     allocationsCreated++
     remainingPayment -= allocated
@@ -207,84 +148,10 @@ async function fixPaymentAllocationSupabase(): Promise<PaymentAllocationResult> 
 }
 
 /**
- * Fix pembayaran yang belum dialokasikan (SQLite mode)
- */
-async function fixPaymentAllocationSQLite(): Promise<PaymentAllocationResult> {
-  const userId = getCurrentUserId()
-  const result: PaymentAllocationResult = {
-    mode: 'sqlite',
-    totalPayments: 0,
-    fixedPayments: 0,
-    errors: [],
-    details: [],
-  }
-
-  try {
-    // Ambil semua pembayaran
-    const payments = await query<any>(
-      `SELECT id, transaction_id, amount, created_at
-       FROM transaction_payments
-       WHERE user_id = ?
-       ORDER BY created_at ASC`,
-      [userId]
-    )
-
-    result.totalPayments = payments.length
-
-    for (const payment of payments) {
-      try {
-        // Cek apakah pembayaran ini sudah punya alokasi
-        const existingAllocations = await query<any>(
-          `SELECT id FROM transaction_item_payments
-           WHERE payment_id = ? AND user_id = ? LIMIT 1`,
-          [payment.id, userId]
-        )
-
-        // Jika sudah ada alokasi, skip
-        if (existingAllocations.length > 0) {
-          continue
-        }
-
-        // Alokasikan pembayaran ini
-        const allocationsCreated = await allocatePaymentToItemsSQLite(
-          payment.transaction_id,
-          payment.id,
-          payment.amount,
-          userId
-        )
-
-        result.fixedPayments++
-        result.details.push({
-          paymentId: payment.id,
-          transactionId: payment.transaction_id,
-          amount: payment.amount,
-          allocationsCreated,
-        })
-      } catch (error: any) {
-        result.errors.push(
-          `Payment ${payment.id}: ${error.message || 'Unknown error'}`
-        )
-      }
-    }
-  } catch (error: any) {
-    result.errors.push(`Fatal error: ${error.message || 'Unknown error'}`)
-  }
-
-  return result
-}
-
-/**
- * Entry point - otomatis deteksi mode dan fix
+ * Entry point — selalu memakai Supabase (mode offline sudah dihapus).
  */
 export async function fixPaymentAllocation(): Promise<PaymentAllocationResult> {
-  // Deteksi backend aktif - mode offline (Android tanpa internet) pakai SQLite
-  const useOfflineMode = getActiveBackend() === 'local'
-
-  if (useOfflineMode) {
-    return await fixPaymentAllocationSQLite()
-  } else {
-    return await fixPaymentAllocationSupabase()
-  }
+  return await fixPaymentAllocationSupabase()
 }
 
 /**

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { productsServiceAdapter } from '@/services'
+import { cachedQuery } from '@/lib/queryCache'
 import type { Product, ProductInsert, ProductUpdate, ProductWithCategory } from '@/types/database'
 
 export const useProductsStore = defineStore('products', () => {
@@ -20,7 +21,12 @@ export const useProductsStore = defineStore('products', () => {
     loading.value = true
     error.value = null
     try {
-      products.value = await productsServiceAdapter.getAll(includeInactive)
+      // Cache baca: navigasi bolak-balik dalam TTL tidak memicu request baru.
+      products.value = await cachedQuery(
+        'products',
+        `all:${includeInactive}`,
+        () => productsServiceAdapter.getAll(includeInactive),
+      )
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -115,8 +121,7 @@ export const useProductsStore = defineStore('products', () => {
   async function syncMinimumStocks(
     entries: { product_id: string; minimum_stock: number }[],
   ) {
-    // Tidak perlu sync ke Supabase langsung — di SQLite semua lokal.
-    // Update langsung minimum_stock di products
+    // Update optimistic di state lokal, lalu simpan per produk ke server.
     for (const entry of entries) {
       const idx = products.value.findIndex(p => p.id === entry.product_id)
       if (idx !== -1) {

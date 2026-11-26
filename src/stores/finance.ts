@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { financeServiceAdapter } from '@/services'
+import { cachedQuery } from '@/lib/queryCache'
 import type {
   Account,
   AccountInsert,
@@ -46,7 +47,11 @@ export const useFinanceStore = defineStore('finance', () => {
     loading.value = true
     error.value = null
     try {
-      const result = await financeServiceAdapter.getAccounts()
+      const result = await cachedQuery(
+        'finance',
+        'accounts',
+        () => financeServiceAdapter.getAccounts(),
+      )
       // Auto-seed jika akun keuangan belum ada (akun baru / pertama kali)
       if (result.length === 0) {
         accounts.value = await financeServiceAdapter.seedDefaultAccounts()

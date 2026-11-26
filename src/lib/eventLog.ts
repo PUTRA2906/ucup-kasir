@@ -1,15 +1,11 @@
 // ============================================================
 // Event Log — perekam aktivitas & error aplikasi.
 //
-// Tujuan: saat ada error (SQLite gagal, Supabase error, sync gagal,
-// crash WebView), user bisa buka halaman "Log Event" di Pengaturan
-// dan melihat sumber error: SQLite lokal, Supabase, Sync, Auth, dll.
+// Tujuan: saat ada error (Supabase gagal, jaringan putus, crash WebView),
+// user bisa buka halaman "Log Event" di Pengaturan dan melihat sumbernya.
 //
-// Penyimpanan:
-//   - Buffer in-memory + mirror localStorage (jalan di web & Android).
-//   - Saat SQLite tersedia (native), entry di-flush ke tabel
-//     app_event_log agar tahan-banting terhadap WebView storage dikosongkan.
-//   - Tabel app_event_log TIDAK ikut disinkron ke Supabase (lokal saja).
+// Penyimpanan: buffer in-memory + mirror localStorage (web & Android).
+// Tidak ada lagi flush ke SQLite — lapisan offline sudah dihapus.
 //
 // Perekaman otomatis: installEventLog() memasang window.onerror,
 // unhandledrejection, dan patch console.error/warn — sehingga error
@@ -20,7 +16,7 @@ import { isNativeApp } from '@/lib/platform'
 
 export type EventLevel = 'info' | 'warn' | 'error'
 
-export type EventSource = 'sqlite' | 'supabase' | 'sync' | 'auth' | 'network' | 'app' | 'scheduled_sync'
+export type EventSource = 'supabase' | 'auth' | 'network' | 'app'
 
 export interface EventLogEntry {
   uid: string
@@ -49,7 +45,6 @@ const MAX_DETAIL = 2000
 let buffer: EventLogEntry[] | null = null
 let uidSeq = 0
 let installed = false
-let suppress = false // guard rekursi: jangan rekam error dari mekanisme log sendiri
 
 // ------------------------------------------------------------
 // Util
@@ -67,9 +62,7 @@ function truncate(s: string, max: number): string {
 /** Tebak sumber error dari teks pesan (dipakai untuk auto-capture). */
 export function guessSource(text: string): EventSource {
   const t = text.toLowerCase()
-  if (/sqlite|no such table|no such column|already in transaction|jeep[- ]?sqlite/.test(t)) return 'sqlite'
   if (/supabase|postgrest|jwt expired|invalid apikey|rls|row level security/.test(t)) return 'supabase'
-  if (/\bsync\b|sinkron|queue|upload|download|backup|inguh data|unduh/.test(t)) return 'sync'
   if (/\bauth\b|login|signin|logout|session|password|kata sandi|token/.test(t)) return 'auth'
   if (/internet|offline|network|fetch failed|connection|timeout|err_network|load failed/.test(t)) return 'network'
   return 'app'
@@ -125,46 +118,11 @@ function saveNow() {
 }
 
 // ------------------------------------------------------------
-// Flush ke SQLite (native saja, best-effort)
-// ------------------------------------------------------------
-
-let flushTimer: ReturnType<typeof setTimeout> | null = null
-let flushing = false
-
-function scheduleFlush() {
-  if (!isNativeApp() || flushTimer || flushing) return
-  flushTimer = setTimeout(() => {
-    flushTimer = null
-    void flushToSQLite()
-  }, 5000)
-}
-
-/** Insert entry yang belum pernah ditulis ke tabel app_event_log. */
-export async function flushToSQLite(): Promise<void> {
-  if (!isNativeApp() || flushing) return
-  const pending = loadBuffer()
-  if (pending.length === 0) return
-  flushing = true
-  suppress = true
-  try {
-    const { saveEventLogEntries } = await import('@/lib/sqlite')
-    await saveEventLogEntries(pending)
-  } catch {
-    // SQLite belum siap / gagal — entry tetap aman di localStorage,
-    // dicoba lagi pada flush berikutnya.
-  } finally {
-    suppress = false
-    flushing = false
-  }
-}
-
-// ------------------------------------------------------------
 // API utama
 // ------------------------------------------------------------
 
 /** Catat satu event. Tidak pernah melempar error (perekaman harus pasif). */
 export function logEvent(input: LogEventInput): void {
-  if (suppress) return
   try {
     const entry: EventLogEntry = {
       uid: makeUid(),
@@ -182,7 +140,6 @@ export function logEvent(input: LogEventInput): void {
       buffer = buf.slice(-MAX_LOCAL)
     }
     scheduleSave()
-    scheduleFlush()
   } catch {
     // perekaman tidak boleh merusak alur utama
   }
@@ -207,7 +164,7 @@ export function getLocalEntries(): EventLogEntry[] {
   return loadBuffer().slice()
 }
 
-/** Kosongkan buffer localStorage. (SQLite dibersihkan terpisah.) */
+/** Kosongkan buffer localStorage. */
 export function clearLocalEntries(): void {
   buffer = []
   try {
@@ -276,17 +233,13 @@ export function installEventLog(): void {
   const origWarn = console.warn.bind(console)
   console.error = (...args: unknown[]) => {
     origError(...args)
-    if (!suppress) {
-      const msg = stringifyArgs(args)
-      if (msg) logEvent({ level: 'error', source: guessSource(msg), event: 'console_error', message: msg })
-    }
+    const msg = stringifyArgs(args)
+    if (msg) logEvent({ level: 'error', source: guessSource(msg), event: 'console_error', message: msg })
   }
   console.warn = (...args: unknown[]) => {
     origWarn(...args)
-    if (!suppress) {
-      const msg = stringifyArgs(args)
-      if (msg) logEvent({ level: 'warn', source: guessSource(msg), event: 'console_warn', message: msg })
-    }
+    const msg = stringifyArgs(args)
+    if (msg) logEvent({ level: 'warn', source: guessSource(msg), event: 'console_warn', message: msg })
   }
 
   logEvent({ level: 'info', source: 'app', event: 'app_start', message: 'Aplikasi dimulai' })

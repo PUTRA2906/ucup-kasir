@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { purchasingServiceAdapter } from '@/services'
+import { cachedQuery } from '@/lib/queryCache'
 import type {
   Supplier,
   SupplierInsert,
@@ -47,7 +48,11 @@ export const usePurchasingStore = defineStore('purchasing', () => {
     loading.value = true
     error.value = null
     try {
-      suppliers.value = await purchasingServiceAdapter.fetchSuppliers()
+      suppliers.value = await cachedQuery(
+        'purchasing',
+        'suppliers',
+        () => purchasingServiceAdapter.fetchSuppliers(),
+      )
       return suppliers.value
     } catch (e: any) {
       error.value = e.message

@@ -22,7 +22,6 @@ import type {
 
 // ============================================================
 // Service: Modul Pembelian Barang (Supabase / Web)
-// Mirror dari src/services/sqlite/purchasing.ts
 //
 // - CRUD Supplier
 // - Purchase Orders (via RPC create_purchase_order)

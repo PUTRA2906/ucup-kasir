@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { customersServiceAdapter } from '@/services'
+import { cachedQuery, variantOf } from '@/lib/queryCache'
 import type { Customer, CustomerInsert, CustomerUpdate } from '@/types/database'
 
 export const useCustomersStore = defineStore('customers', () => {
@@ -19,7 +20,11 @@ export const useCustomersStore = defineStore('customers', () => {
     loading.value = true
     error.value = null
     try {
-      customers.value = await customersServiceAdapter.getAll()
+      customers.value = await cachedQuery(
+        'customers',
+        'all',
+        () => customersServiceAdapter.getAll(),
+      )
     } catch (e: any) {
       error.value = e.message
       throw e
@@ -39,7 +44,11 @@ export const useCustomersStore = defineStore('customers', () => {
     paginationLoading.value = true
     error.value = null
     try {
-      const result = await customersServiceAdapter.getPaginated(page, perPage, filters)
+      const result = await cachedQuery(
+        'customers',
+        `page:${variantOf([page, perPage, filters])}`,
+        () => customersServiceAdapter.getPaginated(page, perPage, filters),
+      )
       paginatedCustomers.value = result.data
       paginationTotal.value = result.count
       paginationPage.value = page

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { storeSettingsServiceAdapter } from '@/services'
+import { cachedQuery } from '@/lib/queryCache'
 import type { StoreSettings, StoreSettingsUpdate } from '@/types/database'
 
 // Default values agar aplikasi tetap berjalan meski database belum siap
@@ -42,7 +43,13 @@ export const useStoreSettingsStore = defineStore('storeSettings', () => {
     loading.value = true
     error.value = null
     try {
-      settings.value = await storeSettingsServiceAdapter.getSettings()
+      // Pengaturan toko dipakai di hampir semua halaman (logo, footer struk);
+      // cache mencegah fetch ulang setiap pindah halaman.
+      settings.value = await cachedQuery(
+        'storeSettings',
+        'current',
+        () => storeSettingsServiceAdapter.getSettings(),
+      )
       loaded.value = true
     } catch (e: any) {
       error.value = e.message

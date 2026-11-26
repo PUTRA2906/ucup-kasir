@@ -78,15 +78,6 @@ const router = createRouter({
       },
     },
     {
-      path: '/settings/sync-debugger',
-      name: 'Sync Debugger',
-      component: () => import('../views/Settings/SyncDebugger.vue'),
-      meta: {
-        permission: 'settings.read',
-        title: 'Sync Debugger',
-      },
-    },
-    {
       path: '/settings/event-log',
       name: 'Event Log',
       component: () => import('../views/Settings/EventLog.vue'),
@@ -102,15 +93,6 @@ const router = createRouter({
       meta: {
         permission: 'settings.read',
         title: 'Perbaikan Laba Terealisasi',
-      },
-    },
-    {
-      path: '/dev-tools',
-      name: 'DevTools',
-      component: () => import('../views/DevTools.vue'),
-      meta: {
-        permission: 'settings.read',
-        title: 'Developer Tools',
       },
     },
     {
@@ -493,14 +475,6 @@ const router = createRouter({
       },
     },
     
-    {
-      path: '/sync/download',
-      name: 'Sync Download',
-      component: () => import('../views/Sync/DownloadScreen.vue'),
-      meta: {
-        title: 'Mengunduh Data',
-      },
-    },
     // ============================================================
     // Modul Finance
     // ============================================================
@@ -815,9 +789,6 @@ export default router
 
 const publicRoutes = ['/signin', '/signup']
 
-// Rute yang butuh auth tapi tidak redirect (download screen)
-const authenticatedRoutes = ['/sync/download']
-
 router.beforeEach((to, from, next) => {
   document.title = `${to.meta.title} | Ucup Kasir - Aplikasi Kasir`
   next()
@@ -844,7 +815,6 @@ router.beforeEach(async (to, from, next) => {
   }
 
   const isPublic = publicRoutes.includes(to.path)
-  const isAuthRoute = authenticatedRoutes.includes(to.path)
 
   if (!isPublic && !authStore.isAuthenticated) {
     // Belum login -> arahkan ke halaman masuk, simpan tujuan awal
@@ -854,9 +824,6 @@ router.beforeEach(async (to, from, next) => {
     // Hormati query redirect bila ada (dipakai saat user dikirim ke signin lalu login kembali).
     const redirect = typeof to.query.redirect === 'string' ? to.query.redirect : ''
     next({ path: redirect || '/' })
-  } else if (isAuthRoute && !authStore.isAuthenticated) {
-    // Rute auth tanpa login -> signin
-    next({ path: '/signin', query: { redirect: to.fullPath } })
   } else {
     next()
   }

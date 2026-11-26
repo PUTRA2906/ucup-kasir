@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { notificationsServiceAdapter } from '@/services'
-import type { SqliteNotification } from '@/services/sqlite/notifications'
+import { cachedQuery } from '@/lib/queryCache'
 
 export interface Notification {
   id: string
@@ -29,7 +29,11 @@ export const useNotificationsStore = defineStore('notifications', () => {
     loading.value = true
     error.value = null
     try {
-      notifications.value = await notificationsServiceAdapter.fetchNotifications(limit)
+      notifications.value = await cachedQuery(
+        'notifications',
+        `list:${limit}`,
+        () => notificationsServiceAdapter.fetchNotifications(limit),
+      )
       updateUnreadCount()
     } catch (e: any) {
       error.value = e.message

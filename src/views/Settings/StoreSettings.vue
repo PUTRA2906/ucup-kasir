@@ -124,60 +124,6 @@
           </button>
         </div>
 
-        <!-- Sinkronisasi Database -->
-        <div class="flex w-full items-center justify-between gap-3 px-4 py-3.5">
-          <div class="flex items-center gap-3">
-            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10">
-              <svg class="h-4 w-4 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </div>
-            <div>
-              <h2 class="text-sm font-medium text-gray-900 dark:text-white">Sinkronisasi Database</h2>
-              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Upload & download data dari server</p>
-            </div>
-          </div>
-          <button
-            @click="handleFullSync"
-            :disabled="syncing || !isOnline"
-            class="flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-indigo-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition active:scale-95 disabled:opacity-50"
-          >
-            <svg v-if="syncing" class="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <svg v-else class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            {{ syncing ? 'Proses...' : 'Sinkronisasi' }}
-          </button>
-        </div>
-
-        <!-- Backup Otomatis -->
-        <button
-          @click="showScheduledSyncDialog = true"
-          class="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition active:bg-gray-50 dark:active:bg-white/[0.02]"
-        >
-          <div class="flex items-center gap-3">
-            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500/10">
-              <svg class="h-4 w-4 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div class="flex-1">
-              <h2 class="text-sm font-medium text-gray-900 dark:text-white">Backup Otomatis</h2>
-              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                {{ scheduledSyncStatus.enabled ? `Aktif - ${scheduledSyncStatus.scheduleTime}` : 'Tidak aktif' }}
-              </p>
-            </div>
-            <div v-if="scheduledSyncStatus.enabled" class="flex h-5 w-5 items-center justify-center rounded-full bg-green-500">
-              <svg class="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-          </div>
-        </button>
-
         <!-- Log Event -->
         <button
           @click="router.push('/settings/event-log')"
@@ -400,64 +346,6 @@
         </div>
       </div>
 
-      <!-- Backup & Sinkronisasi -->
-      <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-        <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Backup & Sinkronisasi</h3>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Kirim perubahan data aplikasi ke server</p>
-        </div>
-        <div class="space-y-4 p-6">
-          <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
-            <div class="flex items-center gap-3">
-              <span
-                :class="[
-                  'inline-flex h-2.5 w-2.5 rounded-full',
-                  !isOnline ? 'bg-gray-400' : backupBusy ? 'bg-amber-500 animate-pulse' : 'bg-success-500',
-                ]"
-              ></span>
-              <div>
-                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {{ !isOnline ? 'Offline' : backupBusy ? 'Sedang mengirim...' : hasPending ? 'Ada perubahan menunggu' : 'Tersinkron' }}
-                </p>
-                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                  {{
-                    !isOnline
-                      ? 'Tidak terhubung ke internet — perubahan disimpan lokal'
-                      : hasPending && !backupBusy
-                        ? `${pendingCount} perubahan belum dikirim`
-                        : 'Semua perubahan aplikasi sudah dikirim ke server'
-                  }}
-                </p>
-              </div>
-            </div>
-            <BackupStatus />
-          </div>
-
-          <p v-if="lastSyncLabel" class="text-xs text-gray-500 dark:text-gray-400">
-            Backup terakhir: {{ lastSyncLabel }}
-          </p>
-
-          <div class="flex justify-end pt-1">
-            <button
-              @click="handleUploadChanges"
-              :disabled="!isOnline || backupBusy"
-              class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
-            >
-              <svg v-if="backupBusy" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
-              </svg>
-              {{ !isOnline ? 'Tidak Ada Internet' : backupBusy ? 'Mengirim...' : 'Upload Perubahan Aplikasi' }}
-            </button>
-          </div>
-
-          <p v-if="syncError" class="text-xs font-medium text-red-500 dark:text-red-400">{{ syncError }}</p>
-        </div>
-      </div>
-
       <!-- Keluar -->
       <div class="overflow-hidden rounded-2xl border border-red-200 bg-white dark:border-red-900/30 dark:bg-gray-900">
         <div class="flex items-center justify-between gap-4 p-6">
@@ -496,165 +384,31 @@
       :message="logoutMessage"
       :sub-message="logoutSubMessage"
     />
-
-    <SyncProgressModal
-      :visible="showSyncModal"
-      :current-step="syncCurrentStep"
-      :progress="syncProgressPercent"
-      :logs="syncLogs"
-      :status-message="syncStatusMessage"
-    />
-
-    <!-- Scheduled Sync Dialog -->
-    <ConfirmDialog
-      v-model="showScheduledSyncDialog"
-      :title="scheduledSyncStatus.enabled ? 'Pengaturan Backup Otomatis' : 'Aktifkan Backup Otomatis'"
-      :confirm-text="scheduledSyncStatus.enabled ? 'Simpan' : 'Aktifkan'"
-      cancel-text="Batal"
-      :confirm-class="scheduledSyncStatus.enabled ? 'bg-brand-500 hover:bg-brand-600' : 'bg-green-500 hover:bg-green-600'"
-      @confirm="scheduledSyncStatus.enabled ? handleUpdateScheduleTime() : handleToggleScheduledSync()"
-    >
-      <template #message>
-        <div class="space-y-4">
-          <p class="text-sm text-gray-600 dark:text-gray-400">
-            Backup otomatis akan mengirim perubahan data ke server secara terjadwal setiap hari.
-          </p>
-
-          <!-- Schedule Time Input -->
-          <div>
-            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Jadwal Backup <span class="text-error-500">*</span>
-            </label>
-            <input
-              type="time"
-              v-model="scheduledSyncTime"
-              class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-            />
-            <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-              Rekomendasi: 00:00 (tengah malam) saat aktivitas rendah
-            </p>
-          </div>
-
-          <!-- Status Info -->
-          <div v-if="scheduledSyncStatus.enabled" class="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
-            <div class="flex items-start gap-2">
-              <svg class="mt-0.5 h-4 w-4 shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div class="text-xs text-green-700 dark:text-green-300">
-                <p class="font-medium">Backup Otomatis Aktif</p>
-                <p class="mt-1">
-                  <span v-if="scheduledSyncStatus.lastRun">
-                    Backup terakhir: {{ formatDate(scheduledSyncStatus.lastRun) }}
-                  </span>
-                  <span v-else>Belum pernah backup otomatis</span>
-                </p>
-                <p class="mt-1" v-if="scheduledSyncStatus.nextRun">
-                  Backup berikutnya: {{ formatDate(scheduledSyncStatus.nextRun) }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Features List -->
-          <div class="space-y-2">
-            <p class="text-xs font-medium text-gray-700 dark:text-gray-400">Fitur:</p>
-            <ul class="space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
-              <li class="flex items-start gap-2">
-                <svg class="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Upload otomatis setiap hari pada jam yang dijadwalkan</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <svg class="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Menunggu koneksi internet jika sedang offline</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <svg class="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Retry otomatis jika backup gagal (maksimal 3x)</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <svg class="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Notifikasi setelah backup selesai</span>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Disable Button -->
-          <div v-if="scheduledSyncStatus.enabled" class="pt-2 border-t border-gray-200 dark:border-gray-700">
-            <button
-              @click="handleToggleScheduledSync"
-              :disabled="savingScheduledSync"
-              class="text-xs font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
-            >
-              Nonaktifkan Backup Otomatis
-            </button>
-          </div>
-        </div>
-      </template>
-    </ConfirmDialog>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PageBreadcrumb from '@/components/common/PageBreadcrumb.vue'
 import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import { useStoreSettingsStore } from '@/stores/storeSettings'
 import { useAuthStore } from '@/stores/auth'
-import { useSyncStore } from '@/stores/sync'
 import { useToast } from '@/composables/useToast'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 import { useTheme } from '@/components/layout/ThemeProvider.vue'
-import { useNetwork } from '@/lib/network'
-import BackupStatus from '@/views/Sync/BackupStatus.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
-import SyncProgressModal from '@/components/common/SyncProgressModal.vue'
-import type { SyncLog } from '@/components/common/SyncProgressModal.vue'
 import { LogoutIcon } from '@/icons'
-import { downloadIncrementalSync, uploadChangesToSupabase, getLastSyncInfo } from '@/services/sync/syncEngine'
-import { isNativeApp } from '@/lib/platform'
-import {
-  getScheduledSyncStatus,
-  enableScheduledSync,
-  disableScheduledSync,
-  startScheduler,
-  type ScheduledSyncStatus,
-} from '@/services/sync/scheduledSync'
 
 const settingsStore = useStoreSettingsStore()
-const syncStore = useSyncStore()
 const router = useRouter()
 const toast = useToast()
 const authStore = useAuthStore()
 const { isDarkMode, toggleTheme } = useTheme()
-const { isOnline } = useNetwork()
 
 const loading = ref(false)
-const syncError = ref<string | null>(null)
-
-// Scheduled Sync
-const showScheduledSyncDialog = ref(false)
-const scheduledSyncStatus = ref<ScheduledSyncStatus>({
-  enabled: false,
-  scheduleTime: '00:00',
-  lastRun: null,
-  nextRun: null,
-  isRunning: false,
-})
-const scheduledSyncTime = ref('00:00')
-const savingScheduledSync = ref(false)
-const lastSyncLabel = ref<string | null>(null)
 const showLogoutConfirm = ref(false)
 
 // Loading overlay saat proses logout berlangsung
@@ -664,193 +418,6 @@ const logoutSubMessage = ref('')
 
 // Auto register/unregister layer di navigation stack
 useAutoNavigationStack(showLogoutConfirm, 'settings-logout-confirm-dialog')
-
-// State untuk sinkronisasi
-const syncing = ref(false)
-const syncProgress = ref('Memulai sinkronisasi...')
-const lastSyncInfo = ref<{ lastSyncAt: string | null; lastDownloadAt: string | null } | null>(null)
-
-// State untuk modal sync progress
-const showSyncModal = ref(false)
-const syncCurrentStep = ref('Memulai sinkronisasi...')
-const syncProgressPercent = ref(0)
-const syncLogs = ref<SyncLog[]>([])
-const syncStatusMessage = ref('')
-
-// Helper untuk menambah log
-function addSyncLog(type: 'info' | 'success' | 'error', message: string) {
-  const now = new Date()
-  const time = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  syncLogs.value.push({ type, message, time })
-}
-
-// Backup & Sinkronisasi — status dari sync store
-const backupBusy = computed(() => syncStore.uploading || syncStore.syncing)
-const hasPending = computed(() => syncStore.hasPending)
-const pendingCount = computed(() => syncStore.pendingCount)
-
-/** Upload perubahan aplikasi (sync_queue) ke server. */
-async function handleUploadChanges() {
-  if (!isOnline.value || backupBusy.value) return
-  syncError.value = null
-  try {
-    const result = await syncStore.uploadChanges()
-    if (result.uploaded && result.uploaded > 0) {
-      toast.success('Berhasil!', `${result.uploaded} perubahan berhasil diupload`)
-    } else {
-      toast.success('Berhasil!', 'Tidak ada perubahan untuk diupload')
-    }
-    lastSyncLabel.value = syncStore.lastSyncAt || null
-  } catch (e: any) {
-    syncError.value = e.message || 'Gagal upload perubahan'
-    toast.error('Gagal!', syncError.value || 'Gagal upload perubahan')
-  }
-}
-
-/** Handle sinkronisasi penuh: upload perubahan lokal lalu download data terbaru */
-async function handleFullSync() {
-  if (!isNativeApp()) {
-    toast.error('Gagal!', 'Sinkronisasi hanya tersedia di aplikasi mobile')
-    return
-  }
-
-  if (!isOnline.value) {
-    toast.error('Gagal!', 'Tidak ada koneksi internet')
-    return
-  }
-
-  if (syncing.value) return
-
-  // Reset state dan tampilkan modal
-  syncing.value = true
-  showSyncModal.value = true
-  syncLogs.value = []
-  syncProgressPercent.value = 0
-  syncCurrentStep.value = 'Memulai sinkronisasi...'
-  syncStatusMessage.value = 'Mohon tunggu, jangan tutup aplikasi'
-
-  addSyncLog('info', 'Memulai proses sinkronisasi database')
-
-  try {
-    // Step 1: Upload perubahan lokal ke server (50% progress)
-    syncCurrentStep.value = 'Mengupload perubahan lokal...'
-    syncProgressPercent.value = 10
-    addSyncLog('info', 'Memeriksa perubahan lokal yang belum dikirim')
-
-    const uploadResult = await uploadChangesToSupabase()
-
-    if (!uploadResult.success && uploadResult.message) {
-      addSyncLog('error', `Upload gagal: ${uploadResult.message}`)
-      throw new Error(`Upload gagal: ${uploadResult.message}`)
-    }
-
-    const uploadedCount = uploadResult.uploaded || 0
-    syncProgressPercent.value = 50
-
-    if (uploadedCount > 0) {
-      addSyncLog('success', `Berhasil upload ${uploadedCount} perubahan ke server`)
-    } else {
-      addSyncLog('info', 'Tidak ada perubahan lokal untuk diupload')
-    }
-
-    // Step 2: Download data terbaru dari server (100% progress)
-    syncCurrentStep.value = 'Mendownload data terbaru...'
-    syncProgressPercent.value = 60
-    addSyncLog('info', 'Mengunduh data terbaru dari server (incremental sync)')
-
-    const downloadResult = await downloadIncrementalSync()
-
-    if (!downloadResult.success) {
-      addSyncLog('error', `Download gagal: ${downloadResult.message}`)
-      throw new Error(`Download gagal: ${downloadResult.message}`)
-    }
-
-    const downloadedCount = downloadResult.downloaded || 0
-    syncProgressPercent.value = 90
-
-    if (downloadedCount > 0) {
-      addSyncLog('success', `Berhasil download ${downloadedCount} data dari server`)
-    } else {
-      addSyncLog('info', 'Data lokal sudah up-to-date')
-    }
-
-    // Update info sync terakhir
-    syncProgressPercent.value = 95
-    addSyncLog('info', 'Memperbarui informasi sinkronisasi')
-    await loadLastSyncInfo()
-
-    // Selesai
-    syncProgressPercent.value = 100
-    syncCurrentStep.value = 'Sinkronisasi selesai!'
-    syncStatusMessage.value = `Upload: ${uploadedCount} perubahan, Download: ${downloadedCount} data`
-    addSyncLog('success', 'Sinkronisasi database berhasil diselesaikan')
-
-    // Tutup modal setelah 2 detik
-    setTimeout(() => {
-      showSyncModal.value = false
-      toast.success(
-        'Sinkronisasi Berhasil!',
-        `Upload: ${uploadedCount} perubahan, Download: ${downloadedCount} data`
-      )
-    }, 2000)
-
-  } catch (e: any) {
-    console.error('Gagal sinkronisasi:', e)
-    syncCurrentStep.value = 'Sinkronisasi gagal'
-    syncStatusMessage.value = e.message || 'Terjadi kesalahan'
-    addSyncLog('error', e.message || 'Terjadi kesalahan saat sinkronisasi')
-
-    // Tutup modal setelah 3 detik
-    setTimeout(() => {
-      showSyncModal.value = false
-      toast.error('Gagal Sinkronisasi!', e.message || 'Terjadi kesalahan saat sinkronisasi')
-    }, 3000)
-  } finally {
-    syncing.value = false
-  }
-}
-
-/** Load info sync terakhir */
-async function loadLastSyncInfo() {
-  try {
-    if (isNativeApp()) {
-      lastSyncInfo.value = await getLastSyncInfo()
-    }
-  } catch (e) {
-    console.error('Gagal load sync info:', e)
-  }
-}
-
-/** Format tanggal sync */
-function formatSyncDate(dateStr: string | null): string {
-  if (!dateStr) return 'Belum pernah'
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-
-  // Kurang dari 1 menit
-  if (diff < 60000) return 'Baru saja'
-
-  // Kurang dari 1 jam
-  if (diff < 3600000) {
-    const mins = Math.floor(diff / 60000)
-    return `${mins} menit lalu`
-  }
-
-  // Kurang dari 1 hari
-  if (diff < 86400000) {
-    const hours = Math.floor(diff / 3600000)
-    return `${hours} jam lalu`
-  }
-
-  // Format tanggal lengkap
-  return date.toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
 
 // Per-section saving state
 const savingStore = ref(false)
@@ -874,17 +441,6 @@ const saveStoreSection = async () => {
   }
 }
 
-const expandedSections = reactive({
-  store: false,
-  display: false,
-  backup: false,
-  sync: false,
-})
-
-const toggleSection = (section: keyof typeof expandedSections) => {
-  expandedSections[section] = !expandedSections[section]
-}
-
 const formData = reactive({
   store_name: '',
   store_subtitle: '',
@@ -897,125 +453,16 @@ const formData = reactive({
 const handleLogout = async () => {
   showLogoutConfirm.value = false
 
-  // Tampilkan overlay — pesan awal berbeda antara native (ada sync) dan web
   logoutLoading.value = true
-  if (isNativeApp()) {
-    logoutMessage.value = 'Menyinkronkan data...'
-    logoutSubMessage.value = 'Mengirim perubahan ke server sebelum keluar'
-  } else {
-    logoutMessage.value = 'Keluar...'
-    logoutSubMessage.value = ''
-  }
+  logoutMessage.value = 'Keluar...'
+  logoutSubMessage.value = ''
 
   try {
-    const result = await authStore.signOut()
-
-    // Batal oleh user (mis. gagal sinkron lalu pilih "Batal") → tetap di app.
-    if (result.cancelled) {
-      logoutLoading.value = false
-      return
-    }
-
-    // Sinkronisasi selesai, tampilkan pesan keluar
-    logoutMessage.value = 'Keluar...'
-    logoutSubMessage.value = ''
-
+    await authStore.signOut()
     router.push('/signin')
   } catch (error: any) {
     logoutLoading.value = false
     toast.error('Gagal!', error.message || 'Gagal keluar dari akun')
-  }
-}
-
-// Scheduled Sync Functions
-const loadScheduledSyncStatus = async () => {
-  if (!isNativeApp()) return
-
-  try {
-    scheduledSyncStatus.value = await getScheduledSyncStatus()
-    scheduledSyncTime.value = scheduledSyncStatus.value.scheduleTime
-  } catch (e) {
-    console.error('Failed to load scheduled sync status:', e)
-  }
-}
-
-const formatDate = (isoString: string): string => {
-  const date = new Date(isoString)
-  const now = new Date()
-  const diffMs = date.getTime() - now.getTime()
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-
-  // Format tanggal
-  const options: Intl.DateTimeFormatOptions = {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  }
-  const formatted = date.toLocaleDateString('id-ID', options)
-
-  // Tambahkan relative time jika dalam 24 jam
-  if (Math.abs(diffHours) < 24) {
-    if (diffHours > 0) {
-      return `${formatted} (${diffHours} jam lagi)`
-    } else if (diffHours === 0) {
-      const diffMinutes = Math.floor(diffMs / (1000 * 60))
-      if (diffMinutes > 0) {
-        return `${formatted} (${diffMinutes} menit lagi)`
-      } else {
-        return `${formatted} (baru saja)`
-      }
-    } else {
-      return `${formatted} (${Math.abs(diffHours)} jam lalu)`
-    }
-  }
-
-  return formatted
-}
-
-const handleToggleScheduledSync = async () => {
-  if (!isNativeApp()) {
-    toast.error('Gagal!', 'Backup otomatis hanya tersedia di aplikasi Android')
-    return
-  }
-
-  savingScheduledSync.value = true
-  try {
-    if (scheduledSyncStatus.value.enabled) {
-      // Disable
-      await disableScheduledSync()
-      toast.success('Berhasil!', 'Backup otomatis dinonaktifkan')
-    } else {
-      // Enable
-      await enableScheduledSync(scheduledSyncTime.value)
-      toast.success('Berhasil!', `Backup otomatis diaktifkan pada jam ${scheduledSyncTime.value}`)
-    }
-
-    // Reload status
-    await loadScheduledSyncStatus()
-    showScheduledSyncDialog.value = false
-  } catch (e: any) {
-    toast.error('Gagal!', e.message || 'Gagal mengubah pengaturan backup otomatis')
-  } finally {
-    savingScheduledSync.value = false
-  }
-}
-
-const handleUpdateScheduleTime = async () => {
-  if (!isNativeApp()) return
-
-  savingScheduledSync.value = true
-  try {
-    await enableScheduledSync(scheduledSyncTime.value)
-    toast.success('Berhasil!', `Jadwal backup diubah ke jam ${scheduledSyncTime.value}`)
-
-    // Reload status
-    await loadScheduledSyncStatus()
-    showScheduledSyncDialog.value = false
-  } catch (e: any) {
-    toast.error('Gagal!', e.message || 'Gagal mengubah jadwal backup')
-  } finally {
-    savingScheduledSync.value = false
   }
 }
 
@@ -1029,30 +476,6 @@ onMounted(async () => {
   formData.store_phone = s.store_phone || ''
   formData.store_email = s.store_email || ''
   formData.receipt_footer = s.receipt_footer || ''
-
-  // Muat info backup
-  await syncStore.loadInfo()
-  lastSyncLabel.value = syncStore.lastSyncAt || null
-
-  // Muat info sync terakhir untuk section sinkronisasi
-  await loadLastSyncInfo()
-
-  // Muat status scheduled sync
-  await loadScheduledSyncStatus()
-
-  // Start scheduler jika enabled (untuk native app)
-  if (isNativeApp() && scheduledSyncStatus.value.enabled) {
-    await startScheduler()
-  }
-
-  // Hitung pending queue
-  try {
-    const { getSyncQueue } = await import('@/lib/sqlite')
-    const queue = await getSyncQueue()
-    syncStore.pendingCount = queue.length
-  } catch {
-    // non-critical
-  }
 
   loading.value = false
 })

@@ -25,7 +25,6 @@
     "db:test-rbac:local": "RBAC_TEST_HOST=127.0.0.1 RBAC_TEST_PORT=54322 RBAC_TEST_DB=postgres PGPASSWORD=postgres bash docs/rbac/test_rbac.sh"
   },
   "dependencies": {
-    "@capacitor-community/sqlite": "^8.1.1",
     "@capacitor/android": "^8.5.0",
     "@capacitor/app": "^8.1.1",
     "@capacitor/cli": "^8.5.0",

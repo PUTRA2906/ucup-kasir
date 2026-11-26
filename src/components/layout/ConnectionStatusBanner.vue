@@ -14,54 +14,19 @@
     >
       <span class="h-2 w-2 shrink-0 rounded-full bg-amber-500" />
       <span class="flex-1">
-        Mode Offline — perubahan disimpan lokal dan dikirim saat online kembali.
+        Koneksi terputus — data yang tampil mungkin tidak terbaru. Perubahan tidak dapat disimpan
+        sampai online kembali.
       </span>
-      <button
-        v-if="pending > 0"
-        class="shrink-0 rounded-md bg-amber-500/15 px-2 py-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300"
-        type="button"
-        @click="retry"
-      >
-        {{ pending }} tertunda
-      </button>
     </div>
   </Transition>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { isNativeApp } from '@/lib/platform'
-import { isOfflineMode, retryConnection } from '@/lib/connectionMode'
-import { getSyncQueue } from '@/lib/sqlite'
+import { computed } from 'vue'
+import { isOnlineRef } from '@/lib/network'
 
-const native = isNativeApp()
-const pending = ref(0)
-let timer: ReturnType<typeof setInterval> | null = null
-
-// Banner hanya muncul di native saat benar-benar memakai mode offline
-// (sudah menyetujui / sedang offline). Bukan saat layar blokir.
-const show = computed(() => native && isOfflineMode())
-
-async function refreshPending() {
-  if (!native || !isOfflineMode()) return
-  try {
-    const queue = await getSyncQueue()
-    pending.value = queue.length
-  } catch {
-    /* abaikan — DB mungkin belum siap */
-  }
-}
-
-function retry() {
-  void retryConnection()
-}
-
-onMounted(() => {
-  void refreshPending()
-  timer = setInterval(refreshPending, 15_000)
-})
-
-onUnmounted(() => {
-  if (timer) clearInterval(timer)
-})
+// Mode offline sudah dihapus (lihat docs/RBAC_PLAN.md §7.3). Banner ini
+// hanya memberi tahu bahwa data yang ter-cache mungkin basi; penulisan tetap
+// ditolak server sampai koneksi pulih.
+const show = computed(() => !isOnlineRef.value)
 </script>
