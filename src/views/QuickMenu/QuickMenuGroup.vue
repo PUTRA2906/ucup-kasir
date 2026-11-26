@@ -1,5 +1,43 @@
 <template>
   <div class="min-h-dvh bg-gray-50 dark:bg-gray-900">
+    <!-- ============ KEUANGAN: menu gaya erp_mobile_dashboard ============ -->
+    <main v-if="isFinanceGroup" class="mx-auto max-w-md space-y-5 px-4 pb-28 pt-5">
+      <header>
+        <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Akuntansi & laporan</p>
+        <h1 class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">Keuangan</h1>
+      </header>
+
+      <section v-for="section in financeSections" :key="section.title" class="space-y-2">
+        <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          {{ section.title }}
+        </h2>
+        <div
+          class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-800"
+        >
+          <router-link
+            v-for="item in section.items"
+            :key="item.id"
+            :to="item.to"
+            class="flex w-full items-center gap-3.5 p-3.5 text-left transition hover:bg-slate-50 active:bg-slate-100 dark:hover:bg-slate-700/50 dark:active:bg-slate-700"
+          >
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path :d="item.iconPath" />
+              </svg>
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block text-sm font-bold text-slate-900 dark:text-white">{{ item.label }}</span>
+              <span class="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400">{{ item.description }}</span>
+            </span>
+            <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </router-link>
+        </div>
+      </section>
+    </main>
+
+    <template v-else>
     <!-- Sticky Header -->
     <header
       class="sticky top-0 z-20 border-b border-gray-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-gray-800 dark:bg-gray-900/90"
@@ -128,6 +166,9 @@
         </section>
       </div>
     </main>
+    </template>
+
+    <BottomNavigation />
   </div>
 </template>
 
@@ -144,6 +185,7 @@ import {
 } from '@/data/quickMenu'
 import { useTransactionsStore } from '@/stores/transactions'
 import { useShippingStore } from '@/stores/shipping'
+import BottomNavigation from '@/components/layout/BottomNavigation.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -184,6 +226,28 @@ const subgroups = computed<{ title: string; items: QuickMenuItem[] }[]>(() => {
 })
 
 const search = ref('')
+
+/* ---------- Keuangan: layout menu ala erp_mobile_dashboard ---------- */
+const isFinanceGroup = computed(() => slug === 'keuangan')
+
+const FINANCE_SECTIONS: { title: string; ids: string[] }[] = [
+  { title: 'Ringkasan', ids: ['finance-dashboard'] },
+  { title: 'Pencatatan', ids: ['chart-of-accounts', 'journal', 'ledger', 'closing-periods'] },
+  {
+    title: 'Laporan Keuangan',
+    ids: ['trial-balance', 'balance-sheet', 'financial-statements', 'cash-flow'],
+  },
+]
+
+const financeSections = computed(() => {
+  const byId = new Map(group.value.items.map((item) => [item.id, item]))
+  return FINANCE_SECTIONS.map((section) => ({
+    title: section.title,
+    items: section.ids
+      .map((id) => byId.get(id))
+      .filter((item): item is QuickMenuItem => Boolean(item)),
+  })).filter((section) => section.items.length > 0)
+})
 
 /** Hitung transaksi yang perlu dikirim */
 const pendingShipmentsCount = computed(() => {
