@@ -437,6 +437,7 @@ import SelectField from '@/components/common/SelectField.vue'
 import { useFinanceStore } from '@/stores/finance'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 import type { Account } from '@/types/database'
+import { parseBusinessDate } from '@/utils/date'
 
 const router = useRouter()
 const route = useRoute()
@@ -607,11 +608,19 @@ const formatCurrency = (value: number) =>
     style: 'currency', currency: 'IDR', maximumFractionDigits: 0,
   }).format(value || 0)
 
-const formatDate = (dateString: string) =>
-  new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+// Tanggal bisnis jurnal = bagian tanggal UTC dari entry_date (lihat
+// parseBusinessDate di utils/date.ts) — jangan pakai new Date() yang menggeser zona.
+const formatDate = (dateString: string) => {
+  const d = parseBusinessDate(dateString)
+  return d
+    ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    : dateString
+}
 
-const formatDateShort = (dateString: string) =>
-  new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+const formatDateShort = (dateString: string) => {
+  const d = parseBusinessDate(dateString)
+  return d ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : dateString
+}
 
 // Anti race-condition: ganti akun/Filter cepat → respons lama tidak menimpa baru
 let fetchSeq = 0

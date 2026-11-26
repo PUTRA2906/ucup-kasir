@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { localDateFromIso, businessDayRangeIso } from '@/utils/date'
 
 export interface BankTransaction {
   id: string
@@ -62,13 +63,18 @@ export const dailyBankService = {
     let bankOut = 0
 
     if (bankAccountIds.length > 0) {
+      // `entry_date` bertipe timestamptz dan disimpan DENGAN jam. Membandingkan
+      // kolom itu dengan string 'YYYY-MM-DD' = membandingkan dengan tengah malam,
+      // sehingga `.gte(date).lte(date)` hanya cocok untuk baris tepat 00:00 dan
+      // seluruh jurnal hari itu hilang. Pakai rentang setengah-terbuka.
+      const day = businessDayRangeIso(date)
       const { data: journalLines } = await supabase
         .from('journal_lines')
         .select('debit, credit, journal:journal_entries!inner(entry_date, status, reference_type)')
         .in('account_id', bankAccountIds)
         .eq('journal.status', 'posted')
-        .gte('journal.entry_date', date)
-        .lte('journal.entry_date', date)
+        .gte('journal.entry_date', day.start)
+        .lt('journal.entry_date', day.end)
         .not('journal.reference_type', 'in', '("transaction","payment")')
 
       for (const line of journalLines || []) {
@@ -97,9 +103,6 @@ export const dailyBankService = {
 
     const transactions: BankTransaction[] = []
 
-    // ✅ FIX: Filter by DATE column only (payment_date adalah DATE type)
-    const startOfDayCheck = date + 'T00:00:00'
-    const endOfDayCheck = date + 'T23:59:59.999'
 
     // ── Sumber tunggal: transaction_payments (hanya transfer) ────────────────
     const { data: payments, error: paymentsErr } = await supabase
@@ -116,7 +119,10 @@ export const dailyBankService = {
     for (const payment of payments || []) {
       const tx = payment.transaction as any
       const txCreatedAt: string = tx?.created_at || ''
-      const txSameDay = txCreatedAt >= startOfDayCheck && txCreatedAt <= endOfDayCheck
+      // Bandingkan TANGGAL LOKAL, bukan string mentah: timestamp Supabase
+      // memakai pemisah spasi ('2026-11-26 13:13:32+00'), sehingga perbandingan
+      // string dengan 'YYYY-MM-DDT...' selalu bernilai false.
+      const txSameDay = txCreatedAt !== '' && localDateFromIso(txCreatedAt) === date
       const isInitial = txSameDay && payment.created_at === txCreatedAt
 
       transactions.push({
@@ -140,13 +146,16 @@ export const dailyBankService = {
     const bankAccountIds = (bankAccounts || []).map(a => a.id)
 
     if (bankAccountIds.length > 0) {
+      // Lihat catatan di getDailyBankSummary: `entry_date` adalah timestamptz
+      // ber-jam, jadi wajib memakai rentang, bukan `.gte(date).lte(date)`.
+      const day = businessDayRangeIso(date)
       const { data: journalLines } = await supabase
         .from('journal_lines')
         .select('id, debit, credit, created_at, journal:journal_entries!inner(journal_number, entry_date, description, status, reference_type)')
         .in('account_id', bankAccountIds)
         .eq('journal.status', 'posted')
-        .gte('journal.entry_date', date)
-        .lte('journal.entry_date', date)
+        .gte('journal.entry_date', day.start)
+        .lt('journal.entry_date', day.end)
         .not('journal.reference_type', 'in', '("transaction","payment")')
 
       for (const line of journalLines || []) {
@@ -157,7 +166,10 @@ export const dailyBankService = {
         if (debit > 0) {
           transactions.push({
             id: line.id,
-            time: line.created_at,
+            // `entry_date` adalah tanggal bisnis jurnal — itu yang menentukan
+            // baris ini masuk laporan hari mana, jadi yang ditampilkan juga
+            // harus entry_date, bukan created_at (waktu input).
+            time: journal?.entry_date || line.created_at,
             type: 'journal',
             amount: debit,
             reference: journal?.journal_number || '-',
@@ -168,7 +180,7 @@ export const dailyBankService = {
         if (credit > 0) {
           transactions.push({
             id: line.id,
-            time: line.created_at,
+            time: journal?.entry_date || line.created_at,
             type: 'journal',
             amount: credit,
             reference: journal?.journal_number || '-',

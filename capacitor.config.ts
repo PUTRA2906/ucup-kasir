@@ -7,6 +7,9 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https'
   },
+  // Samakan dengan gradient splash animasi (index.html) agar WebView tidak
+  // sempat berkedip putih sebelum halaman pertama dilukis.
+  backgroundColor: '#1E3A8A',
   android: {
     buildOptions: {
       keystorePath: undefined,
@@ -14,22 +17,6 @@ const config: CapacitorConfig = {
       keystoreAlias: undefined,
       keystoreAliasPassword: undefined,
       releaseType: 'APK'
-    }
-  },
-  plugins: {
-    SplashScreen: {
-      launchShowDuration: 2000,
-      launchAutoHide: true,
-      launchFadeOutDuration: 500,
-      backgroundColor: '#FFFFFF',
-      androidSplashResourceName: 'splash_background',
-      androidScaleType: 'CENTER_CROP',
-      showSpinner: false,
-      androidSpinnerStyle: 'large',
-      iosSpinnerStyle: 'small',
-      spinnerColor: '#3B82F6',
-      splashFullScreen: true,
-      splashImmersive: true
     }
   }
 };

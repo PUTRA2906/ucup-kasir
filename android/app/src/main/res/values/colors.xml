@@ -3,5 +3,6 @@
     <color name="colorPrimary">#3B82F6</color>
     <color name="colorPrimaryDark">#2563EB</color>
     <color name="colorAccent">#10B981</color>
-    <color name="splashBackground">#FFFFFF</color>
+    <!-- Samakan dengan latar splash animasi (index.html) agar tidak berkedip -->
+    <color name="splashBackground">#1E3A8A</color>
 </resources>

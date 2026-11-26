@@ -273,7 +273,7 @@ import MobilePageHeader from '@/components/common/MobilePageHeader.vue'
 import DateField from '@/components/common/DateField.vue'
 import { useFinanceStore } from '@/stores/finance'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
-import { localTodayStr, localDateOffsetStr, localDateStr } from '@/utils/date'
+import { localTodayStr, localDateOffsetStr, localDateStr, parseBusinessDate } from '@/utils/date'
 
 const store = useFinanceStore()
 
@@ -322,8 +322,13 @@ const formatCurrency = (value: number) =>
     style: 'currency', currency: 'IDR', maximumFractionDigits: 0,
   }).format(value || 0)
 
-const formatDate = (dateString: string) =>
-  new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+const formatDate = (dateString: string) => {
+  // Tanggal bisnis jurnal = bagian tanggal UTC dari entry_date.
+  const d = parseBusinessDate(dateString)
+  return d
+    ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    : dateString
+}
 
 const formatDateRange = () => {
   if (!startDate.value || !endDate.value) return 'Bulan Ini'

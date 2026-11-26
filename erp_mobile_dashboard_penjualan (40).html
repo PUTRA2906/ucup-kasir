@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tagih Kios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>.no-scrollbar{scrollbar-width:none}.no-scrollbar::-webkit-scrollbar{display:none}</style>
+    <style>
+        #splash{background:linear-gradient(160deg,#1e3a8a,#2563eb);transition:opacity .5s,visibility .5s}
+        #splash.out{opacity:0;visibility:hidden}
+        #splash .a{transform-box:fill-box;transform-origin:center;animation-fill-mode:both}
+        .sp-tile{animation:sp-pop .6s cubic-bezier(.34,1.56,.64,1) both}
+        .sp-body{animation:sp-up .5s .35s ease-out}
+        .sp-roof{animation:sp-drop .6s .6s cubic-bezier(.34,1.56,.64,1)}
+        .sp-note{animation:sp-up .5s 1s ease-out}
+        .sp-badge{animation:sp-pop .5s 1.35s cubic-bezier(.34,1.56,.64,1)}
+        .sp-check{stroke-dasharray:30;animation:sp-draw .4s 1.65s ease-out both}
+        .sp-name{animation:sp-rise .5s 1.5s ease-out both}
+        .sp-tag{animation:sp-rise .5s 1.75s ease-out both}
+        .sp-bar{transform-origin:left;animation:sp-load 2.6s .2s ease-in-out both}
+        @keyframes sp-pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
+        @keyframes sp-up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+        @keyframes sp-drop{from{opacity:0;transform:translateY(-28px)}to{opacity:1;transform:none}}
+        @keyframes sp-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+        @keyframes sp-draw{from{stroke-dashoffset:30}to{stroke-dashoffset:0}}
+        @keyframes sp-load{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+        @media (prefers-reduced-motion:reduce){#splash *{animation:none!important}}
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 antialiased">
+
+<div id="shell" class="relative mx-auto flex h-screen w-full max-w-md flex-col overflow-hidden bg-slate-50 sm:border-x sm:border-slate-200">
+
+    <!-- SPLASH SCREEN: TAGIH KIOS -->
+    <div id="splash" class="absolute inset-0 z-[100] flex flex-col items-center justify-center text-white" onclick="this.classList.add('out')">
+        <div class="sp-tile flex h-36 w-36 items-center justify-center rounded-[36px] bg-white shadow-2xl">
+            <svg class="h-28 w-28" viewBox="0 0 120 120" role="img" aria-label="Logo Tagih Kios">
+                <g class="a sp-body">
+                    <rect x="22" y="46" width="76" height="56" rx="8" fill="#dbeafe"/>
+                    <rect x="16" y="98" width="88" height="8" rx="4" fill="#1e3a8a"/>
+                </g>
+                <g class="a sp-note">
+                    <path d="M40 54h40v44l-5-4-5 4-5-4-5 4-5-4-5 4-5-4-5 4z" fill="#fff" stroke="#2563eb" stroke-width="3" stroke-linejoin="round"/>
+                    <path d="M48 66h24M48 75h24M48 84h12" stroke="#93c5fd" stroke-width="4" stroke-linecap="round"/>
+                </g>
+                <g class="a sp-roof">
+                    <path d="M24 18h72l10 24H14z" fill="#1e40af"/>
+                    <path d="M14 42h23v4a11.5 11.5 0 0 1-23 0zM60 42h23v4a11.5 11.5 0 0 1-23 0z" fill="#2563eb"/>
+                    <path d="M37 42h23v4a11.5 11.5 0 0 1-23 0zM83 42h23v4a11.5 11.5 0 0 1-23 0z" fill="#fbbf24"/>
+                </g>
+                <g class="a sp-badge">
+                    <circle cx="88" cy="86" r="17" fill="#10b981" stroke="#fff" stroke-width="4"/>
+                    <path class="sp-check" d="M80 86l6 6 11-12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+            </svg>
+        </div>
+        <div class="sp-name mt-6 text-3xl font-extrabold tracking-tight">Tagih <span class="text-amber-300">Kios</span></div>
+        <p class="sp-tag mt-1 text-xs font-medium text-blue-100">Catat, tagih, lunas.</p>
+        <div class="absolute bottom-16 h-1 w-32 overflow-hidden rounded-full bg-white/20"><div class="sp-bar h-full w-full bg-white"></div></div>
+    </div>
+    <script>setTimeout(() => document.getElementById('splash').classList.add('out'), 3000);</script>
+
+    <!-- KONTEN: HOME -->
+    <main id="page-home" class="flex-1 space-y-5 overflow-y-auto px-[28px] pb-6 pt-5">
+
+        <!-- Header -->
+        <header class="-mx-[28px] -mt-5 bg-gradient-to-br from-blue-800 to-blue-600 px-[28px] pb-[142px] pt-5 text-white" style="background-image:radial-gradient(circle at 100% 0,transparent 60px,rgba(255,255,255,.09) 61px,rgba(255,255,255,.09) 90px,transparent 91px,transparent 120px,rgba(255,255,255,.06) 121px,rgba(255,255,255,.06) 150px,transparent 151px),radial-gradient(circle at 0 100%,rgba(255,255,255,.10) 80px,transparent 81px),radial-gradient(rgba(255,255,255,.18) 1.2px,transparent 1.6px),linear-gradient(135deg,#1e40af,#2563eb);background-size:100% 100%,100% 100%,16px 16px,100% 100%">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-medium text-blue-100">Selamat Datang,</p>
+                    <h1 class="text-xl font-extrabold tracking-tight">TEST</h1>
+                </div>
+                <div class="flex items-center gap-2">
+            <button onclick="openSheet('sheet-notif')" aria-label="Notifikasi" class="relative flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-white/15 text-white hover:bg-white/25">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <span class="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white ring-2 ring-blue-700">3</span>
+                </button>
+            </div>
+            </div>
+        </header>
+
+        <!-- Saldo Kas & Bank (slider) -->
+        <section class="relative" style="margin-top:-122px">
+            <div id="saldo-slider" class="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth">
+                <div class="relative w-full shrink-0 snap-center overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-700 p-5 text-white">
+                    <span class="pointer-events-none absolute -bottom-12 -left-8 h-32 w-32 rounded-full bg-white/10"></span>
+                    <div class="relative flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg></span>
+                            <span class="text-sm font-medium text-blue-100">Saldo Kas Utama</span>
+                        </div>
+                        <button onclick="toggleMask()" aria-label="Tampilkan atau sembunyikan saldo" class="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 hover:bg-white/30"><svg class="eye-on h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off hidden h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></svg></button>
+                    </div>
+                    <div id="hero-tunai" class="relative mt-3 text-[32px] font-extrabold leading-tight tracking-tight"></div>
+                    <div class="relative mt-4 flex items-center justify-between gap-2 border-t border-white/20 pt-3">
+                        <div class="flex min-w-0 items-center gap-1.5 text-xs">
+                            <span class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-400/30 text-emerald-200"><svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>
+                            <span class="text-emerald-200">Masuk:</span>
+                            <span id="kas-masuk" class="truncate font-bold"></span>
+                        </div>
+                        <button onclick="openMutasi('Kas Tunai')" class="shrink-0 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-blue-700 active:scale-95">Mutasi &rarr;</button>
+                    </div>
+                </div>
+                <div class="relative w-full shrink-0 snap-center overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-purple-600 via-purple-600 to-violet-800 p-5 text-white">
+                    <span class="pointer-events-none absolute -bottom-12 -left-8 h-32 w-32 rounded-full bg-white/10"></span>
+                    <div class="relative flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6M5 10v8M10 10v8M14 10v8M19 10v8M3 21h18"/></svg></span>
+                            <span class="text-sm font-medium text-purple-100">Saldo Bank Utama</span>
+                        </div>
+                        <button onclick="toggleMask()" aria-label="Tampilkan atau sembunyikan saldo" class="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 hover:bg-white/30"><svg class="eye-on h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off hidden h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></svg></button>
+                    </div>
+                    <div id="hero-bank" class="relative mt-3 text-[32px] font-extrabold leading-tight tracking-tight"></div>
+                    <div class="relative mt-4 flex items-center justify-between gap-2 border-t border-white/20 pt-3">
+                        <div class="flex min-w-0 items-center gap-1.5 text-xs">
+                            <span class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-400/30 text-emerald-200"><svg class="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>
+                            <span class="text-emerald-200">Masuk:</span>
+                            <span id="bank-masuk" class="truncate font-bold"></span>
+                        </div>
+                        <button onclick="openMutasi('Rekening BCA')" class="shrink-0 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-purple-700 active:scale-95">Mutasi &rarr;</button>
+                    </div>
+                </div>
+            </div>
+            <div id="saldo-dots" class="mt-3 flex justify-center gap-1.5">
+                <button aria-label="Saldo Kas" onclick="goSaldo(0)" class="h-1.5 w-5 rounded-full bg-blue-600 transition-all"></button>
+                <button aria-label="Saldo Bank" onclick="goSaldo(1)" class="h-1.5 w-1.5 rounded-full bg-slate-300 transition-all"></button>
+            </div>
+        </section>
+
+        <!-- Aksi Cepat -->
+        <section class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="grid grid-cols-4 gap-x-1 gap-y-2 text-center">
+                <button onclick="setNav('penjualan')" class="flex flex-col items-center gap-2 rounded-2xl py-1.5 active:scale-95">
+                    <span class="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 text-blue-600"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14l2.5-1.5L10 19l2.5-1.5L15 19l2.5-1.5L19 19V8z"/><path d="M14 3v5h5"/><path d="M9 12h6M9 15h4"/></svg></span>
+                    <span class="text-xs font-bold leading-tight text-slate-700">Penjualan</span>
+                </button>
+                <button onclick="toast('Halaman Produk belum tersedia')" class="flex flex-col items-center gap-2 rounded-2xl py-1.5 active:scale-95">
+                    <span class="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 text-blue-600"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>
+                    <span class="text-xs font-bold leading-tight text-slate-700">Produk</span>
+                </button>
+                <button onclick="toast('Halaman Pengiriman belum tersedia')" class="flex flex-col items-center gap-2 rounded-2xl py-1.5 active:scale-95">
+                    <span class="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 text-blue-600"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h13v13H1z"/><path d="M14 8h4l4 4v4h-8z"/><circle cx="5.5" cy="18.5" r="2"/><circle cx="18.5" cy="18.5" r="2"/></svg></span>
+                    <span class="text-xs font-bold leading-tight text-slate-700">Pengiriman</span>
+                </button>
+                <button onclick="toast('Halaman Customer belum tersedia')" class="flex flex-col items-center gap-2 rounded-2xl py-1.5 active:scale-95">
+                    <span class="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 text-blue-600"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></span>
+                    <span class="text-xs font-bold leading-tight text-slate-700">Customer</span>
+                </button>
+                <button onclick="setNav('pembelian')" class="flex flex-col items-center gap-2 rounded-2xl py-1.5 active:scale-95">
+                    <span class="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 text-blue-600"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6"/></svg></span>
+                    <span class="text-xs font-bold leading-tight text-slate-700">Pembelian</span>
+                </button>
+                <button onclick="toast('Halaman Gudang belum tersedia')" class="flex flex-col items-center gap-2 rounded-2xl py-1.5 active:scale-95">
+                    <span class="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 text-blue-600"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v11H3z"/><path d="M8 20v-7h8v7M8 16h8"/></svg></span>
+                    <span class="text-xs font-bold leading-tight text-slate-700">Gudang</span>
+                </button>
+                <button onclick="toast('Halaman Karyawan belum tersedia')" class="flex flex-col items-center gap-2 rounded-2xl py-1.5 active:scale-95">
+                    <span class="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 text-blue-600"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M16 11l2 2 4-4"/></svg></span>
+                    <span class="text-xs font-bold leading-tight text-slate-700">Karyawan</span>
+                </button>
+                <button onclick="toast('Halaman Piutang belum tersedia')" class="flex flex-col items-center gap-2 rounded-2xl py-1.5 active:scale-95">
+                    <span class="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 text-blue-600"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+                    <span class="text-xs font-bold leading-tight text-slate-700">Piutang</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Omzet + Laba + Laba Tertahan -->
+        <section class="grid grid-cols-12 gap-3">
+            <div class="col-span-7 flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-600">Omzet Mingguan</span>
+                        <span id="day-badge" class="rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600"></span>
+                    </div>
+                    <div id="day-rev" class="mt-1.5 text-lg font-extrabold tracking-tight"></div>
+                    <div id="day-tx" class="text-[11px] text-slate-500"></div>
+                </div>
+                <div id="bars" class="mt-4 flex h-24 items-end justify-between gap-1"></div>
+            </div>
+
+            <div class="col-span-5 flex flex-col gap-3">
+                <div class="flex-1 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <span class="text-[11px] font-bold text-slate-600">Laba Diterima</span>
+                    <div id="laba" class="mt-1 text-sm font-extrabold leading-tight tracking-tight"></div>
+                    <div id="laba-margin" class="mt-1.5 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700"></div>
+                </div>
+                <div class="flex-1 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <span class="text-[11px] font-bold text-slate-600">Laba Tertahan</span>
+                    <div id="recv-amount" class="mt-1 text-sm font-extrabold leading-tight tracking-tight"></div>
+                    <div id="recv-badge" class="mt-1.5 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transaksi Terbaru -->
+        <section class="space-y-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="flex items-center justify-between gap-2">
+                <div>
+                    <h2 class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Omzet Hari Ini</h2>
+                    <div id="today-rev" class="mt-1 text-lg font-extrabold leading-tight tracking-tight"></div>
+                    <p id="today-tx" class="text-[11px] text-slate-500"></p>
+                </div>
+                <button onclick="renderDetail(); openSheet('sheet-detail')" class="flex shrink-0 items-center gap-1 rounded-xl bg-blue-50 px-3 py-2 text-[11px] font-bold text-blue-600 hover:bg-blue-100">
+                    Detail transaksi
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+            <div id="tx-list" class="space-y-2.5"></div>
+        </section>
+    </main>
+
+    <!-- KONTEN: PENJUALAN -->
+    <main id="page-penjualan" class="hidden flex-1 space-y-5 overflow-y-auto px-[28px] pb-6 pt-5">
+        <header class="flex items-center justify-between">
+            <div>
+                <p class="text-[11px] font-medium text-slate-500">Riwayat & rekap</p>
+                <h1 class="text-xl font-extrabold tracking-tight">Penjualan</h1>
+            </div>
+            <button onclick="openSheet('sheet-pos')" class="flex items-center gap-1.5 rounded-2xl bg-blue-600 px-3.5 py-2.5 text-xs font-bold text-white hover:bg-blue-500 active:scale-95">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Baru
+            </button>
+        </header>
+
+        <!-- Ringkasan -->
+        <section class="rounded-3xl bg-blue-600 p-4 text-white shadow-md">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-blue-100">Total Penjualan</span>
+                <span id="sales-count" class="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-bold"></span>
+            </div>
+            <div id="sales-total" class="mt-2 text-2xl font-extrabold leading-none tracking-tight"></div>
+            <div class="mt-4 grid grid-cols-3 gap-1.5 text-[11px]">
+                <div class="rounded-2xl bg-white/15 px-1.5 py-2"><div class="font-semibold text-blue-100">Tunai</div><div id="sales-tunai" class="mt-0.5 whitespace-nowrap font-extrabold tracking-tighter"></div></div>
+                <div class="rounded-2xl bg-white/15 px-1.5 py-2"><div class="font-semibold text-blue-100">Transfer</div><div id="sales-bca" class="mt-0.5 whitespace-nowrap font-extrabold tracking-tighter"></div></div>
+                <div class="rounded-2xl bg-white/15 px-1.5 py-2"><div class="font-semibold text-blue-100">Tempo</div><div id="sales-tempo" class="mt-0.5 whitespace-nowrap font-extrabold tracking-tighter"></div></div>
+            </div>
+        </section>
+
+        <!-- Cari & filter -->
+        <section class="space-y-2.5">
+            <div class="relative">
+                <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <input id="sales-search" oninput="setSalesSearch(this.value)" type="search" placeholder="Cari customer, item, atau no. invoice" class="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-3.5 text-xs outline-none focus:border-blue-500">
+            </div>
+            <div id="sales-filters" class="no-scrollbar flex gap-2 overflow-x-auto"></div>
+        </section>
+
+        <!-- Daftar -->
+        <section id="sales-list" class="space-y-2.5"></section>
+    </main>
+
+    <!-- KONTEN: PENGATURAN -->
+    <main id="page-pengaturan" class="hidden flex-1 space-y-5 overflow-y-auto px-[28px] pb-6 pt-5">
+        <header class="flex items-center gap-3">
+            <button onclick="setNav('profil')" aria-label="Kembali" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+            </button>
+            <div>
+                <p class="text-[11px] font-medium text-slate-500">Konfigurasi aplikasi</p>
+                <h1 class="text-xl font-extrabold tracking-tight">Pengaturan</h1>
+            </div>
+        </header>
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Pajak</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="toggleSetting('ppnOn')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">PPN</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Tambahkan pajak pada setiap penjualan</span>
+                    </span>
+                    <span id="sw-ppnOn" class="relative h-6 w-11 shrink-0 rounded-full bg-slate-300 transition-colors"><span id="sw-ppnOn-dot" class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform"></span></span>
+                </button>
+                <button onclick="openSetting('ppnRate')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Tarif PPN</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Persentase pajak yang dikenakan</span>
+                    </span>
+                    <span id="sv-ppnRate" class="max-w-[7rem] shrink-0 truncate text-xs font-bold text-blue-600"></span><svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toggleSetting('ppnIncl')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><path d="M7.5 7.5h.01"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Harga Sudah Termasuk PPN</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Nominal item sudah memuat pajak</span>
+                    </span>
+                    <span id="sw-ppnIncl" class="relative h-6 w-11 shrink-0 rounded-full bg-slate-300 transition-colors"><span id="sw-ppnIncl-dot" class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform"></span></span>
+                </button>
+            </div>
+        </section>
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Kredit & Piutang</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="openSetting('creditLimit')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Limit Kredit Default</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Batas piutang tempo per customer</span>
+                    </span>
+                    <span id="sv-creditLimit" class="max-w-[7rem] shrink-0 truncate text-xs font-bold text-blue-600"></span><svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="openSetting('dueDays')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Jatuh Tempo Default</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Lama tempo untuk transaksi kredit</span>
+                    </span>
+                    <span id="sv-dueDays" class="max-w-[7rem] shrink-0 truncate text-xs font-bold text-blue-600"></span><svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toggleSetting('blockOver')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Blokir Melebihi Limit</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Tolak transaksi tempo yang melewati limit</span>
+                    </span>
+                    <span id="sw-blockOver" class="relative h-6 w-11 shrink-0 rounded-full bg-slate-300 transition-colors"><span id="sw-blockOver-dot" class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform"></span></span>
+                </button>
+            </div>
+        </section>
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Dokumen & Struk</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="openSetting('invPrefix')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16M4 15h16M10 3L8 21M16 3l-2 18"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Prefix Nomor Invoice</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Awalan nomor untuk invoice baru</span>
+                    </span>
+                    <span id="sv-invPrefix" class="max-w-[7rem] shrink-0 truncate text-xs font-bold text-blue-600"></span><svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="openSetting('receiptNote')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Catatan Kaki Struk</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Teks di bagian bawah struk</span>
+                    </span>
+                    <span id="sv-receiptNote" class="max-w-[7rem] shrink-0 truncate text-xs font-bold text-blue-600"></span><svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+        </section>
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Lainnya</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="toast('Metode Pembayaran belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Metode Pembayaran</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Tunai, transfer BCA & tempo</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Produk & Harga belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Produk & Harga</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Daftar harga jual & satuan</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Semua data cabang tersinkron')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Sinkronisasi</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Sinkronkan data sekarang</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Backup & Ekspor belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Backup & Ekspor</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Cadangan data & ekspor ke Excel</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Bahasa belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Bahasa</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Bahasa Indonesia</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('ERP Mobile versi 1.0')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Tentang Aplikasi</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Versi & informasi aplikasi</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- KONTEN: PROFIL -->
+    <main id="page-profil" class="hidden flex-1 space-y-5 overflow-y-auto px-[28px] pb-6 pt-5">
+        <header>
+            <p class="text-[11px] font-medium text-slate-500">Akun & preferensi</p>
+            <h1 class="text-xl font-extrabold tracking-tight">Pengaturan Profil</h1>
+        </header>
+
+        <section class="flex items-center gap-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+            <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-blue-600 text-2xl font-extrabold text-white">T</span>
+            <div class="min-w-0">
+                <div class="text-base font-extrabold tracking-tight">TEST</div>
+                <div class="text-[11px] text-slate-500">Pemilik Usaha</div>
+                <span id="prof-branch" class="mt-1.5 inline-block rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-600"></span>
+            </div>
+        </section>
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Akun</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="toast('Edit Profil belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Edit Profil</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Nama, nomor telepon & foto</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Ubah Kata Sandi belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Ubah Kata Sandi</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Perbarui kata sandi akun</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+        </section>
+
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Pengaturan</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="setNav('pengaturan')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Pengaturan</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Pajak, kredit, nomor invoice & struk</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+        </section>
+
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Preferensi</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="openSheet('sheet-notif')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Notifikasi</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Stok menipis, piutang & sinkronisasi</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toggleMask()" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Sembunyikan Saldo</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Samarkan nominal di seluruh halaman</span>
+                    </span>
+                    <span id="sw-mask" class="relative h-6 w-11 shrink-0 rounded-full bg-slate-300 transition-colors"><span id="sw-mask-dot" class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform"></span></span>
+                </button>
+                <button onclick="toast('Info Toko belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Info Toko</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Nama, alamat & rekening bank</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+        </section>
+
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Lainnya</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="toast('Bantuan belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Bantuan</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Panduan & hubungi dukungan</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Anda telah keluar (simulasi)')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-rose-600">Keluar</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Keluar dari akun ini</span>
+                    </span>
+                    
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- KONTEN: LAPORAN -->
+    <main id="page-laporan" class="hidden flex-1 space-y-5 overflow-y-auto px-[28px] pb-6 pt-5">
+        <header>
+            <p class="text-[11px] font-medium text-slate-500">Rekap & analisis usaha</p>
+            <h1 class="text-xl font-extrabold tracking-tight">Laporan</h1>
+        </header>
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Penjualan</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="setNav('penjualan')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14l2.5-1.5L10 19l2.5-1.5L15 19l2.5-1.5L19 19V8z"/><path d="M14 3v5h5"/><path d="M9 12h6M9 15h4"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Laporan Penjualan</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Rekap omzet & daftar transaksi penjualan</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Laporan Penjualan per Produk belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Penjualan per Produk</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Produk terlaris & kontribusi omzet</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Laporan Penjualan per Customer belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Penjualan per Customer</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Rekap pembelian tiap customer & kios</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Laporan Laba Rugi belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 17v-5M12 17V8M16 17v-3"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Laba Rugi</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Laba kotor, biaya & laba bersih</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+        </section>
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Pembelian & Stok</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="toast('Laporan Pembelian belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Laporan Pembelian</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Rekap pembelian dari supplier</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Laporan Stok Barang belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v11H3z"/><path d="M8 20v-7h8v7M8 16h8"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Stok Barang</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Posisi stok per gudang & barang menipis</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+        </section>
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Kas & Piutang</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="openSheet('sheet-mutasi')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Arus Kas</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Laporan pemasukan & pengeluaran kas</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Laporan Piutang belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Piutang Customer</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Tagihan tempo & jatuh tempo</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- KONTEN: KEUANGAN (MENU) -->
+    <main id="page-keuangan" class="hidden flex-1 space-y-5 overflow-y-auto px-[28px] pb-6 pt-5">
+        <header>
+            <p class="text-[11px] font-medium text-slate-500">Akuntansi & laporan</p>
+            <h1 class="text-xl font-extrabold tracking-tight">Keuangan</h1>
+        </header>
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Ringkasan</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="setNav('keuangan-ringkasan')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M16 14h.01"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Keuangan</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Ringkasan keuangan & posisi kas</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+        </section>
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Pencatatan</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="toast('Halaman Akun belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Akun</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Chart of accounts / daftar akun</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Halaman Jurnal belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Jurnal</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Jurnal umum seluruh transaksi</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Halaman Buku Besar belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Buku Besar</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Rekap transaksi per akun</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+        </section>
+        <section class="space-y-2">
+            <h2 class="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Laporan Keuangan</h2>
+            <div class="divide-y divide-slate-100 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <button onclick="toast('Halaman Neraca Saldo & Penyesuaian belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 21h14M5 7h14"/><path d="M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Neraca Saldo & Penyesuaian</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Kertas kerja saldo & jurnal penyesuaian</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Halaman Neraca belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 17v-3M12 17v-5M15 17v-2"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Neraca</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Laporan posisi aset, utang & modal</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="toast('Halaman Laporan Keuangan belum tersedia')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 17v-5M12 17V8M16 17v-3"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Laporan Keuangan</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Laba rugi, perubahan ekuitas & posisi keuangan</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                <button onclick="openSheet('sheet-mutasi')" class="flex w-full items-center gap-3.5 p-3.5 text-left hover:bg-slate-50 active:bg-slate-100">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold text-slate-900">Arus Kas</span>
+                        <span class="mt-0.5 block text-[11px] text-slate-500">Laporan pemasukan & pengeluaran kas</span>
+                    </span>
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- KONTEN: KEUANGAN (RINGKASAN) -->
+    <main id="page-keuangan-ringkasan" class="hidden flex-1 space-y-5 overflow-y-auto px-[28px] pb-6 pt-5">
+        <header class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <button onclick="setNav('keuangan')" aria-label="Kembali" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+                </button>
+                <div>
+                    <p class="text-[11px] font-medium text-slate-500">Ringkasan & posisi kas</p>
+                    <h1 class="text-xl font-extrabold tracking-tight">Keuangan</h1>
+                </div>
+            </div>
+            <button onclick="openKas()" class="flex items-center gap-1.5 rounded-2xl bg-blue-600 px-3.5 py-2.5 text-xs font-bold text-white hover:bg-blue-500 active:scale-95">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Catat
+            </button>
+        </header>
+
+        <section class="rounded-3xl bg-blue-600 p-4 text-white shadow-md">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-blue-100">Total Saldo</span>
+                <button onclick="toggleMask()" class="rounded-xl bg-white/15 px-2.5 py-1 text-[11px] font-semibold hover:bg-white/25"><span class="mask-label">Sembunyikan</span></button>
+            </div>
+            <div id="fin-total" class="mt-2 text-2xl font-extrabold leading-none tracking-tight"></div>
+            <div class="mt-4 grid grid-cols-2 gap-2 text-[11px]">
+                <div class="rounded-2xl bg-white/15 p-2.5"><div class="font-semibold text-blue-100">Kas Tunai</div><div id="fin-tunai" class="mt-0.5 font-extrabold"></div></div>
+                <div class="rounded-2xl bg-white/15 p-2.5"><div class="font-semibold text-blue-100">Rekening BCA</div><div id="fin-bank" class="mt-0.5 font-extrabold"></div></div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-3 gap-2">
+            <div class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div class="text-[10px] font-bold text-emerald-600">Masuk Hari Ini</div>
+                <div id="fin-in" class="mt-1 text-[11px] font-extrabold leading-tight"></div>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div class="text-[10px] font-bold text-rose-600">Keluar Hari Ini</div>
+                <div id="fin-out" class="mt-1 text-[11px] font-extrabold leading-tight"></div>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div class="text-[10px] font-bold text-amber-600">Piutang</div>
+                <div id="fin-recv" class="mt-1 text-[11px] font-extrabold leading-tight"></div>
+            </div>
+        </section>
+
+        <section class="space-y-2.5">
+            <div class="flex items-center justify-between">
+                <h2 class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Mutasi Kas & Bank</h2>
+            </div>
+            <div id="fin-filters" class="no-scrollbar flex gap-2 overflow-x-auto"></div>
+            <div id="fin-list" class="space-y-2.5"></div>
+        </section>
+    </main>
+
+    <main id="page-soon" class="hidden flex-1 flex-col items-center justify-center overflow-y-auto px-[28px] pb-6 pt-5 text-center">
+        <h1 id="soon-title" class="text-xl font-extrabold tracking-tight"></h1>
+        <p class="mt-1 text-xs text-slate-500">Halaman ini belum tersedia.</p>
+    </main>
+
+    <!-- KONTEN: MUTASI KAS / BANK -->
+    <main id="page-mutasi" class="hidden flex-1 flex-col overflow-hidden">
+        <header class="flex shrink-0 items-center gap-3 border-b border-slate-200 px-5 py-3">
+            <button onclick="setNav('home')" aria-label="Kembali" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+            </button>
+            <div class="min-w-0 flex-1">
+                <h1 id="mut-title" class="text-lg font-extrabold leading-tight tracking-tight"></h1>
+                <p id="mut-today" class="text-[10px] text-slate-500"></p>
+            </div>
+            <label class="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                <input id="mut-date" type="date" aria-label="Pilih tanggal" onclick="this.showPicker && this.showPicker()" onchange="setMutFilter(this.value || 'hari')" class="absolute inset-0 h-full w-full cursor-pointer opacity-0">
+            </label>
+        </header>
+        <div class="flex-1 space-y-4 overflow-y-auto px-5 pb-6 pt-4">
+            <section class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="min-w-0">
+                    <p id="mut-balance-label" class="text-[11px] text-slate-500"></p>
+                    <div id="mut-balance" class="mt-1 text-[28px] font-extrabold leading-tight tracking-tight"></div>
+                </div>
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
+                </span>
+            </section>
+            <div id="mut-filters" class="no-scrollbar flex gap-2 overflow-x-auto"></div>
+            <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-3">
+                    <h2 class="text-xs font-bold">Riwayat Mutasi</h2>
+                    <span id="mut-range" class="text-right text-[11px] text-slate-500"></span>
+                </div>
+                <div id="mut-rows" class="divide-y divide-slate-100"></div>
+            </section>
+        </div>
+    </main>
+
+    <!-- NAV BAWAH -->
+    <nav class="relative z-30 shrink-0 border-t border-slate-200 bg-white px-2 pb-4 pt-2">
+        <div class="grid grid-cols-5 items-end text-center">
+            <button onclick="setNav('home')" id="nav-home" class="flex flex-col items-center gap-1 text-blue-600">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span class="text-[10px] font-bold">Home</span>
+            </button>
+            <button onclick="setNav('keuangan')" id="nav-keuangan" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M16 14h.01"/></svg>
+                <span class="text-[10px] font-medium">Keuangan</span>
+            </button>
+            <div class="flex flex-col items-center">
+                <button onclick="openSheet('sheet-pos')" aria-label="Tambah Transaksi" class="-mt-8 flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-blue-600 text-white shadow-lg hover:bg-blue-500 active:scale-95">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+                <span class="mt-1 text-[10px] font-semibold text-slate-600">Transaksi</span>
+            </div>
+            <button onclick="setNav('laporan')" id="nav-laporan" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span class="text-[10px] font-medium">Laporan</span>
+            </button>
+            <button onclick="setNav('profil')" id="nav-profil" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+                <span class="text-[10px] font-medium">Profil</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- TOAST -->
+    <div id="toast" class="pointer-events-none absolute inset-x-4 top-4 z-[60] flex -translate-y-2 justify-center opacity-0 transition-all duration-200">
+        <div class="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-lg" id="toast-msg"></div>
+    </div>
+
+    <!-- BACKDROP -->
+    <div id="backdrop" onclick="closeSheets()" class="absolute inset-0 z-40 hidden bg-slate-900/40"></div>
+
+    <!-- SHEET: NOTIFIKASI -->
+    <div id="sheet-notif" class="absolute inset-x-0 top-0 z-50 hidden rounded-b-3xl border-b border-slate-200 bg-white p-5 shadow-xl">
+        <div class="mb-3.5 flex items-center justify-between">
+            <h3 class="text-sm font-bold">Notifikasi</h3>
+            <button onclick="closeSheets()" class="rounded-xl bg-slate-100 p-1.5 text-slate-500 hover:text-slate-900" aria-label="Tutup">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="space-y-2.5 text-xs">
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 p-3">
+                <div class="font-bold text-amber-800">Stok Menipis</div>
+                <p class="mt-0.5 text-[11px] text-slate-600">Pupuk Urea 50kg tersisa 3 karung di Gudang Utama.</p>
+            </div>
+            <div class="rounded-2xl border border-rose-200 bg-rose-50 p-3">
+                <div class="font-bold text-rose-800">Piutang Jatuh Tempo</div>
+                <p class="mt-0.5 text-[11px] text-slate-600">Invoice #INV-2041 (Kios Sumber Rejeki) jatuh tempo hari ini, Rp 650.000.</p>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <div class="font-bold text-slate-800">Sinkronisasi Berhasil</div>
+                <p class="mt-0.5 text-[11px] text-slate-500">Semua data cabang tersinkron 2 menit lalu.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHEET: MUTASI -->
+    <div id="sheet-mutasi" class="absolute inset-x-0 bottom-0 z-50 hidden max-h-[80%] flex-col rounded-t-3xl border-t border-slate-200 bg-white p-5 pb-8 shadow-xl">
+        <div class="mb-3 flex shrink-0 items-center justify-between">
+            <div>
+                <h3 class="text-sm font-bold">Mutasi Arus Kas</h3>
+                <p class="text-[11px] text-slate-500">Keluar-masuk Tunai & BCA</p>
+            </div>
+            <button onclick="closeSheets()" class="rounded-xl bg-slate-100 p-1.5 text-slate-500 hover:text-slate-900" aria-label="Tutup">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div id="mutation-list" class="space-y-2.5 overflow-y-auto"></div>
+    </div>
+
+    <!-- SHEET: DETAIL TRANSAKSI -->
+    <div id="sheet-detail" class="absolute inset-x-0 bottom-0 z-50 hidden max-h-[85%] flex-col rounded-t-3xl border-t border-slate-200 bg-white p-5 pb-8 shadow-xl">
+        <div class="mb-3 flex shrink-0 items-center justify-between">
+            <div>
+                <h3 class="text-sm font-bold">Detail Transaksi</h3>
+                <p id="detail-sub" class="text-[11px] text-slate-500"></p>
+            </div>
+            <button onclick="closeSheets()" class="rounded-xl bg-slate-100 p-1.5 text-slate-500 hover:text-slate-900" aria-label="Tutup">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="min-h-0 flex-1 space-y-3 overflow-y-auto">
+            <div id="detail-summary" class="grid grid-cols-3 gap-2"></div>
+            <div id="detail-list" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <!-- SHEET: POS -->
+    <div id="sheet-pos" class="absolute inset-x-0 bottom-0 z-50 hidden rounded-t-3xl border-t border-slate-200 bg-white p-5 pb-8 shadow-xl">
+        <div class="mb-4 flex items-center justify-between">
+            <h3 class="text-sm font-bold">Transaksi Baru</h3>
+            <button onclick="closeSheets()" class="rounded-xl bg-slate-100 p-1.5 text-slate-500 hover:text-slate-900" aria-label="Tutup">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+
+        <form onsubmit="submitPOS(event)" class="space-y-3 text-xs">
+            <div>
+                <label class="mb-1 block text-[11px] font-semibold text-slate-500">Customer / Kios</label>
+                <input id="pos-customer" oninput="updatePosSummary()" type="text" value="Kios Berkah Mandiri" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 outline-none focus:border-blue-500 focus:bg-white">
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                    <label class="mb-1 block text-[11px] font-semibold text-slate-500">Item</label>
+                    <select id="pos-item" onchange="syncPrice()" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 outline-none focus:border-blue-500 focus:bg-white">
+                        <option value="2x Pupuk Urea 50kg|230000">2x Pupuk Urea 50kg</option>
+                        <option value="5x Beras Pandan 5kg|362500">5x Beras Pandan 5kg</option>
+                        <option value="1x Paket Sembako Grosir|450000">1x Paket Sembako</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-[11px] font-semibold text-slate-500">Nominal (Rp)</label>
+                    <input id="pos-amount" oninput="updatePosSummary()" type="number" value="230000" min="1000" step="500" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 font-bold outline-none focus:border-blue-500 focus:bg-white">
+                </div>
+            </div>
+
+            <div id="pos-summary" class="hidden space-y-1 rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px]">
+                <div class="flex justify-between text-slate-500"><span>Subtotal</span><span id="pos-sub" class="font-semibold text-slate-700"></span></div>
+                <div class="flex justify-between text-slate-500"><span id="pos-ppn-label">PPN</span><span id="pos-ppn" class="font-semibold text-slate-700"></span></div>
+                <div class="flex justify-between border-t border-slate-200 pt-1 font-bold text-slate-700"><span>Total</span><span id="pos-total"></span></div>
+            </div>
+
+            <div>
+                <label class="mb-1 block text-[11px] font-semibold text-slate-500">Pembayaran</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <label class="cursor-pointer">
+                        <input type="radio" onchange="updatePosSummary()" name="pos-method" value="Tunai" checked class="peer sr-only">
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 py-2 text-center font-semibold text-slate-600 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700">Tunai</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" onchange="updatePosSummary()" name="pos-method" value="BCA" class="peer sr-only">
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 py-2 text-center font-semibold text-slate-600 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700">Transfer BCA</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" onchange="updatePosSummary()" name="pos-method" value="Tempo" class="peer sr-only">
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 py-2 text-center font-semibold text-slate-600 peer-checked:border-amber-500 peer-checked:bg-amber-50 peer-checked:text-amber-700"><span id="pos-tempo-label">Tempo 7H</span></div>
+                    </label>
+                </div>
+            </div>
+
+            <p id="pos-warn" class="hidden rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] font-semibold text-rose-700"></p>
+
+            <button type="submit" class="mt-1 w-full rounded-2xl bg-blue-600 py-3 text-xs font-bold text-white hover:bg-blue-500">Simpan Transaksi</button>
+        </form>
+    </div>
+
+    <!-- SHEET: CATAT KAS -->
+    <div id="sheet-kas" class="absolute inset-x-0 bottom-0 z-50 hidden rounded-t-3xl border-t border-slate-200 bg-white p-5 pb-8 shadow-xl">
+        <div class="mb-4 flex items-center justify-between">
+            <h3 class="text-sm font-bold">Catat Arus Kas</h3>
+            <button onclick="closeSheets()" class="rounded-xl bg-slate-100 p-1.5 text-slate-500 hover:text-slate-900" aria-label="Tutup">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <form onsubmit="submitKas(event)" class="space-y-3 text-xs">
+            <div class="grid grid-cols-2 gap-2">
+                <label class="cursor-pointer">
+                    <input type="radio" name="kas-type" value="out" checked class="peer sr-only">
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 py-2 text-center font-semibold text-slate-600 peer-checked:border-rose-500 peer-checked:bg-rose-50 peer-checked:text-rose-700">Pengeluaran</div>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="radio" name="kas-type" value="in" class="peer sr-only">
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 py-2 text-center font-semibold text-slate-600 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700">Pemasukan</div>
+                </label>
+            </div>
+            <div>
+                <label class="mb-1 block text-[11px] font-semibold text-slate-500">Keterangan</label>
+                <input id="kas-title" type="text" placeholder="Contoh: Bensin, listrik, setoran" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 outline-none focus:border-blue-500 focus:bg-white">
+            </div>
+            <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                    <label class="mb-1 block text-[11px] font-semibold text-slate-500">Nominal (Rp)</label>
+                    <input id="kas-amount" type="number" min="1000" step="500" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 font-bold outline-none focus:border-blue-500 focus:bg-white">
+                </div>
+                <div>
+                    <label class="mb-1 block text-[11px] font-semibold text-slate-500">Akun</label>
+                    <select id="kas-account" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 outline-none focus:border-blue-500 focus:bg-white">
+                        <option value="tunai">Kas Tunai</option>
+                        <option value="bank">Rekening BCA</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="mt-1 w-full rounded-2xl bg-blue-600 py-3 text-xs font-bold text-white hover:bg-blue-500">Simpan</button>
+        </form>
+    </div>
+
+    <!-- SHEET: EDIT PENGATURAN -->
+    <div id="sheet-setting" class="absolute inset-x-0 bottom-0 z-50 hidden rounded-t-3xl border-t border-slate-200 bg-white p-5 pb-8 shadow-xl">
+        <div class="mb-4 flex items-center justify-between">
+            <h3 id="set-title" class="text-sm font-bold"></h3>
+            <button onclick="closeSheets()" class="rounded-xl bg-slate-100 p-1.5 text-slate-500 hover:text-slate-900" aria-label="Tutup">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <form onsubmit="saveSetting(event)" class="space-y-3 text-xs">
+            <div class="flex items-center gap-2">
+                <input id="set-input" type="text" required class="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm font-bold outline-none focus:border-blue-500 focus:bg-white">
+                <span id="set-unit" class="shrink-0 text-xs font-bold text-slate-500"></span>
+            </div>
+            <p id="set-hint" class="text-[11px] text-slate-500"></p>
+            <button type="submit" class="w-full rounded-2xl bg-blue-600 py-3 text-xs font-bold text-white hover:bg-blue-500">Simpan</button>
+        </form>
+    </div>
+
+    <!-- SHEET: STRUK -->
+    <div id="sheet-receipt" class="absolute inset-x-0 bottom-0 z-50 hidden rounded-t-3xl border-t border-slate-200 bg-white p-5 pb-8 shadow-xl">
+        <div class="mb-3 flex items-center justify-between">
+            <span id="r-inv" class="text-xs font-extrabold text-blue-600"></span>
+            <button onclick="closeSheets()" class="rounded-xl bg-slate-100 p-1.5 text-slate-500 hover:text-slate-900" aria-label="Tutup">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="space-y-2.5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs">
+            <div class="flex justify-between"><span class="text-slate-500">Customer</span><span id="r-customer" class="font-bold"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Waktu</span><span id="r-time"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Status</span><span id="r-status" class="font-bold"></span></div>
+            <div class="border-t border-slate-200 pt-2.5">
+                <span class="mb-1 block text-[11px] text-slate-500">Rincian</span>
+                <div id="r-items" class="font-semibold"></div>
+            </div>
+            <div id="r-tax" class="hidden space-y-1 border-t border-slate-200 pt-2.5">
+                <div class="flex justify-between"><span class="text-slate-500">Subtotal</span><span id="r-sub" class="font-semibold"></span></div>
+                <div class="flex justify-between"><span class="text-slate-500">PPN</span><span id="r-ppn" class="font-semibold"></span></div>
+            </div>
+            <div class="flex items-center justify-between border-t border-slate-200 pt-2.5">
+                <span class="font-bold text-slate-600">Total</span>
+                <span id="r-total" class="text-base font-extrabold"></span>
+            </div>
+            <div id="r-note" class="hidden border-t border-dashed border-slate-300 pt-2.5 text-center text-[11px] text-slate-500"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SHEETS = ['sheet-notif', 'sheet-mutasi', 'sheet-detail', 'sheet-pos', 'sheet-kas', 'sheet-setting', 'sheet-receipt'];
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    const state = {
+        branch: 'pusat',
+        masked: false,
+        day: 5,
+        nextInv: 2049,
+        transactions: [
+            { id: '#INV-2048', customer: 'Kios Sumber Makmur', time: 'Hari ini, 19:42', status: 'Lunas', method: 'Tunai', items: '3x Pupuk Urea 50kg, 2x Beras Pandan 5kg', amount: 490000 },
+            { id: '#INV-2047', customer: 'UD. Tani Sejahtera', time: 'Hari ini, 16:15', status: 'Tempo', method: 'Tempo 7H', items: '5x Pupuk NPK Mutiara 25kg', amount: 650000 },
+            { id: '#INV-2046', customer: 'Warung Bu Endang', time: 'Hari ini, 13:08', status: 'Lunas', method: 'Transfer BCA', items: '4x Minyak Goreng 2L, 1x Gula Pasir 10kg', amount: 285000 },
+            { id: '#INV-2045', customer: 'Kios Maju Jaya', time: 'Kemarin, 17:30', status: 'Tempo', method: 'Tempo 14H', items: '10x Beras Pandan Wangi 5kg', amount: 600000 }
+        ],
+        mutations: [
+            { title: 'Penjualan #INV-2048 (Tunai)', time: 'Hari ini, 19:42', type: 'in', amount: 490000, account: 'Kas Tunai' },
+            { title: 'Penjualan #INV-2046 (Transfer)', time: 'Hari ini, 13:08', type: 'in', amount: 285000, account: 'Rekening BCA' },
+            { title: 'Bensin Pickup & Operasional', time: 'Hari ini, 09:30', type: 'out', amount: 120000, account: 'Kas Tunai' },
+            { title: 'Pelunasan Piutang Kios Harapan', time: 'Kemarin, 15:20', type: 'in', amount: 450000, account: 'Rekening BCA' }
+        ]
+    };
+
+    const branches = {
+        pusat: {
+            name: 'Toko Pusat - Utama', sub: 'Gudang & Kasir Induk',
+            tunai: 350000, bank: 150000, kasMasuk: 275000, growth: '+12.4% vs minggu lalu',
+            laba: 1560000, margin: 'Margin 18%', recv: 1250000, recvBadge: 'Ditahan 20%',
+            weekly: [
+                { day: 'Sen', rev: 920000, tx: 8, pct: 48 }, { day: 'Sel', rev: 1150000, tx: 10, pct: 60 },
+                { day: 'Rab', rev: 890000, tx: 7, pct: 45 }, { day: 'Kam', rev: 1480000, tx: 12, pct: 78 },
+                { day: 'Jum', rev: 1320000, tx: 11, pct: 68 }, { day: 'Sab', rev: 1850000, tx: 14, pct: 96 },
+                { day: 'Min', rev: 1040000, tx: 9, pct: 54 }
+            ]
+        },
+        selatan: {
+            name: 'Cabang Selatan', sub: 'Kios Distribusi #02',
+            tunai: 210000, bank: 440000, kasMasuk: 120000, growth: '+8.1% vs minggu lalu',
+            laba: 940000, margin: 'Margin 16%', recv: 680000, recvBadge: 'Ditahan 15%',
+            weekly: [
+                { day: 'Sen', rev: 610000, tx: 5, pct: 42 }, { day: 'Sel', rev: 790000, tx: 7, pct: 55 },
+                { day: 'Rab', rev: 950000, tx: 8, pct: 66 }, { day: 'Kam', rev: 820000, tx: 6, pct: 57 },
+                { day: 'Jum', rev: 1290000, tx: 11, pct: 90 }, { day: 'Sab', rev: 1410000, tx: 12, pct: 98 },
+                { day: 'Min', rev: 730000, tx: 6, pct: 50 }
+            ]
+        }
+    };
+
+    function rp(n, force = false) {
+        return state.masked && !force ? 'Rp •••••••' : 'Rp ' + Number(n).toLocaleString('id-ID');
+    }
+
+    /* ---------- RENDER ---------- */
+    function render() {
+        const b = branches[state.branch];
+
+        $('hero-tunai').textContent = rp(b.tunai);
+        $('hero-bank').textContent = rp(b.bank);
+        $('kas-masuk').textContent = state.masked ? rp(0) : '+' + rp(b.kasMasuk);
+        const todayKey = new Date().toDateString();
+        const bankIn = state.mutations.filter((m) => m.account === 'Rekening BCA' && m.type === 'in' && mutAt(m).toDateString() === todayKey).reduce((t, m) => t + m.amount, 0);
+        $('bank-masuk').textContent = state.masked ? rp(0) : '+' + rp(bankIn);
+        $('laba').textContent = rp(b.laba);
+        $('laba-margin').textContent = b.margin;
+        $('recv-amount').textContent = rp(b.recv);
+        $('recv-badge').textContent = b.recvBadge;
+
+        const today = b.weekly[5];
+        $('today-rev').textContent = rp(today.rev);
+        $('today-tx').textContent = today.tx + ' transaksi';
+
+        renderChart();
+        renderTransactions();
+        renderMutations();
+        renderMutasiPage();
+        renderPenjualan();
+        renderKeuangan();
+        renderProfil();
+        renderSettings();
+    }
+
+    /* ---------- PENGATURAN ---------- */
+    const DEFAULT_SETTINGS = { ppnOn: false, ppnRate: 11, ppnIncl: false, creditLimit: 5000000, dueDays: 7, blockOver: true, invPrefix: 'INV', receiptNote: 'Terima kasih telah berbelanja' };
+    const SETTING_META = {
+        ppnRate: { label: 'Tarif PPN', type: 'number', min: 0, max: 100, step: 0.5, unit: '%', hint: 'Isi sesuai ketentuan pajak yang berlaku.' },
+        creditLimit: { label: 'Limit Kredit Default', type: 'number', min: 0, max: 1000000000, step: 1000, unit: 'Rp', hint: 'Total piutang tempo maksimal untuk satu customer.' },
+        dueDays: { label: 'Jatuh Tempo Default', type: 'number', min: 1, max: 365, step: 1, unit: 'hari', int: true, hint: 'Dipakai sebagai lama tempo pada transaksi kredit baru.' },
+        invPrefix: { label: 'Prefix Nomor Invoice', type: 'text', max: 6, upper: true, hint: 'Huruf dan angka saja, maksimal 6 karakter. Contoh: INV, SLS.' },
+        receiptNote: { label: 'Catatan Kaki Struk', type: 'text', max: 60, allowEmpty: true, hint: 'Dikosongkan jika tidak ingin menampilkan catatan.' }
+    };
+    let editingKey = null;
+
+    function loadSettings() {
+        try {
+            const raw = localStorage.getItem('erp_settings');
+            if (raw) return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(raw));
+        } catch (e) {}
+        return Object.assign({}, DEFAULT_SETTINGS);
+    }
+    function saveSettings() {
+        try { localStorage.setItem('erp_settings', JSON.stringify(state.settings)); } catch (e) {}
+    }
+    state.settings = loadSettings();
+
+    function fmtSetting(k) {
+        const v = state.settings[k];
+        if (k === 'ppnRate') return v + '%';
+        if (k === 'creditLimit') return rp(v, true);
+        if (k === 'dueDays') return v + ' hari';
+        if (k === 'receiptNote') return v || '(kosong)';
+        return v;
+    }
+
+    function renderSettings() {
+        const st = state.settings;
+        Object.keys(SETTING_META).forEach((k) => { $('sv-' + k).textContent = fmtSetting(k); });
+        ['ppnOn', 'ppnIncl', 'blockOver'].forEach((k) => {
+            $('sw-' + k).classList.toggle('bg-blue-600', st[k]);
+            $('sw-' + k).classList.toggle('bg-slate-300', !st[k]);
+            $('sw-' + k + '-dot').classList.toggle('translate-x-5', st[k]);
+        });
+        $('pos-tempo-label').textContent = `Tempo ${st.dueDays}H`;
+        updatePosSummary();
+    }
+
+    function toggleSetting(k) {
+        state.settings[k] = !state.settings[k];
+        saveSettings();
+        renderSettings();
+    }
+
+    function openSetting(k) {
+        editingKey = k;
+        const m = SETTING_META[k];
+        const inp = $('set-input');
+        $('set-title').textContent = m.label;
+        $('set-hint').textContent = m.hint;
+        $('set-unit').textContent = m.unit || '';
+        inp.type = m.type;
+        if (m.type === 'number') { inp.min = m.min; inp.max = m.max; inp.step = m.step; inp.removeAttribute('maxlength'); inp.required = true; }
+        else { inp.removeAttribute('min'); inp.removeAttribute('max'); inp.removeAttribute('step'); inp.maxLength = m.max; inp.required = !m.allowEmpty; }
+        inp.value = state.settings[k];
+        openSheet('sheet-setting');
+    }
+
+    function saveSetting(e) {
+        e.preventDefault();
+        const m = SETTING_META[editingKey];
+        let v = $('set-input').value.trim();
+        if (m.type === 'number') {
+            v = Number(v);
+            if (!isFinite(v) || v < m.min || v > m.max) { toast(`${m.label}: nilai harus ${m.min}–${m.max}`); return; }
+            if (m.int) v = Math.round(v);
+        } else {
+            if (m.upper) v = v.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            v = v.slice(0, m.max);
+            if (!v && !m.allowEmpty) { toast(`${m.label} tidak boleh kosong`); return; }
+        }
+        state.settings[editingKey] = v;
+        saveSettings();
+        closeSheets();
+        renderSettings();
+        toast(`${m.label} disimpan`);
+    }
+
+    function posCalc(base) {
+        const st = state.settings;
+        if (!st.ppnOn) return { sub: base, ppn: 0, total: base };
+        const r = st.ppnRate / 100;
+        if (st.ppnIncl) {
+            const sub = Math.round(base / (1 + r));
+            return { sub, ppn: base - sub, total: base };
+        }
+        const ppn = Math.round(base * r);
+        return { sub: base, ppn, total: base + ppn };
+    }
+
+    function outstandingOf(name) {
+        const n = String(name).trim().toLowerCase();
+        return state.transactions
+            .filter((t) => t.status === 'Tempo' && t.customer.trim().toLowerCase() === n)
+            .reduce((a, t) => a + t.amount, 0);
+    }
+
+    function updatePosSummary() {
+        const st = state.settings;
+        const c = posCalc(parseInt($('pos-amount').value, 10) || 0);
+        $('pos-summary').classList.toggle('hidden', !st.ppnOn);
+        $('pos-sub').textContent = rp(c.sub, true);
+        $('pos-ppn-label').textContent = `PPN ${st.ppnRate}%` + (st.ppnIncl ? ' (termasuk)' : '');
+        $('pos-ppn').textContent = rp(c.ppn, true);
+        $('pos-total').textContent = rp(c.total, true);
+        const m = document.querySelector('input[name="pos-method"]:checked');
+        let msg = '';
+        if (m && m.value === 'Tempo' && st.blockOver) {
+            const out = outstandingOf($('pos-customer').value);
+            if (out + c.total > st.creditLimit) msg = `Melebihi limit kredit ${rp(st.creditLimit, true)}. Piutang customer saat ini ${rp(out, true)}.`;
+        }
+        $('pos-warn').textContent = msg;
+        $('pos-warn').classList.toggle('hidden', !msg);
+    }
+
+    /* ---------- PROFIL ---------- */
+    function renderProfil() {
+        const b = branches[state.branch];
+        $('prof-branch').textContent = b.name;
+        $('sw-mask').classList.toggle('bg-blue-600', state.masked);
+        $('sw-mask').classList.toggle('bg-slate-300', !state.masked);
+        $('sw-mask-dot').classList.toggle('translate-x-5', state.masked);
+    }
+
+    /* ---------- KEUANGAN ---------- */
+    const finView = { filter: 'Semua' };
+    const isToday = (m) => /^(Hari ini|Baru saja)/.test(m.time);
+
+    function setFinFilter(f) { finView.filter = f; renderKeuangan(); }
+
+    function renderKeuangan() {
+        const b = branches[state.branch];
+        const sum = (arr) => arr.reduce((a, m) => a + m.amount, 0);
+        const today = state.mutations.filter(isToday);
+
+        $('fin-total').textContent = rp(b.tunai + b.bank);
+        $('fin-tunai').textContent = rp(b.tunai);
+        $('fin-bank').textContent = rp(b.bank);
+        $('fin-in').textContent = rp(sum(today.filter((m) => m.type === 'in')));
+        $('fin-out').textContent = rp(sum(today.filter((m) => m.type === 'out')));
+        $('fin-recv').textContent = rp(b.recv);
+
+        const opts = [['Semua', 'Semua'], ['in', 'Masuk'], ['out', 'Keluar']];
+        $('fin-filters').innerHTML = opts.map(([v, l]) => {
+            const on = finView.filter === v;
+            return `<button onclick="setFinFilter('${v}')" class="shrink-0 rounded-full border px-3.5 py-1.5 text-[11px] font-bold ${on ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}">${l}</button>`;
+        }).join('');
+
+        const list = state.mutations.filter((m) => finView.filter === 'Semua' || m.type === finView.filter);
+        if (!list.length) {
+            $('fin-list').innerHTML = '<div class="rounded-3xl border border-dashed border-slate-300 bg-white py-10 text-center text-xs text-slate-400">Belum ada mutasi.</div>';
+            return;
+        }
+        $('fin-list').innerHTML = list.map((m) => {
+            const isIn = m.type === 'in';
+            return `<div class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 text-xs shadow-sm">
+                <div class="flex min-w-0 items-center gap-3">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${isIn ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${isIn ? '<path d="M12 19V5M5 12l7-7 7 7"/>' : '<path d="M12 5v14M19 12l-7 7-7-7"/>'}</svg>
+                    </span>
+                    <div class="min-w-0">
+                        <div class="truncate font-bold">${esc(m.title)}</div>
+                        <div class="mt-0.5 text-[10px] text-slate-500">${esc(m.time)} • <span class="text-blue-600">${esc(m.account)}</span></div>
+                    </div>
+                </div>
+                <div class="shrink-0 font-extrabold ${isIn ? 'text-emerald-600' : 'text-rose-600'}">${isIn ? '+' : '-'}${rp(m.amount)}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function openKas() {
+        $('kas-title').value = '';
+        $('kas-amount').value = '';
+        openSheet('sheet-kas');
+    }
+
+    function submitKas(e) {
+        e.preventDefault();
+        const b = branches[state.branch];
+        const type = document.querySelector('input[name="kas-type"]:checked').value;
+        const title = $('kas-title').value.trim();
+        const amount = parseInt($('kas-amount').value, 10) || 0;
+        const acc = $('kas-account').value;
+        if (!title || amount <= 0) return;
+        if (type === 'out' && amount > b[acc]) {
+            toast('Saldo ' + (acc === 'tunai' ? 'kas tunai' : 'BCA') + ' tidak cukup');
+            return;
+        }
+        b[acc] += type === 'in' ? amount : -amount;
+        if (type === 'in' && acc === 'tunai') b.kasMasuk += amount;
+        state.mutations.unshift({
+            title, time: 'Baru saja', type, amount,
+            account: acc === 'tunai' ? 'Kas Tunai' : 'Rekening BCA'
+        });
+        closeSheets();
+        render();
+        toast(`${type === 'in' ? 'Pemasukan' : 'Pengeluaran'} dicatat (${rp(amount, true)})`);
+    }
+
+    /* ---------- PENJUALAN ---------- */
+    const salesView = { filter: 'Semua', q: '' };
+
+    function setSalesFilter(f) { salesView.filter = f; renderPenjualan(); }
+    function setSalesSearch(v) { salesView.q = v.trim().toLowerCase(); renderPenjualan(); }
+
+    function renderPenjualan() {
+        const all = state.transactions;
+        const sum = (arr) => arr.reduce((a, t) => a + t.amount, 0);
+        const tunai = all.filter((t) => t.status === 'Lunas' && t.method === 'Tunai');
+        const bca = all.filter((t) => t.status === 'Lunas' && t.method !== 'Tunai');
+        const tempo = all.filter((t) => t.status === 'Tempo');
+
+        $('sales-total').textContent = rp(sum(all));
+        $('sales-count').textContent = `${all.length} transaksi`;
+        $('sales-tunai').textContent = rp(sum(tunai));
+        $('sales-bca').textContent = rp(sum(bca));
+        $('sales-tempo').textContent = rp(sum(tempo));
+
+        const filters = ['Semua', 'Lunas', 'Tempo'];
+        $('sales-filters').innerHTML = filters.map((f) => {
+            const on = salesView.filter === f;
+            const n = f === 'Semua' ? all.length : all.filter((t) => t.status === f).length;
+            return `<button onclick="setSalesFilter('${f}')" class="shrink-0 rounded-full border px-3.5 py-1.5 text-[11px] font-bold ${on ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}">${f} (${n})</button>`;
+        }).join('');
+
+        const list = all.filter((t) => {
+            if (salesView.filter !== 'Semua' && t.status !== salesView.filter) return false;
+            if (!salesView.q) return true;
+            return `${t.id} ${t.customer} ${t.items}`.toLowerCase().includes(salesView.q);
+        });
+
+        if (!list.length) {
+            $('sales-list').innerHTML = '<div class="rounded-3xl border border-dashed border-slate-300 bg-white py-10 text-center text-xs text-slate-400">Tidak ada penjualan yang cocok.</div>';
+            return;
+        }
+        $('sales-list').innerHTML = list.map((t) => {
+            const badge = t.status === 'Lunas' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200';
+            return `<div onclick="openReceipt('${t.id}')" class="cursor-pointer rounded-2xl border border-slate-200 bg-white p-3.5 text-xs shadow-sm hover:bg-slate-50">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="font-extrabold text-blue-600">${t.id} <span class="font-normal text-slate-400">• ${t.time}</span></span>
+                    <span class="rounded-md border px-1.5 py-0.5 text-[10px] font-bold ${badge}">${t.status}</span>
+                </div>
+                <div class="mt-1.5 font-bold">${esc(t.customer)}</div>
+                <div class="mt-0.5 text-[11px] text-slate-500">${esc(t.items)}</div>
+                <div class="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2.5">
+                    <span class="text-[10px] text-slate-500">${esc(t.method)}</span>
+                    <span class="text-sm font-extrabold">${rp(t.amount)}</span>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderChart() {
+        const weekly = branches[state.branch].weekly;
+        const d = weekly[state.day];
+        $('day-badge').textContent = d.day;
+        $('day-rev').textContent = rp(d.rev);
+        $('day-tx').textContent = `${d.tx} transaksi selesai`;
+
+        $('bars').innerHTML = weekly.map((w, i) => {
+            const on = i === state.day;
+            return `<button onclick="selectDay(${i})" class="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1.5 focus:outline-none">
+                <div class="w-full rounded-t-lg transition-all ${on ? 'bg-blue-600' : 'bg-slate-200 group-hover:bg-slate-300'}" style="height:${w.pct}%"></div>
+                <span class="text-[10px] font-bold ${on ? 'text-blue-600' : 'text-slate-400'}">${w.day}</span>
+            </button>`;
+        }).join('');
+    }
+
+    function renderTransactions() {
+        const list = state.transactions;
+        if (!list.length) {
+            $('tx-list').innerHTML = '<div class="py-6 text-center text-xs text-slate-400">Belum ada transaksi.</div>';
+            return;
+        }
+        $('tx-list').innerHTML = list.map((t) => {
+            const badge = t.status === 'Lunas' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200';
+            return `<div onclick="openReceipt('${t.id}')" class="flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 hover:bg-slate-100">
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-extrabold text-blue-600">${t.id}</span>
+                        <span class="text-[10px] text-slate-400">• ${t.time}</span>
+                    </div>
+                    <div class="mt-0.5 truncate text-xs font-bold">${esc(t.customer)}</div>
+                    <div class="mt-0.5 truncate text-[11px] text-slate-500">${esc(t.items)}</div>
+                </div>
+                <div class="shrink-0 text-right">
+                    <div class="text-xs font-extrabold">${rp(t.amount)}</div>
+                    <span class="mt-1 inline-block rounded-md border px-2 py-0.5 text-[10px] font-bold ${badge}">${t.status}</span>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderDetail() {
+        const all = state.transactions;
+        const sum = (arr) => arr.reduce((a, t) => a + t.amount, 0);
+        const tunai = all.filter((t) => t.status === 'Lunas' && t.method === 'Tunai');
+        const bca = all.filter((t) => t.status === 'Lunas' && t.method !== 'Tunai');
+        const tempo = all.filter((t) => t.status === 'Tempo');
+
+        $('detail-sub').textContent = `${all.length} transaksi • Total ${rp(sum(all))}`;
+
+        const box = (label, arr, color) => `<div class="rounded-2xl border border-slate-200 bg-slate-50 p-2.5">
+            <div class="text-[10px] font-bold ${color}">${label}</div>
+            <div class="mt-1 text-[11px] font-extrabold leading-tight">${rp(sum(arr))}</div>
+            <div class="text-[10px] text-slate-500">${arr.length} transaksi</div>
+        </div>`;
+        $('detail-summary').innerHTML =
+            box('Tunai', tunai, 'text-emerald-600') +
+            box('Transfer BCA', bca, 'text-blue-600') +
+            box('Tempo', tempo, 'text-amber-600');
+
+        $('detail-list').innerHTML = all.map((t) => {
+            const badge = t.status === 'Lunas' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200';
+            return `<div onclick="openReceipt('${t.id}')" class="cursor-pointer rounded-2xl border border-slate-200 bg-white p-3 text-xs">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="font-extrabold text-blue-600">${t.id} <span class="font-normal text-slate-400">• ${t.time}</span></span>
+                    <span class="rounded-md border px-1.5 py-0.5 text-[10px] font-bold ${badge}">${t.status}</span>
+                </div>
+                <div class="mt-1 font-bold">${esc(t.customer)}</div>
+                <div class="mt-0.5 text-[11px] text-slate-500">${esc(t.items)}</div>
+                <div class="mt-2 flex items-center justify-between border-t border-slate-100 pt-2">
+                    <span class="text-[10px] text-slate-500">${esc(t.method)}</span>
+                    <span class="font-extrabold">${rp(t.amount)}</span>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderMutations() {
+        $('mutation-list').innerHTML = state.mutations.map((m) => {
+            const isIn = m.type === 'in';
+            return `<div class="flex items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs">
+                <div>
+                    <div class="font-bold">${esc(m.title)}</div>
+                    <div class="mt-0.5 text-[10px] text-slate-500">${m.time} • <span class="text-blue-600">${m.account}</span></div>
+                </div>
+                <div class="shrink-0 font-extrabold ${isIn ? 'text-emerald-600' : 'text-rose-600'}">${isIn ? '+' : '-'}${rp(m.amount, true)}</div>
+            </div>`;
+        }).join('');
+    }
+
+    /* ---------- HALAMAN MUTASI KAS / BANK ---------- */
+    const mutView = { account: 'Kas Tunai', filter: 'hari' };
+
+    function dayStart(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
+    function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+    function longDate(d) { return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+    function shortDate(d) { return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); }
+
+    // Ubah label waktu ("Hari ini, 19:42", "Kemarin, 15:20", "Baru saja") jadi tanggal
+    function mutAt(m) {
+        if (!m.at) {
+            const d = new Date();
+            const t = m.time.match(/(\d{1,2}):(\d{2})/);
+            if (m.time.startsWith('Kemarin')) d.setDate(d.getDate() - 1);
+            if (t) d.setHours(+t[1], +t[2], 0, 0);
+            m.at = d;
+        }
+        return m.at;
+    }
+
+    function mutRange() {
+        const today = dayStart(new Date());
+        const f = mutView.filter;
+        if (f === 'hari') return [today, addDays(today, 1)];
+        if (f === 'kemarin') return [addDays(today, -1), today];
+        if (f === 'minggu') return [addDays(today, -((today.getDay() + 6) % 7)), addDays(today, 1)];
+        if (f === 'bulan') return [new Date(today.getFullYear(), today.getMonth(), 1), addDays(today, 1)];
+        const d = new Date(f + 'T00:00:00');
+        return [d, addDays(d, 1)];
+    }
+
+    function setMutFilter(f) { mutView.filter = f; renderMutasiPage(); }
+
+    function openMutasi(account) {
+        mutView.account = account;
+        mutView.filter = 'hari';
+        $('mut-date').value = '';
+        renderMutasiPage();
+        setNav('mutasi');
+    }
+
+    function renderMutasiPage() {
+        state.mutations.forEach(mutAt);
+        const isBank = mutView.account === 'Rekening BCA';
+        const [from, to] = mutRange();
+        $('mut-title').textContent = isBank ? 'Mutasi Bank' : 'Mutasi Kas';
+        $('mut-today').textContent = longDate(new Date());
+        $('mut-balance-label').textContent = isBank ? 'Saldo Bank (BCA) Saat Ini' : 'Saldo Kas Saat Ini';
+        $('mut-balance').textContent = rp(branches[state.branch][isBank ? 'bank' : 'tunai']);
+        $('mut-filters').innerHTML = [['hari', 'Hari Ini'], ['kemarin', 'Kemarin'], ['minggu', 'Minggu Ini'], ['bulan', 'Bulan Ini']].map(([v, label]) => {
+            const on = v === mutView.filter;
+            return `<button onclick="setMutFilter('${v}')" class="shrink-0 rounded-xl border px-3 py-1.5 text-[11px] font-semibold ${on ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-200 bg-white text-slate-700'}">${label}</button>`;
+        }).join('');
+        const last = addDays(to, -1);
+        $('mut-range').textContent = +from === +last ? longDate(from) : `${shortDate(from)} - ${shortDate(last)}`;
+        const list = state.mutations.filter((m) => m.account === mutView.account && m.at >= from && m.at < to).sort((a, b) => b.at - a.at);
+        $('mut-rows').innerHTML = list.length ? list.map((m) => {
+            const isIn = m.type === 'in';
+            const time = m.at.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            return `<div class="px-4 py-3">
+                <div class="flex items-start justify-between gap-3 text-xs font-bold">
+                    <span class="min-w-0">${esc(m.title)}</span>
+                    <span class="shrink-0 ${isIn ? 'text-emerald-600' : 'text-rose-600'}">${isIn ? '+' : '-'}${rp(m.amount)}</span>
+                </div>
+                <div class="mt-1.5 flex flex-wrap items-center gap-x-2 text-[11px] text-slate-500">
+                    <span>${shortDate(m.at)}, ${time}</span><span>•</span>
+                    <span>${m.title.startsWith('Penjualan') ? 'Penjualan' : 'Jurnal'}</span><span>•</span>
+                    <span class="text-emerald-600">${isBank ? 'BCA' : 'Tunai'}</span>
+                </div>
+            </div>`;
+        }).join('') : '<div class="px-4 py-8 text-center text-xs text-slate-400">Belum ada mutasi pada periode ini.</div>';
+    }
+
+    /* ---------- HANDLER ---------- */
+    function toggleMask() {
+        state.masked = !state.masked;
+        document.querySelectorAll('.eye-on').forEach((el) => el.classList.toggle('hidden', state.masked));
+        document.querySelectorAll('.eye-off').forEach((el) => el.classList.toggle('hidden', !state.masked));
+        document.querySelectorAll('.mask-label').forEach((el) => { el.textContent = state.masked ? 'Tampilkan' : 'Sembunyikan'; });
+        render();
+    }
+
+
+    (function initSaldoSlider() {
+        const slider = document.getElementById('saldo-slider');
+        const dots = document.querySelectorAll('#saldo-dots button');
+        const gap = 12;
+        slider.addEventListener('scroll', () => {
+            const idx = Math.round(slider.scrollLeft / (slider.clientWidth + gap));
+            dots.forEach((d, i) => {
+                d.className = 'h-1.5 rounded-full transition-all ' + (i === idx ? (i ? 'w-5 bg-purple-600' : 'w-5 bg-blue-600') : 'w-1.5 bg-slate-300');
+            });
+        }, { passive: true });
+    })();
+
+    function goSaldo(i) {
+        const slider = document.getElementById('saldo-slider');
+        slider.scrollTo({ left: i * (slider.clientWidth + 12), behavior: 'smooth' });
+    }
+
+    function selectDay(i) { state.day = i; renderChart(); }
+
+    function setNav(id) {
+        const titles = { pembelian: 'Pembelian' };
+        const navKey = id.startsWith('keuangan') ? 'keuangan' : id === 'pengaturan' ? 'profil' : id;
+        ['home', 'keuangan', 'laporan', 'profil'].forEach((n) => {
+            const el = $('nav-' + n);
+            el.classList.toggle('text-blue-600', n === navKey);
+            el.classList.toggle('text-slate-400', n !== navKey);
+        });
+        const pages = { home: 'page-home', penjualan: 'page-penjualan', keuangan: 'page-keuangan', laporan: 'page-laporan', profil: 'page-profil', mutasi: 'page-mutasi', pengaturan: 'page-pengaturan', 'keuangan-ringkasan': 'page-keuangan-ringkasan' };
+        Object.entries(pages).forEach(([k, pid]) => $(pid).classList.toggle('hidden', k !== id));
+        const soon = !!titles[id];
+        $('page-soon').classList.toggle('hidden', !soon);
+        $('page-soon').classList.toggle('flex', soon);
+        if (soon) $('soon-title').textContent = titles[id];
+        if (pages[id]) $(pages[id]).scrollTop = 0;
+        $('page-mutasi').classList.toggle('flex', id === 'mutasi');
+        document.querySelector('#shell > nav').classList.toggle('hidden', id === 'pengaturan' || id === 'mutasi');
+    }
+
+    function openSheet(id) {
+        closeSheets();
+        if (id === 'sheet-pos') updatePosSummary();
+        $('backdrop').classList.remove('hidden');
+        const el = $(id);
+        el.classList.remove('hidden');
+        if (el.classList.contains('max-h-[80%]') || el.classList.contains('max-h-[85%]')) el.classList.add('flex');
+    }
+
+    function closeSheets() {
+        $('backdrop').classList.add('hidden');
+        SHEETS.forEach((id) => {
+            $(id).classList.add('hidden');
+            $(id).classList.remove('flex');
+        });
+    }
+
+    function openReceipt(id) {
+        const t = state.transactions.find((x) => x.id === id);
+        if (!t) return;
+        $('r-inv').textContent = t.id;
+        $('r-customer').textContent = t.customer;
+        $('r-time').textContent = t.time;
+        $('r-items').textContent = t.items;
+        $('r-total').textContent = rp(t.amount, true);
+        const taxed = t.ppn > 0;
+        $('r-tax').classList.toggle('hidden', !taxed);
+        if (taxed) { $('r-sub').textContent = rp(t.subtotal, true); $('r-ppn').textContent = rp(t.ppn, true); }
+        const note = state.settings.receiptNote;
+        $('r-note').textContent = note;
+        $('r-note').classList.toggle('hidden', !note);
+        const s = $('r-status');
+        s.textContent = `${t.status} (${t.method})`;
+        s.className = 'font-bold ' + (t.status === 'Lunas' ? 'text-emerald-600' : 'text-amber-600');
+        openSheet('sheet-receipt');
+    }
+
+    function syncPrice() {
+        $('pos-amount').value = $('pos-item').value.split('|')[1];
+    }
+
+    function submitPOS(e) {
+        e.preventDefault();
+        const customer = $('pos-customer').value.trim();
+        const item = $('pos-item').value.split('|')[0];
+        const base = parseInt($('pos-amount').value, 10) || 0;
+        const method = document.querySelector('input[name="pos-method"]:checked').value;
+        const tempo = method === 'Tempo';
+        const st = state.settings;
+        const c = posCalc(base);
+        const amount = c.total;
+        if (tempo && st.blockOver && outstandingOf(customer) + amount > st.creditLimit) {
+            toast('Melebihi limit kredit customer');
+            return;
+        }
+        const id = `#${st.invPrefix}-${state.nextInv++}`;
+        const b = branches[state.branch];
+
+        state.transactions.unshift({
+            id, customer, time: 'Baru saja', items: item, amount, subtotal: c.sub, ppn: c.ppn,
+            status: tempo ? 'Tempo' : 'Lunas',
+            method: tempo ? `Tempo ${st.dueDays}H` : method === 'BCA' ? 'Transfer BCA' : 'Tunai'
+        });
+
+        if (tempo) {
+            b.recv += amount;
+        } else {
+            const isBank = method === 'BCA';
+            b[isBank ? 'bank' : 'tunai'] += amount;
+            if (!isBank) b.kasMasuk += amount;
+            state.mutations.unshift({
+                title: `Penjualan ${id} (${isBank ? 'BCA' : 'Tunai'})`,
+                time: 'Baru saja', type: 'in', amount,
+                account: isBank ? 'Rekening BCA' : 'Kas Tunai'
+            });
+        }
+
+        b.weekly[state.day].rev += amount;
+        b.weekly[state.day].tx += 1;
+
+        closeSheets();
+        render();
+        toast(`${id} disimpan (${rp(amount, true)})`);
+    }
+
+    let toastTimer;
+    function toast(msg) {
+        const el = $('toast');
+        $('toast-msg').textContent = msg;
+        el.classList.remove('-translate-y-2', 'opacity-0');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.add('-translate-y-2', 'opacity-0'), 2000);
+    }
+
+
+    render();
+</script>
+</body>
+</html>

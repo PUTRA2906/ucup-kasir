@@ -15,6 +15,7 @@ import type {
   FinancialStatements,
 } from '@/types/database'
 import { buildFinancialStatements } from '@/lib/financialStatements'
+import { businessDayRangeIso } from '@/utils/date'
 import { requireCurrentStoreId } from '@/lib/currentStore'
 
 // ============================================================
@@ -161,7 +162,9 @@ export const financeService = {
       .order('created_at')
 
     if (endDate && endDate.trim() !== '') {
-      query = query.lte('journal.entry_date', new Date(endDate + 'T23:59:59.999').toISOString())
+      // `entry_date` timestamptz ber-jam; batas akhir hari = awal hari
+      // berikutnya (setengah-terbuka) agar jurnal sore/malam tidak terlewat.
+      query = query.lt('journal.entry_date', businessDayRangeIso(endDate).end)
     }
 
     const { data: lines, error: lineErr } = await query
@@ -230,7 +233,7 @@ export const financeService = {
       .order('entry_date', { foreignTable: 'journal', ascending: true })
 
     if (periodEnd && periodEnd.trim() !== '') {
-      query = query.lte('journal.entry_date', new Date(periodEnd + 'T23:59:59.999').toISOString())
+      query = query.lt('journal.entry_date', businessDayRangeIso(periodEnd).end)
     }
 
     const { data: lines, error: lineErr } = await query
@@ -404,10 +407,10 @@ export const financeService = {
       .order('entry_date', { ascending: false })
 
     if (startDate && startDate.trim() !== '') {
-      query = query.gte('entry_date', new Date(startDate + 'T00:00:00.000').toISOString())
+      query = query.gte('entry_date', businessDayRangeIso(startDate).start)
     }
     if (endDate && endDate.trim() !== '') {
-      query = query.lte('entry_date', new Date(endDate + 'T23:59:59.999').toISOString())
+      query = query.lt('entry_date', businessDayRangeIso(endDate).end)
     }
 
     const { data, error } = await query
@@ -443,10 +446,10 @@ export const financeService = {
       .order('entry_date', { foreignTable: 'journal', ascending: true })
 
     if (startDate && startDate.trim() !== '') {
-      query = query.gte('journal.entry_date', new Date(startDate + 'T00:00:00.000').toISOString())
+      query = query.gte('journal.entry_date', businessDayRangeIso(startDate).start)
     }
     if (endDate && endDate.trim() !== '') {
-      query = query.lte('journal.entry_date', new Date(endDate + 'T23:59:59.999').toISOString())
+      query = query.lt('journal.entry_date', businessDayRangeIso(endDate).end)
     }
 
     const { data, error } = await query
@@ -502,8 +505,8 @@ export const financeService = {
       .eq('journal.status', 'posted')
       .order('entry_date', { foreignTable: 'journal', ascending: true })
 
-    if (startDate && startDate.trim() !== '') query = query.gte('journal.entry_date', new Date(startDate + 'T00:00:00.000').toISOString())
-    if (endDate && endDate.trim() !== '') query = query.lte('journal.entry_date', new Date(endDate + 'T23:59:59.999').toISOString())
+    if (startDate && startDate.trim() !== '') query = query.gte('journal.entry_date', businessDayRangeIso(startDate).start)
+    if (endDate && endDate.trim() !== '') query = query.lt('journal.entry_date', businessDayRangeIso(endDate).end)
 
     const { data, error } = await query
     if (error) throw error
@@ -716,9 +719,10 @@ export const financeService = {
     }>
   }> {
     // Filter tanggal & status di server agar tidak menarik seluruh baris jurnal.
-    // Batas memakai UTC agar konsisten dengan perbandingan tanggal (toISOString) di bawah.
-    const startIso = `${startDate}T00:00:00.000Z`
-    const endIso = `${endDate}T23:59:59.999Z`
+    // `entry_date` adalah timestamptz ber-jam: batas memakai rentang hari LOKAL
+    // (setengah-terbuka) agar tidak ada baris yang terlewat/tergeser.
+    const startIso = businessDayRangeIso(startDate).start
+    const endIso = businessDayRangeIso(endDate).end
 
     const { data: lines, error } = await supabase
       .from('journal_lines')
@@ -731,7 +735,7 @@ export const financeService = {
       `)
       .eq('journal.status', 'posted')
       .gte('journal.entry_date', startIso)
-      .lte('journal.entry_date', endIso)
+      .lt('journal.entry_date', endIso)
 
     if (error) throw error
 
@@ -753,7 +757,9 @@ export const financeService = {
       if (!journal?.entry_date) continue
       if (excludedTypes.has(journal.reference_type)) continue
 
-      const date = new Date(journal.entry_date).toISOString().split('T')[0]
+      // Tanggal bisnis = bagian tanggal UTC dari entry_date (lihat
+      // businessDayRangeIso di utils/date.ts).
+      const date = String(journal.entry_date).replace(' ', 'T').slice(0, 10)
       if (date < startDate || date > endDate) continue
 
       const account = (line as any).account
@@ -838,10 +844,7 @@ export const financeService = {
         'account_id, debit, credit, journal:journal_entries!inner(entry_date, status, reference_type)'
       )
       .eq('journal.status', 'posted')
-      .lte(
-        'journal.entry_date',
-        new Date(periodEnd + 'T23:59:59.999').toISOString()
-      )
+      .lt('journal.entry_date', businessDayRangeIso(periodEnd).end)
 
     if (lineErr) throw lineErr
 

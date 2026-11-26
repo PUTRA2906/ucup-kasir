@@ -368,7 +368,7 @@ import { useFinanceStore } from '@/stores/finance'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
-import { localDateFromIso } from '@/utils/date'
+import { businessDateFromIso, parseBusinessDate } from '@/utils/date'
 import type { JournalEntry } from '@/types/database'
 
 const router = useRouter()
@@ -383,7 +383,7 @@ const handleDelete = async (j: JournalEntry) => {
 
   // Jurnal di periode tertutup tidak boleh dihapus
   try {
-    const date = String(j.entry_date || '').slice(0, 10)
+    const date = businessDateFromIso(j.entry_date)
     if (date && (await store.checkPeriodClosed(date))) {
       toast.error(
         'Periode Tertutup',
@@ -536,8 +536,9 @@ const filteredJournals = computed(() => {
   // Filter berdasarkan rentang tanggal
   if (startDate.value || endDate.value) {
     journals = journals.filter((j) => {
-      // Tanggal LOKAL dari timestamp (split('T') akan ambil bagian UTC → geser hari)
-      const entryDateStr = localDateFromIso(j.entry_date)
+      // Tanggal bisnis = bagian tanggal UTC dari entry_date (lihat
+      // businessDateFromIso). Konversi ke zona lokal bisa menggeser hari.
+      const entryDateStr = businessDateFromIso(j.entry_date)
 
       if (startDate.value && entryDateStr < startDate.value) return false
       if (endDate.value && entryDateStr > endDate.value) return false
@@ -622,8 +623,14 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value || 0)
 
-const formatDate = (dateString: string) =>
-  new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+const formatDate = (dateString: string) => {
+  // `entry_date` = tanggal_bisnis + jam, jadi bagian tanggal UTC adalah
+  // tanggal bisnis. `new Date(...)` akan menggesernya di zona > UTC.
+  const d = parseBusinessDate(dateString)
+  return d
+    ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    : dateString
+}
 
 const getStatusLabel = (status: string) => {
   const labels: Record<string, string> = { posted: 'Posted', draft: 'Draft' }

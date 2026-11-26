@@ -5,9 +5,246 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1e3a8a" />
     <title>Tagih Kios - Aplikasi Kasir</title>
+
+    <!-- ============================================================
+         SPLASH SCREEN ANIMASI (Tagih Kios)
+         Markup + CSS sengaja inline agar langsung tampil sebelum
+         bundle Vue selesai dimuat. Di browser, splash hanya tampil
+         bila URL mengandung ?splash=1 (untuk preview).
+         ============================================================ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        background: linear-gradient(160deg, #1e3a8a, #2563eb);
+        transition:
+          opacity 0.5s ease,
+          visibility 0.5s ease;
+        font-family: Outfit, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      #app-splash.is-out {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      /* Browser biasa: sembunyikan splash kecuali ?splash=1 */
+      html.splash-off #app-splash {
+        display: none;
+      }
+
+      #app-splash .sp-tile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 9rem;
+        height: 9rem;
+        border-radius: 36px;
+        background: #fff;
+        box-shadow:
+          0 25px 50px -12px rgb(0 0 0 / 0.25),
+          0 0 0 1px rgb(255 255 255 / 0.06);
+        animation: sp-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      }
+      #app-splash .sp-tile svg {
+        width: 7rem;
+        height: 7rem;
+      }
+      #app-splash .a {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation-fill-mode: both;
+      }
+      #app-splash .sp-body {
+        animation: sp-up 0.5s 0.35s ease-out both;
+      }
+      #app-splash .sp-roof {
+        animation: sp-drop 0.6s 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      }
+      #app-splash .sp-note {
+        animation: sp-up 0.5s 1s ease-out both;
+      }
+      #app-splash .sp-badge {
+        animation: sp-pop 0.5s 1.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      }
+      #app-splash .sp-check {
+        stroke-dasharray: 30;
+        animation: sp-draw 0.4s 1.65s ease-out both;
+      }
+      #app-splash .sp-name {
+        margin-top: 1.5rem;
+        font-size: 1.875rem;
+        line-height: 1.2;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        animation: sp-rise 0.5s 1.5s ease-out both;
+      }
+      #app-splash .sp-name .accent {
+        color: #fcd34d;
+      }
+      #app-splash .sp-tag {
+        margin: 0.25rem 0 0;
+        font-size: 0.75rem;
+        line-height: 1rem;
+        font-weight: 500;
+        color: #dbeafe;
+        animation: sp-rise 0.5s 1.75s ease-out both;
+      }
+      #app-splash .sp-bar-wrap {
+        position: absolute;
+        bottom: 4rem;
+        height: 4px;
+        width: 8rem;
+        overflow: hidden;
+        border-radius: 9999px;
+        background: rgb(255 255 255 / 0.2);
+      }
+      #app-splash .sp-bar {
+        height: 100%;
+        width: 100%;
+        background: #fff;
+        transform-origin: left;
+        animation: sp-load 2.6s 0.2s ease-in-out both;
+      }
+      @keyframes sp-pop {
+        from {
+          opacity: 0;
+          transform: scale(0.3);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes sp-up {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes sp-drop {
+        from {
+          opacity: 0;
+          transform: translateY(-28px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes sp-rise {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes sp-draw {
+        from {
+          stroke-dashoffset: 30;
+        }
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      @keyframes sp-load {
+        from {
+          transform: scaleX(0);
+        }
+        to {
+          transform: scaleX(1);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #app-splash * {
+          animation: none !important;
+        }
+      }
+    </style>
+    <script>
+      // Tampilkan splash hanya di aplikasi native, atau saat preview di browser
+      // dengan ?splash=1. Capacitor menyuntikkan window.Capacitor di awal <head>.
+      ;(function () {
+        var native = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())
+        var preview = window.location.search.indexOf('splash=1') !== -1
+        if (!native && !preview) document.documentElement.classList.add('splash-off')
+      })()
+    </script>
   </head>
   <body class="dark:bg-gray-900">
+    <!-- SPLASH SCREEN: TAGIH KIOS -->
+    <div id="app-splash" aria-label="Memuat Tagih Kios" role="status">
+      <div class="sp-tile">
+        <svg viewBox="0 0 120 120" role="img" aria-label="Logo Tagih Kios">
+          <g class="a sp-body">
+            <rect x="22" y="46" width="76" height="56" rx="8" fill="#dbeafe" />
+            <rect x="16" y="98" width="88" height="8" rx="4" fill="#1e3a8a" />
+          </g>
+          <g class="a sp-note">
+            <path
+              d="M40 54h40v44l-5-4-5 4-5-4-5 4-5-4-5 4-5-4-5 4z"
+              fill="#fff"
+              stroke="#2563eb"
+              stroke-width="3"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M48 66h24M48 75h24M48 84h12"
+              stroke="#93c5fd"
+              stroke-width="4"
+              stroke-linecap="round"
+            />
+          </g>
+          <g class="a sp-roof">
+            <path d="M24 18h72l10 24H14z" fill="#1e40af" />
+            <path
+              d="M14 42h23v4a11.5 11.5 0 0 1-23 0zM60 42h23v4a11.5 11.5 0 0 1-23 0z"
+              fill="#2563eb"
+            />
+            <path
+              d="M37 42h23v4a11.5 11.5 0 0 1-23 0zM83 42h23v4a11.5 11.5 0 0 1-23 0z"
+              fill="#fbbf24"
+            />
+          </g>
+          <g class="a sp-badge">
+            <circle cx="88" cy="86" r="17" fill="#10b981" stroke="#fff" stroke-width="4" />
+            <path
+              class="sp-check"
+              d="M80 86l6 6 11-12"
+              fill="none"
+              stroke="#fff"
+              stroke-width="5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </g>
+        </svg>
+      </div>
+      <div class="sp-name">Tagih <span class="accent">Kios</span></div>
+      <p class="sp-tag">Catat, tagih, lunas.</p>
+      <div class="sp-bar-wrap"><div class="sp-bar"></div></div>
+    </div>
+
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

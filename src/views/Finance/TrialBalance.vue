@@ -702,7 +702,7 @@ import { useFinanceStore } from '@/stores/finance'
 import { useAutoNavigationStack } from '@/composables/useAutoNavigationStack'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
-import { localDateStr, localTodayStr } from '@/utils/date'
+import { localDateStr, localTodayStr, parseBusinessDate } from '@/utils/date'
 import type {
   JournalEntry,
   TrialBalanceRow,
@@ -903,8 +903,9 @@ const formatCurrency = (value: number) =>
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
-  const d = new Date(dateStr)
-  if (isNaN(d.getTime())) return dateStr.slice(0, 10)
+  // Tanggal bisnis = bagian tanggal UTC (lihat parseBusinessDate).
+  const d = parseBusinessDate(dateStr)
+  if (!d) return dateStr.slice(0, 10)
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 

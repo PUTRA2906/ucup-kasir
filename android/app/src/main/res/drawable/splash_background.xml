@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Background color -->
-    <item android:drawable="@color/splashBackground"/>
-
-    <!-- Logo centered -->
-    <item android:gravity="center">
-        <bitmap android:src="@drawable/splash_icon"/>
+    <!--
+        Latar splash native = gradient yang sama dengan splash animasi di
+        index.html (linear-gradient(160deg,#1e3a8a,#2563eb)).
+        Sengaja tanpa logo: logo animasi (tile putih + rumah) muncul dari
+        splash HTML, jadi tidak ada dua logo berbeda yang bergantian.
+    -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="250"
+                android:startColor="#1E3A8A"
+                android:endColor="#2563EB"
+                android:type="linear" />
+        </shape>
     </item>
 </layer-list>

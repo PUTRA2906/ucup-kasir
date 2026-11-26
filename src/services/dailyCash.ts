@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { localDateFromIso, businessDayRangeIso } from '@/utils/date'
 
 export interface CashTransaction {
   id: string
@@ -77,13 +78,19 @@ export const dailyCashService = {
     let transfer_out = 0
 
     if (cashAccountIds.length > 0) {
+      // `entry_date` bertipe timestamptz dan disimpan DENGAN jam
+      // (mis. `p_entry_date::date + CURRENT_TIME`). Membandingkan kolom itu
+      // dengan string 'YYYY-MM-DD' berarti membandingkan dengan tengah malam,
+      // sehingga `.gte(date).lte(date)` hanya cocok untuk baris tepat 00:00
+      // dan seluruh jurnal hari itu hilang. Pakai rentang setengah-terbuka.
+      const day = businessDayRangeIso(date)
       const { data: journalLines } = await supabase
         .from('journal_lines')
         .select('debit, credit, account_id, journal:journal_entries!inner(entry_date, status, reference_type)')
         .in('account_id', cashAccountIds)
         .eq('journal.status', 'posted')
-        .gte('journal.entry_date', date)
-        .lte('journal.entry_date', date)
+        .gte('journal.entry_date', day.start)
+        .lt('journal.entry_date', day.end)
         .not('journal.reference_type', 'in', '("transaction","payment")')
 
       for (const line of journalLines || []) {
@@ -140,16 +147,15 @@ export const dailyCashService = {
 
     if (paymentsErr) throw paymentsErr
 
-    // Untuk check apakah transaksi dibuat hari yang sama
-    const startOfDayCheck = date + 'T00:00:00'
-    const endOfDayCheck = date + 'T23:59:59.999'
-
     for (const payment of payments || []) {
       const tx = payment.transaction as any
 
-      // Payment pertama dari transaksi yang dibuat hari ini = label 'Penjualan'
+      // Payment pertama dari transaksi yang dibuat hari ini = label 'Penjualan'.
+      // Bandingkan TANGGAL LOKAL, bukan string mentah: timestamp Supabase
+      // memakai pemisah spasi ('2026-11-26 13:13:32+00'), sehingga
+      // perbandingan string dengan 'YYYY-MM-DDT...' selalu false.
       const txCreatedAt: string = tx?.created_at || ''
-      const txSameDay = txCreatedAt >= startOfDayCheck && txCreatedAt <= endOfDayCheck
+      const txSameDay = txCreatedAt !== '' && localDateFromIso(txCreatedAt) === date
       const isInitial = txSameDay && payment.created_at === txCreatedAt
 
       transactions.push({
@@ -174,13 +180,16 @@ export const dailyCashService = {
     const cashAccountIds = (cashAccounts || []).map(a => a.id)
 
     if (cashAccountIds.length > 0) {
+      // Lihat catatan di getDailyCashSummary: `entry_date` adalah timestamptz
+      // ber-jam, jadi wajib memakai rentang, bukan `.gte(date).lte(date)`.
+      const day = businessDayRangeIso(date)
       const { data: journalLines } = await supabase
         .from('journal_lines')
         .select('id, debit, credit, account_id, created_at, journal:journal_entries!inner(journal_number, entry_date, description, status, reference_type)')
         .in('account_id', cashAccountIds)
         .eq('journal.status', 'posted')
-        .gte('journal.entry_date', date)
-        .lte('journal.entry_date', date)
+        .gte('journal.entry_date', day.start)
+        .lt('journal.entry_date', day.end)
         .not('journal.reference_type', 'in', '("transaction","payment")')
 
       for (const line of journalLines || []) {
@@ -192,7 +201,10 @@ export const dailyCashService = {
         if (debit > 0) {
           transactions.push({
             id: line.id,
-            time: line.created_at,
+            // `entry_date` adalah tanggal bisnis jurnal — itu yang menentukan
+            // baris masuk laporan hari mana, jadi yang ditampilkan juga harus
+            // entry_date, bukan created_at (waktu input).
+            time: journal?.entry_date || line.created_at,
             type: 'journal',
             amount: debit,
             method: 'tunai', // Semua transaksi dari akun 1-1000 (Kas) adalah tunai
@@ -205,7 +217,7 @@ export const dailyCashService = {
         if (credit > 0) {
           transactions.push({
             id: line.id,
-            time: line.created_at,
+            time: journal?.entry_date || line.created_at,
             type: 'journal',
             amount: credit,
             method: 'tunai', // Semua transaksi dari akun 1-1000 (Kas) adalah tunai

@@ -15,18 +15,27 @@
         <item name="android:background">@null</item>
     </style>
 
-
+    <!--
+        Tema saat launch. Latar = gradient biru yang sama dengan splash
+        animasi di index.html, sehingga transisi native -> WebView tidak
+        berkedip putih. Logo tidak digambar di sini karena logo animasi
+        muncul dari splash HTML.
+    -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash_background</item>
         <item name="android:statusBarColor">@color/splashBackground</item>
         <item name="android:navigationBarColor">@color/splashBackground</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+        <item name="windowSplashScreenBackground">@color/splashBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_blank</item>
+        <item name="windowSplashScreenAnimationDuration">0</item>
     </style>
 
     <!-- Splash Screen Theme for Android 12+ -->
     <style name="SplashScreenTheme" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splashBackground</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_blank</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
 </resources>

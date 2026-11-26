@@ -372,7 +372,7 @@ import DateField from '@/components/common/DateField.vue'
 import { useFinanceStore } from '@/stores/finance'
 import { useNavigationStack } from '@/composables/useNavigationStack'
 import { useToast } from '@/composables/useToast'
-import { localTodayStr, localDateOffsetStr, localDateStr } from '@/utils/date'
+import { localTodayStr, localDateOffsetStr, localDateStr, parseBusinessDate } from '@/utils/date'
 import { financeServiceAdapter as financeService } from '@/services'
 import type { ClosingPeriod } from '@/types/database'
 
@@ -507,8 +507,13 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value || 0)
 
-const formatDateTime = (dateString: string) =>
-  new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+const formatDateTime = (dateString: string) => {
+  // Tanggal bisnis jurnal = bagian tanggal UTC dari entry_date.
+  const d = parseBusinessDate(dateString)
+  return d
+    ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    : dateString
+}
 
 // Register/unregister modal di navigation stack
 watch(showFilterModal, (isOpen) => {
